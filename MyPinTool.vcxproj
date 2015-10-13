@@ -22,6 +22,7 @@
     <ProjectGuid>{639EF517-FCFC-408E-9500-71F0DC0458DB}</ProjectGuid>
     <RootNamespace>MyPinTool</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <ProjectName>FindOEPPin</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -249,7 +250,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="LibraryHandler.cpp" />
-    <ClCompile Include="MyPinTool.cpp" />
+    <ClCompile Include="FindOEPPin.cpp" />
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="WxorXHandler.cpp" />
   </ItemGroup>

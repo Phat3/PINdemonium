@@ -13,7 +13,7 @@ WxorXHandler::~WxorXHandler(void)
 
 //----------------------- PRIVATE METHODS -----------------------
 
-VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT ea, UINT32 size)
+VOID writeSetManager(ADDRINT ip, ADDRINT ea, UINT32 size)
 {
 	printf( "IP : %08x	  write at : %08x		SIZE: %d\n" , ip, ea, size);
 }
@@ -25,8 +25,8 @@ BOOL WxorXHandler::isWriteINS(INS ins){
 	return INS_IsMemoryWrite(ins);
 }
 
-BOOL WxorXHandler::handleWrite(INS ins){
-	INS_InsertCall(ins, IPOINT_BEFORE, (LEVEL_BASE::AFUNPTR)writeSetManager, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);
+VOID WxorXHandler::handleWrite(INS ins){
+	INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)writeSetManager, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);
 }
 
 UINT32 WxorXHandler::getWxorXindex(INS ins){
