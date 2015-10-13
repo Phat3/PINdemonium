@@ -7,7 +7,7 @@
 #define NOT_FOUND_OEP -3;
 #define EIP_IN_CUR_WITEM -2;
 #define EIP_NOT_IN_CUR_WITEM -1;
-#define FOUND_OEP 1;
+#define FOUND_OEP 0;
 
 
 /*
@@ -44,7 +44,8 @@ private:
 	BOOL isWriteINS(INS ins);
 	BOOL handleWrite(INS ins);
 	int getWxorXindex(INS ins);
-	BOOL heuristics(INS ins);
+	BOOL heuristics(INS ins, int WriteItemIndex);
 	BOOL checkEIPInWriteitem(ADDRINT curEip , int wiIndex);
+	BOOL OepFinder::deleteWriteItem(int writeItemIndex);
 };
 

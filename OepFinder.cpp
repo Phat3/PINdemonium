@@ -34,28 +34,20 @@ int OepFinder::IsCurrentInOEP(INS ins){
 	if(isWriteINS(ins)){
 		handleWrite(ins);
 	}
-	if(checkWxorX){
 
-		writeItemIndex = getWxorXindex(ins);
+	//Return the index of the WriteItem in which the EIP is
+	// if it isn't a WxorX instruction return -1
+	writeItemIndex = getWxorXindex(ins);
 
-		if(writeItemIndex != -1 ){
-			checkWxorX = FALSE;
+	if(writeItemIndex != -1 ){
 			
-			BOOL isOEP = heuristics(ins);
+		BOOL isOEP = heuristics(ins,writeItemIndex);
+		deleteWriteItem(writeItemIndex);
 			
-			if(isOEP){
-				return FOUND_OEP;
-			}
-			return NOT_FOUND_OEP;
+		if(isOEP){
+			return FOUND_OEP;
 		}
-	}
-	else{
-		if(checkEIPInWriteitem(curEip , writeItemIndex)){
-		   return EIP_IN_CUR_WITEM;
-		}
-		else
-			checkWxorX = TRUE;
-		    return EIP_NOT_IN_CUR_WITEM;
+		return NOT_FOUND_OEP;
 	}
 
 }
@@ -63,6 +55,10 @@ int OepFinder::IsCurrentInOEP(INS ins){
 
 BOOL OepFinder::checkEIPInWriteitem(ADDRINT curEip , int wiIndex){
 return FALSE;
+}
+
+BOOL OepFinder::deleteWriteItem(int writeItemIndex){
+	return FALSE;
 }
 
 
@@ -75,6 +71,7 @@ return FALSE;
 }
 
 BOOL OepFinder::handleWrite(INS ins){
+
 return FALSE;
 }
 
@@ -82,6 +79,6 @@ int OepFinder::getWxorXindex(INS ins){
 return 1;
 }
 
-BOOL OepFinder::heuristics(INS ins){
+BOOL OepFinder::heuristics(INS ins,int WriteItemIndex){
 return FALSE;
 }
