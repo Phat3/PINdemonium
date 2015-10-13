@@ -1,4 +1,5 @@
 #include "WxorXHandler.h"
+#include "pin.h"
 
 
 WxorXHandler::WxorXHandler(void)
@@ -14,12 +15,12 @@ WxorXHandler::~WxorXHandler(void)
 
 
 BOOL WxorXHandler::isWriteINS(INS ins){
-return FALSE;
+	return FALSE;
 }
 
 BOOL WxorXHandler::handleWrite(INS ins){
 
-return FALSE;
+	return FALSE;
 }
 
 int WxorXHandler::getWxorXindex(INS ins){
