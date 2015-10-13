@@ -21,10 +21,10 @@ OepFinder::~OepFinder(void){
 }
 
 
-int OepFinder::IsCurrentInOEP(INS ins){
+UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	//W::Sleep(1);
-	int writeItemIndex=-1;
+	UINT32 writeItemIndex=-1;
 	ADDRINT curEip = INS_Address(ins);
 	
 	//check if current instruction is inside a library
@@ -63,6 +63,6 @@ int OepFinder::IsCurrentInOEP(INS ins){
 
 
 
-BOOL OepFinder::heuristics(INS ins,int WriteItemIndex){
+BOOL OepFinder::heuristics(INS ins,UINT32 WriteItemIndex){
 	return FALSE;
 }

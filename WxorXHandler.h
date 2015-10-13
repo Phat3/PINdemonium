@@ -21,11 +21,10 @@ public:
 	~WxorXHandler(void);
 	BOOL isWriteINS(INS ins);
 	BOOL handleWrite(INS ins);
-	int getWxorXindex(INS ins);
-	BOOL deleteWriteItem(int writeItemIndex);
+	UINT32 getWxorXindex(INS ins);
+	BOOL deleteWriteItem(UINT32 writeItemIndex);
 private: 
 	std::vector<WriteItem> WritesSet;
-
-
+	VOID writeSetManager(ADDRINT ip, ADDRINT ea, UINT32 size);
 };
 
