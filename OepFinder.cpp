@@ -1,4 +1,8 @@
 #include "OepFinder.h"
+#include "Debug.h"
+namespace W {
+    #include <windows.h>
+}
 
 /*
 WriteItem p;
@@ -19,66 +23,46 @@ OepFinder::~OepFinder(void){
 
 int OepFinder::IsCurrentInOEP(INS ins){
 
+	//W::Sleep(1);
 	int writeItemIndex=-1;
-
-	BOOL checkWxorX = TRUE;
-
 	ADDRINT curEip = INS_Address(ins);
-
-	BOOL isLib = filterLib(curEip);
-
+	
+	//check if current instruction is inside a library
+	BOOL isLib = libHandler.filterLib(curEip);
 	if(isLib){
-	  return INLIB; // we are inside a library
+
+		return INLIB; 
 	}
 
-	if(isWriteINS(ins)){
-		handleWrite(ins);
+
+	//check if current instruction is a write
+	if(wxorxHandler.isWriteINS(ins)){
+		wxorxHandler.handleWrite(ins);
 	}
 
-	//Return the index of the WriteItem in which the EIP is
-	// if it isn't a WxorX instruction return -1
-	writeItemIndex = getWxorXindex(ins);
+	//If the instruction violate WxorX return the index of the WriteItem in which the EIP is
+	//If the instruction doesn't violate WxorX return -1
+	writeItemIndex = wxorxHandler.getWxorXindex(ins);
 
 	if(writeItemIndex != -1 ){
 			
 		BOOL isOEP = heuristics(ins,writeItemIndex);
-		deleteWriteItem(writeItemIndex);
+		wxorxHandler.deleteWriteItem(writeItemIndex);
 			
 		if(isOEP){
 			return FOUND_OEP;
 		}
 		return NOT_FOUND_OEP;
 	}
+	return NOT_WXORX_INST;
 
 }
 
 
-BOOL OepFinder::checkEIPInWriteitem(ADDRINT curEip , int wiIndex){
-return FALSE;
-}
-
-BOOL OepFinder::deleteWriteItem(int writeItemIndex){
-	return FALSE;
-}
 
 
-BOOL OepFinder::filterLib(ADDRINT eip){
-return FALSE;
-}
 
-BOOL OepFinder::isWriteINS(INS ins){
-return FALSE;
-}
-
-BOOL OepFinder::handleWrite(INS ins){
-
-return FALSE;
-}
-
-int OepFinder::getWxorXindex(INS ins){
-return 1;
-}
 
 BOOL OepFinder::heuristics(INS ins,int WriteItemIndex){
-return FALSE;
+	return FALSE;
 }
