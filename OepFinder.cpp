@@ -51,7 +51,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 
 		UINT32 isOEP_Witem = heuristics.callWitemHeuristics(ins,wi);
-		UINT32 isOEP_Image = heuristics.callImageHeuristics(ins,wi);
+		UINT32 isOEP_Image = heuristics.callImageHeuristics();
 
 		wxorxHandler.deleteWriteItem(writeItemIndex);
 			

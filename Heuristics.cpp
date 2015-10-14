@@ -2,6 +2,7 @@
 
 #include "Heuristics.h"
 #include "WriteIntervalHeuristics.h"
+#include "ImageHeuristics.h"
 #include "WriteInterval.h"
 #include "OepFinder.h"
  
@@ -20,8 +21,8 @@ IN WriteIntervalHeuristics.cpp AND ITS SIGNATURE IN WriteIntervalHeuristics.h
 */
 Heuristics::Heuristics(void){
 
-	addHeuristic("long jump" , test_heuristic , WRITE_INTERVAL_GRANULARITY);
-	addHeuristic("dummy test" , test_heuristic , IMAGE_GRANULARITY);
+	addWitemHeuristic("long jump" , test_heuristic);
+	addImageHeuristic("dummy test" ,test_heuristic_2);
 }
 
 Heuristics::~Heuristics(void){
@@ -44,7 +45,7 @@ BOOL Heuristics::callWitemHeuristics(INS ins , WriteInterval wi){
 }
 
 
-BOOL Heuristics::callImageHeuristics(INS ins , WriteInterval wi){
+BOOL Heuristics::callImageHeuristics(){
 
 	UINT32 i,n_functions=0;
 	std::vector<UINT32> test_result;
@@ -52,7 +53,7 @@ BOOL Heuristics::callImageHeuristics(INS ins , WriteInterval wi){
 	n_functions = ImageHeuristics.size();
 
 	for(i=0; i < n_functions; i++){
-		test_result.push_back(ImageHeuristics[i].heuristic(ins , wi));
+		test_result.push_back(ImageHeuristics[i].heuristic());
 	}
 
 	//[TODO] aggregate the result of the heuristics collected inside the test_result vector
@@ -60,25 +61,25 @@ BOOL Heuristics::callImageHeuristics(INS ins , WriteInterval wi){
 }
 
 
-BOOL Heuristics::addHeuristic(const char *name , UINT32 (*heuristic)(INS ins ,WriteInterval wi) , UINT32 granularity){
+BOOL Heuristics::addWitemHeuristic(const char *name , UINT32 (*heuristic)(INS ins ,WriteInterval wi)){
 
-	Heuristic new_heuristic;
+	 WitemHeuristic new_heuristic;
 
-	switch(granularity){
-	
-	case WRITE_INTERVAL_GRANULARITY:{
-		    strncpy(new_heuristic.name,name,MAX_NAME_SIZE);
-			new_heuristic.heuristic = heuristic;
-			WriteIntervalHeuristics.push_back(new_heuristic);
-			return TRUE;
-		   }
+     strncpy(new_heuristic.name,name,MAX_NAME_SIZE);
+	 new_heuristic.heuristic = heuristic;
+	 WriteIntervalHeuristics.push_back(new_heuristic);
 
-	case IMAGE_GRANULARITY:{
-		    strncpy(new_heuristic.name,name,MAX_NAME_SIZE);
-			new_heuristic.heuristic = heuristic;
-			ImageHeuristics.push_back(new_heuristic);
-			return TRUE;
-		   }
-	default: return FALSE;
-	}
+	 return TRUE;
+}
+
+
+BOOL Heuristics::addImageHeuristic(const char *name , UINT32 (*heuristic)()){
+
+	 ImageHeuristic new_heuristic;
+
+     strncpy(new_heuristic.name,name,MAX_NAME_SIZE);
+	 new_heuristic.heuristic = heuristic;
+	 ImageHeuristics.push_back(new_heuristic);
+
+	 return TRUE;
 }
