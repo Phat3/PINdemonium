@@ -23,6 +23,7 @@ Heuristics::Heuristics(void){
 
 	addWitemHeuristic("long jump" , test_heuristic);
 	addImageHeuristic("dummy test" ,test_heuristic_2);
+	//add here new heuristics 
 }
 
 Heuristics::~Heuristics(void){
