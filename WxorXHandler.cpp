@@ -3,6 +3,14 @@
 #include "Debug.h"
 
 
+WxorXHandler* WxorXHandler::instance = 0;
+
+WxorXHandler* WxorXHandler::getInstance()
+{
+	if (instance == 0)
+		instance = new WxorXHandler;
+	return instance;
+}
 
 
 WxorXHandler::~WxorXHandler(void)
@@ -33,6 +41,7 @@ VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 		//if we foud that an item has to be updated then update it and return
 		if(item->checkUpdate(start_addr, end_addr)){
 			item->update(start_addr, end_addr);
+			MYINFO( "ENTRATO\n");
 			return;
 		}
 	}

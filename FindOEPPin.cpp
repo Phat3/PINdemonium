@@ -13,9 +13,9 @@ clock_t tStart;
 // This function is called when the application exits
 VOID Fini(INT32 code, VOID *v)
 {
-	WxorXHandler wxorxHandler = WxorXHandler::getInstance();
+	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 
-	for(std::vector<WriteInterval>::iterator item = wxorxHandler.getWritesSet().begin(); item != wxorxHandler.getWritesSet().end(); ++item) {
+	for(std::vector<WriteInterval>::iterator item = wxorxHandler->getWritesSet().begin(); item != wxorxHandler->getWritesSet().end(); ++item) {
 		MYINFO("ADDR BEGIN: %08x         ADDR END:%08x\n", item->getAddrBegin(), item->getAddrEnd());
 	}
 	MYINFO("Total execution Time: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
