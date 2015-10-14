@@ -60,10 +60,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 }
 
 
-
-
-
-
 BOOL OepFinder::heuristics(INS ins,UINT32 WriteItemIndex){
 	return FALSE;
 }
