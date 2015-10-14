@@ -51,8 +51,19 @@ VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 	//MYINFO( "VECTOR SIZE: %d\n", WritesSet.size());
 }
 
-UINT32 WxorXHandler::getWxorXindex(INS ins){
-	return 1;
+UINT32 WxorXHandler::getWxorXindex(ADDRINT ip){
+	//iterate through our structure in order to find if we have a violation of the W xor X law
+	for(std::vector<WriteInterval>::iterator item = this->WritesSet.begin(); item != this->WritesSet.end(); ++item) {
+		//if we found that the current ip is in a memory area that was previously written
+		//we have to return the address of the WriteInterval that has to be analyzed by our heuristics
+		if(item->checkInside(ip)){
+			int index = item - WritesSet.begin();
+			//MYINFO("INDICE STRUTTURA : %d\n", index);
+			return index;
+		}
+	}
+	//otherwise return -1 (the law is not broke)
+	return -1;
 }
 
 

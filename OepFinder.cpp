@@ -44,11 +44,16 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	//If the instruction violate WxorX return the index of the WriteItem in which the EIP is
 	//If the instruction doesn't violate WxorX return -1
-	writeItemIndex = wxorxHandler->getWxorXindex(ins);
+	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
 	//if(wxorxHandler->getWxorXindex(ins))
 	if(writeItemIndex != -1 ){
+
+		ADDRINT end = wxorxHandler->getWritesSet().at(writeItemIndex).getAddrEnd();
+		ADDRINT begin = wxorxHandler->getWritesSet().at(writeItemIndex).getAddrBegin();
+
+		MYINFO("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x\n", curEip, begin, end);
 			
-		
+		/*
 		wxorxHandler->deleteWriteItem(writeItemIndex);
 		
 		WriteInterval wi(12,13);
@@ -61,6 +66,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		if(isOEP_Witem && isOEP_Image){
 			return FOUND_OEP;
 		}
+		*/
 		
 		return NOT_FOUND_OEP;
 	}

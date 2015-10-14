@@ -16,7 +16,7 @@ VOID Fini(INT32 code, VOID *v)
 	//DEBUG --- inspect the write set at the end of the execution
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 	for(std::vector<WriteInterval>::iterator item = wxorxHandler->getWritesSet().begin(); item != wxorxHandler->getWritesSet().end(); ++item) {
-		MYINFO("ADDR BEGIN: %08x         ADDR END:%08x\n", item->getAddrBegin(), item->getAddrEnd());
+		//MYINFO("ADDR BEGIN: %08x         ADDR END:%08x\n", item->getAddrBegin(), item->getAddrEnd());
 	}
 	MYINFO("WRITE SET SIZE: %d\n", wxorxHandler->getWritesSet().size());
 	//DEBUG --- get the execution time

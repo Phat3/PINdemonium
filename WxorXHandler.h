@@ -13,7 +13,7 @@ public:
 	~WxorXHandler(void);
 	BOOL isWriteINS(INS ins);
 	VOID writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size);
-	UINT32 getWxorXindex(INS ins);
+	UINT32 WxorXHandler::getWxorXindex(ADDRINT ip);
 	BOOL deleteWriteItem(UINT32 writeItemIndex);
 	std::vector<WriteInterval> getWritesSet();
 
