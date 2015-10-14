@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #pragma once
 
 #include "pin.H"
@@ -21,13 +20,3 @@ private:
 
 };
 
-=======
-#pragma once
-class WriteInterval
-{
-public:
-	WriteInterval(void);
-	~WriteInterval(void);
-};
-
->>>>>>> heuristics

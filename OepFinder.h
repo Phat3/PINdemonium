@@ -19,14 +19,15 @@
 
 class OepFinder
 {
+
 public:
 	OepFinder(void);
 	~OepFinder(void);
 	UINT32 IsCurrentInOEP(INS ins);
 	Heuristics heuristics;
+
 private:
 	LibraryHandler libHandler;
-	
-	
+
 };
 

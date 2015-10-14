@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #include "WriteInterval.h"
 
 //set the new WriteInterval object with the begin address and the end address of the current write operation
@@ -46,16 +45,3 @@ VOID WriteInterval::update(ADDRINT start_addr, ADDRINT end_addr){
 	}
 	//otherwise we have to do nothing
 }
-=======
-#include "WriteInterval.h"
-
-
-WriteInterval::WriteInterval(void)
-{
-}
-
-
-WriteInterval::~WriteInterval(void)
-{
-}
->>>>>>> heuristics

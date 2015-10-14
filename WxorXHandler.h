@@ -9,7 +9,7 @@ class WxorXHandler
 {
 public:
 
-    static WxorXHandler* getInstance();
+	static WxorXHandler* getInstance();
 	~WxorXHandler(void);
 	BOOL isWriteINS(INS ins);
 	VOID writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size);

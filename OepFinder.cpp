@@ -1,7 +1,7 @@
 #include "OepFinder.h"
 #include "Debug.h"
 namespace W {
-    #include <windows.h>
+	#include <windows.h>
 }
 
 
@@ -22,6 +22,7 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size)
 }
 
 UINT32 OepFinder::IsCurrentInOEP(INS ins){
+
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 
 	//W::Sleep(1);
@@ -44,36 +45,26 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//If the instruction violate WxorX return the index of the WriteItem in which the EIP is
 	//If the instruction doesn't violate WxorX return -1
 	writeItemIndex = wxorxHandler->getWxorXindex(ins);
-
+	//if(wxorxHandler->getWxorXindex(ins))
 	if(writeItemIndex != -1 ){
 			
-<<<<<<< HEAD
-		BOOL isOEP = heuristics(ins,writeItemIndex);
+		
 		wxorxHandler->deleteWriteItem(writeItemIndex);
-=======
-		WriteInterval wi;
+		
+		WriteInterval wi(12,13);
 
 
 		UINT32 isOEP_Witem = heuristics.callWitemHeuristics(ins,wi);
 		UINT32 isOEP_Image = heuristics.callImageHeuristics();
-
-		wxorxHandler.deleteWriteItem(writeItemIndex);
->>>>>>> heuristics
+		
 			
 		if(isOEP_Witem && isOEP_Image){
 			return FOUND_OEP;
 		}
+		
 		return NOT_FOUND_OEP;
 	}
 	return NOT_WXORX_INST;
 
 }
 
-
-<<<<<<< HEAD
-BOOL OepFinder::heuristics(INS ins,UINT32 WriteItemIndex){
-	return FALSE;
-}
-=======
-
->>>>>>> heuristics
