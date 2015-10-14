@@ -25,7 +25,7 @@ BOOL WxorXHandler::isWriteINS(INS ins){
 }
 
 VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT startAddr, UINT32 size){
-	printf( "IP : %08x	  write at : %08x		SIZE: %d\n" , ip, startAddr, size);
+	//printf( "IP : %08x	  write at : %08x		SIZE: %d\n" , ip, startAddr, size);
 	UINT32 endAddr = startAddr + size;
 	BOOL newBlock=TRUE;
 	for(std::vector<WriteItem>::iterator it = WritesSet.begin(); it != WritesSet.end(); ++it) {

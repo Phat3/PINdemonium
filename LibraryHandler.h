@@ -14,12 +14,20 @@ struct LibraryItem{
 class LibraryHandler
 {
 public:
-	LibraryHandler(void);
+	static LibraryHandler& getInstance()
+    {
+        static LibraryHandler    instance; // Guaranteed to be destroyed.
+                                          // Instantiated on first use.
+        return instance;
+    }
 	~LibraryHandler(void);
-	BOOL isLibInstruction(ADDRINT eip);
-	BOOL checkWriteInExeSpace(ADDRINT eip);
+	BOOL isKnownLibInstruction(ADDRINT eip);
+	BOOL isStackWrite(INS instruction);
 private:
 	std::vector<LibraryItem> LibrarySet;
+	LibraryHandler(){};
+//	 LibraryHandler(const LibraryHandler&);
+//	 LibraryHandler& operator=(const LibraryHandler&);
 	
 };
 

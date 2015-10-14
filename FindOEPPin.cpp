@@ -14,6 +14,7 @@ clock_t tStart;
 VOID Fini(INT32 code, VOID *v)
 {
 	MYINFO("Total execution Time: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+	//CLOSELOG();
 }
 
 
