@@ -14,10 +14,10 @@ OepFinder::~OepFinder(void){
 }
 
 
-VOID handleWrite(ADDRINT ip, ADDRINT startAddr, UINT32 size)
+VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size)
 {
 	WxorXHandler *wxorxHandler=WxorXHandler::getInstance();
-	wxorxHandler->writeSetManager(ip,startAddr,size);
+	wxorxHandler->writeSetManager(ip, end_addr, size);
 
 }
 
