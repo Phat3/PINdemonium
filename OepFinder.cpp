@@ -47,10 +47,20 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	if(writeItemIndex != -1 ){
 			
+<<<<<<< HEAD
 		BOOL isOEP = heuristics(ins,writeItemIndex);
 		wxorxHandler->deleteWriteItem(writeItemIndex);
+=======
+		WriteInterval wi;
+
+
+		UINT32 isOEP_Witem = heuristics.callWitemHeuristics(ins,wi);
+		UINT32 isOEP_Image = heuristics.callImageHeuristics();
+
+		wxorxHandler.deleteWriteItem(writeItemIndex);
+>>>>>>> heuristics
 			
-		if(isOEP){
+		if(isOEP_Witem && isOEP_Image){
 			return FOUND_OEP;
 		}
 		return NOT_FOUND_OEP;
@@ -60,6 +70,10 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 }
 
 
+<<<<<<< HEAD
 BOOL OepFinder::heuristics(INS ins,UINT32 WriteItemIndex){
 	return FALSE;
 }
+=======
+
+>>>>>>> heuristics
