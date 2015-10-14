@@ -249,9 +249,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Heuristics.cpp" />
+    <ClCompile Include="ImageHeuristics.cpp" />
     <ClCompile Include="LibraryHandler.cpp" />
     <ClCompile Include="FindOEPPin.cpp" />
     <ClCompile Include="OepFinder.cpp" />
+    <ClCompile Include="WriteInterval.cpp" />
+    <ClCompile Include="WriteIntervalHeuristics.cpp" />
     <ClCompile Include="WxorXHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -259,8 +263,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="Heuristics.h" />
+    <ClInclude Include="ImageHeuristics.h" />
     <ClInclude Include="LibraryHandler.h" />
     <ClInclude Include="OepFinder.h" />
+    <ClInclude Include="WriteInterval.h" />
+    <ClInclude Include="WriteIntervalHeuristics.h" />
     <ClInclude Include="WxorXHandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

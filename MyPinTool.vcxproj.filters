@@ -13,6 +13,12 @@
       <UniqueIdentifier>{b8dd2600-7302-4aa7-a99d-1607cd3cd4fb}</UniqueIdentifier>
       <Extensions>txt;doc;html</Extensions>
     </Filter>
+    <Filter Include="Source Files\Heuristics">
+      <UniqueIdentifier>{c82c1b21-c180-4abf-a4a2-b65a03c90ba4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Heuristics">
+      <UniqueIdentifier>{35aa198c-b8a2-4e0a-98e9-1ac38d9d7aa3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OepFinder.cpp">
@@ -25,6 +31,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FindOEPPin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Heuristics.cpp">
+      <Filter>Source Files\Heuristics</Filter>
+    </ClCompile>
+    <ClCompile Include="WriteIntervalHeuristics.cpp">
+      <Filter>Source Files\Heuristics</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageHeuristics.cpp">
+      <Filter>Source Files\Heuristics</Filter>
+    </ClCompile>
+    <ClCompile Include="WriteInterval.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,6 +62,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LibraryHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Heuristics.h">
+      <Filter>Header Files\Heuristics</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageHeuristics.h">
+      <Filter>Header Files\Heuristics</Filter>
+    </ClInclude>
+    <ClInclude Include="WriteIntervalHeuristics.h">
+      <Filter>Header Files\Heuristics</Filter>
+    </ClInclude>
+    <ClInclude Include="WriteInterval.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

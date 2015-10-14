@@ -3,7 +3,7 @@
 #include "pin.H"
 #include "WxorXHandler.h"
 #include "LibraryHandler.h"
-
+#include "Heuristics.h"
 
 
 #define INLIB -5;
@@ -23,9 +23,10 @@ public:
 	OepFinder(void);
 	~OepFinder(void);
 	UINT32 IsCurrentInOEP(INS ins);
+	Heuristics heuristics;
 private:
 	LibraryHandler libHandler;
-
-	BOOL heuristics(INS ins, UINT32 WriteItemIndex);
+	
+	
 };
 
