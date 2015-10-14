@@ -4,16 +4,9 @@ namespace W {
     #include <windows.h>
 }
 
-/*
-WriteItem p;
-p.checked=FALSE;
-p.StartAddress=(ADDRINT)5;
-p.EndAddress=(ADDRINT)4;
-
-WritesSet.push_back(p);
-*/
 
 OepFinder::OepFinder(void){
+	
 }
 
 
@@ -21,7 +14,15 @@ OepFinder::~OepFinder(void){
 }
 
 
+VOID handleWrite(ADDRINT ip, ADDRINT startAddr, UINT32 size)
+{
+	WxorXHandler wxorxHandler=WxorXHandler::getInstance();
+	wxorxHandler.writeSetManager(ip,startAddr,size);
+
+}
+
 UINT32 OepFinder::IsCurrentInOEP(INS ins){
+	WxorXHandler wxorxHandler=WxorXHandler::getInstance();
 
 	//W::Sleep(1);
 	UINT32 writeItemIndex=-1;
@@ -37,7 +38,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	//check if current instruction is a write
 	if(wxorxHandler.isWriteINS(ins)){
-		wxorxHandler.handleWrite(ins);
+		INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);
 	}
 
 	//If the instruction violate WxorX return the index of the WriteItem in which the EIP is

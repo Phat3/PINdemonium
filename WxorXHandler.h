@@ -17,13 +17,22 @@ struct WriteItem{
 class WxorXHandler
 {
 public:
-	WxorXHandler(void);
+	static WxorXHandler& getInstance()
+    {
+        static WxorXHandler    instance; // Guaranteed to be destroyed.
+                                          // Instantiated on first use.
+        return instance;
+    }
 	~WxorXHandler(void);
 	BOOL isWriteINS(INS ins);
-	VOID handleWrite(INS ins);
+	VOID writeSetManager(ADDRINT ip, ADDRINT startAddr, UINT32 size);
 	UINT32 getWxorXindex(INS ins);
 	BOOL deleteWriteItem(UINT32 writeItemIndex);
-private: 
 	std::vector<WriteItem> WritesSet;
+	
+private: 
+	 WxorXHandler(){};
+//	 WxorXHandler(const WxorXHandler&);
+//	 WxorXHandler& operator=(const WxorXHandler&);
 };
 

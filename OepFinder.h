@@ -24,7 +24,6 @@ public:
 	~OepFinder(void);
 	UINT32 IsCurrentInOEP(INS ins);
 private:
-	WxorXHandler wxorxHandler;
 	LibraryHandler libHandler;
 
 	BOOL heuristics(INS ins, UINT32 WriteItemIndex);
