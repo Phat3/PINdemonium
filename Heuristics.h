@@ -11,7 +11,7 @@
 struct Heuristic
 {
   char name[MAX_NAME_SIZE];
-  BOOL (*heuristic)(INS ins, WriteInterval wi);
+  UINT32 (*heuristic)(INS ins, WriteInterval wi);
 };
 
 class Heuristics

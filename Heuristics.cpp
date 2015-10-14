@@ -1,8 +1,10 @@
+#pragma once
+
 #include "Heuristics.h"
 #include "WriteIntervalHeuristics.h"
 #include "WriteInterval.h"
 #include "OepFinder.h"
-
+ 
 /*
 The constructor of the Heuristics object add all our heuristics
 in the array of struct for each granularity 
@@ -55,6 +57,7 @@ BOOL Heuristics::callImageHeuristics(INS ins , WriteInterval wi){
 
 	//[TODO] aggregate the result of the heuristics collected inside the test_result vector
 	return FOUND_OEP; 
+}
 
 
 BOOL Heuristics::addHeuristic(const char *name , UINT32 (*heuristic)(INS ins ,WriteInterval wi) , UINT32 granularity){
