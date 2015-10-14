@@ -1,17 +1,8 @@
 #pragma once
+#include "WriteInterval.h"
 #include "pin.H"
 
 
-
-/*
-This struct will track the set of contiguous writes
-performed by instructions 
-*/
-struct WriteItem{
-	ADDRINT StartAddress;
-	ADDRINT EndAddress;
-	BOOL checked;
-};
 
 
 class WxorXHandler
@@ -28,7 +19,7 @@ public:
 	VOID writeSetManager(ADDRINT ip, ADDRINT startAddr, UINT32 size);
 	UINT32 getWxorXindex(INS ins);
 	BOOL deleteWriteItem(UINT32 writeItemIndex);
-	std::vector<WriteItem> WritesSet;
+	std::vector<WriteInterval> WritesSet;
 	
 private: 
 	 WxorXHandler(){};
