@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pin.H";
+#include "pin.H"
 
 class WriteInterval
 {
@@ -11,6 +11,8 @@ public:
 	~WriteInterval(void);
 	BOOL WriteInterval::checkUpdate(ADDRINT start_addr, ADDRINT end_addr);
 	VOID update(ADDRINT start_addr, ADDRINT end_addr);
+	ADDRINT getAddrBegin();
+	ADDRINT getAddrEnd();
 
 private:
 	ADDRINT addr_begin;

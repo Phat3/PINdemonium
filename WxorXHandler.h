@@ -16,12 +16,13 @@ public:
     }
 	~WxorXHandler(void);
 	BOOL isWriteINS(INS ins);
-	VOID writeSetManager(ADDRINT ip, ADDRINT startAddr, UINT32 size);
+	VOID writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size);
 	UINT32 getWxorXindex(INS ins);
 	BOOL deleteWriteItem(UINT32 writeItemIndex);
-	std::vector<WriteInterval> WritesSet;
+	std::vector<WriteInterval> getWritesSet();
 	
 private: 
+	 std::vector<WriteInterval> WritesSet;
 	 WxorXHandler(){};
 //	 WxorXHandler(const WxorXHandler&);
 //	 WxorXHandler& operator=(const WxorXHandler&);

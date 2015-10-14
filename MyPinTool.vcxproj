@@ -252,6 +252,7 @@
     <ClCompile Include="LibraryHandler.cpp" />
     <ClCompile Include="FindOEPPin.cpp" />
     <ClCompile Include="OepFinder.cpp" />
+    <ClCompile Include="WriteInterval.cpp" />
     <ClCompile Include="WxorXHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -261,6 +262,7 @@
     <ClInclude Include="Debug.h" />
     <ClInclude Include="LibraryHandler.h" />
     <ClInclude Include="OepFinder.h" />
+    <ClInclude Include="WriteInterval.h" />
     <ClInclude Include="WxorXHandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

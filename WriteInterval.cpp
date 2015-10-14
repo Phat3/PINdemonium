@@ -12,6 +12,19 @@ WriteInterval::~WriteInterval(void)
 {
 }
 
+//----------------------- GETTER / SETTER -----------------------
+
+ADDRINT WriteInterval::getAddrBegin(){
+	return this->addr_begin;
+}
+
+ADDRINT WriteInterval::getAddrEnd(){
+	return this->addr_end;
+}
+
+
+//----------------------- PUBLIC METHODS -----------------------
+
 //check if the value of the given address is between addr_begin and addr_end
 BOOL WriteInterval::checkUpdate(ADDRINT start_addr, ADDRINT end_addr){
 	//if the address interval ISN'T before or after the current interval then we have to udate the instance
