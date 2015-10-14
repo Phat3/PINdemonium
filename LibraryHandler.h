@@ -16,7 +16,8 @@ class LibraryHandler
 public:
 	LibraryHandler(void);
 	~LibraryHandler(void);
-	BOOL filterLib(ADDRINT eip);
+	BOOL isLibInstruction(ADDRINT eip);
+	BOOL checkWriteInExeSpace(ADDRINT eip);
 private:
 	std::vector<LibraryItem> LibrarySet;
 	

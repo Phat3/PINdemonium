@@ -25,6 +25,12 @@ INT32 Usage()
 }
 
 
+void imageLoadCallback(IMG img,void *){
+	ADDRINT startAddr = IMG_LowAddress(img);
+	ADDRINT endAddr = IMG_HighAddress(img);
+	
+	MYINFO("Image loaded start: %x end: %x\n",startAddr,endAddr);
+}
 
 
 // Trace callback Pin calls this function for every trace
@@ -62,8 +68,11 @@ int main(int argc, char * argv[])
     // Initialize pin
 	PIN_InitSymbols();
 
-    if (PIN_Init(argc, argv)) return Usage();
+	
 
+    if (PIN_Init(argc, argv)) return Usage();
+	
+	//IMG_AddInstrumentFunction(imageLoadCallback,0); 	
 //	TRACE_AddInstrumentFunction(Trace,0);
 	INS_AddInstrumentFunction(Instruction,0);
 
