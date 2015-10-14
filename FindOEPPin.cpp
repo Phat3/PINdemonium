@@ -5,6 +5,7 @@
 #include "OepFinder.h"
 #include <time.h>
 #include  "Debug.h"
+#include "FilterHandler.h"
 
 FILE * file;
 OepFinder oepf;
@@ -53,6 +54,22 @@ void Instruction(INS ins,void *v){
 
 	oepf.IsCurrentInOEP(ins);
 }
+static VOID OnApplicationStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
+{
+	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
+	FilterHandler *filterH = FilterHandler::getInstance();
+	filterH->setStackBase(stackBase);
+
+}
+
+
+static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
+{
+	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
+	FilterHandler *filterH = FilterHandler::getInstance();
+	filterH->setStackBase(stackBase);
+
+}
 
 
 
@@ -76,6 +93,8 @@ int main(int argc, char * argv[])
 	//IMG_AddInstrumentFunction(imageLoadCallback,0); 	
 //	TRACE_AddInstrumentFunction(Trace,0);
 	INS_AddInstrumentFunction(Instruction,0);
+	PIN_AddThreadStartFunction(OnThreadStart, 0);
+ 	
 
     // Register Fini to be called when the application exits
     PIN_AddFiniFunction(Fini, 0);

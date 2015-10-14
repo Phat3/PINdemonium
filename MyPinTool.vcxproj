@@ -249,7 +249,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="LibraryHandler.cpp" />
+    <ClCompile Include="FilterHandler.cpp" />
     <ClCompile Include="FindOEPPin.cpp" />
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="WxorXHandler.cpp" />
@@ -259,7 +259,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="LibraryHandler.h" />
+    <ClInclude Include="FilterHandler.h" />
     <ClInclude Include="OepFinder.h" />
     <ClInclude Include="WxorXHandler.h" />
   </ItemGroup>

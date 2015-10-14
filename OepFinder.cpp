@@ -15,21 +15,22 @@ OepFinder::~OepFinder(void){
 
 
 VOID handleWrite(ADDRINT ip, ADDRINT endAddr, UINT32 size)
-{	
-	LibraryHandler libHandler = LibraryHandler::getInstance();
-	//Check if the destination address isn't inside a known library
-	if(!libHandler.isKnownLibInstruction(endAddr)){
-		MYINFO("Examining Write instruction %x\n",ip);
-		WxorXHandler wxorxHandler=WxorXHandler::getInstance();
-		wxorxHandler.writeSetManager(ip,endAddr,size);
-	}
+{		
+	FilterHandler *filterHandler = FilterHandler::getInstance();
+	MYINFO("Examining Write instruction %x endaddr %x  isFilteredWrite Write %d\n",ip,endAddr, filterHandler->isFilteredWrite(endAddr));	
+	/*	if(!filterHandler->isFilteredWrite(endAddr)){	
+			
+			WxorXHandler wxorxHandler=WxorXHandler::getInstance();
+			wxorxHandler.writeSetManager(ip,endAddr,size);
+		}*/
+	
 	
 
 }
 
 UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	WxorXHandler wxorxHandler=WxorXHandler::getInstance();
-	LibraryHandler libHandler = LibraryHandler::getInstance();
+	FilterHandler *filterHandler = FilterHandler::getInstance();
 
 	//W::Sleep(1);
 	UINT32 writeItemIndex=-1;
@@ -39,15 +40,12 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//Tracking Write instructions
 	if(wxorxHandler.isWriteINS(ins)){	
 			//Filter instructions which write to the stack 
-			if(libHandler.isStackWrite(ins)){
-				return OEPFINDER_INS_FILTERED; 
-			}
 			INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);	
 	}
 
 	//Tracking violating WxorX instructions
 	//Filter instructions inside a known library
-	if(libHandler.isKnownLibInstruction(curEip)){
+	if(filterHandler->isKnownLibInstruction(curEip)){
 		return OEPFINDER_INS_FILTERED; 
 	}
 	MYINFO("Examining if WxorX %x\n",curEip);
