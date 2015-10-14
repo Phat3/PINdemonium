@@ -16,10 +16,10 @@ BOOL WxorXHandler::isWriteINS(INS ins){
 	return INS_IsMemoryWrite(ins);
 }
 
-VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size){
-	printf( "IP : %08x	  write at : %08x		SIZE: %d\n" , ip, start_addr, size);
+VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size){
+	printf( "IP : %08x	  write at : %08x		SIZE: %d\n" , ip, end_addr, size);
 	//calculate the end address of the write
-	UINT32 end_addr = start_addr + size;
+	UINT32 start_addr = end_addr + size;
 	//iterate through our structure in order to find if we have to update one of our WriteInterval
 	for(std::vector<WriteInterval>::iterator item = WritesSet.begin(); item != WritesSet.end(); ++item) {
 		//if we foud that an item has to be updated then update it and return
