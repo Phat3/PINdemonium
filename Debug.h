@@ -4,7 +4,7 @@
 #define WARN_BUILD  1
 #define ERROR_BUILD 1
 #define LOG_FILENAME "FindOEP.log"
-static FILE * fd = fopen("TESTTEST.log","w");
+static FILE * fd = fopen("PROVA.log","w");
 
 #define MYDEBUG(fmt, ...) \
         do { if (DEBUG_BUILD) fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, \

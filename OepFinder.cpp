@@ -17,7 +17,7 @@ OepFinder::~OepFinder(void){
 VOID handleWrite(ADDRINT ip, ADDRINT endAddr, UINT32 size)
 {		
 	FilterHandler *filterHandler = FilterHandler::getInstance();
-	MYINFO("Examining Write instruction %x endaddr %x  isFilteredWrite Write %d\n",ip,endAddr, filterHandler->isFilteredWrite(endAddr));	
+	MYLOG("Examining Write instruction %x endaddr %x  isFilteredWrite Write %d\n",ip,endAddr, filterHandler->isFilteredWrite(endAddr));	
 	/*	if(!filterHandler->isFilteredWrite(endAddr)){	
 			
 			WxorXHandler wxorxHandler=WxorXHandler::getInstance();
@@ -45,9 +45,10 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	//Tracking violating WxorX instructions
 	//Filter instructions inside a known library
-	if(filterHandler->isKnownLibInstruction(curEip)){
+	if(filterHandler->isLibraryInstruction(curEip)){
 		return OEPFINDER_INS_FILTERED; 
 	}
+	filterHandler->showFilteredLibs();
 	MYINFO("Examining if WxorX %x\n",curEip);
 
 

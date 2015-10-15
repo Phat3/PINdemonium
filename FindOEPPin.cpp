@@ -15,6 +15,7 @@ clock_t tStart;
 VOID Fini(INT32 code, VOID *v)
 {
 	MYINFO("Total execution Time: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+
 	//CLOSELOG();
 }
 
@@ -28,12 +29,18 @@ INT32 Usage()
 
 
 void imageLoadCallback(IMG img,void *){
+	FilterHandler *filterH = FilterHandler::getInstance();
 	ADDRINT startAddr = IMG_LowAddress(img);
 	ADDRINT endAddr = IMG_HighAddress(img);
-	
-	MYINFO("Image loaded start: %x end: %x\n",startAddr,endAddr);
+	const string name = IMG_Name(img); 
+	if(filterH->isKnownLibrary(name)){		
+		filterH->addLibrary(name,startAddr,endAddr);
+	}
 }
 
+void ImageUnloadCallback(IMG img,void *){
+	//TODO Implement this function if want to remove library inside the FilterHandler when library is unloaded
+}
 
 // Trace callback Pin calls this function for every trace
 void Trace(TRACE trace , void *v)
@@ -54,20 +61,15 @@ void Instruction(INS ins,void *v){
 
 	oepf.IsCurrentInOEP(ins);
 }
-static VOID OnApplicationStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
-{
-	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
-	FilterHandler *filterH = FilterHandler::getInstance();
-	filterH->setStackBase(stackBase);
-
-}
 
 
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
 {
+
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	FilterHandler *filterH = FilterHandler::getInstance();
 	filterH->setStackBase(stackBase);
+
 
 }
 
@@ -94,6 +96,11 @@ int main(int argc, char * argv[])
 //	TRACE_AddInstrumentFunction(Trace,0);
 	INS_AddInstrumentFunction(Instruction,0);
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
+	 // Register ImageLoad to be called when an image is loaded
+    IMG_AddInstrumentFunction(imageLoadCallback, 0);
+
+    // Register ImageUnload to be called when an image is unloaded
+    IMG_AddUnloadFunction(ImageUnloadCallback, 0);
  	
 
     // Register Fini to be called when the application exits
