@@ -1,6 +1,5 @@
-#include "pin.H"
-#include "WriteInterval.h"
-#include "OepFinder.h"
+#include "WriteIntervalHeuristics.h"
+
 
 UINT32 test_heuristic(INS ins , WriteInterval wi){
 

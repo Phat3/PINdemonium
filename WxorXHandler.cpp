@@ -1,6 +1,4 @@
 #include "WxorXHandler.h"
-#include "pin.h"
-#include "Debug.h"
 
 
 WxorXHandler* WxorXHandler::instance = 0;

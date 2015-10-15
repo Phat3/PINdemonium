@@ -1,10 +1,4 @@
-#pragma once
-
 #include "Heuristics.h"
-#include "WriteIntervalHeuristics.h"
-#include "ImageHeuristics.h"
-#include "WriteInterval.h"
-#include "OepFinder.h"
  
 /*
 The constructor of the Heuristics object add all our heuristics

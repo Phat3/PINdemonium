@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include "pin.H"
-#include <iostream>
-#include <string>
 #include "OepFinder.h"
 #include <time.h>
 #include  "Debug.h"
+#include "Log.h"
 
-FILE * file;
+
+namespace W {
+	#include <windows.h>
+}
+
 OepFinder oepf;
 clock_t tStart;
 
@@ -18,17 +21,18 @@ VOID Fini(INT32 code, VOID *v)
 	for(std::vector<WriteInterval>::iterator item = wxorxHandler->getWritesSet().begin(); item != wxorxHandler->getWritesSet().end(); ++item) {
 		//MYINFO("ADDR BEGIN: %08x         ADDR END:%08x\n", item->getAddrBegin(), item->getAddrEnd());
 	}
-	MYINFO("WRITE SET SIZE: %d\n", wxorxHandler->getWritesSet().size());
+	MYLOG("WRITE SET SIZE: %d\n", wxorxHandler->getWritesSet().size());
 	//DEBUG --- get the execution time
-	MYINFO("Total execution Time: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+	MYLOG("Total execution Time: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+	CLOSELOG();
 }
 
 //cc
 INT32 Usage()
 {
-    PIN_ERROR("This Pintool unpacks common packers\n" 
-              + KNOB_BASE::StringKnobSummary() + "\n");
-    return -1;
+	PIN_ERROR("This Pintool unpacks common packers\n" 
+			  + KNOB_BASE::StringKnobSummary() + "\n");
+	return -1;
 }
 
 
@@ -56,6 +60,7 @@ void Instruction(INS ins,void *v){
 
 
 
+
 /* ===================================================================== */
 /* Main                                                                  */
 /* ===================================================================== */
@@ -63,22 +68,21 @@ void Instruction(INS ins,void *v){
 int main(int argc, char * argv[])
 {
 
-	printf("Strating prototype ins\n");
 	tStart = clock();
-    
-    // Initialize pin
+	
+	// Initialize pin
 	PIN_InitSymbols();
 
-    if (PIN_Init(argc, argv)) return Usage();
+	if (PIN_Init(argc, argv)) return Usage();
 
-//	TRACE_AddInstrumentFunction(Trace,0);
+	//TRACE_AddInstrumentFunction(Trace,0);
 	INS_AddInstrumentFunction(Instruction,0);
 
-    // Register Fini to be called when the application exits
-    PIN_AddFiniFunction(Fini, 0);
-    
-    // Start the program, never returns
-    PIN_StartProgram();
-    
-    return 0;
+	// Register Fini to be called when the application exits
+	PIN_AddFiniFunction(Fini, 0);
+	
+	// Start the program, never returns
+	PIN_StartProgram();
+	
+	return 0;
 }

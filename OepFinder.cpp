@@ -1,8 +1,5 @@
 #include "OepFinder.h"
-#include "Debug.h"
-namespace W {
-	#include <windows.h>
-}
+#include "Log.h"
 
 
 OepFinder::OepFinder(void){
@@ -16,6 +13,7 @@ OepFinder::~OepFinder(void){
 
 VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size)
 {
+
 	WxorXHandler *wxorxHandler=WxorXHandler::getInstance();
 	wxorxHandler->writeSetManager(ip, end_addr, size);
 
@@ -29,12 +27,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	UINT32 writeItemIndex=-1;
 	ADDRINT curEip = INS_Address(ins);
 	
-	//check if current instruction is inside a library
-	BOOL isLib = libHandler.filterLib(curEip);
-	if(isLib){
-
-		return INLIB; 
-	}
 
 
 	//check if current instruction is a write
@@ -45,14 +37,17 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//If the instruction violate WxorX return the index of the WriteItem in which the EIP is
 	//If the instruction doesn't violate WxorX return -1
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
+
+	MYLOG("ciao");
 	//if(wxorxHandler->getWxorXindex(ins))
 	if(writeItemIndex != -1 ){
 
 		ADDRINT end = wxorxHandler->getWritesSet().at(writeItemIndex).getAddrEnd();
 		ADDRINT begin = wxorxHandler->getWritesSet().at(writeItemIndex).getAddrBegin();
 
-		MYINFO("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x\n", curEip, begin, end);
-			
+		MYLOG("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, begin, end);
+		
+		//wxorxHandler->getWritesSet().erase(wxorxHandler->getWritesSet().begin() + writeItemIndex);
 		/*
 		wxorxHandler->deleteWriteItem(writeItemIndex);
 		

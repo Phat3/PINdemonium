@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -18,6 +18,12 @@
     </Filter>
     <Filter Include="Header Files\Heuristics">
       <UniqueIdentifier>{35aa198c-b8a2-4e0a-98e9-1ac38d9d7aa3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Helpers">
+      <UniqueIdentifier>{20abc4b2-3a8a-48c5-b8c3-40b36da1faa8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Helpers">
+      <UniqueIdentifier>{b8f3d0cb-37c5-4fd5-8aa0-9ea2cc979d46}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -44,6 +50,9 @@
     </ClCompile>
     <ClCompile Include="WriteInterval.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -75,6 +84,9 @@
     </ClInclude>
     <ClInclude Include="WriteInterval.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>Header Files\Helpers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
