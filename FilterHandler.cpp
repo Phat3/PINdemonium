@@ -1,16 +1,11 @@
 #include "FilterHandler.h"
-#include "Debug.h"
-#include <string>       // std::string
-#include <iostream>     // std::cout
-#include <sstream>      // std::stringstream, std::stringbuf
+
 
 namespace W {
 	#include <Windows.h>
 }
 
-#define MAX_STACK_SIZE 0x5000    //Used to define the memory range of the stack
-#define STACK_BASE_PADDING 0x500 //needed because the stack pointer given by pin is not the highest one
-#define TEB_SIZE 0xf28
+
 
 FilterHandler* FilterHandler::instance = 0;
 
@@ -37,6 +32,10 @@ FilterHandler::FilterHandler(){
 
 FilterHandler::~FilterHandler(void)
 {
+}
+
+VOID FilterHandler::setFilters(string filters){
+
 }
 
 

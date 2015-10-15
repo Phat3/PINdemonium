@@ -17,7 +17,7 @@ OepFinder::~OepFinder(void){
 VOID handleWrite(ADDRINT ip, ADDRINT endAddr, UINT32 size)
 {		
 	FilterHandler *filterHandler = FilterHandler::getInstance();
-	MYLOG("Examining Write instruction %x endaddr %x  isFilteredWrite Write %d\n",ip,endAddr, filterHandler->isFilteredWrite(endAddr));	
+	MYINFO("Examining Write instruction %x endaddr %x  isFilteredWrite Write %d\n",ip,endAddr, filterHandler->isFilteredWrite(endAddr));	
 	/*	if(!filterHandler->isFilteredWrite(endAddr)){	
 			
 			WxorXHandler wxorxHandler=WxorXHandler::getInstance();
