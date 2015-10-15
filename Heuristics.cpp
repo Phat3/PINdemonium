@@ -20,7 +20,7 @@ IN WriteIntervalHeuristics.cpp AND ITS SIGNATURE IN WriteIntervalHeuristics.h
 Heuristics::Heuristics(void){
 
 	addWitemHeuristic("long jump" , test_heuristic);
-	addImageHeuristic("dummy test" ,test_heuristic_2);
+	addImageHeuristic("getEntropy" ,GetEntropy);
 	//add here new heuristics 
 }
 
@@ -49,10 +49,12 @@ BOOL Heuristics::callImageHeuristics(){
 	UINT32 i,n_functions=0;
 	std::vector<UINT32> test_result;
 
+	IMG binary_image = APP_ImgHead();
+
 	n_functions = ImageHeuristics.size();
 
 	for(i=0; i < n_functions; i++){
-		test_result.push_back(ImageHeuristics[i].heuristic());
+		test_result.push_back(ImageHeuristics[i].heuristic(binary_image));
 	}
 
 	//[TODO] aggregate the result of the heuristics collected inside the test_result vector
@@ -72,7 +74,7 @@ BOOL Heuristics::addWitemHeuristic(const char *name , UINT32 (*heuristic)(INS in
 }
 
 
-BOOL Heuristics::addImageHeuristic(const char *name , UINT32 (*heuristic)()){
+BOOL Heuristics::addImageHeuristic(const char *name , UINT32 (*heuristic)(IMG binary_image)){
 
 	 ImageHeuristic new_heuristic;
 

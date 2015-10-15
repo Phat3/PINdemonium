@@ -15,7 +15,7 @@ struct WitemHeuristic
 struct ImageHeuristic
 {
   char name[MAX_NAME_SIZE];
-  UINT32 (*heuristic)();
+  UINT32 (*heuristic)(IMG binary_image);
 };
 
 class Heuristics
@@ -31,6 +31,6 @@ private:
 	std::vector<ImageHeuristic> ImageHeuristics;  // vector of structs representing function to call on all the binary image
 	
 	BOOL addWitemHeuristic(const char *name , UINT32 (*heuristic)(INS ins ,WriteInterval wi )); //add a new heuristic in the array of struct of WriteInterval or Image
-	BOOL addImageHeuristic(const char *name , UINT32 (*heuristic)(void)); 
+	BOOL addImageHeuristic(const char *name , UINT32 (*heuristic)(IMG binary_image)); 
 };
 
