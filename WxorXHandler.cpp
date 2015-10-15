@@ -31,8 +31,6 @@ BOOL WxorXHandler::isWriteINS(INS ins){
 }
 
 VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size){
-	//MYLOG( "IP : %08x	  write at : %08x		SIZE: %d\n" , ip, end_addr, size);
-
 	//calculate the end address of the write
 	UINT32 start_addr = end_addr - size;
 	//iterate through our structure in order to find if we have to update one of our WriteInterval
@@ -46,8 +44,6 @@ VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 	//otherwise create a new WriteInterval object and add it to our structure
 	WriteInterval new_interval(start_addr, end_addr);
 	WritesSet.push_back(new_interval);
-
-	//MYINFO( "VECTOR SIZE: %d\n", WritesSet.size());
 }
 
 UINT32 WxorXHandler::getWxorXindex(ADDRINT ip){
@@ -57,7 +53,6 @@ UINT32 WxorXHandler::getWxorXindex(ADDRINT ip){
 		//we have to return the address of the WriteInterval that has to be analyzed by our heuristics
 		if(item->checkInside(ip)){
 			int index = item - WritesSet.begin();
-			//MYINFO("INDICE STRUTTURA : %d\n", index);
 			return index;
 		}
 	}
