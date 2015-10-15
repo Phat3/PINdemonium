@@ -1,4 +1,5 @@
 #include "FilterHandler.h"
+#include "math.h"
 
 
 namespace W {
@@ -27,6 +28,8 @@ FilterHandler::FilterHandler(){
 	sprintf(tebStr,"%x",teb);
 	tebAddr = strtoul(tebStr,NULL,16);
 	MYINFO("Init FilterHandler Teb %x\n",tebAddr);
+	//Initializing the Filter map:   "stack" => adding FILTER_STACK to filterExecutionFlag
+	initFilterMap();
 }
 
 
@@ -37,7 +40,7 @@ FilterHandler::~FilterHandler(void)
 VOID FilterHandler::initFilterMap(){
 	
 	filterMap.insert(std::pair<std::string, UINT32>("stack",FilterHandler::FILTER_STACK));
-	filterMap.insert(std::pair<std::string, UINT32>("teb",FilterHandler::FILTER_STACK));
+	filterMap.insert(std::pair<std::string, UINT32>("teb",FilterHandler::FILTER_TEB));
 }
 
 
@@ -50,8 +53,14 @@ VOID FilterHandler::setFilters(const string filters){
 	filterVect.push_back(temp);
 	for(std::vector<string>::iterator filt = filterVect.begin(); filt != filterVect.end(); ++filt) {
 		
-		cout << *filt << "\n";
+		cout << *filt << "e\n";
+		cout << "current value to add "<<  filterMap[*filt]<< "\n";
+		filterExecutionFlag += pow(2.0,filterMap[*filt]);
+		cout << "current flag "<< filterExecutionFlag<< "\n";
 	}
+
+	cout << "Trying Stack " << (1<<FilterHandler::FILTER_STACK) << " and "<< filterExecutionFlag << "  = " <<	(1<<FilterHandler::FILTER_STACK & filterExecutionFlag) ; ;
+	
 }
 
 
@@ -96,25 +105,25 @@ BOOL FilterHandler::isKnownLibrary(const string name){
 
 //Wrapper aroud the different function which check if address belong to the filtered address space
 BOOL FilterHandler::isFilteredWrite(ADDRINT addr){
-	return isTEBWrite(addr) || isStackWrite(addr);
+	
+	return ((1<<FilterHandler::FILTER_TEB & filterExecutionFlag) && isTEBWrite(addr) )   ||
+		   ((1<<FilterHandler::FILTER_STACK & filterExecutionFlag) && isStackWrite(addr));
+		   
 }
 
 //Check if the addr belongs to the TEB
 BOOL FilterHandler::isTEBWrite(ADDRINT addr){
+	//MYINFO("[FILTERHANDLER]Calling isTEBWrite\n");
 	return (tebAddr <= addr && addr <= tebAddr + TEB_SIZE );
 }
 
 //Check if addr belong to the Stack
-BOOL FilterHandler::isStackWrite(ADDRINT addr,ADDRINT eip=0){	
-	//MYINFO("(FILTERHANDLER)addr %x stackBase %x  endstack  %x\n",addr,stackBase + STACK_BASE_PADDING, stackBase - MAX_STACK_SIZE);
+BOOL FilterHandler::isStackWrite(ADDRINT addr){	
+	//MYINFO("[FILTERHANDLER]Calling isStackWrite\n");
 	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase +STACK_BASE_PADDING);
 }
 
-BOOL isStackWritee(ADDRINT addr,ADDRINT eip=0){	
-	//MYINFO("(FILTERHANDLER)addr %x stackBase %x  endstack  %x\n",addr,stackBase + STACK_BASE_PADDING, stackBase - MAX_STACK_SIZE);
-	return FilterHandler::getInstance()->isStackWrite();
-	 
-}
+
 
 //check if the address belong to a Library
 //TODO add a whiitelist of Windows libraries that will be loaded

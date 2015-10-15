@@ -25,8 +25,8 @@ struct LibraryItem{
 class FilterHandler
 {
 public:
-	const static UINT32 FILTER_STACK = 1;
-	const static UINT32 FILTER_TEB = 2;
+	const static UINT32 FILTER_STACK = 0;
+	const static UINT32 FILTER_TEB = 1;
 
 
 	static FilterHandler* getInstance();
@@ -45,15 +45,14 @@ static FilterHandler* instance;
 	ADDRINT tebAddr;								//TEB base address
 	ADDRINT stackBase;								//Stack base address
 	std::vector<LibraryItem> LibrarySet;			//vector of know library loaded
-	std::map<std::string,UINT32> filterMap;		//Hashmap containing the association between the 
+	std::map<std::string,int> filterMap;			//Hashmap containing the association between the 
+	int filterExecutionFlag;						//flag which keeps track of the enabled filters
 	FilterHandler();
 	VOID initFilterMap();
 	string libToString(LibraryItem lib);
-	BOOL isStackWrite(ADDRINT addr,ADDRINT eip);
+	BOOL isStackWrite(ADDRINT addr);
 	BOOL isTEBWrite(ADDRINT addr);
 
-//	 LibraryHandler(const LibraryHandler&);
-//	 LibraryHandler& operator=(const LibraryHandler&);
 	
 };
 
