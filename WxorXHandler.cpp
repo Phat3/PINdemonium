@@ -31,7 +31,8 @@ BOOL WxorXHandler::isWriteINS(INS ins){
 }
 
 VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size){
-	//MYINFO( "IP : %08x	  write at : %08x		SIZE: %d\n" , ip, end_addr, size);
+	//MYLOG( "IP : %08x	  write at : %08x		SIZE: %d\n" , ip, end_addr, size);
+
 	//calculate the end address of the write
 	UINT32 start_addr = end_addr - size;
 	//iterate through our structure in order to find if we have to update one of our WriteInterval
@@ -65,6 +66,6 @@ UINT32 WxorXHandler::getWxorXindex(ADDRINT ip){
 }
 
 
-BOOL WxorXHandler::deleteWriteItem(UINT32 writeItemIndex){
-	return FALSE;
+VOID WxorXHandler::deleteWriteItem(UINT32 writeItemIndex){
+	this->WritesSet.erase(this->WritesSet.begin() + writeItemIndex);
 }

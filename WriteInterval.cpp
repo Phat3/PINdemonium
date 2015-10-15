@@ -48,5 +48,5 @@ VOID WriteInterval::update(ADDRINT start_addr, ADDRINT end_addr){
 
 
 BOOL WriteInterval::checkInside(ADDRINT ip){
-	return (ip >= this->addr_begin && ip <= this->addr_begin);
+	return (ip >= this->addr_begin && ip <= this->addr_end);
 }

@@ -3,6 +3,7 @@
 #include "WriteInterval.h"
 #include "pin.H"
 #include "Debug.h"
+#include "Log.h"
 
 class WxorXHandler
 {
@@ -17,7 +18,8 @@ public:
 	VOID writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size);
 	//check if the W xor X law is broken
 	UINT32 WxorXHandler::getWxorXindex(ADDRINT ip);
-	BOOL deleteWriteItem(UINT32 writeItemIndex);
+	//delete the analyzed WriteInterval
+	VOID deleteWriteItem(UINT32 writeItemIndex);
 	//getter for the data structure
 	std::vector<WriteInterval> getWritesSet();
 
