@@ -4,6 +4,7 @@
 #include <map>
 #include <string>       
 #include <sstream> 
+#include <iostream>
 
 #define MAX_STACK_SIZE 0x5000    //Used to define the memory range of the stack
 #define STACK_BASE_PADDING 0x500 //needed because the stack pointer given by pin is not the highest one
@@ -20,14 +21,17 @@ struct LibraryItem{
 	ADDRINT EndAddress;
 	string name;
 };
-typedef  BOOL(*filterFunc)(ADDRINT addr,ADDRINT eip);
+
 class FilterHandler
 {
 public:
+	const static UINT32 FILTER_STACK = 1;
+	const static UINT32 FILTER_TEB = 2;
+
 
 	static FilterHandler* getInstance();
 	~FilterHandler(void);
-	VOID setFilters(string commaSeparedFilters);
+	VOID setFilters(const string spaceSeparedFilters);
 	VOID setStackBase(ADDRINT addr);
 	BOOL isLibraryInstruction(ADDRINT eip);
 	BOOL isFilteredWrite(ADDRINT addr);
@@ -41,10 +45,11 @@ static FilterHandler* instance;
 	ADDRINT tebAddr;								//TEB base address
 	ADDRINT stackBase;								//Stack base address
 	std::vector<LibraryItem> LibrarySet;			//vector of know library loaded
-	std::map<std::string,filterFunc> filterMap;		//Hashmap containing the association between the 
+	std::map<std::string,UINT32> filterMap;		//Hashmap containing the association between the 
 	FilterHandler();
+	VOID initFilterMap();
 	string libToString(LibraryItem lib);
-	BOOL isStackWrite(ADDRINT addr);
+	BOOL isStackWrite(ADDRINT addr,ADDRINT eip);
 	BOOL isTEBWrite(ADDRINT addr);
 
 //	 LibraryHandler(const LibraryHandler&);

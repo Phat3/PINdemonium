@@ -42,6 +42,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			//Filter instructions which write to the stack 
 			INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);	
 	}
+	filterHandler->showFilteredLibs();
 
 	//Tracking violating WxorX instructions
 	//Filter instructions inside a known library

@@ -83,6 +83,8 @@ int main(int argc, char * argv[])
 {
 
 	printf("Strating prototype ins\n");
+	FilterHandler *filterH = FilterHandler::getInstance();
+	filterH->setFilters("stack    teb");
 	tStart = clock();
     
     // Initialize pin
@@ -91,8 +93,7 @@ int main(int argc, char * argv[])
 	
 
     if (PIN_Init(argc, argv)) return Usage();
-	
-	//IMG_AddInstrumentFunction(imageLoadCallback,0); 	
+	/*
 //	TRACE_AddInstrumentFunction(Trace,0);
 	INS_AddInstrumentFunction(Instruction,0);
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
@@ -106,8 +107,10 @@ int main(int argc, char * argv[])
     // Register Fini to be called when the application exits
     PIN_AddFiniFunction(Fini, 0);
     
+	
     // Start the program, never returns
     PIN_StartProgram();
-    
+	
+    */
     return 0;
 }

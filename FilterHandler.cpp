@@ -34,8 +34,24 @@ FilterHandler::~FilterHandler(void)
 {
 }
 
-VOID FilterHandler::setFilters(string filters){
+VOID FilterHandler::initFilterMap(){
+	
+	filterMap.insert(std::pair<std::string, UINT32>("stack",FilterHandler::FILTER_STACK));
+	filterMap.insert(std::pair<std::string, UINT32>("teb",FilterHandler::FILTER_STACK));
+}
 
+
+VOID FilterHandler::setFilters(const string filters){
+
+	vector<string> filterVect;
+	stringstream ss(filters);
+	string temp;
+	while (ss >> temp)
+	filterVect.push_back(temp);
+	for(std::vector<string>::iterator filt = filterVect.begin(); filt != filterVect.end(); ++filt) {
+		
+		cout << *filt << "\n";
+	}
 }
 
 
@@ -89,9 +105,15 @@ BOOL FilterHandler::isTEBWrite(ADDRINT addr){
 }
 
 //Check if addr belong to the Stack
-BOOL FilterHandler::isStackWrite(ADDRINT addr){	
+BOOL FilterHandler::isStackWrite(ADDRINT addr,ADDRINT eip=0){	
 	//MYINFO("(FILTERHANDLER)addr %x stackBase %x  endstack  %x\n",addr,stackBase + STACK_BASE_PADDING, stackBase - MAX_STACK_SIZE);
 	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase +STACK_BASE_PADDING);
+}
+
+BOOL isStackWritee(ADDRINT addr,ADDRINT eip=0){	
+	//MYINFO("(FILTERHANDLER)addr %x stackBase %x  endstack  %x\n",addr,stackBase + STACK_BASE_PADDING, stackBase - MAX_STACK_SIZE);
+	return FilterHandler::getInstance()->isStackWrite();
+	 
 }
 
 //check if the address belong to a Library
