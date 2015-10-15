@@ -1,4 +1,8 @@
 #include "Heuristics.h"
+#include "WriteIntervalHeuristics.h"
+#include "ImageHeuristics.h"
+#include "WriteInterval.h"
+#include "OepFinder.h"
  
 /*
 The constructor of the Heuristics object add all our heuristics
@@ -60,7 +64,7 @@ BOOL Heuristics::addWitemHeuristic(const char *name , UINT32 (*heuristic)(INS in
 
 	 WitemHeuristic new_heuristic;
 
-     strncpy(new_heuristic.name,name,MAX_NAME_SIZE);
+	 strncpy(new_heuristic.name,name,MAX_NAME_SIZE);
 	 new_heuristic.heuristic = heuristic;
 	 WriteIntervalHeuristics.push_back(new_heuristic);
 
@@ -72,7 +76,7 @@ BOOL Heuristics::addImageHeuristic(const char *name , UINT32 (*heuristic)()){
 
 	 ImageHeuristic new_heuristic;
 
-     strncpy(new_heuristic.name,name,MAX_NAME_SIZE);
+	 strncpy(new_heuristic.name,name,MAX_NAME_SIZE);
 	 new_heuristic.heuristic = heuristic;
 	 ImageHeuristics.push_back(new_heuristic);
 

@@ -1,11 +1,7 @@
 #pragma once
 
-
 #include "pin.H"
 #include "WriteInterval.h"
-#include "WriteIntervalHeuristics.h"
-#include "ImageHeuristics.h"
-#include "OepFinder.h"
 
 #define MAX_NAME_SIZE 16
 #define MAX_NUMBER_OF_HEURISTIC_FOR_GRANULARITY 10 

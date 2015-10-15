@@ -35,25 +35,20 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	if(writeItemIndex != -1 ){
 
+		WriteInterval item = wxorxHandler->getWritesSet().at(writeItemIndex);
 		//DEBUG
-		ADDRINT end = wxorxHandler->getWritesSet().at(writeItemIndex).getAddrEnd();
-		ADDRINT begin = wxorxHandler->getWritesSet().at(writeItemIndex).getAddrBegin();
-		MYLOG("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, begin, end);
+		MYLOG("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());
 
 		//delete the WriteInterval just analyzed
 		wxorxHandler->deleteWriteItem(writeItemIndex);
-		/*
-		WriteInterval wi(12,13);
-
-
-		UINT32 isOEP_Witem = heuristics.callWitemHeuristics(ins,wi);
+		//call the proper heuristics
+		UINT32 isOEP_Witem = heuristics.callWitemHeuristics(ins,item);
 		UINT32 isOEP_Image = heuristics.callImageHeuristics();
-		
 			
 		if(isOEP_Witem && isOEP_Image){
 			return FOUND_OEP;
 		}
-		*/
+		
 		
 		return NOT_FOUND_OEP;
 	}
