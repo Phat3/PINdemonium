@@ -90,13 +90,12 @@ int main(int argc, char * argv[])
 
 	MYLOG("Strating prototype ins\n");
 	FilterHandler *filterH = FilterHandler::getInstance();
-	filterH->setFilters("teb");
+	filterH->setFilters("stack teb");
 
 	tStart = clock();
 	
 	// Initialize pin
 	PIN_InitSymbols();
-	
 
     if (PIN_Init(argc, argv)) return Usage();
 	
