@@ -52,6 +52,7 @@ static FilterHandler* instance;
 	string libToString(LibraryItem lib);
 	BOOL isLibStackWrite(ADDRINT addr, ADDRINT eip);
 	BOOL isLibTEBWrite(ADDRINT addr,ADDRINT eip);
+	BOOL binarySearch (int start, int end, ADDRINT value);
 
 	
 };
