@@ -1,5 +1,6 @@
 #include "FilterHandler.h"
 #include "math.h"
+#include "Log.h"
 namespace W {
 	#include <Windows.h>
 }
@@ -22,7 +23,7 @@ FilterHandler::FilterHandler(){
 	W::_TEB *teb = W::NtCurrentTeb();
 	sprintf(tebStr,"%x",teb);
 	tebAddr = strtoul(tebStr,NULL,16);
-	MYINFO("Init FilterHandler Teb %x\n",tebAddr);
+	MYLOG("Init FilterHandler Teb %x\n",tebAddr);
 	//Initializing the Filter map:   "stack" => adding FILTER_STACK to filterExecutionFlag
 	initFilterMap();
 }
@@ -58,12 +59,12 @@ VOID FilterHandler::setFilters(const string filters){
 	
 }
 
-
+//initializing the base stack address
 VOID FilterHandler::setStackBase(ADDRINT addr){
 	//hasn't been already initialized
 	if(stackBase == 0) {	
 		stackBase = addr;
-		MYINFO("(FILTERHANDLER)Init FilterHandler Stack from %x to %x\n",stackBase+STACK_BASE_PADDING,stackBase -MAX_STACK_SIZE);
+		MYLOG("(FILTERHANDLER)Init FilterHandler Stack from %x to %x\n",stackBase+STACK_BASE_PADDING,stackBase -MAX_STACK_SIZE);
 	}	
 }
 
@@ -73,13 +74,13 @@ VOID FilterHandler::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAd
 	libItem.EndAddress = endAddr;
 	libItem.name = name;
 	LibrarySet.push_back(libItem);
-	MYINFO("(FILTERHANDLER)Add Library Lib %s\n",libToString(libItem));
+	MYLOG("(FILTERHANDLER)Add Library Lib %s\n",libToString(libItem));
 	return ;
 }
 
 VOID  FilterHandler::showFilteredLibs(){
 	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
-		MYINFO("(FILTERHANDLER)Filtered Lib %s\n",libToString(*lib));
+		MYLOG("(FILTERHANDLER)Filtered Lib %s\n",libToString(*lib));
 	}
 }
 
@@ -99,31 +100,34 @@ BOOL FilterHandler::isKnownLibrary(const string name){
 }
 
 //Wrapper aroud the different function which check if address belong to the filtered address space
-BOOL FilterHandler::isFilteredWrite(ADDRINT addr){
+BOOL FilterHandler::isFilteredWrite(ADDRINT addr, ADDRINT eip){
 	
-	return ((1<<FilterHandler::FILTER_TEB & filterExecutionFlag) && isTEBWrite(addr) )   ||
-		   ((1<<FilterHandler::FILTER_STACK & filterExecutionFlag) && isStackWrite(addr));
+	return ((1<<FilterHandler::FILTER_TEB & filterExecutionFlag) && isLibTEBWrite(addr,eip) )   ||
+		   ((1<<FilterHandler::FILTER_STACK & filterExecutionFlag) && isLibStackWrite(addr,eip));
 		   
 }
 
 //Check if the addr belongs to the TEB
-BOOL FilterHandler::isTEBWrite(ADDRINT addr){
+BOOL FilterHandler::isLibTEBWrite(ADDRINT addr,ADDRINT eip){
 	//MYINFO("[FILTERHANDLER]Calling isTEBWrite\n");
-	return (tebAddr <= addr && addr <= tebAddr + TEB_SIZE );
+	return (tebAddr <= addr && addr <= tebAddr + TEB_SIZE ) && isLibraryInstruction(eip);
 }
 
-//Check if addr belong to the Stack
-BOOL FilterHandler::isStackWrite(ADDRINT addr){	
+//Check if the write addr belongs to the Stack and the current eip is not in the libraries
+BOOL FilterHandler::isLibStackWrite(ADDRINT addr,ADDRINT eip){	
 	//MYINFO("[FILTERHANDLER]Calling isStackWrite\n");
-	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase +STACK_BASE_PADDING);
+	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase +STACK_BASE_PADDING) && isLibraryInstruction(eip);
 }
 
 
 
-//check if the address belong to a Library
+/*check if the address belong to a Library */
 //TODO add a whiitelist of Windows libraries that will be loaded
 BOOL FilterHandler::isLibraryInstruction(ADDRINT address){
+	PIN_LockClient();
 	IMG curImg = IMG_FindByAddress(address);
+	PIN_UnlockClient();
+
 	if (IMG_Valid (curImg) && !IMG_IsMainExecutable(curImg)){
 		return TRUE;
 	}
