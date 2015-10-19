@@ -77,7 +77,7 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
 	FilterHandler *filterH = FilterHandler::getInstance();
 	filterH->setStackBase(stackBase);
 
-
+}
 
 
 /* ===================================================================== */
