@@ -33,10 +33,10 @@
     <ClCompile Include="WxorXHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LibraryHandler.cpp">
+    <ClCompile Include="FindOEPPin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FindOEPPin.cpp">
+    <ClCompile Include="FilterHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Heuristics.cpp">
@@ -70,7 +70,7 @@
     <ClInclude Include="WxorXHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LibraryHandler.h">
+    <ClInclude Include="FilterHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Heuristics.h">

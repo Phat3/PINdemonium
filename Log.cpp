@@ -1,6 +1,5 @@
 #include "Log.h"
 
-
 FILE *log_file;
 
 Log* Log::instance = 0;

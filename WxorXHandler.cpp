@@ -30,6 +30,7 @@ BOOL WxorXHandler::isWriteINS(INS ins){
 	return INS_IsMemoryWrite(ins);
 }
 
+
 VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 	//calculate the end address of the write
 	UINT32 start_addr = end_addr - size;

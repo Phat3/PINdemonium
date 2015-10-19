@@ -7,6 +7,7 @@
 #define LOG_BUILD 1
 
 
+
 #define MYDEBUG(fmt, ...) \
 		do { if (DEBUG_BUILD) fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, \
 								__LINE__, __FUNCTION__, __VA_ARGS__); } while (0)
@@ -26,5 +27,6 @@
 
 #define CLOSELOG()\
 	do { if (LOG_BUILD){ Log::getInstance()->closeLogFile();}}while (0)
+
 
 

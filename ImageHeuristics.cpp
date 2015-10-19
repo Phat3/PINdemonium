@@ -5,7 +5,7 @@
 UINT32 test_heuristic_2(){
 
 	MYLOG("NOT AWESOME");
-	return FOUND_OEP;
+	return OEPFINDER_FOUND_OEP;
 
 }
 

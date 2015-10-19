@@ -6,6 +6,6 @@
 UINT32 test_heuristic(INS ins , WriteInterval wi){
 
 	MYLOG("AWESOME");
-	return FOUND_OEP;
+	return OEPFINDER_FOUND_OEP;
 
 }

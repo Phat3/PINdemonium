@@ -33,6 +33,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -251,7 +252,7 @@
   <ItemGroup>
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="ImageHeuristics.cpp" />
-    <ClCompile Include="LibraryHandler.cpp" />
+    <ClCompile Include="FilterHandler.cpp" />
     <ClCompile Include="FindOEPPin.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="OepFinder.cpp" />
@@ -266,8 +267,8 @@
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Heuristics.h" />
     <ClInclude Include="ImageHeuristics.h" />
-    <ClInclude Include="LibraryHandler.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="FilterHandler.h" />
     <ClInclude Include="OepFinder.h" />
     <ClInclude Include="WriteInterval.h" />
     <ClInclude Include="WriteIntervalHeuristics.h" />

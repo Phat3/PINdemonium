@@ -40,7 +40,7 @@ BOOL Heuristics::callWitemHeuristics(INS ins , WriteInterval wi){
 	}
 
 	//[TODO] aggregate the result of the heuristics collected inside the test_result vector
-	return FOUND_OEP;  
+	return OEPFINDER_FOUND_OEP;  
 }
 
 
@@ -58,7 +58,7 @@ BOOL Heuristics::callImageHeuristics(){
 	}
 
 	//[TODO] aggregate the result of the heuristics collected inside the test_result vector
-	return FOUND_OEP; 
+	return OEPFINDER_FOUND_OEP; 
 }
 
 
