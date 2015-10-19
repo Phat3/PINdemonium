@@ -12,7 +12,7 @@ UINT32 test_heuristic_2(){
 
 UINT32 GetEntropy(IMG binary_image){
 
-    const double d1log2 = 1.4426950408889634073599246810023;
+	const double d1log2 = 1.4426950408889634073599246810023;
 	double Entropy = 0.0;
 	unsigned long Entries[256];
 	unsigned char* Buffer;
