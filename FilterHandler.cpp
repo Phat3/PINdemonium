@@ -57,9 +57,9 @@ VOID FilterHandler::setFilters(const string filters){
 	for(std::vector<string>::iterator filt = filterVect.begin(); filt != filterVect.end(); ++filt) {	
 		MYLOG("(FILTERHANDLER)Activating filter %s\n",(*filt).c_str() );
 		filterExecutionFlag += pow(2.0,filterMap[*filt]);
-		MYLOG("(FILTERHANDLER)Current flag %d \n",filterExecutionFlag);
+	//	MYLOG("(FILTERHANDLER)Current flag %d \n",filterExecutionFlag);
 	}	   
-	MYLOG("(FILTERHANDLER)Trying Stack %d and FilterExecutionFlag %d  active %d \n",(1<<FilterHandler::FILTER_STACK) ,filterExecutionFlag ,	(1<<FilterHandler::FILTER_STACK & filterExecutionFlag)) ;
+	//MYLOG("(FILTERHANDLER)Trying Stack %d and FilterExecutionFlag %d  active %d \n",(1<<FilterHandler::FILTER_STACK) ,filterExecutionFlag ,	(1<<FilterHandler::FILTER_STACK & filterExecutionFlag)) ;
 	
 }
 
