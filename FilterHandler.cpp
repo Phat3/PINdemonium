@@ -47,15 +47,12 @@ VOID FilterHandler::setFilters(const string filters){
 	string temp;
 	while (ss >> temp)
 	filterVect.push_back(temp);
-	for(std::vector<string>::iterator filt = filterVect.begin(); filt != filterVect.end(); ++filt) {
-		
-		cout << *filt << "e\n";
-		cout << "current value to add "<<  filterMap[*filt]<< "\n";
+	for(std::vector<string>::iterator filt = filterVect.begin(); filt != filterVect.end(); ++filt) {	
+		//cout << *filt << "e\n";
 		filterExecutionFlag += pow(2.0,filterMap[*filt]);
-		cout << "current flag "<< filterExecutionFlag<< "\n";
-	}
-
-	cout << "Trying Stack " << (1<<FilterHandler::FILTER_STACK) << " and "<< filterExecutionFlag << "  = " <<	(1<<FilterHandler::FILTER_STACK & filterExecutionFlag) ; ;
+		//cout << "current flag "<< filterExecutionFlag<< "\n";
+	}	   
+	//cout << "Trying Stack " << (1<<FilterHandler::FILTER_STACK) << " and "<< filterExecutionFlag << "  = " <<	(1<<FilterHandler::FILTER_STACK & filterExecutionFlag) ; ;
 	
 }
 
@@ -112,6 +109,8 @@ BOOL FilterHandler::isLibTEBWrite(ADDRINT addr,ADDRINT eip){
 	//MYINFO("[FILTERHANDLER]Calling isTEBWrite\n");
 	return (tebAddr <= addr && addr <= tebAddr + TEB_SIZE ) && isLibraryInstruction(eip);
 }
+
+
 
 //Check if the write addr belongs to the Stack and the current eip is not in the libraries
 BOOL FilterHandler::isLibStackWrite(ADDRINT addr,ADDRINT eip){	
