@@ -44,7 +44,7 @@ public:
 	void PrintSections();
 
 	void ProcInfo::insertSection(Section section);
-
+	string ProcInfo::getSectionNameByIp(ADDRINT ip);
 
 
 private:

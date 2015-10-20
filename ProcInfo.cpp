@@ -102,8 +102,20 @@ void ProcInfo::PrintSections(){
 	MYLOG("================================= \n");
 }
 
-
+//insert a new section in our structure
 void ProcInfo::insertSection(Section section){
 	this->Sections.push_back(section);
+}
+
+//return the section's name where the IP resides
+string ProcInfo::getSectionNameByIp(ADDRINT ip){
+	string s = "";
+	for(int i = 0; i < this->Sections.size(); i++) {
+		Section item = this->Sections.at(i);
+		if(ip >= item.begin && ip <= item.end){
+			s = item.name;
+		}
+	}
+	return s;
 }
 
