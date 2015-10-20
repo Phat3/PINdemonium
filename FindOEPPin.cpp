@@ -32,9 +32,9 @@ VOID Fini(INT32 code, VOID *v)
 INT32 Usage()
 {
 
-    PIN_ERROR("This Pintool unpacks common packers\n" 
-              + KNOB_BASE::StringKnobSummary() + "\n");
-    return -1;
+	PIN_ERROR("This Pintool unpacks common packers\n" 
+			  + KNOB_BASE::StringKnobSummary() + "\n");
+	return -1;
 }
 
 void imageLoadCallback(IMG img,void *){
@@ -105,25 +105,25 @@ int main(int argc, char * argv[])
 
 	MYLOG("Strating prototype ins\n");
 	FilterHandler *filterH = FilterHandler::getInstance();
-	filterH->setFilters("stack teb");
+	filterH->setFilters("teb");
 
 	tStart = clock();
 	
 	// Initialize pin
 	PIN_InitSymbols();
 
-    if (PIN_Init(argc, argv)) return Usage();
+	if (PIN_Init(argc, argv)) return Usage();
 	
 	//	TRACE_AddInstrumentFunction(Trace,0);
 	INS_AddInstrumentFunction(Instruction,0);
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageLoad to be called when an image is loaded
-    IMG_AddInstrumentFunction(imageLoadCallback, 0);
+	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 
-    // Register ImageUnload to be called when an image is unloaded
-    IMG_AddUnloadFunction(ImageUnloadCallback, 0);
+	// Register ImageUnload to be called when an image is unloaded
+	IMG_AddUnloadFunction(ImageUnloadCallback, 0);
 
-	PIN_AddApplicationStartFunction(bootstrap, 0);
+	//PIN_AddApplicationStartFunction(bootstrap, 0);
 
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);

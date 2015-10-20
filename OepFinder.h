@@ -26,5 +26,9 @@ public:
 	UINT32 IsCurrentInOEP(INS ins);
 	Heuristics heuristics;
 
+private:
+	//track te previous IP
+	//useful for some heuristics
+	ADDRINT prev_ip;
 };
 

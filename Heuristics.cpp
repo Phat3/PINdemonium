@@ -19,7 +19,7 @@ IN WriteIntervalHeuristics.cpp AND ITS SIGNATURE IN WriteIntervalHeuristics.h
 */
 Heuristics::Heuristics(void){
 
-	addWitemHeuristic("long jump" , test_heuristic);
+	//addWitemHeuristic("long jump" , jmpHeuristic);
 	addImageHeuristic("getEntropy" ,GetEntropy);
 	//add here new heuristics 
 }
