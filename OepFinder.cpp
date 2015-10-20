@@ -15,11 +15,6 @@ OepFinder::~OepFinder(void){
 }
 
 
-ProcInfo OepFinder::getProcInfo(){
-	return this->proc_info;
-}
-
-
 VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size)
 {		
 	FilterHandler *filterHandler = FilterHandler::getInstance();
@@ -56,11 +51,13 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 
+	ProcInfo *proc_info = ProcInfo::getInstance();
+
 	UINT32 writeItemIndex=-1;
 	ADDRINT curEip = INS_Address(ins);
 	
 	//if it is the first instruction executed from the binary
-	if(curEip == this->proc_info.getFirstINSaddress()){
+	if(curEip == proc_info->getFirstINSaddress()){
 	
 	   //MYLOG("FIRST INSTRUCTION ");
 	   //MYLOG("%08x" , curEip);
@@ -68,7 +65,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	   //save the registers 
 	   INS_InsertCall(ins,IPOINT_BEFORE, (AFUNPTR)getRegisters , IARG_CONTEXT,IARG_END);
 
-	   this->proc_info.setStartRegContext(rg);
+	   proc_info->setStartRegContext(rg);
 
 	   //this->proc_info.PrintStartContext();
 	
@@ -104,7 +101,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//DEBUG
 		MYLOG("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());
 
-		ADDRINT prev_ip = proc_info.getPrevIp();
+		ADDRINT prev_ip = proc_info->getPrevIp();
 		//call the proper heuristics
 		UINT32 isOEP_Witem = Heuristics::longJmpHeuristic(ins, prev_ip);
 		UINT32 isOEP_Image = Heuristics::entropyHeuristic();
@@ -115,7 +112,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		//DEBUG
 	    //update the prevuious IP
-		this->proc_info.setPrevIp(INS_Address(ins));
+		proc_info->setPrevIp(INS_Address(ins));
 
 		if(isOEP_Witem && isOEP_Image){
 			return OEPFINDER_FOUND_OEP;
@@ -124,7 +121,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	}
 	//update the previous IP
-	this->proc_info.setPrevIp(INS_Address(ins));
+	proc_info->setPrevIp(INS_Address(ins));
 	return OEPFINDER_NOT_WXORX_INST;
 
 
