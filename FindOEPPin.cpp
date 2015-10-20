@@ -1,3 +1,4 @@
+#pragma once
 #include <stdio.h>
 #include "pin.H"
 #include "OepFinder.h"
@@ -14,6 +15,8 @@ namespace W {
 
 OepFinder oepf;
 clock_t tStart;
+
+
 
 // This function is called when the application exits
 VOID Fini(INT32 code, VOID *v)
@@ -41,6 +44,9 @@ void imageLoadCallback(IMG img,void *){
 	//get the initial entropy of the PE
 	//we have to consder only the main executable and avìvoid the libraries
 	if(IMG_IsMainExecutable(img)){
+		
+		oepf.getProcInfo().setFirstINSaddress(IMG_Entry(img));
+
 		MYLOG("----------------------------------------------");
 		GetEntropy(img);
 		MYLOG("----------------------------------------------");
@@ -70,13 +76,6 @@ void Trace(TRACE trace , void *v)
 	}
 
 }
-
-// Trace callback Pin calls this function for every trace
-void bootstrap(VOID *v)
-{
-	
-}
-
 
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
@@ -118,12 +117,12 @@ int main(int argc, char * argv[])
 	INS_AddInstrumentFunction(Instruction,0);
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageLoad to be called when an image is loaded
-    IMG_AddInstrumentFunction(imageLoadCallback, 0);
+    IMG_AddInstrumentFunction(imageLoadCallback,  0);
 
     // Register ImageUnload to be called when an image is unloaded
     IMG_AddUnloadFunction(ImageUnloadCallback, 0);
 
-	PIN_AddApplicationStartFunction(bootstrap, 0);
+	//PIN_AddApplicationStartFunction(bootstrap, 0);
 
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);

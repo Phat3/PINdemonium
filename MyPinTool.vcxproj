@@ -256,6 +256,7 @@
     <ClCompile Include="FindOEPPin.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="OepFinder.cpp" />
+    <ClCompile Include="ProcInfo.cpp" />
     <ClCompile Include="WriteInterval.cpp" />
     <ClCompile Include="WriteIntervalHeuristics.cpp" />
     <ClCompile Include="WxorXHandler.cpp" />
@@ -270,6 +271,7 @@
     <ClInclude Include="Log.h" />
     <ClInclude Include="FilterHandler.h" />
     <ClInclude Include="OepFinder.h" />
+    <ClInclude Include="ProcInfo.h" />
     <ClInclude Include="WriteInterval.h" />
     <ClInclude Include="WriteIntervalHeuristics.h" />
     <ClInclude Include="WxorXHandler.h" />
