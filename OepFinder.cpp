@@ -57,7 +57,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		UINT32 isOEP_Witem = 0;//Heuristics::longJmpHeuristic(ins, prev_ip);
 		UINT32 isOEP_Image = 0;//Heuristics::entropyHeuristic();
 		//Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
-		Heuristics::initFunctionCallHeuristic(item);
+		Heuristics::initFunctionCallHeuristic(curEip,item);
 
 		//delete the WriteInterval just analyzed
 		wxorxHandler->deleteWriteItem(writeItemIndex);

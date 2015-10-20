@@ -1,18 +1,27 @@
 #pragma once
 #include "pin.H"
 #include "WxorXHandler.h"
-extern "C"{
-	#include "xed-interface.h"
+namespace W{
+	#include "windows.h"
+	#include <tlhelp32.h>
+	#include <Psapi.h>	
 }
+
+typedef BOOL (*def_ScyllaDumpProcessA)(ADDRINT pid, const char * fileToDump, ADDRINT imagebase, ADDRINT entrypoint, const char * fileResult);
+
+
 
 class InitFunctionCall
 {
 public:
 	InitFunctionCall(void);
 	~InitFunctionCall(void);
-	UINT32 run(WriteInterval wi);
+	UINT32 run(ADDRINT curEip,WriteInterval wi);
 private:
-	xed_machine_mode_enum_t mmode;
-    xed_address_width_enum_t stack_addr_width;
+	def_ScyllaDumpProcessA  ScyllaDumpProcessA ;
+	W::HMODULE hScylla;
+	BOOL GetFilePathFromPID(UINT32 dwProcessId, char **filename);
+	ADDRINT GetExeModuleBase(UINT32 dwProcessId);
+
 };
 
