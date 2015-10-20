@@ -11,20 +11,6 @@ OepFinder::~OepFinder(void){
 }
 
 
-string getSectionName(ADDRINT ip){
-
-	IMG img = IMG_FindByAddress(ip); 
-	for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
-		ADDRINT begin_addr = SEC_Address(sec);
-		ADDRINT end_addr = begin_addr + SEC_Size(sec);
-		if(ip >= begin_addr && ip < end_addr){
-			return SEC_Name(sec);
-		}
-	}
-	return NULL;
-}
-
-
 
 VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size)
 {		
@@ -69,8 +55,9 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		wxorxHandler->deleteWriteItem(writeItemIndex);
 
 		//call the proper heuristics
-		UINT32 isOEP_Witem = Heuristics::longJmpHeuristic(ins, prev_ip);;
+		UINT32 isOEP_Witem = Heuristics::longJmpHeuristic(ins, prev_ip);
 		UINT32 isOEP_Image = Heuristics::entropyHeuristic();
+		Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
 
 		//DEBUG
 	    //update the prevuious IP

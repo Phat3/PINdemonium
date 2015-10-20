@@ -9,3 +9,8 @@ UINT32 Heuristics::entropyHeuristic(){
 	EntropyHeuristic heu = EntropyHeuristic();
 	return heu.run();
 }
+
+UINT32 Heuristics::jmpOuterSectionHeuristic(INS ins, ADDRINT prev_ip){
+	JumpOuterSection heu = JumpOuterSection();
+	return heu.run(ins, prev_ip);
+}

@@ -254,6 +254,7 @@
     <ClCompile Include="EntropyHeuristic.cpp" />
     <ClCompile Include="FilterHandler.cpp" />
     <ClCompile Include="FindOEPPin.cpp" />
+    <ClCompile Include="JumpOuterSection.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="WriteInterval.cpp" />
@@ -267,6 +268,7 @@
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Heuristics.h" />
     <ClInclude Include="EntropyHeuristic.h" />
+    <ClInclude Include="JumpOuterSection.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="FilterHandler.h" />
     <ClInclude Include="OepFinder.h" />
