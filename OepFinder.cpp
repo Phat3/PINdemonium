@@ -104,17 +104,18 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//DEBUG
 		MYLOG("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());
 
-		//delete the WriteInterval just analyzed
-		wxorxHandler->deleteWriteItem(writeItemIndex);
-
+		ADDRINT prev_ip = proc_info.getPrevIp();
 		//call the proper heuristics
 		UINT32 isOEP_Witem = Heuristics::longJmpHeuristic(ins, prev_ip);
 		UINT32 isOEP_Image = Heuristics::entropyHeuristic();
 		UINT32 isOEP_JMP = Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
 
+		//delete the WriteInterval just analyzed
+		wxorxHandler->deleteWriteItem(writeItemIndex);
+
 		//DEBUG
 	    //update the prevuious IP
-		this->prev_ip = INS_Address(ins);
+		this->proc_info.setPrevIp(INS_Address(ins));
 
 		if(isOEP_Witem && isOEP_Image){
 			return OEPFINDER_FOUND_OEP;
@@ -123,7 +124,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	}
 	//update the previous IP
-	this->prev_ip = INS_Address(ins);
+	this->proc_info.setPrevIp(INS_Address(ins));
 	return OEPFINDER_NOT_WXORX_INST;
 
 

@@ -63,28 +63,28 @@ ADDRINT ProcInfo::getPrevIp(){
 /* Utils + Helper */
 void ProcInfo::PrintStartContext(){
 	MYLOG("======= START REGISTERS ======= \n");
-	MYLOG("EAX: %08x \n" , this->getStartRegContext().eax);
-	MYLOG("EBX: %08x " , this->getStartRegContext().ebx);
-	MYLOG("ECX: %08x " , this->getStartRegContext().ecx);
-	MYLOG("EDX: %08x " , this->getStartRegContext().edx);
-	MYLOG("ESP: %08x " , this->getStartRegContext().esp);
-	MYLOG("EBP: %08x " , this->getStartRegContext().ebp);
-	MYLOG("ESI: %08x " , this->getStartRegContext().esi);
-	MYLOG("EDI: %08x " , this->getStartRegContext().edi);
+	MYLOG("EAX: %08x \n" , this->reg_curr_context.eax);
+	MYLOG("EBX: %08x " , this-reg_curr_context.ebx);
+	MYLOG("ECX: %08x " , this->reg_curr_context.ecx);
+	MYLOG("EDX: %08x " , this->reg_curr_context.edx);
+	MYLOG("ESP: %08x " , this->reg_curr_context.esp);
+	MYLOG("EBP: %08x " , this->reg_curr_context.ebp);
+	MYLOG("ESI: %08x " , this->reg_curr_context.esi);
+	MYLOG("EDI: %08x " , this->reg_curr_context.edi);
 	MYLOG("============================== \n");
 }
 
 void ProcInfo::PrintCurrContext(){
 
 	MYLOG("======= CURRENT REGISTERS ======= \n");
-	MYLOG("EAX: %08x \n" , this->getCurrRegContext().eax);
-	MYLOG("EBX: %08x " , this->getCurrRegContext().ebx);
-	MYLOG("ECX: %08x " , this->getCurrRegContext().ecx);
-	MYLOG("EDX: %08x " , this->getCurrRegContext().edx);
-	MYLOG("ESP: %08x " , this->getCurrRegContext().esp);
-	MYLOG("EBP: %08x " , this->getCurrRegContext().ebp);
-	MYLOG("ESI: %08x " , this->getCurrRegContext().esi);
-	MYLOG("EDI: %08x " , this->getCurrRegContext().edi);
+	MYLOG("EAX: %08x \n" , this->reg_curr_context.eax);
+	MYLOG("EBX: %08x " , this->reg_curr_context.ebx);
+	MYLOG("ECX: %08x " , this->reg_curr_context.ecx);
+	MYLOG("EDX: %08x " , this->reg_curr_context.edx);
+	MYLOG("ESP: %08x " , this->reg_curr_context.esp);
+	MYLOG("EBP: %08x " , this->reg_curr_context.ebp);
+	MYLOG("ESI: %08x " , this->reg_curr_context.esi);
+	MYLOG("EDI: %08x " , this->reg_curr_context.edi);
 	MYLOG("================================= \n");
 }
 
