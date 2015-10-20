@@ -6,6 +6,8 @@
 /* Global variable useful in order to store the registers saved in the callback */
 RegContext rg;
 
+ADDRINT prev_ip = 0;
+
 OepFinder::OepFinder(void){
 	
 }
@@ -13,16 +15,19 @@ OepFinder::OepFinder(void){
 OepFinder::~OepFinder(void){
 }
 
+
 ProcInfo OepFinder::getProcInfo(){
 	return this->proc_info;
 }
 
+
 VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size)
 {		
 	FilterHandler *filterHandler = FilterHandler::getInstance();
+
 	//check if the target address belongs to some filtered range		
-	if(!filterHandler->isFilteredWrite(end_addr)){	
-		//MYLOG("Examining Write instruction: %x Targetaddr: %x  \n",ip,end_addr);
+	if(!filterHandler->isFilteredWrite(end_addr,ip)){	
+	//	MYLOG("Examining Write instruction: %x Targetaddr: %x  \n",ip,end_addr);
 		WxorXHandler *wxorxHandler=WxorXHandler::getInstance();
 		wxorxHandler->writeSetManager(ip, end_addr, size);
 	}
@@ -58,24 +63,24 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//if it is the first instruction executed from the binary
 	if(curEip == this->proc_info.getFirstINSaddress()){
 	
-	   MYLOG("FIRST INSTRUCTION ");
-	   MYLOG("%08x" , curEip);
+	   //MYLOG("FIRST INSTRUCTION ");
+	   //MYLOG("%08x" , curEip);
 
 	   //save the registers 
 	   INS_InsertCall(ins,IPOINT_BEFORE, (AFUNPTR)getRegisters , IARG_CONTEXT,IARG_END);
 
 	   this->proc_info.setStartRegContext(rg);
 
-	   this->proc_info.PrintStartContext();
+	   //this->proc_info.PrintStartContext();
 	
 	}
 
 	else {
 
 
-	INS_InsertCall(ins,IPOINT_BEFORE, (AFUNPTR)getRegisters , IARG_CONTEXT,IARG_END);
-	this->proc_info.setCurrRegContext(rg);
-	this->proc_info.PrintCurrContext();
+	//INS_InsertCall(ins,IPOINT_BEFORE, (AFUNPTR)getRegisters , IARG_CONTEXT,IARG_END);
+	//this->proc_info.setCurrRegContext(rg);
+	//this->proc_info.PrintCurrContext();
 	
 	}
 
@@ -102,17 +107,28 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		//delete the WriteInterval just analyzed
 		wxorxHandler->deleteWriteItem(writeItemIndex);
+
 		//call the proper heuristics
-		UINT32 isOEP_Witem = heuristics.callWitemHeuristics(ins,item);
-		UINT32 isOEP_Image = heuristics.callImageHeuristics();
+		UINT32 isOEP_Witem = Heuristics::longJmpHeuristic(ins, prev_ip);
+		UINT32 isOEP_Image = Heuristics::entropyHeuristic();
+		UINT32 isOEP_JMP = Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
+
+		//DEBUG
+	    //update the prevuious IP
+		this->prev_ip = INS_Address(ins);
 
 		if(isOEP_Witem && isOEP_Image){
 			return OEPFINDER_FOUND_OEP;
-		}
-		
+		}	
 		return OEPFINDER_HEURISTIC_FAIL;
 
 	}
+	//update the previous IP
+	this->prev_ip = INS_Address(ins);
 	return OEPFINDER_NOT_WXORX_INST;
 
+
 }
+
+
+

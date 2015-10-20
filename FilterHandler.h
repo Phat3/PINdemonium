@@ -34,7 +34,7 @@ public:
 	VOID setFilters(const string spaceSeparedFilters);
 	VOID setStackBase(ADDRINT addr);
 	BOOL isLibraryInstruction(ADDRINT eip);
-	BOOL isFilteredWrite(ADDRINT addr);
+	BOOL isFilteredWrite(ADDRINT addr, ADDRINT eip);
 	BOOL isKnownLibrary(const string name);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID showFilteredLibs();
@@ -50,8 +50,9 @@ static FilterHandler* instance;
 	FilterHandler();
 	VOID initFilterMap();
 	string libToString(LibraryItem lib);
-	BOOL isStackWrite(ADDRINT addr);
-	BOOL isTEBWrite(ADDRINT addr);
+	BOOL isLibStackWrite(ADDRINT addr, ADDRINT eip);
+	BOOL isLibTEBWrite(ADDRINT addr,ADDRINT eip);
+	BOOL binarySearch (int start, int end, ADDRINT value);
 
 	
 };

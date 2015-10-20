@@ -6,7 +6,7 @@
 namespace W {
 	#include <windows.h>
 }
-#include "heuristics.h"
+#include "Heuristics.h"
 
 #include "FilterHandler.h"
 #include "ProcInfo.h"
@@ -27,8 +27,12 @@ public:
 	
 	ProcInfo getProcInfo();
 
-	Heuristics heuristics;
 	ProcInfo proc_info;
 
+
+private:
+	//track te previous IP
+	//useful for some heuristics
+	ADDRINT prev_ip;
 };
 
