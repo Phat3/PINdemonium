@@ -8,16 +8,9 @@ UINT32 LongJumpHeuristic::run(INS ins, ADDRINT prev_ip){
 	if(prev_ip > 0){
 		//get the current IP
 		ADDRINT ip = INS_Address(ins);
-
-		ADDRINT diff;
-		//calculate the difference (we have to implement a modulo for the unsigned hex, this is only a placeholder)
-		if(prev_ip > ip){
-			diff = prev_ip - ip;
-		}
-		else{
-			diff = ip - prev_ip;
-		}
-		//if the difference from the IP of the jump to the target of the jmp is greater than our threshold then a long jmp i sdetected
+		//get the difference from the prev_ip and the current ip (the target of the jmp instruction)
+		ADDRINT diff = std::abs( (int)ip - (int)prev_ip);
+		//if the difference is greater than our threshold then a long jmp i sdetected
 		if(diff > JMP_THRESHOLD){
 			MYLOG("[LONG JMP DETECTED!!] FROM : %08x	TO : %08x", prev_ip, ip);
 			MYLOG("");
