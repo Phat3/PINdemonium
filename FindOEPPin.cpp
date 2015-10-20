@@ -3,6 +3,7 @@
 #include "OepFinder.h"
 #include <time.h>
 #include  "Debug.h"
+#include "ImageHeuristics.h"
 #include "Log.h"
 namespace W {
 	#include <windows.h>
@@ -37,6 +38,13 @@ INT32 Usage()
 }
 
 void imageLoadCallback(IMG img,void *){
+	//get the initial entropy of the PE
+	//we have to consder only the main executable and avìvoid the libraries
+	if(IMG_IsMainExecutable(img)){
+		MYLOG("----------------------------------------------");
+		GetEntropy(img);
+		MYLOG("----------------------------------------------");
+	}
 	FilterHandler *filterH = FilterHandler::getInstance();
 	ADDRINT startAddr = IMG_LowAddress(img);
 	ADDRINT endAddr = IMG_HighAddress(img);
@@ -62,6 +70,13 @@ void Trace(TRACE trace , void *v)
 	}
 
 }
+
+// Trace callback Pin calls this function for every trace
+void bootstrap(VOID *v)
+{
+	
+}
+
 
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
@@ -107,6 +122,8 @@ int main(int argc, char * argv[])
 
     // Register ImageUnload to be called when an image is unloaded
     IMG_AddUnloadFunction(ImageUnloadCallback, 0);
+
+	PIN_AddApplicationStartFunction(bootstrap, 0);
 
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
