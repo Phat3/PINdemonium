@@ -4,6 +4,8 @@
 
 ProcInfo* ProcInfo::instance = 0;
 
+ADDRINT prev_ip = 0;
+
 
 ProcInfo* ProcInfo::getInstance()
 {
@@ -21,59 +23,68 @@ ProcInfo::~ProcInfo(void)
 /* Setter */
 void ProcInfo::setStartRegContext(RegContext rg){
 
-	ProcInfo::getInstance()->reg_start_context = rg;
+	this->reg_start_context = rg;
 
 }
 
 void ProcInfo::setCurrRegContext(RegContext rg){
 
-	ProcInfo::getInstance()->reg_curr_context = rg;
+	this->reg_curr_context = rg;
 }
 
 void ProcInfo::setFirstINSaddress(ADDRINT address){
 
-	ProcInfo::getInstance()->first_instruction  = address;
+	this->first_instruction  = address;
 
+}
+
+void ProcInfo::setPrevIp(ADDRINT ip){
+	this->prev_ip  = ip;
 }
 
 /* Getter */
 RegContext ProcInfo::getStartRegContext(){
-	return ProcInfo::getInstance()->reg_start_context;
+	return this->reg_start_context;
 }
 
 RegContext ProcInfo::getCurrRegContext(){
-	return ProcInfo::getInstance()->reg_curr_context;
+	return this->reg_curr_context;
 }
 
 ADDRINT ProcInfo::getFirstINSaddress(){
-	return ProcInfo::getInstance()->first_instruction;
+	return this->first_instruction;
 }
+
+ADDRINT ProcInfo::getPrevIp(){
+	return this->prev_ip;
+}
+
 
 /* Utils + Helper */
 void ProcInfo::PrintStartContext(){
 	MYLOG("======= START REGISTERS ======= \n");
-	MYLOG("EAX: %08x \n" , ProcInfo::getInstance()->getStartRegContext().eax);
-	MYLOG("EBX: %08x " , ProcInfo::getInstance()->getStartRegContext().ebx);
-	MYLOG("ECX: %08x " , ProcInfo::getInstance()->getStartRegContext().ecx);
-	MYLOG("EDX: %08x " , ProcInfo::getInstance()->getStartRegContext().edx);
-	MYLOG("ESP: %08x " , ProcInfo::getInstance()->getStartRegContext().esp);
-	MYLOG("EBP: %08x " , ProcInfo::getInstance()->getStartRegContext().ebp);
-	MYLOG("ESI: %08x " , ProcInfo::getInstance()->getStartRegContext().esi);
-	MYLOG("EDI: %08x " , ProcInfo::getInstance()->getStartRegContext().edi);
+	MYLOG("EAX: %08x \n" , this->getStartRegContext().eax);
+	MYLOG("EBX: %08x " , this->getStartRegContext().ebx);
+	MYLOG("ECX: %08x " , this->getStartRegContext().ecx);
+	MYLOG("EDX: %08x " , this->getStartRegContext().edx);
+	MYLOG("ESP: %08x " , this->getStartRegContext().esp);
+	MYLOG("EBP: %08x " , this->getStartRegContext().ebp);
+	MYLOG("ESI: %08x " , this->getStartRegContext().esi);
+	MYLOG("EDI: %08x " , this->getStartRegContext().edi);
 	MYLOG("============================== \n");
 }
 
 void ProcInfo::PrintCurrContext(){
 
 	MYLOG("======= CURRENT REGISTERS ======= \n");
-	MYLOG("EAX: %08x \n" , ProcInfo::getInstance()->getCurrRegContext().eax);
-	MYLOG("EBX: %08x " , ProcInfo::getInstance()->getCurrRegContext().ebx);
-	MYLOG("ECX: %08x " , ProcInfo::getInstance()->getCurrRegContext().ecx);
-	MYLOG("EDX: %08x " , ProcInfo::getInstance()->getCurrRegContext().edx);
-	MYLOG("ESP: %08x " , ProcInfo::getInstance()->getCurrRegContext().esp);
-	MYLOG("EBP: %08x " , ProcInfo::getInstance()->getCurrRegContext().ebp);
-	MYLOG("ESI: %08x " , ProcInfo::getInstance()->getCurrRegContext().esi);
-	MYLOG("EDI: %08x " , ProcInfo::getInstance()->getCurrRegContext().edi);
+	MYLOG("EAX: %08x \n" , this->getCurrRegContext().eax);
+	MYLOG("EBX: %08x " , this->getCurrRegContext().ebx);
+	MYLOG("ECX: %08x " , this->getCurrRegContext().ecx);
+	MYLOG("EDX: %08x " , this->getCurrRegContext().edx);
+	MYLOG("ESP: %08x " , this->getCurrRegContext().esp);
+	MYLOG("EBP: %08x " , this->getCurrRegContext().ebp);
+	MYLOG("ESI: %08x " , this->getCurrRegContext().esi);
+	MYLOG("EDI: %08x " , this->getCurrRegContext().edi);
 	MYLOG("================================= \n");
 }
 

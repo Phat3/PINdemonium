@@ -6,7 +6,6 @@
 /* Global variable useful in order to store the registers saved in the callback */
 RegContext rg;
 
-ADDRINT prev_ip = 0;
 
 OepFinder::OepFinder(void){
 	

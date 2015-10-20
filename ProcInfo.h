@@ -32,11 +32,17 @@ public:
 	void PrintStartContext();
 	void PrintCurrContext();
 
+	void setPrevIp(ADDRINT ip);
+
+	ADDRINT getPrevIp();
+
 private:
 	static ProcInfo* instance;
 	RegContext reg_start_context;
 	RegContext reg_curr_context;
 	ADDRINT first_instruction;
+	ADDRINT prev_ip;
+
 	//ProcInfo(){};
 };
 
