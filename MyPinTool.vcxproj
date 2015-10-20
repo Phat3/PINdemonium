@@ -251,13 +251,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Heuristics.cpp" />
-    <ClCompile Include="ImageHeuristics.cpp" />
+    <ClCompile Include="EntropyHeuristic.cpp" />
     <ClCompile Include="FilterHandler.cpp" />
     <ClCompile Include="FindOEPPin.cpp" />
+    <ClCompile Include="InitFunctionCall.cpp" />
+    <ClCompile Include="JumpOuterSection.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="WriteInterval.cpp" />
-    <ClCompile Include="WriteIntervalHeuristics.cpp" />
+    <ClCompile Include="LongJumpHeuristic.cpp" />
     <ClCompile Include="WxorXHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -266,12 +268,14 @@
   <ItemGroup>
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Heuristics.h" />
-    <ClInclude Include="ImageHeuristics.h" />
+    <ClInclude Include="EntropyHeuristic.h" />
+    <ClInclude Include="InitFunctionCall.h" />
+    <ClInclude Include="JumpOuterSection.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="FilterHandler.h" />
     <ClInclude Include="OepFinder.h" />
     <ClInclude Include="WriteInterval.h" />
-    <ClInclude Include="WriteIntervalHeuristics.h" />
+    <ClInclude Include="LongJumpHeuristic.h" />
     <ClInclude Include="WxorXHandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

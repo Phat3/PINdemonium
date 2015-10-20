@@ -1,5 +1,7 @@
 #include "OepFinder.h"
-#include "Log.h"
+
+
+ADDRINT prev_ip = 0;
 
 OepFinder::OepFinder(void){
 	
@@ -7,6 +9,8 @@ OepFinder::OepFinder(void){
 
 OepFinder::~OepFinder(void){
 }
+
+
 
 VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size)
 {		
@@ -48,20 +52,32 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//DEBUG
 		MYLOG("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());
 
+
+		//call the proper heuristics
+		UINT32 isOEP_Witem = 0;//Heuristics::longJmpHeuristic(ins, prev_ip);
+		UINT32 isOEP_Image = 0;//Heuristics::entropyHeuristic();
+		//Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
+		Heuristics::initFunctionCallHeuristic(item);
+
 		//delete the WriteInterval just analyzed
 		wxorxHandler->deleteWriteItem(writeItemIndex);
-		//call the proper heuristics
-		UINT32 isOEP_Witem = heuristics.callWitemHeuristics(ins,item);
-		UINT32 isOEP_Image = heuristics.callImageHeuristics();
+
+
+		//DEBUG
+	    //update the prevuious IP
+		this->prev_ip = INS_Address(ins);
 
 		if(isOEP_Witem && isOEP_Image){
 			return OEPFINDER_FOUND_OEP;
-		}
-		
+		}	
 		return OEPFINDER_HEURISTIC_FAIL;
 
 	}
+	//update the previous IP
+	this->prev_ip = INS_Address(ins);
 	return OEPFINDER_NOT_WXORX_INST;
 
 }
+
+
 

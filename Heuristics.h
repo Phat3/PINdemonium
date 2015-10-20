@@ -1,36 +1,23 @@
 #pragma once
 
 #include "pin.H"
-#include "WriteInterval.h"
+#include "Debug.h"
+#include "Log.h"
+#include "OepFinder.h"
+#include "LongJumpHeuristic.h"
+#include "EntropyHeuristic.h"
+#include "JumpOuterSection.h"
+#include "InitFunctionCall.h"
+#include "WxorXHandler.h"
 
-#define MAX_NAME_SIZE 16
-#define MAX_NUMBER_OF_HEURISTIC_FOR_GRANULARITY 10 
-
-struct WitemHeuristic
-{
-  char name[MAX_NAME_SIZE];
-  UINT32 (*heuristic)(INS ins, WriteInterval wi);
-};
-
-struct ImageHeuristic
-{
-  char name[MAX_NAME_SIZE];
-  UINT32 (*heuristic)(IMG binary_image);
-};
-
+//static class where you have to define all the methods that o some kind of heuristic
 class Heuristics
 {
 public:
-	Heuristics(void);
-	~Heuristics(void);
-	BOOL callWitemHeuristics(INS ins ,WriteInterval wi);
-	BOOL callImageHeuristics();
-
-private:
-	std::vector<WitemHeuristic> WriteIntervalHeuristics; // vector of structs representing function to call on a WriteInterval
-	std::vector<ImageHeuristic> ImageHeuristics;  // vector of structs representing function to call on all the binary image
-	
-	BOOL addWitemHeuristic(const char *name , UINT32 (*heuristic)(INS ins ,WriteInterval wi )); //add a new heuristic in the array of struct of WriteInterval or Image
-	BOOL addImageHeuristic(const char *name , UINT32 (*heuristic)(IMG binary_image)); 
+	static UINT32 longJmpHeuristic(INS ins, ADDRINT prev_ip);
+	static UINT32 entropyHeuristic();
+	static UINT32 jmpOuterSectionHeuristic(INS ins, ADDRINT prev_ip);
+	static UINT32 initFunctionCallHeuristic(WriteInterval wi);
 };
+
 
