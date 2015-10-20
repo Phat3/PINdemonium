@@ -44,11 +44,27 @@ void imageLoadCallback(IMG img,void *){
 	//we have to consder only the main executable and avìvoid the libraries
 	if(IMG_IsMainExecutable(img)){
 		
-		oepf.getProcInfo().setFirstINSaddress(IMG_Entry(img));
+		ProcInfo *proc_info = ProcInfo::getInstance();
+
+		proc_info->setFirstINSaddress(IMG_Entry(img));
+
+		MYLOG("INIT : %08x", proc_info->getFirstINSaddress());
 
 		MYLOG("----------------------------------------------");
 		Heuristics::entropyHeuristic();
 		MYLOG("----------------------------------------------");
+
+
+		for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
+			Section item;
+			item.name = SEC_Name(sec);
+			item.begin = SEC_Address(sec);
+			item.end = item.begin + SEC_Size(sec);
+			proc_info->insertSection(item);
+		}
+
+		proc_info->PrintSections();
+
 	}
 	FilterHandler *filterH = FilterHandler::getInstance();
 	ADDRINT startAddr = IMG_LowAddress(img);

@@ -13,6 +13,13 @@ struct RegContext {
  ADDRINT esi;
 };
 
+//memorize the PE section information
+struct Section {
+ ADDRINT begin;
+ ADDRINT end;
+ string name;
+};
+
 class ProcInfo
 {
 public:
@@ -24,17 +31,21 @@ public:
 	RegContext getStartRegContext();
 	RegContext getCurrRegContext();
 	ADDRINT getFirstINSaddress();
+	ADDRINT getPrevIp();
 
 	void setStartRegContext(RegContext rg);
 	void setCurrRegContext(RegContext rg);
 	void setFirstINSaddress(ADDRINT address);
+	void setPrevIp(ADDRINT ip);
+	std::vector<Section> getSections();
 
 	void PrintStartContext();
 	void PrintCurrContext();
+	void PrintSections();
 
-	void setPrevIp(ADDRINT ip);
+	void ProcInfo::insertSection(Section section);
 
-	ADDRINT getPrevIp();
+
 
 private:
 	static ProcInfo* instance;
@@ -42,7 +53,7 @@ private:
 	RegContext reg_curr_context;
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
+	std::vector<Section> Sections;
 
-	//ProcInfo(){};
 };
 

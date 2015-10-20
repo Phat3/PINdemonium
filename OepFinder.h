@@ -26,6 +26,5 @@ public:
 	UINT32 IsCurrentInOEP(INS ins);
 	ProcInfo getProcInfo();
 	ProcInfo proc_info;
-
 };
 

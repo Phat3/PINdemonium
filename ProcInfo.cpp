@@ -59,6 +59,11 @@ ADDRINT ProcInfo::getPrevIp(){
 	return this->prev_ip;
 }
 
+std::vector<Section> ProcInfo::getSections(){
+	return this->Sections;
+}
+
+
 
 /* Utils + Helper */
 void ProcInfo::PrintStartContext(){
@@ -88,4 +93,17 @@ void ProcInfo::PrintCurrContext(){
 	MYLOG("================================= \n");
 }
 
+void ProcInfo::PrintSections(){
+	MYLOG("======= SECTIONS ======= \n");
+	for(int i = 0; i < this->Sections.size(); i++) {
+		Section item = this->Sections.at(i);
+		MYLOG("%s	->	begin : %08x		end : %08x", item.name.c_str(), item.begin, item.end);
+	}
+	MYLOG("================================= \n");
+}
+
+
+void ProcInfo::insertSection(Section section){
+	this->Sections.push_back(section);
+}
 
