@@ -1,5 +1,4 @@
 #include "OepFinder.h"
-#include "Log.h"
 
 
 ADDRINT prev_ip = 0;
@@ -11,38 +10,6 @@ OepFinder::OepFinder(void){
 OepFinder::~OepFinder(void){
 }
 
-//DEBUG
-#define JMP_THRESHOLD 0x200
-
-UINT32 jmpHeuristic(INS ins , ADDRINT prev_ip){
-
-	//MYLOG("IP PRECEDENTE : %08x", prev_ip);
-
-	if(prev_ip > 0){
-
-		MYLOG("CHIAMATA EURISTICA 3!!");
-		ADDRINT ip = INS_Address(ins);
-
-		ADDRINT diff;
-
-		if(prev_ip > ip){
-			diff = prev_ip - ip;
-		}
-		else{
-			diff = ip - prev_ip;
-		}
-		
-		if(diff > JMP_THRESHOLD){
-			MYLOG("[LONG JMP DETECTED!!] FROM : %08x	TO : %08x", prev_ip, ip);
-			MYLOG("");
-			MYLOG("");
-			return OEPFINDER_FOUND_OEP
-		}
-	}
-
-	return OEPFINDER_HEURISTIC_FAIL;
-
-}
 
 string getSectionName(ADDRINT ip){
 
@@ -55,7 +22,6 @@ string getSectionName(ADDRINT ip){
 		}
 	}
 	return NULL;
-
 }
 
 
@@ -104,16 +70,18 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		//call the proper heuristics
 		//UINT32 isOEP_Witem = heuristics.callWitemHeuristics(ins,item);
-		UINT32 isOEP_Image = heuristics.callImageHeuristics();
+		//UINT32 isOEP_Image = heuristics.callImageHeuristics();
 
 		//DEBUG
-		UINT32 isOEP_Witem = jmpHeuristic(ins, prev_ip);
+		//UINT32 isOEP_Witem = jmpHeuristic(ins, prev_ip);
 	    //update the prevuious IP
-		this->prev_ip = INS_Address(ins);
+		//this->prev_ip = INS_Address(ins);
 
-		if(isOEP_Witem && isOEP_Image){
-			return OEPFINDER_FOUND_OEP;
-		}
+		//if(isOEP_Witem && isOEP_Image){
+		//	return OEPFINDER_FOUND_OEP;
+		//}
+
+		Heuristics::longJmpHeuristic(ins, prev_ip);
 		
 		return OEPFINDER_HEURISTIC_FAIL;
 

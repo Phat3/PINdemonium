@@ -6,7 +6,7 @@
 namespace W {
 	#include <windows.h>
 }
-#include "heuristics.h"
+#include "Heuristics.h"
 
 #include "FilterHandler.h"
 
@@ -24,7 +24,6 @@ public:
 	OepFinder(void);
 	~OepFinder(void);
 	UINT32 IsCurrentInOEP(INS ins);
-	Heuristics heuristics;
 
 private:
 	//track te previous IP
