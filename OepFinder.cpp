@@ -44,6 +44,21 @@ UINT32 jmpHeuristic(INS ins , ADDRINT prev_ip){
 
 }
 
+string getSectionName(ADDRINT ip){
+
+	IMG img = IMG_FindByAddress(ip); 
+	for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
+		ADDRINT begin_addr = SEC_Address(sec);
+		ADDRINT end_addr = begin_addr + SEC_Size(sec);
+		if(ip >= begin_addr && ip < end_addr){
+			return SEC_Name(sec);
+		}
+	}
+	return NULL;
+
+}
+
+
 
 VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size)
 {		
