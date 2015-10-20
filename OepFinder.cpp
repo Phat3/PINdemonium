@@ -58,7 +58,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//call the proper heuristics
 		UINT32 isOEP_Witem = Heuristics::longJmpHeuristic(ins, prev_ip);
 		UINT32 isOEP_Image = Heuristics::entropyHeuristic();
-		Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
+		UINT32 isOEP_JMP = Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
 
 		//DEBUG
 	    //update the prevuious IP
