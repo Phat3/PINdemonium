@@ -48,7 +48,7 @@ void imageLoadCallback(IMG img,void *){
 	ADDRINT startAddr = IMG_LowAddress(img);
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
-	if(filterH->isKnownLibrary(name)){		
+	if(!IMG_IsMainExecutable(img) && filterH->isKnownLibrary(name)){		
 		filterH->addLibrary(name,startAddr,endAddr);
 	}
 }
