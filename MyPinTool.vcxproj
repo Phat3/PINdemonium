@@ -251,7 +251,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Heuristics.cpp" />
-    <ClCompile Include="ImageHeuristics.cpp" />
+    <ClCompile Include="EntropyHeuristic.cpp" />
     <ClCompile Include="FilterHandler.cpp" />
     <ClCompile Include="FindOEPPin.cpp" />
     <ClCompile Include="Log.cpp" />
@@ -266,7 +266,7 @@
   <ItemGroup>
     <ClInclude Include="Debug.h" />
     <ClInclude Include="Heuristics.h" />
-    <ClInclude Include="ImageHeuristics.h" />
+    <ClInclude Include="EntropyHeuristic.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="FilterHandler.h" />
     <ClInclude Include="OepFinder.h" />

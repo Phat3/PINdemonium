@@ -69,20 +69,16 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		wxorxHandler->deleteWriteItem(writeItemIndex);
 
 		//call the proper heuristics
-		//UINT32 isOEP_Witem = heuristics.callWitemHeuristics(ins,item);
-		//UINT32 isOEP_Image = heuristics.callImageHeuristics();
+		UINT32 isOEP_Witem = Heuristics::longJmpHeuristic(ins, prev_ip);;
+		UINT32 isOEP_Image = Heuristics::entropyHeuristic();
 
 		//DEBUG
-		//UINT32 isOEP_Witem = jmpHeuristic(ins, prev_ip);
 	    //update the prevuious IP
-		//this->prev_ip = INS_Address(ins);
+		this->prev_ip = INS_Address(ins);
 
-		//if(isOEP_Witem && isOEP_Image){
-		//	return OEPFINDER_FOUND_OEP;
-		//}
-
-		Heuristics::longJmpHeuristic(ins, prev_ip);
-		
+		if(isOEP_Witem && isOEP_Image){
+			return OEPFINDER_FOUND_OEP;
+		}	
 		return OEPFINDER_HEURISTIC_FAIL;
 
 	}

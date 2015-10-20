@@ -3,7 +3,6 @@
 #include "OepFinder.h"
 #include <time.h>
 #include  "Debug.h"
-#include "ImageHeuristics.h"
 #include "Log.h"
 namespace W {
 	#include <windows.h>
@@ -42,7 +41,7 @@ void imageLoadCallback(IMG img,void *){
 	//we have to consder only the main executable and avìvoid the libraries
 	if(IMG_IsMainExecutable(img)){
 		MYLOG("----------------------------------------------");
-		GetEntropy(img);
+		Heuristics::entropyHeuristic();
 		MYLOG("----------------------------------------------");
 	}
 	FilterHandler *filterH = FilterHandler::getInstance();

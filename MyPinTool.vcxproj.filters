@@ -42,9 +42,6 @@
     <ClCompile Include="Heuristics.cpp">
       <Filter>Source Files\Heuristics</Filter>
     </ClCompile>
-    <ClCompile Include="ImageHeuristics.cpp">
-      <Filter>Source Files\Heuristics</Filter>
-    </ClCompile>
     <ClCompile Include="WriteInterval.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,6 +49,9 @@
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="LongJumpHeuristic.cpp">
+      <Filter>Source Files\Heuristics</Filter>
+    </ClCompile>
+    <ClCompile Include="EntropyHeuristic.cpp">
       <Filter>Source Files\Heuristics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -76,9 +76,6 @@
     <ClInclude Include="Heuristics.h">
       <Filter>Header Files\Heuristics</Filter>
     </ClInclude>
-    <ClInclude Include="ImageHeuristics.h">
-      <Filter>Header Files\Heuristics</Filter>
-    </ClInclude>
     <ClInclude Include="WriteInterval.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -86,6 +83,9 @@
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
     <ClInclude Include="LongJumpHeuristic.h">
+      <Filter>Header Files\Heuristics</Filter>
+    </ClInclude>
+    <ClInclude Include="EntropyHeuristic.h">
       <Filter>Header Files\Heuristics</Filter>
     </ClInclude>
   </ItemGroup>
