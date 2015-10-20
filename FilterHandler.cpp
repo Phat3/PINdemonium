@@ -179,8 +179,8 @@ BOOL FilterHandler::isLibraryInstruction(ADDRINT address){
 		return TRUE;
 	}
 	return FALSE;
-	*/
 
+*/
 for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
 		if (lib->StartAddress <= address && address <= lib->EndAddress)
 		//	MYLOG("Instruction at %x filtered \n", address);
@@ -188,8 +188,9 @@ for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibraryS
 	}
 	
 	return FALSE;
-/*	
+		
 	
+	/*
 	PIN_LockClient();
 	IMG curImg = IMG_FindByAddress(address);
 	PIN_UnlockClient();
@@ -198,5 +199,5 @@ for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibraryS
 	}
 	return FALSE;
 	
-*/
+	*/
 }
