@@ -16,7 +16,6 @@ namespace W {
 #define OEPFINDER_FOUND_OEP 0;
 
 
-
 class OepFinder
 {
 
