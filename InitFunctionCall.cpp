@@ -1,5 +1,7 @@
 #include "InitFunctionCall.h"
 
+#define DUMP_FILENAME "./WItemdump2.bin"
+#define IDAPYTHON_LAUNCHER "C:\\Users\\phate\\Desktop\\pin\\idaInitFuncDetect.bat"
 
 
 InitFunctionCall::InitFunctionCall(void)
@@ -76,7 +78,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	
 
 	char *originalExe= (char *)malloc(MAX_PATH); // Path of the original PE which as launched the current process
-	char *dumpFile = "./WItemdump2.bin";  //Path of the file where the process will be dumped during the Dumping Process
+	char *dumpFile = DUMP_FILENAME;  //Path of the file where the process will be dumped during the Dumping Process
 
 	UINT32 pid = W::GetCurrentProcessId();
 	MYINFO("Curr PID %d",pid);
@@ -106,6 +108,24 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	MYINFO("Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,curEip,dumpFile);
 	
 	
+	//Running external idaPython script
+	W::STARTUPINFO si ={0};
+	W::PROCESS_INFORMATION pi ={0};
+
+
+
+	si.cb=sizeof(si);
+
+	if(!W::CreateProcess(IDAPYTHON_LAUNCHER,NULL,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi)){
+		MYLOG("(INITFUNCTIONCALL)Can't create the idaPython laucher");
+		return 0;
+	}
+	W::WaitForSingleObject(pi.hProcess,INFINITE);
+	W::CloseHandle(pi.hProcess);
+	W::CloseHandle(pi.hThread);
+	MYLOG("(INITFUNCTIONCALL)Everything good");
+	
+
 	
 	
 
