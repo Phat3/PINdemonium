@@ -28,25 +28,31 @@ public:
 	//distruptor
 	~ProcInfo(void);
 
+	/* getter */
 	RegContext getStartRegContext();
 	RegContext getCurrRegContext();
 	ADDRINT getFirstINSaddress();
 	ADDRINT getPrevIp();
+	std::vector<Section> getSections();
+	float getInitialEntropy();
 
+	/* setter */
 	void setStartRegContext(RegContext rg);
 	void setCurrRegContext(RegContext rg);
 	void setFirstINSaddress(ADDRINT address);
 	void setPrevIp(ADDRINT ip);
-	std::vector<Section> getSections();
-
+	void setInitialEntropy(float Entropy);
+	
+	/* debug */
 	void PrintStartContext();
 	void PrintCurrContext();
 	void PrintSections();
 
+	/* helper */
 	void ProcInfo::insertSection(Section section);
 	string ProcInfo::getSectionNameByIp(ADDRINT ip);
-
-
+	float GetEntropy();
+	
 private:
 	static ProcInfo* instance;
 	RegContext reg_start_context;
@@ -54,6 +60,7 @@ private:
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
 	std::vector<Section> Sections;
+	float InitialEntropy;
 
 };
 

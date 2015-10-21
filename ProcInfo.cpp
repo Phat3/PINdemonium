@@ -119,3 +119,54 @@ string ProcInfo::getSectionNameByIp(ADDRINT ip){
 	return s;
 }
 
+
+float ProcInfo::GetEntropy(){
+
+	IMG binary_image = APP_ImgHead();
+
+	const double d1log2 = 1.4426950408889634073599246810023;
+	double Entropy = 0.0;
+	unsigned long Entries[256];
+	unsigned char* Buffer;
+
+	ADDRINT start_address = IMG_LowAddress(binary_image);
+	ADDRINT end_address = IMG_HighAddress(binary_image);
+	UINT32 size = end_address - start_address;
+
+	Buffer = (unsigned char *)malloc(size);
+
+	MYLOG("size to dump is %d" , size);
+	MYLOG("Start address is %08x" , start_address);
+	MYLOG("Start address is %08x" , end_address);
+	MYLOG("IMAGE NAME IS %s" , IMG_Name(binary_image));
+
+	PIN_SafeCopy(Buffer , (void const *)start_address , size);
+
+	memset(Entries, 0, sizeof(unsigned long) * 256);
+
+	for (unsigned long i = 0; i < size; i++)
+		Entries[Buffer[i]]++;
+	for (unsigned long i = 0; i < 256; i++)
+	{
+		double Temp = (double) Entries[i] / (double) size;
+		if (Temp > 0)
+			Entropy += - Temp*(log(Temp)*d1log2); 
+	}
+
+	MYLOG("ENTROPY IS %f" , Entropy);
+
+	return Entropy;
+}
+
+
+float ProcInfo::getInitialEntropy(){
+
+	return this->InitialEntropy;
+
+}
+
+void ProcInfo::setInitialEntropy(float Entropy){
+	
+	this->InitialEntropy = Entropy;
+
+}

@@ -51,7 +51,8 @@ void imageLoadCallback(IMG img,void *){
 		MYLOG("INIT : %08x", proc_info->getFirstINSaddress());
 
 		MYLOG("----------------------------------------------");
-		Heuristics::entropyHeuristic();
+		float initial_entropy = proc_info->GetEntropy();
+		proc_info->setInitialEntropy(initial_entropy);
 		MYLOG("----------------------------------------------");
 
 

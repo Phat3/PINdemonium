@@ -103,9 +103,16 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		ADDRINT prev_ip = proc_info->getPrevIp();
 		//call the proper heuristics
-		UINT32 isOEP_Witem = Heuristics::longJmpHeuristic(ins, prev_ip);
-		UINT32 isOEP_Image = Heuristics::entropyHeuristic();
-		UINT32 isOEP_JMP = Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
+		UINT32 isOEP_LJ = Heuristics::longJmpHeuristic(ins, prev_ip);
+		UINT32 isOEP_E = Heuristics::entropyHeuristic();
+		UINT32 isOEP_JOS = Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
+
+		MYLOG("===== HEURISTICS REPORT =====\n");
+		MYLOG(" LongJMP = %d" , isOEP_LJ);
+		MYLOG(" Entropy = %d" , isOEP_E);
+		MYLOG(" JouterSection = %d" , isOEP_JOS);
+
+
 
 		//delete the WriteInterval just analyzed
 		wxorxHandler->deleteWriteItem(writeItemIndex);
@@ -114,9 +121,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	    //update the prevuious IP
 		proc_info->setPrevIp(INS_Address(ins));
 
-		if(isOEP_Witem && isOEP_Image){
-			return OEPFINDER_FOUND_OEP;
-		}	
 		return OEPFINDER_HEURISTIC_FAIL;
 
 	}
