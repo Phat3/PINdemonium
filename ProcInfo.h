@@ -33,8 +33,8 @@ public:
 	ADDRINT getFirstINSaddress();
 	ADDRINT getPrevIp();
 
-	void setStartRegContext(RegContext rg);
-	void setCurrRegContext(RegContext rg);
+	void setStartRegContext(CONTEXT * ctx);
+	void setCurrRegContext(CONTEXT * ctx);
 	void setFirstINSaddress(ADDRINT address);
 	void setPrevIp(ADDRINT ip);
 	std::vector<Section> getSections();
