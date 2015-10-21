@@ -36,9 +36,9 @@ public:
 	std::vector<Section> getSections();
 	float getInitialEntropy();
 
-	/* setter */
-	void setStartRegContext(RegContext rg);
-	void setCurrRegContext(RegContext rg);
+
+	void setStartRegContext(CONTEXT * ctx);
+	void setCurrRegContext(CONTEXT * ctx);
 	void setFirstINSaddress(ADDRINT address);
 	void setPrevIp(ADDRINT ip);
 	void setInitialEntropy(float Entropy);

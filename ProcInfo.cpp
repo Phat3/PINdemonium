@@ -21,21 +21,44 @@ ProcInfo::~ProcInfo(void)
 
 
 /* Setter */
-void ProcInfo::setStartRegContext(RegContext rg){
 
-	this->reg_start_context = rg;
+/*
+Save the initial registers inside the struct
+You can fine the macro fo the registers at:
+https://software.intel.com/sites/landingpage/pintool/docs/49306/Pin/html/group__REG__CPU__IA32.html
+*/
+void ProcInfo::setStartRegContext(CONTEXT * ctx){
+
+	this->reg_start_context.eax = PIN_GetContextReg(ctx,REG_EAX);
+	this->reg_start_context.ebx = PIN_GetContextReg(ctx,REG_EBX);
+	this->reg_start_context.ecx = PIN_GetContextReg(ctx,REG_ECX);
+	this->reg_start_context.edx = PIN_GetContextReg(ctx,REG_EDX);
+	this->reg_start_context.esp = PIN_GetContextReg(ctx,REG_ESP);
+	this->reg_start_context.ebp = PIN_GetContextReg(ctx,REG_EBP);
+	this->reg_start_context.edi = PIN_GetContextReg(ctx,REG_EDI);
+	this->reg_start_context.esi = PIN_GetContextReg(ctx,REG_ESI);
 
 }
 
-void ProcInfo::setCurrRegContext(RegContext rg){
+/*
+Save the current registers inside the struct
+You can fine the macro fo the registers at:
+https://software.intel.com/sites/landingpage/pintool/docs/49306/Pin/html/group__REG__CPU__IA32.html
+*/
+void ProcInfo::setCurrRegContext(CONTEXT * ctx){
 
-	this->reg_curr_context = rg;
+	this->reg_curr_context.eax = PIN_GetContextReg(ctx,REG_EAX);
+	this->reg_curr_context.ebx = PIN_GetContextReg(ctx,REG_EBX);
+	this->reg_curr_context.ecx = PIN_GetContextReg(ctx,REG_ECX);
+	this->reg_curr_context.edx = PIN_GetContextReg(ctx,REG_EDX);
+	this->reg_curr_context.esp = PIN_GetContextReg(ctx,REG_ESP);
+	this->reg_curr_context.ebp = PIN_GetContextReg(ctx,REG_EBP);
+	this->reg_curr_context.edi = PIN_GetContextReg(ctx,REG_EDI);
+	this->reg_curr_context.esi = PIN_GetContextReg(ctx,REG_ESI);
 }
 
 void ProcInfo::setFirstINSaddress(ADDRINT address){
-
 	this->first_instruction  = address;
-
 }
 
 void ProcInfo::setPrevIp(ADDRINT ip){
@@ -68,21 +91,21 @@ std::vector<Section> ProcInfo::getSections(){
 /* Utils + Helper */
 void ProcInfo::PrintStartContext(){
 	MYLOG("======= START REGISTERS ======= \n");
-	MYLOG("EAX: %08x \n" , this->reg_curr_context.eax);
-	MYLOG("EBX: %08x " , this-reg_curr_context.ebx);
-	MYLOG("ECX: %08x " , this->reg_curr_context.ecx);
-	MYLOG("EDX: %08x " , this->reg_curr_context.edx);
-	MYLOG("ESP: %08x " , this->reg_curr_context.esp);
-	MYLOG("EBP: %08x " , this->reg_curr_context.ebp);
-	MYLOG("ESI: %08x " , this->reg_curr_context.esi);
-	MYLOG("EDI: %08x " , this->reg_curr_context.edi);
+	MYLOG("EAX: %08x " , this->reg_start_context.eax);
+	MYLOG("EBX: %08x " , this->reg_start_context.ebx);
+	MYLOG("ECX: %08x " , this->reg_start_context.ecx);
+	MYLOG("EDX: %08x " , this->reg_start_context.edx);
+	MYLOG("ESP: %08x " , this->reg_start_context.esp);
+	MYLOG("EBP: %08x " , this->reg_start_context.ebp);
+	MYLOG("ESI: %08x " , this->reg_start_context.esi);
+	MYLOG("EDI: %08x " , this->reg_start_context.edi);
 	MYLOG("============================== \n");
 }
 
 void ProcInfo::PrintCurrContext(){
 
 	MYLOG("======= CURRENT REGISTERS ======= \n");
-	MYLOG("EAX: %08x \n" , this->reg_curr_context.eax);
+	MYLOG("EAX: %08x " , this->reg_curr_context.eax);
 	MYLOG("EBX: %08x " , this->reg_curr_context.ebx);
 	MYLOG("ECX: %08x " , this->reg_curr_context.ecx);
 	MYLOG("EDX: %08x " , this->reg_curr_context.edx);

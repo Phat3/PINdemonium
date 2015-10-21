@@ -33,16 +33,10 @@ Save the initial registers inside the struct
 You can fine the macro fo the registers at:
 https://software.intel.com/sites/landingpage/pintool/docs/49306/Pin/html/group__REG__CPU__IA32.html
 */
-VOID getRegisters(CONTEXT * ctx){
-
-	rg.eax = PIN_GetContextReg(ctx,REG_EAX);
-	rg.ebx = PIN_GetContextReg(ctx,REG_EBX);
-	rg.ecx = PIN_GetContextReg(ctx,REG_ECX);
-	rg.edx = PIN_GetContextReg(ctx,REG_EDX);
-	rg.esp = PIN_GetContextReg(ctx,REG_ESP);
-	rg.ebp = PIN_GetContextReg(ctx,REG_EBP);
-	rg.edi = PIN_GetContextReg(ctx,REG_EDI);
-	rg.esi = PIN_GetContextReg(ctx,REG_ESI);	
+VOID getInitialRegisters(CONTEXT * ctx){
+	ProcInfo *proc_info = ProcInfo::getInstance();
+	proc_info->setStartRegContext(ctx);	
+	proc_info->PrintStartContext();
 }
 
 
@@ -58,26 +52,8 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	
 	//if it is the first instruction executed from the binary
 	if(curEip == proc_info->getFirstINSaddress()){
-	
-	   //MYLOG("FIRST INSTRUCTION ");
-	   //MYLOG("%08x" , curEip);
-
 	   //save the registers 
-	   INS_InsertCall(ins,IPOINT_BEFORE, (AFUNPTR)getRegisters , IARG_CONTEXT,IARG_END);
-
-	   proc_info->setStartRegContext(rg);
-
-	   //this->proc_info.PrintStartContext();
-	
-	}
-
-	else {
-
-
-	//INS_InsertCall(ins,IPOINT_BEFORE, (AFUNPTR)getRegisters , IARG_CONTEXT,IARG_END);
-	//this->proc_info.setCurrRegContext(rg);
-	//this->proc_info.PrintCurrContext();
-	
+	   INS_InsertCall(ins,IPOINT_BEFORE, (AFUNPTR)getInitialRegisters , IARG_CONTEXT,IARG_END);
 	}
 
 	//check if current instruction is a write
