@@ -2,15 +2,16 @@
 
 
 #define IDAW_FULL_PATH "\"C:\\Program Files\\IDA 6.6\\idaw.exe\""
-#define WORK_DIRECTORY "C:\\Users\\phate\\Desktop\\pin\\TempOEPin\\"   //Base directory where temporary files and result will be created
+#define WORK_DIRECTORY "C:\\pin\\TempOEPin\\"						   //Base directory where temporary files and result will be created
 #define FULLPATH(x)  WORK_DIRECTORY  x 								   //macro to create the full path of afile using the working the WORK_DIRECTORY define
 
 #define TMP_DUMP_FILENAME "tmpDump.bin"								   //Name of the temporary (not IAT fixed) Dump
 #define FINAL_DUMP_FILENAME "finalDump.bin"							   //Name of the final (IAT fixed) Dump
+#define IDAIDB "finalDump.idb"										   //Name of the IDB
 #define IDAPYTHON_LAUNCHER "idaPythonScript.bat"					   //Batch script to lauch IdaPython
 #define IDAPYTHON_SCRIPT "showImports.py"							   //IdaPython script 
-#define IDAPYTHON_RESULT_FILE "detectedInitFunc.txt"				   //File used by the IdaPython script to write back the results
-	
+#define IDAPYTHON_RESULT_FILE "detectedInitFunc.txt"				   //File used by the IdaPython script to write back the results	
+
 
 InitFunctionCall::InitFunctionCall(void)
 {
@@ -155,7 +156,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
 	si.cb=sizeof(si);
 	// Create a file batch which run the IdaPython script and execute it
-	char *cmd = IDAW_FULL_PATH" -A -S"FULLPATH(IDAPYTHON_SCRIPT)" "FULLPATH(FINAL_DUMP_FILENAME); 
+	char *cmd = IDAW_FULL_PATH" -A -S"FULLPATH(IDAPYTHON_SCRIPT)" "FULLPATH(FINAL_DUMP_FILENAME)" & rm " FULLPATH(IDAIDB); 
 	FILE *idaLauncherFile = fopen(FULLPATH(IDAPYTHON_LAUNCHER),"w");
 	fwrite(cmd,strlen(cmd),1,idaLauncherFile);
 	fclose(idaLauncherFile);

@@ -8,8 +8,8 @@ Log* Log::instance = 0;
 
 //at the first time open the log file
 Log::Log(){
-	this->log_file = fopen("log_FindOEPPin.txt","w");
-	this->report_file = fopen("report_FindOEPPin.txt","w");
+	this->log_file = fopen("C:\\pin\\TempOEPin\\log_FindOEPPin.txt","w");
+	this->report_file = fopen("C:\\pin\\TempOEPin\\report_FindOEPPin.txt","w");
 }
 
 //singleton
