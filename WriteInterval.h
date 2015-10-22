@@ -21,10 +21,12 @@ public:
 	UINT32 getEntropyFlag();
 	UINT32 getLongJmpFlag();
 	UINT32 getJmpOuterSectionFlag();
+	UINT32 getPushadPopadflag();	
 	//setter
 	void setEntropyFlag(UINT32 flag);
 	void setLongJmpFlag(UINT32 flag);
 	void setJmpOuterSectionFlag(UINT32 flag);
+	void setPushadPopadFlag(UINT32 flag);
 
 
 private:
@@ -33,6 +35,7 @@ private:
 	UINT32 entropy_flag;
 	UINT32 long_jmp_flag;
 	UINT32 jmp_outer_section_flag;
+	UINT32 pushad_popad_flag;
 
 };
 

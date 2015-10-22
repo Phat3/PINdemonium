@@ -35,13 +35,17 @@ public:
 	ADDRINT getPrevIp();
 	std::vector<Section> getSections();
 	float getInitialEntropy();
+	BOOL getPushadFlag();
+	BOOL getPopadFlag();
 
-
+	/* setter */
 	void setStartRegContext(CONTEXT * ctx);
 	void setCurrRegContext(CONTEXT * ctx);
 	void setFirstINSaddress(ADDRINT address);
 	void setPrevIp(ADDRINT ip);
 	void setInitialEntropy(float Entropy);
+	void setPushadFlag(BOOL flag);
+	void setPopadFlag(BOOL flag);
 	
 	/* debug */
 	void PrintStartContext();
@@ -55,12 +59,17 @@ public:
 	
 private:
 	static ProcInfo* instance;
+	ProcInfo::ProcInfo();
 	RegContext reg_start_context;
 	RegContext reg_curr_context;
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
 	std::vector<Section> Sections;
 	float InitialEntropy;
+	//track if we found a pushad followed by a popad
+	//this is a common technique to restore the initial register status after the unpacking routine
+	BOOL pushad_flag;
+	BOOL popad_flag;
 
 };
 

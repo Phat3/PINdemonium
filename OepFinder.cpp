@@ -39,6 +39,22 @@ VOID getInitialRegisters(CONTEXT * ctx){
 	proc_info->PrintStartContext();
 }
 
+//check if the current instruction is a pushad or a popad
+//if so then set the proper flags in ProcInfo
+void OepFinder::handlePopadAndPushad(INS ins){
+
+	string s = INS_Disassemble(ins);
+	if( s.compare("popad ") == 0){
+		ProcInfo::getInstance()->setPopadFlag(TRUE);
+		return;
+	}
+
+	if( s.compare("pushad ") == 0){
+		ProcInfo::getInstance()->setPushadFlag(TRUE);
+		return;
+	}
+}
+
 
 UINT32 OepFinder::IsCurrentInOEP(INS ins){
    	
@@ -67,6 +83,8 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		return OEPFINDER_INS_FILTERED; 
 	}
 
+	this->handlePopadAndPushad(ins);
+
 	//If the instruction violate WxorX return the index of the WriteItem in which the EIP is
 	//If the instruction doesn't violate WxorX return -1
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
@@ -79,9 +97,11 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		ADDRINT prev_ip = proc_info->getPrevIp();
 		//call the proper heuristics
+		//we have to implement it in a better way!!
 		item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
 		item.setEntropyFlag(Heuristics::entropyHeuristic());
 		item.setJmpOuterSectionFlag(Heuristics::jmpOuterSectionHeuristic(ins, prev_ip));
+		item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
 
 		Log::getInstance()->writeOnReport(curEip, item);
 		//MYLOG("[JSON] {ip : %08x, begin : %08x, end : %08x; entropy_flag : %d, longjmp_flag : %d, jmp_oter_section_flag : %d}", curEip, item.getAddrBegin(), item.getAddrEnd(), isOEP_E, isOEP_LJ, isOEP_JOS);

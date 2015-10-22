@@ -24,5 +24,11 @@ public:
 	OepFinder(void);
 	~OepFinder(void);
 	UINT32 IsCurrentInOEP(INS ins);
+
+private:
+	//check if the current instruction is a pushad or a popad
+	//if so then set the proper flags in ProcInfo
+	void handlePopadAndPushad(INS ins);
+
 };
 

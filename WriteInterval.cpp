@@ -34,6 +34,10 @@ UINT32 WriteInterval::getJmpOuterSectionFlag(){
 	return this->jmp_outer_section_flag;
 }
 
+UINT32 WriteInterval::getPushadPopadflag(){
+	return this->pushad_popad_flag;
+}
+
 void WriteInterval::setEntropyFlag(UINT32 flag){
 	this->entropy_flag = flag;
 }
@@ -44,6 +48,10 @@ void WriteInterval::setLongJmpFlag(UINT32 flag){
 
 void WriteInterval::setJmpOuterSectionFlag(UINT32 flag){
 	this->jmp_outer_section_flag = flag;
+}
+
+void WriteInterval::setPushadPopadFlag(UINT32 flag){
+	this->pushad_popad_flag = flag;
 }
 
 //----------------------- PUBLIC METHODS -----------------------

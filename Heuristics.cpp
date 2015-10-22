@@ -14,3 +14,8 @@ UINT32 Heuristics::jmpOuterSectionHeuristic(INS ins, ADDRINT prev_ip){
 	JumpOuterSection heu = JumpOuterSection();
 	return heu.run(ins, prev_ip);
 }
+
+UINT32 Heuristics::pushadPopadHeuristic(){
+	PushadPopadheuristic heu = PushadPopadheuristic();
+	return heu.run();
+}

@@ -4,15 +4,22 @@
 
 ProcInfo* ProcInfo::instance = 0;
 
-ADDRINT prev_ip = 0;
-
 
 ProcInfo* ProcInfo::getInstance()
 {
 	if (instance == 0)
-		instance = new ProcInfo;
+		instance = new ProcInfo();
 	return instance;
 }
+
+
+ProcInfo::ProcInfo()
+{
+	this->prev_ip = 0;
+	this->popad_flag = FALSE;
+	this->pushad_flag = FALSE;
+}
+
 
 
 ProcInfo::~ProcInfo(void)
@@ -65,6 +72,16 @@ void ProcInfo::setPrevIp(ADDRINT ip){
 	this->prev_ip  = ip;
 }
 
+void ProcInfo::setPushadFlag(BOOL flag){
+	this->pushad_flag = flag;
+}
+
+
+void ProcInfo::setPopadFlag(BOOL flag){
+	this->popad_flag = flag;
+}
+
+
 /* Getter */
 RegContext ProcInfo::getStartRegContext(){
 	return this->reg_start_context;
@@ -84,6 +101,14 @@ ADDRINT ProcInfo::getPrevIp(){
 
 std::vector<Section> ProcInfo::getSections(){
 	return this->Sections;
+}
+
+BOOL ProcInfo::getPushadFlag(){
+	return this->pushad_flag ;
+}
+
+BOOL ProcInfo::getPopadFlag(){
+	return this->popad_flag;
 }
 
 
