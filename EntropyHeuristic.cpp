@@ -1,39 +1,29 @@
 #include "EntropyHeuristic.h"
 
+float threshold=0.2f;
+
 UINT32 EntropyHeuristic::run(){
 
-	IMG binary_image = APP_ImgHead();
+	ProcInfo *proc_info = ProcInfo::getInstance();
 
-	const double d1log2 = 1.4426950408889634073599246810023;
-	double Entropy = 0.0;
-	unsigned long Entries[256];
-	unsigned char* Buffer;
+	float entropy_value = proc_info->GetEntropy();
+	float initial_entropy = proc_info->getInitialEntropy();
+	float difference = abs(entropy_value - initial_entropy)/initial_entropy;
 
-	ADDRINT start_address = IMG_LowAddress(binary_image);
-	ADDRINT end_address = IMG_HighAddress(binary_image);
-	UINT32 size = end_address - start_address;
+	MYLOG("ENTROPY INITIAL IS %f\n" , initial_entropy);
+	MYLOG("CURRENT ENTROPY IS %f\n" , entropy_value);
 
-	Buffer = (unsigned char *)malloc(size);
 
-	MYLOG("size to dump is %d" , size);
-	MYLOG("Start address is %08x" , start_address);
-	MYLOG("Start address is %08x" , end_address);
-	MYLOG("IMAGE NAME IS %s" , IMG_Name(binary_image));
+	if( difference > threshold){
 
-	memcpy(Buffer, (void const * )start_address, size);
-
-	memset(Entries, 0, sizeof(unsigned long) * 256);
-
-	for (unsigned long i = 0; i < size; i++)
-		Entries[Buffer[i]]++;
-	for (unsigned long i = 0; i < 256; i++)
-	{
-		double Temp = (double) Entries[i] / (double) size;
-		if (Temp > 0)
-			Entropy += - Temp*(log(Temp)*d1log2); 
+		MYLOG("ENTROPY DIFFERERNCE IS %f\n" , difference);
+		return OEPFINDER_FOUND_OEP;
+	
 	}
 
-	MYLOG("ENTROPY IS %f" , Entropy);
-
-	return -1;
+	else return OEPFINDER_HEURISTIC_FAIL;
 }
+
+
+
+

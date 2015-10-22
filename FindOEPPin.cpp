@@ -1,3 +1,4 @@
+#pragma once
 #include <stdio.h>
 #include "pin.H"
 #include "OepFinder.h"
@@ -14,6 +15,8 @@ namespace W {
 OepFinder oepf;
 clock_t tStart;
 
+
+
 // This function is called when the application exits
 VOID Fini(INT32 code, VOID *v)
 {
@@ -24,6 +27,7 @@ VOID Fini(INT32 code, VOID *v)
 	//DEBUG --- get the execution time
 	MYLOG("Total execution Time: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 	CLOSELOG();
+	Log::getInstance()->closeReportFile();
 
 }
 
@@ -40,9 +44,29 @@ void imageLoadCallback(IMG img,void *){
 	//get the initial entropy of the PE
 	//we have to consder only the main executable and avìvoid the libraries
 	if(IMG_IsMainExecutable(img)){
+		
+		ProcInfo *proc_info = ProcInfo::getInstance();
+
+		proc_info->setFirstINSaddress(IMG_Entry(img));
+
+		MYLOG("INIT : %08x", proc_info->getFirstINSaddress());
+
 		MYLOG("----------------------------------------------");
-		Heuristics::entropyHeuristic();
+		float initial_entropy = proc_info->GetEntropy();
+		proc_info->setInitialEntropy(initial_entropy);
 		MYLOG("----------------------------------------------");
+
+
+		for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
+			Section item;
+			item.name = SEC_Name(sec);
+			item.begin = SEC_Address(sec);
+			item.end = item.begin + SEC_Size(sec);
+			proc_info->insertSection(item);
+		}
+
+		proc_info->PrintSections();
+
 	}
 	FilterHandler *filterH = FilterHandler::getInstance();
 	ADDRINT startAddr = IMG_LowAddress(img);
@@ -69,13 +93,6 @@ void Trace(TRACE trace , void *v)
 	}
 
 }
-
-// Trace callback Pin calls this function for every trace
-void bootstrap(VOID *v)
-{
-	
-}
-
 
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
@@ -117,6 +134,7 @@ int main(int argc, char * argv[])
 	INS_AddInstrumentFunction(Instruction,0);
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageLoad to be called when an image is loaded
+
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 
 	// Register ImageUnload to be called when an image is unloaded

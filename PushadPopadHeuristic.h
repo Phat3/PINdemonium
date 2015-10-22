@@ -3,9 +3,8 @@
 #include "Heuristics.h"
 
 
-class EntropyHeuristic
+class PushadPopadheuristic
 {
 public:
 	UINT32 run();
-	float GetEntropy();
 };
