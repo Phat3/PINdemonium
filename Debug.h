@@ -10,7 +10,7 @@
 		do { if (DEBUG_BUILD) fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, \
 								__LINE__, __FUNCTION__, __VA_ARGS__); } while (0)
 
-#define MYLOG(fmt, ...) \
+#define MYINFO(fmt, ...) \
 			do { if (INFO_BUILD) fprintf(stderr,"[INFO] "fmt"\n", __VA_ARGS__); } while (0)
 
 
@@ -20,8 +20,9 @@
 #define MYERRORE(fmt, ...) \
 			do { if (ERROR_BUILD) fprintf(stderr,"[ERROR] "fmt, __VA_ARGS__); } while (0)
 
-#define MYINFO(fmt, ...) \
+#define MYLOG(fmt, ...) \
 	do { if (LOG_BUILD){ fprintf(Log::getInstance()->getLogFile(),"[INFO] "fmt"\n", __VA_ARGS__);} } while (0)
+
 
 #define CLOSELOG()\
 	do { if (LOG_BUILD){ Log::getInstance()->closeLogFile();}}while (0)

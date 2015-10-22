@@ -75,20 +75,16 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		WriteInterval item = wxorxHandler->getWritesSet().at(writeItemIndex);
 		//DEBUG
-		MYLOG("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());
+		//MYLOG("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());
 
 		ADDRINT prev_ip = proc_info->getPrevIp();
 		//call the proper heuristics
-		UINT32 isOEP_LJ = Heuristics::longJmpHeuristic(ins, prev_ip);
-		UINT32 isOEP_E = Heuristics::entropyHeuristic();
-		UINT32 isOEP_JOS = Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
+		item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
+		item.setEntropyFlag(Heuristics::entropyHeuristic());
+		item.setJmpOuterSectionFlag(Heuristics::jmpOuterSectionHeuristic(ins, prev_ip));
 
-		MYLOG("===== HEURISTICS REPORT =====\n");
-		MYLOG(" LongJMP = %d" , isOEP_LJ);
-		MYLOG(" Entropy = %d" , isOEP_E);
-		MYLOG(" JouterSection = %d" , isOEP_JOS);
-
-
+		Log::getInstance()->writeOnReport(curEip, item);
+		//MYLOG("[JSON] {ip : %08x, begin : %08x, end : %08x; entropy_flag : %d, longjmp_flag : %d, jmp_oter_section_flag : %d}", curEip, item.getAddrBegin(), item.getAddrEnd(), isOEP_E, isOEP_LJ, isOEP_JOS);
 
 		//delete the WriteInterval just analyzed
 		wxorxHandler->deleteWriteItem(writeItemIndex);

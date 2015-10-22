@@ -18,10 +18,21 @@ public:
 	//getter
 	ADDRINT getAddrBegin();
 	ADDRINT getAddrEnd();
+	UINT32 getEntropyFlag();
+	UINT32 getLongJmpFlag();
+	UINT32 getJmpOuterSectionFlag();
+	//setter
+	void setEntropyFlag(UINT32 flag);
+	void setLongJmpFlag(UINT32 flag);
+	void setJmpOuterSectionFlag(UINT32 flag);
+
 
 private:
 	ADDRINT addr_begin;
 	ADDRINT addr_end;
+	UINT32 entropy_flag;
+	UINT32 long_jmp_flag;
+	UINT32 jmp_outer_section_flag;
 
 };
 
