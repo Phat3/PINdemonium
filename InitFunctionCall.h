@@ -22,7 +22,7 @@ class InitFunctionCall
 public:
 	InitFunctionCall(void);
 	~InitFunctionCall(void);
-	UINT32 run(ADDRINT curEip,WriteInterval wi);
+	UINT32 run(ADDRINT curEip);
 private:
 	def_ScyllaIatSearch ScyllaIatSearch;
 	def_ScyllaIatFixAutoA  ScyllaIatFixAutoA;

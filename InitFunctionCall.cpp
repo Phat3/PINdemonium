@@ -37,6 +37,8 @@ InitFunctionCall::~InitFunctionCall(void)
 }
 
 
+
+
 /**
 Extract the .EXE file which has lauched the process having PID pid
 **/
@@ -145,7 +147,11 @@ void InitFunctionCall::DumpProcess(ADDRINT oep, char *outputFile)
 	*/
 }
 
-UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
+UINT32 InitFunctionCall::run(ADDRINT curEip){
+
+	MYINFO("--------------------------------------------------------");
+	MYINFO("IP : %08", curEip);
+	MYINFO("--------------------------------------------------------");
 
 	char *outputFile = FULLPATH(FINAL_DUMP_FILENAME);
 	DumpProcess(curEip,outputFile);

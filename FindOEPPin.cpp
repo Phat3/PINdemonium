@@ -118,6 +118,19 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
 int main(int argc, char * argv[])
 {
 
+	//DEBUG
+	
+	DEBUG_MODE mode;
+	_tcpClientStruct client;
+
+	client._ip = "127.0.0.1";
+	client._tcpPort = 8888;
+
+    mode._type = DEBUG_CONNECTION_TYPE_TCP_SERVER;
+	mode._options = DEBUG_MODE_OPTION_STOP_AT_ENTRY;
+    mode._tcpClient = client;
+
+	PIN_SetDebugMode(&mode);
 
 	MYLOG("Strating prototype ins\n");
 	FilterHandler *filterH = FilterHandler::getInstance();

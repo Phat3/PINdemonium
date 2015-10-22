@@ -55,6 +55,36 @@ void OepFinder::handlePopadAndPushad(INS ins){
 	}
 }
 
+//connect debug
+static void ConnectDebugger()
+{
+    if (PIN_GetDebugStatus() != DEBUG_STATUS_UNCONNECTED){
+		 MYINFO("errore  1");
+		 return;
+	}
+
+
+    DEBUG_CONNECTION_INFO info;
+    if (!PIN_GetDebugConnectionInfo(&info) || info._type != DEBUG_CONNECTION_TYPE_TCP_SERVER){
+		  MYINFO("errore  3");
+		 return;
+	}
+    MYINFO("uscitos  1");
+	int timeout = 30000;
+    if (PIN_WaitForDebuggerToConnect(timeout))
+        return;
+}
+
+//insert a breakpoint on the current instruction
+static VOID DoBreakpoint(const CONTEXT *ctxt, THREADID tid, ADDRINT ip)
+{	
+    // Construct a string that the debugger will print when it stops.  If a debugger is
+    // not connected, no breakpoint is triggered and execution resumes immediately.
+    PIN_ApplicationBreakpoint(ctxt, tid, FALSE, "DEBUGGER");
+}
+
+
+
 
 UINT32 OepFinder::IsCurrentInOEP(INS ins){
    	
@@ -96,28 +126,23 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//MYLOG("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());
 
 		ADDRINT prev_ip = proc_info->getPrevIp();
+
 		//call the proper heuristics
 		//we have to implement it in a better way!!
 		item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
 		item.setEntropyFlag(Heuristics::entropyHeuristic());
 		item.setJmpOuterSectionFlag(Heuristics::jmpOuterSectionHeuristic(ins, prev_ip));
 		item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
+		//wait for scylla
+		ConnectDebugger();
+		INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
+		
 
 		Log::getInstance()->writeOnReport(curEip, item);
-		//MYLOG("[JSON] {ip : %08x, begin : %08x, end : %08x; entropy_flag : %d, longjmp_flag : %d, jmp_oter_section_flag : %d}", curEip, item.getAddrBegin(), item.getAddrEnd(), isOEP_E, isOEP_LJ, isOEP_JOS);
-
-
-		//call the proper heuristics
-		UINT32 isOEP_Witem = 0;//Heuristics::longJmpHeuristic(ins, prev_ip);
-		UINT32 isOEP_Image = 0;//Heuristics::entropyHeuristic();
-		//Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
-		Heuristics::initFunctionCallHeuristic(curEip,item);
 
 		//delete the WriteInterval just analyzed
 		wxorxHandler->deleteWriteItem(writeItemIndex);
 
-
-		//DEBUG
 	    //update the prevuious IP
 		proc_info->setPrevIp(INS_Address(ins));
 
