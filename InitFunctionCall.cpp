@@ -2,7 +2,7 @@
 
 
 #define IDAW_FULL_PATH "\"C:\\Program Files\\IDA 6.6\\idaw.exe\""
-#define WORK_DIRECTORY "C:\\pin\\TempOEPin\\"						   //Base directory where temporary files and result will be created
+#define WORK_DIRECTORY "C:\\Users\\phate\\Desktop\\pin\\TempOEPin\\"						   //Base directory where temporary files and result will be created
 #define FULLPATH(x)  WORK_DIRECTORY  x 								   //macro to create the full path of afile using the working the WORK_DIRECTORY define
 
 #define TMP_DUMP_FILENAME "tmpDump.bin"								   //Name of the temporary (not IAT fixed) Dump
