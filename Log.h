@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "WriteInterval.h"
 
+
+
 class Log
 {
 

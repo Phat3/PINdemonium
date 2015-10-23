@@ -11,7 +11,7 @@ class GdbDebugger
 {
 public:
 	static GdbDebugger* getInstance();
-	void executeCmd(char * cmd);
+	void executeCmd(char* cmd);
 
 private:
 	static GdbDebugger* instance;
@@ -23,7 +23,7 @@ private:
 	~GdbDebugger(void);
 	void CreateChildProcess();
 	void ReadFromPipe(void);
-	void WriteToPipe(void);
-	void ErrorExit(char * error); 
+	void WriteToPipe(char* cmd);
+	void ErrorExit(char* error); 
 };
 

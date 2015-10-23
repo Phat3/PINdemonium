@@ -2,6 +2,8 @@
 
 #define BUFSIZE 10000
 
+#define GDB_PATH "C:\\MinGW\\bin\\gdb.exe"
+
 GdbDebugger* GdbDebugger::instance = 0;
 
 //singleton
@@ -36,45 +38,6 @@ GdbDebugger::GdbDebugger(void)
    CreateChildProcess();
 
    ReadFromPipe();
-   
-
-// Get a handle to an input file for the parent. 
-// This example assumes a plain text file and uses string output to verify data flow. ReadFromPipe();
-// Write to the pipe that is the standard input for a child process. 
-// Data is written to the pipe's buffers, so it is not necessary to wait
-// until the child process is running before writing data.
- /*
-   printf( "\n->WAIT\n", argv[1]);
-   Sleep(3000);
-   printf( "\n->WAIT DONE\n", argv[1]);
-   ReadFromPipe();
-   
-
-   WriteToPipe(); 
-   printf( "\n->Contents of %s written to child STDIN pipe.\n", argv[1]);
-   ReadFromPipe();	
-
-   printf( "\n->WAIT\n", argv[1]);
-   Sleep(3000);
-   printf( "\n->WAIT DONE\n", argv[1]);
-
-   WriteToPipe(); 
-   printf( "\n->Contents of %s written to child STDIN pipe.\n", argv[1]);
-   ReadFromPipe(); 
-
-   printf( "\n->WAIT\n", argv[1]);
-   Sleep(3000);
-   printf( "\n->WAIT DONE\n", argv[1]);
-
-   WriteToPipe(); 
-   printf( "\n->Contents of %s written to child STDIN pipe.\n", argv[1]);
-   ReadFromPipe(); 
-
-  
-    Sleep(3000);
-
-   printf("\n->End of parent execution.\n");
-   */
 
 }
 
@@ -91,7 +54,7 @@ GdbDebugger::~GdbDebugger(void)
 void GdbDebugger::CreateChildProcess()
 // Create a child process that uses the previously created pipes for STDIN and STDOUT.
 { 
-   TCHAR szCmdline[]=TEXT("C:\\MinGW\\bin\\gdb.exe");
+   TCHAR szCmdline[]=TEXT(GDB_PATH);
    PROCESS_INFORMATION piProcInfo ={0}; 
    STARTUPINFO siStartInfo;
    BOOL bSuccess = FALSE; 
@@ -130,16 +93,15 @@ void GdbDebugger::CreateChildProcess()
 }
 
 
-void GdbDebugger::WriteToPipe(void) 
+void GdbDebugger::WriteToPipe(char* cmd) 
 
 // Read from a file and write its contents to the pipe for the child's STDIN.
 // Stop when there is no more data. 
 { 
-   DWORD dwRead=5, dwWritten; 
-   CHAR chBuf[BUFSIZE] = "info\n";
+   DWORD dwRead = strlen(cmd), dwWritten; 
    BOOL bSuccess = FALSE;
        
-   bSuccess = WriteFile(g_hChildStd_IN_Wr, chBuf, dwRead, &dwWritten, NULL);
+   bSuccess = WriteFile(g_hChildStd_IN_Wr, cmd, dwRead, &dwWritten, NULL);
 
 } 
  
@@ -163,7 +125,7 @@ void GdbDebugger::ErrorExit(char * error)
     ExitProcess(1);
 }
 
-void GdbDebugger::executeCmd(char * cmd){
-	this->WriteToPipe();
+void GdbDebugger::executeCmd(char* cmd){
+	this->WriteToPipe(cmd);
 	this->ReadFromPipe();
 } 

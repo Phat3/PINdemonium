@@ -98,11 +98,11 @@ void Trace(TRACE trace , void *v)
 void initDebug(){
 
 	GdbDebugger *gdb_debugger = GdbDebugger::getInstance();
-	gdb_debugger->executeCmd("ciao");
+	gdb_debugger->executeCmd("info\n");
 	W::Sleep(3000);
-	gdb_debugger->executeCmd("ciao");
+	gdb_debugger->executeCmd("source\n");
 	W::Sleep(3000);
-	gdb_debugger->executeCmd("ciao");
+	gdb_debugger->executeCmd("info\n");
 	W::Sleep(3000);
 	return;
 
