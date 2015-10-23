@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "WriteInterval.h"
 
+//#define LOG_WRITE_TO_FILE 0 //if set to 1 the result will be saved on file otherwise they'll be printed to stdout
+
 class Log
 {
 

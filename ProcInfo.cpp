@@ -9,6 +9,7 @@ ProcInfo* ProcInfo::getInstance()
 {
 	if (instance == 0)
 		instance = new ProcInfo();
+		
 	return instance;
 }
 
@@ -18,6 +19,7 @@ ProcInfo::ProcInfo()
 	this->prev_ip = 0;
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
+	this->dump_number = 0;
 }
 
 
@@ -82,6 +84,12 @@ void ProcInfo::setPopadFlag(BOOL flag){
 }
 
 
+/*Increment dump number*/
+void ProcInfo::incrementDumpNumber(){
+	this->dump_number++;
+}
+
+
 /* Getter */
 RegContext ProcInfo::getStartRegContext(){
 	return this->reg_start_context;
@@ -111,43 +119,47 @@ BOOL ProcInfo::getPopadFlag(){
 	return this->popad_flag;
 }
 
+UINT32 ProcInfo::getDumpNumber(){
+	return this->dump_number;
+}
+
 
 
 /* Utils + Helper */
 void ProcInfo::PrintStartContext(){
-	MYLOG("======= START REGISTERS ======= \n");
-	MYLOG("EAX: %08x " , this->reg_start_context.eax);
-	MYLOG("EBX: %08x " , this->reg_start_context.ebx);
-	MYLOG("ECX: %08x " , this->reg_start_context.ecx);
-	MYLOG("EDX: %08x " , this->reg_start_context.edx);
-	MYLOG("ESP: %08x " , this->reg_start_context.esp);
-	MYLOG("EBP: %08x " , this->reg_start_context.ebp);
-	MYLOG("ESI: %08x " , this->reg_start_context.esi);
-	MYLOG("EDI: %08x " , this->reg_start_context.edi);
-	MYLOG("============================== \n");
+	MYINFO("======= START REGISTERS ======= \n");
+	MYINFO("EAX: %08x " , this->reg_start_context.eax);
+	MYINFO("EBX: %08x " , this->reg_start_context.ebx);
+	MYINFO("ECX: %08x " , this->reg_start_context.ecx);
+	MYINFO("EDX: %08x " , this->reg_start_context.edx);
+	MYINFO("ESP: %08x " , this->reg_start_context.esp);
+	MYINFO("EBP: %08x " , this->reg_start_context.ebp);
+	MYINFO("ESI: %08x " , this->reg_start_context.esi);
+	MYINFO("EDI: %08x " , this->reg_start_context.edi);
+	MYINFO("============================== \n");
 }
 
 void ProcInfo::PrintCurrContext(){
 
-	MYLOG("======= CURRENT REGISTERS ======= \n");
-	MYLOG("EAX: %08x " , this->reg_curr_context.eax);
-	MYLOG("EBX: %08x " , this->reg_curr_context.ebx);
-	MYLOG("ECX: %08x " , this->reg_curr_context.ecx);
-	MYLOG("EDX: %08x " , this->reg_curr_context.edx);
-	MYLOG("ESP: %08x " , this->reg_curr_context.esp);
-	MYLOG("EBP: %08x " , this->reg_curr_context.ebp);
-	MYLOG("ESI: %08x " , this->reg_curr_context.esi);
-	MYLOG("EDI: %08x " , this->reg_curr_context.edi);
-	MYLOG("================================= \n");
+	MYINFO("======= CURRENT REGISTERS ======= \n");
+	MYINFO("EAX: %08x " , this->reg_curr_context.eax);
+	MYINFO("EBX: %08x " , this->reg_curr_context.ebx);
+	MYINFO("ECX: %08x " , this->reg_curr_context.ecx);
+	MYINFO("EDX: %08x " , this->reg_curr_context.edx);
+	MYINFO("ESP: %08x " , this->reg_curr_context.esp);
+	MYINFO("EBP: %08x " , this->reg_curr_context.ebp);
+	MYINFO("ESI: %08x " , this->reg_curr_context.esi);
+	MYINFO("EDI: %08x " , this->reg_curr_context.edi);
+	MYINFO("================================= \n");
 }
 
 void ProcInfo::PrintSections(){
-	MYLOG("======= SECTIONS ======= \n");
+	MYINFO("======= SECTIONS ======= \n");
 	for(int i = 0; i < this->Sections.size(); i++) {
 		Section item = this->Sections.at(i);
-		MYLOG("%s	->	begin : %08x		end : %08x", item.name.c_str(), item.begin, item.end);
+		MYINFO("%s	->	begin : %08x		end : %08x", item.name.c_str(), item.begin, item.end);
 	}
-	MYLOG("================================= \n");
+	MYINFO("================================= \n");
 }
 
 //insert a new section in our structure
@@ -183,10 +195,10 @@ float ProcInfo::GetEntropy(){
 
 	Buffer = (unsigned char *)malloc(size);
 
-	MYLOG("size to dump is %d" , size);
-	MYLOG("Start address is %08x" , start_address);
-	MYLOG("Start address is %08x" , end_address);
-	MYLOG("IMAGE NAME IS %s" , IMG_Name(binary_image));
+	MYINFO("size to dump is %d" , size);
+	MYINFO("Start address is %08x" , start_address);
+	MYINFO("Start address is %08x" , end_address);
+	MYINFO("IMAGE NAME IS %s" , IMG_Name(binary_image));
 
 	PIN_SafeCopy(Buffer , (void const *)start_address , size);
 
@@ -201,7 +213,7 @@ float ProcInfo::GetEntropy(){
 			Entropy += - Temp*(log(Temp)*d1log2); 
 	}
 
-	MYLOG("ENTROPY IS %f" , Entropy);
+	MYINFO("ENTROPY IS %f" , Entropy);
 
 	return Entropy;
 }

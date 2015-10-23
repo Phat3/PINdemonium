@@ -37,6 +37,7 @@ public:
 	float getInitialEntropy();
 	BOOL getPushadFlag();
 	BOOL getPopadFlag();
+	UINT32 getDumpNumber();
 
 	/* setter */
 	void setStartRegContext(CONTEXT * ctx);
@@ -46,6 +47,8 @@ public:
 	void setInitialEntropy(float Entropy);
 	void setPushadFlag(BOOL flag);
 	void setPopadFlag(BOOL flag);
+
+	void incrementDumpNumber();
 	
 	/* debug */
 	void PrintStartContext();
@@ -70,6 +73,7 @@ private:
 	//this is a common technique to restore the initial register status after the unpacking routine
 	BOOL pushad_flag;
 	BOOL popad_flag;
+	UINT32 dump_number;
 
 };
 

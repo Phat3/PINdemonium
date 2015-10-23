@@ -21,7 +21,7 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size)
 
 	//check if the target address belongs to some filtered range		
 	if(!filterHandler->isFilteredWrite(end_addr,ip)){	
-	//	MYLOG("Examining Write instruction: %x Targetaddr: %x  \n",ip,end_addr);
+	//	MYINFO("Examining Write instruction: %x Targetaddr: %x  \n",ip,end_addr);
 		WxorXHandler *wxorxHandler=WxorXHandler::getInstance();
 		wxorxHandler->writeSetManager(ip, end_addr, size);
 	}
@@ -93,7 +93,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		WriteInterval item = wxorxHandler->getWritesSet().at(writeItemIndex);
 		//DEBUG
-		//MYLOG("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());
+		//MYINFO("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());
 
 		ADDRINT prev_ip = proc_info->getPrevIp();
 		//call the proper heuristics
@@ -104,7 +104,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
 
 		Log::getInstance()->writeOnReport(curEip, item);
-		//MYLOG("[JSON] {ip : %08x, begin : %08x, end : %08x; entropy_flag : %d, longjmp_flag : %d, jmp_oter_section_flag : %d}", curEip, item.getAddrBegin(), item.getAddrEnd(), isOEP_E, isOEP_LJ, isOEP_JOS);
+		//MYINFO("[JSON] {ip : %08x, begin : %08x, end : %08x; entropy_flag : %d, longjmp_flag : %d, jmp_oter_section_flag : %d}", curEip, item.getAddrBegin(), item.getAddrEnd(), isOEP_E, isOEP_LJ, isOEP_JOS);
 
 
 		//call the proper heuristics

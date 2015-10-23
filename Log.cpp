@@ -37,7 +37,11 @@ void Log::closeReportFile()
 //return the file pointer
 FILE* Log::getLogFile()
 {
-	return this->log_file;
+	#ifdef LOG_WRITE_TO_FILE
+		return this->log_file;
+	#else
+		return stdout;
+	#endif
 }
 
 //flush the buffer and close the file

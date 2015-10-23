@@ -23,7 +23,7 @@ FilterHandler::FilterHandler(){
 	W::_TEB *teb = W::NtCurrentTeb();
 	sprintf(tebStr,"%x",teb);
 	tebAddr = strtoul(tebStr,NULL,16);
-	MYLOG("(FILTERHANDLER)Init FilterHandler Teb %x\n",tebAddr);
+	MYINFO("(FILTERHANDLER)Init FilterHandler Teb %x\n",tebAddr);
 	//Initializing the Filter map:   "stack" => adding FILTER_STACK to filterExecutionFlag
 	initFilterMap();
 }
@@ -55,11 +55,11 @@ VOID FilterHandler::setFilters(const string filters){
 	while (ss >> temp)
 	filterVect.push_back(temp);
 	for(std::vector<string>::iterator filt = filterVect.begin(); filt != filterVect.end(); ++filt) {	
-		MYLOG("(FILTERHANDLER)Activating filter %s\n",(*filt).c_str() );
+		MYINFO("(FILTERHANDLER)Activating filter %s\n",(*filt).c_str() );
 		filterExecutionFlag += pow(2.0,filterMap[*filt]);
-	//	MYLOG("(FILTERHANDLER)Current flag %d \n",filterExecutionFlag);
+	//	MYINFO("(FILTERHANDLER)Current flag %d \n",filterExecutionFlag);
 	}	   
-	//MYLOG("(FILTERHANDLER)Trying Stack %d and FilterExecutionFlag %d  active %d \n",(1<<FilterHandler::FILTER_STACK) ,filterExecutionFlag ,	(1<<FilterHandler::FILTER_STACK & filterExecutionFlag)) ;
+	//MYINFO("(FILTERHANDLER)Trying Stack %d and FilterExecutionFlag %d  active %d \n",(1<<FilterHandler::FILTER_STACK) ,filterExecutionFlag ,	(1<<FilterHandler::FILTER_STACK & filterExecutionFlag)) ;
 	
 }
 
@@ -70,7 +70,7 @@ VOID FilterHandler::setStackBase(ADDRINT addr){
 	//hasn't been already initialized
 	if(stackBase == 0) {	
 		stackBase = addr;
-		MYLOG("(FILTERHANDLER)Init FilterHandler Stack from %x to %x\n",stackBase+STACK_BASE_PADDING,stackBase -MAX_STACK_SIZE);
+		MYINFO("(FILTERHANDLER)Init FilterHandler Stack from %x to %x\n",stackBase+STACK_BASE_PADDING,stackBase -MAX_STACK_SIZE);
 	}	
 }
 
@@ -80,7 +80,7 @@ Display on the log the currently filtered libs
 **/
 VOID  FilterHandler::showFilteredLibs(){
 	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
-		MYLOG("(FILTERHANDLER)Filtered Lib %s\n",libToString(*lib));
+		MYINFO("(FILTERHANDLER)Filtered Lib %s\n",libToString(*lib));
 	}
 }
 
@@ -175,7 +175,7 @@ BOOL FilterHandler::binarySearch (int start, int end, ADDRINT value) {
 BOOL FilterHandler::isLibraryInstruction(ADDRINT address){
 	/*	
 	if (binarySearch(0, LibrarySet.size() - 1, address)){
-		//MYLOG("Instruction at %x filtered \n", address);
+		//MYINFO("Instruction at %x filtered \n", address);
 		return TRUE;
 	}
 	return FALSE;
@@ -183,7 +183,7 @@ BOOL FilterHandler::isLibraryInstruction(ADDRINT address){
 */
 for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
 		if (lib->StartAddress <= address && address <= lib->EndAddress)
-		//	MYLOG("Instruction at %x filtered \n", address);
+		//	MYINFO("Instruction at %x filtered \n", address);
 			return TRUE;
 	}
 	

@@ -23,9 +23,9 @@ VOID Fini(INT32 code, VOID *v)
 
 	//DEBUG --- inspect the write set at the end of the execution
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
-	MYLOG("WRITE SET SIZE: %d\n", wxorxHandler->getWritesSet().size());
+	MYINFO("WRITE SET SIZE: %d\n", wxorxHandler->getWritesSet().size());
 	//DEBUG --- get the execution time
-	MYLOG("Total execution Time: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+	MYINFO("Total execution Time: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 	CLOSELOG();
 	Log::getInstance()->closeReportFile();
 
@@ -49,12 +49,12 @@ void imageLoadCallback(IMG img,void *){
 
 		proc_info->setFirstINSaddress(IMG_Entry(img));
 
-		MYLOG("INIT : %08x", proc_info->getFirstINSaddress());
+		MYINFO("INIT : %08x", proc_info->getFirstINSaddress());
 
-		MYLOG("----------------------------------------------");
+		MYINFO("----------------------------------------------");
 		float initial_entropy = proc_info->GetEntropy();
 		proc_info->setInitialEntropy(initial_entropy);
-		MYLOG("----------------------------------------------");
+		MYINFO("----------------------------------------------");
 
 
 		for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
@@ -119,7 +119,7 @@ int main(int argc, char * argv[])
 {
 
 
-	MYLOG("Strating prototype ins\n");
+	MYINFO("Strating prototype ins\n");
 	FilterHandler *filterH = FilterHandler::getInstance();
 	filterH->setFilters("teb");
 
