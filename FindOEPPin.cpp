@@ -10,6 +10,7 @@ namespace W {
 }
 
 #include "FilterHandler.h"
+#include "GdbDebugger.h"
 
 
 OepFinder oepf;
@@ -94,6 +95,19 @@ void Trace(TRACE trace , void *v)
 
 }
 
+void initDebug(){
+
+	GdbDebugger *gdb_debugger = GdbDebugger::getInstance();
+	gdb_debugger->executeCmd("ciao");
+	W::Sleep(3000);
+	gdb_debugger->executeCmd("ciao");
+	W::Sleep(3000);
+	gdb_debugger->executeCmd("ciao");
+	W::Sleep(3000);
+	return;
+
+}
+
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if batter than trace iteration)
@@ -117,20 +131,11 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
 
 int main(int argc, char * argv[])
 {
-
-	//DEBUG
 	
-	DEBUG_MODE mode;
-	_tcpClientStruct client;
+	initDebug();
 
-	client._ip = "127.0.0.1";
-	client._tcpPort = 8888;
-
-    mode._type = DEBUG_CONNECTION_TYPE_TCP_SERVER;
-	mode._options = DEBUG_MODE_OPTION_STOP_AT_ENTRY;
-    mode._tcpClient = client;
-
-	PIN_SetDebugMode(&mode);
+	return 0;
+	
 
 	MYLOG("Strating prototype ins\n");
 	FilterHandler *filterH = FilterHandler::getInstance();

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -66,6 +66,9 @@
     <ClCompile Include="PushadPopadHeuristic.cpp">
       <Filter>Source Files\Heuristics</Filter>
     </ClCompile>
+    <ClCompile Include="GdbDebugger.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README">
@@ -79,9 +82,6 @@
     <ClInclude Include="Debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClCompile Include="ProcInfo.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClInclude Include="WxorXHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -91,7 +91,7 @@
     <ClInclude Include="Heuristics.h">
       <Filter>Header Files\Heuristics</Filter>
     </ClInclude>
-	<ClInclude Include="InitFunctionCall.h">
+    <ClInclude Include="InitFunctionCall.h">
       <Filter>Header Files\Heuristics</Filter>
     </ClInclude>
     <ClInclude Include="WriteInterval.h">
@@ -111,6 +111,12 @@
     </ClInclude>
     <ClInclude Include="PushadPopadHeuristic.h">
       <Filter>Header Files\Heuristics</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GdbDebugger.h">
+      <Filter>Header Files\Helpers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
