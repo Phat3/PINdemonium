@@ -155,7 +155,7 @@ void ProcInfo::PrintCurrContext(){
 
 void ProcInfo::PrintSections(){
 	MYINFO("======= SECTIONS ======= \n");
-	for(int i = 0; i < this->Sections.size(); i++) {
+	for(unsigned int i = 0; i < this->Sections.size(); i++) {
 		Section item = this->Sections.at(i);
 		MYINFO("%s	->	begin : %08x		end : %08x", item.name.c_str(), item.begin, item.end);
 	}
@@ -170,7 +170,7 @@ void ProcInfo::insertSection(Section section){
 //return the section's name where the IP resides
 string ProcInfo::getSectionNameByIp(ADDRINT ip){
 	string s = "";
-	for(int i = 0; i < this->Sections.size(); i++) {
+	for(unsigned int i = 0; i < this->Sections.size(); i++) {
 		Section item = this->Sections.at(i);
 		if(ip >= item.begin && ip <= item.end){
 			s = item.name;

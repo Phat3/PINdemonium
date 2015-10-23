@@ -153,6 +153,7 @@ VOID FilterHandler::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAd
 }
 
 BOOL FilterHandler::binarySearch (int start, int end, ADDRINT value) {
+	/*
 	if (start > end)
 		return FALSE;
 	if (start == end) {
@@ -168,13 +169,15 @@ BOOL FilterHandler::binarySearch (int start, int end, ADDRINT value) {
 		BOOL result2 = FilterHandler::binarySearch (start, floor(double(end+start)/2), value);
 		return result1 & result2;
 	}
+	*/
+	return true;
 }
 
 /*check if the address belong to a Library */
 //TODO add a whiitelist of Windows libraries that will be loaded
 BOOL FilterHandler::isLibraryInstruction(ADDRINT address){
 	/*	
-	if (binarySearch(0, LibrarySet.size() - 1, address)){
+	if (binarySearch(0, LibrarySet.size() - 1, address  //NB COMMENTED OUT FUNCTION CODE)){
 		//MYINFO("Instruction at %x filtered ", address);
 		return TRUE;
 	}
