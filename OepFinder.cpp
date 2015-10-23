@@ -21,7 +21,7 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size)
 
 	//check if the target address belongs to some filtered range		
 	if(!filterHandler->isFilteredWrite(end_addr,ip)){	
-	//	MYINFO("Examining Write instruction: %x Targetaddr: %x  \n",ip,end_addr);
+	//	MYINFO("Examining Write instruction: %x Targetaddr: %x  ",ip,end_addr);
 		WxorXHandler *wxorxHandler=WxorXHandler::getInstance();
 		wxorxHandler->writeSetManager(ip, end_addr, size);
 	}

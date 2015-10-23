@@ -16,7 +16,7 @@ UINT32 EntropyHeuristic::run(){
 
 	if( difference > threshold){
 
-		MYINFO("ENTROPY DIFFERERNCE IS %f\n" , difference);
+		MYWARN("ENTROPY DIFFERERNCE IS %f" , difference);
 		return OEPFINDER_FOUND_OEP;
 	
 	}

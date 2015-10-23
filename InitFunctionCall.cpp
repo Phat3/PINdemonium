@@ -8,8 +8,7 @@
 #define FULLPATH(x)  WORK_DIRECTORY  x 								   //macro to create the full path of afile using the working the WORK_DIRECTORY define
 
 #define SCYLLA_FILENAME "Scylla\\ScyllaTest.exe"
-#define TMP_DUMP_FILENAME "tmpDump.bin"								   //Name of the temporary (not IAT fixed) Dump
-#define FINAL_DUMP_FILENAME "finalDump"							   //Name of the final (IAT fixed) Dump
+#define FINAL_DUMP_FILENAME "finalDump"								   //Name of the final (IAT fixed) Dump
 #define IDAPYTHON_LAUNCHER "idaPythonScript.bat"					   //Batch script to lauch IdaPython
 #define IDAPYTHON_SCRIPT "showImports.py"							   //IdaPython script 
 #define IDAPYTHON_RESULT_FILE "detectedInitFunc.txt"				   //File used by the IdaPython script to write back the results	
@@ -53,21 +52,21 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	UINT32 pid = W::GetCurrentProcessId();
 	MYINFO("Curr PID %d",pid);
 	
+	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
 	char current_dump[MAX_PATH+7];
-	sprintf(current_dump,"%s_%d.bin",FULLPATH(FINAL_DUMP_FILENAME),ProcInfo::getInstance()->getDumpNumber());
+	sprintf(current_dump,"%s_%d.exe",FULLPATH(FINAL_DUMP_FILENAME),ProcInfo::getInstance()->getDumpNumber());
 	MYINFO("Current output file dump %s",current_dump);
 
 	if(!launchScyllaDump(FULLPATH(SCYLLA_FILENAME),pid,curEip,current_dump)){
 		MYERRORE("Scylla execution Failed");
 		return 0;
 	}
-
-	char idb_to_rm[MAX_PATH+7];
-	sprintf(idb_to_rm,"%s_%d.idb",FULLPATH(FINAL_DUMP_FILENAME),ProcInfo::getInstance()->getDumpNumber());
 	
-	launchIdaScript(IDAW_FULL_PATH, FULLPATH(IDAPYTHON_SCRIPT), current_dump,idb_to_rm );
-
 	ProcInfo::getInstance()->incrementDumpNumber();
+
+	launchIdaScript(IDAW_FULL_PATH, FULLPATH(IDAPYTHON_SCRIPT), current_dump);
+
+	
 
 	//Read the result of IdaPython script
 	
@@ -77,7 +76,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	fread(init_func_detected,file_size,1,fd);
 	fclose(fd);
 
-	MYINFO("Found init functions %s",init_func_detected);
+	MYWARN("Found init functions \n%s",init_func_detected);
 	
 	
 	return 0;
@@ -97,7 +96,7 @@ BOOL InitFunctionCall::launchScyllaDump(char *scylla,int pid, int curEip,char *o
 	si.cb=sizeof(si);
 
 	if(!W::CreateProcess(scyllaCmd,scyllaArgs,NULL,NULL,FALSE,0,NULL,NULL,&si,&pi)){
-		MYINFO("(INITFUNCTIONCALL)Can't launch Scylla");
+		MYERRORE("(INITFUNCTIONCALL)Can't launch Scylla");
 		return false;
 	}
 	W::WaitForSingleObject(pi.hProcess,INFINITE);
@@ -105,16 +104,16 @@ BOOL InitFunctionCall::launchScyllaDump(char *scylla,int pid, int curEip,char *o
 	W::CloseHandle(pi.hThread);
 	
 	if(!existFile(outputFile)){
-		MYINFO("(INITFUNCTIONCALL)Scylla Can't dump the process");
+		MYERRORE("Scylla Can't dump the process");
 		return false;
 	}
-	MYINFO("(INITFUNCTIONCALL)Scylla Finished");
+	MYINFO("Scylla Finished");
 	return true;
 }
 
 
 
-BOOL InitFunctionCall::launchIdaScript(char *idaw,char *idaPythonScript,char * dumpFile,char * idaIdbToRm){
+BOOL InitFunctionCall::launchIdaScript(char *idaw,char *idaPythonScript,char * dumpFile){
 	char *idaScriptLauncher = FULLPATH(IDAPYTHON_LAUNCHER);
 	
 	//Running external idaPython script
@@ -128,16 +127,16 @@ BOOL InitFunctionCall::launchIdaScript(char *idaw,char *idaPythonScript,char * d
 	FILE *idaLauncherFile = fopen(idaScriptLauncher,"w");
 	fwrite(idaScript,strlen(idaScript),1,idaLauncherFile);
 	fclose(idaLauncherFile);
-	MYINFO("Launching the IdaPython Script %s Containing %s \n",idaLauncherFile,idaScript);
+	MYINFO("Launching the IdaPython Script %s Containing %s",idaLauncherFile,idaScript);
 	
 	if(!W::CreateProcess(idaScriptLauncher,NULL,NULL,NULL,FALSE,CREATE_NEW_CONSOLE,NULL,NULL,&si,&pi)){
-		MYINFO("(INITFUNCTIONCALL)Can't launch idaPythonScript");
+		MYERRORE("Can't launch idaPythonScript");
 		return false;
 	}
 	W::WaitForSingleObject(pi.hProcess,INFINITE);
 	W::CloseHandle(pi.hProcess);
 	W::CloseHandle(pi.hThread);
-	MYINFO("(INITFUNCTIONCALL)idaPythonScript FInished");
+	MYINFO("idaPythonScript Finished");
 	return true;
 
 
