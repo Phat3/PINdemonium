@@ -83,7 +83,6 @@ void ProcInfo::setPopadFlag(BOOL flag){
 	this->popad_flag = flag;
 }
 
-
 /*Increment dump number*/
 void ProcInfo::incrementDumpNumber(){
 	this->dump_number++;
@@ -121,6 +120,10 @@ BOOL ProcInfo::getPopadFlag(){
 
 UINT32 ProcInfo::getDumpNumber(){
 	return this->dump_number;
+}
+
+string ProcInfo::getProcName(){
+	return this->proc_name;
 }
 
 

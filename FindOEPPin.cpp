@@ -46,9 +46,10 @@ void imageLoadCallback(IMG img,void *){
 	if(IMG_IsMainExecutable(img)){
 		
 		ProcInfo *proc_info = ProcInfo::getInstance();
-
+		//get the  address of the first instruction
 		proc_info->setFirstINSaddress(IMG_Entry(img));
-
+		//get the program name
+		//proc_info->setIMG_Name(img);
 		MYINFO("INIT : %08x", proc_info->getFirstINSaddress());
 
 		MYINFO("----------------------------------------------");

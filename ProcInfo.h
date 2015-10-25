@@ -38,6 +38,7 @@ public:
 	BOOL getPushadFlag();
 	BOOL getPopadFlag();
 	UINT32 getDumpNumber();
+	string getProcName();
 
 	/* setter */
 	void setStartRegContext(CONTEXT * ctx);
@@ -47,6 +48,7 @@ public:
 	void setInitialEntropy(float Entropy);
 	void setPushadFlag(BOOL flag);
 	void setPopadFlag(BOOL flag);
+	void setProcName(string name);
 
 	void incrementDumpNumber();
 	
