@@ -74,6 +74,7 @@ private:
 	BOOL pushad_flag;
 	BOOL popad_flag;
 	UINT32 dump_number;
+	string proc_name;
 
 };
 

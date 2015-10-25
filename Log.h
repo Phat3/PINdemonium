@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include "WriteInterval.h"
+#include <ctime>
+#include <direct.h>
 
 //#define LOG_WRITE_TO_FILE 0 //if set to 1 the result will be saved on file otherwise they'll be printed to stdout
 
@@ -20,5 +22,7 @@ private:
 	static Log* instance;
 	FILE *log_file;
 	FILE *report_file;
+	string base_path;
+	string getCurDateAndTime();
 };
 
