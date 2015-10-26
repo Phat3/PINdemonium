@@ -120,7 +120,6 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
 int main(int argc, char * argv[])
 {
 
-
 	MYINFO("Strating prototype ins");
 	FilterHandler *filterH = FilterHandler::getInstance();
 	filterH->setFilters("teb");

@@ -76,3 +76,7 @@ string Log::getCurDateAndTime(){
   return string(buffer);
 }
 
+string Log::getBasePath(){
+	return this->base_path;
+}
+

@@ -16,6 +16,7 @@ public:
 	void Log::closeReportFile();
 	FILE* Log::getLogFile();
 	void writeOnReport(ADDRINT ip, WriteInterval wi);
+	string getBasePath();
 
 private:
 	Log::Log();
