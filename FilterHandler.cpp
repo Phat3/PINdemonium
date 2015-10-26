@@ -1,9 +1,4 @@
 #include "FilterHandler.h"
-#include "math.h"
-#include "Log.h"
-namespace W {
-	#include <Windows.h>
-}
 
 FilterHandler* FilterHandler::instance = 0;
 
@@ -123,14 +118,17 @@ BOOL FilterHandler::isLibTEBWrite(ADDRINT addr,ADDRINT eip){
 }
 
 
-
 //Check if the write addr belongs to the Stack and the current eip is not in the libraries
 BOOL FilterHandler::isLibStackWrite(ADDRINT addr,ADDRINT eip){	
 	//MYINFO("Calling isStackWrite");
 	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase +STACK_BASE_PADDING) && isLibraryInstruction(eip);
 }
 
+/**
+add library in a list sorted by address
+**/
 VOID FilterHandler::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
+
 	LibraryItem libItem;
 	libItem.StartAddress = startAddr;
 	libItem.EndAddress = endAddr;
@@ -150,6 +148,7 @@ VOID FilterHandler::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAd
 	LibrarySet.push_back(libItem);
 	MYINFO("Add  %s",libToString(libItem));
 	return ;
+
 }
 
 BOOL FilterHandler::binarySearch (int start, int end, ADDRINT value) {
@@ -183,8 +182,8 @@ BOOL FilterHandler::isLibraryInstruction(ADDRINT address){
 	}
 	return FALSE;
 
-*/
-for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
+	*/
+	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
 		if (lib->StartAddress <= address && address <= lib->EndAddress)
 		//	MYINFO("Instruction at %x filtered", address);
 			return TRUE;
@@ -200,7 +199,6 @@ for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibraryS
 	if (IMG_Valid (curImg) && !IMG_IsMainExecutable(curImg)){
 		return TRUE;
 	}
-	return FALSE;
-	
+	return FALSE;	
 	*/
 }

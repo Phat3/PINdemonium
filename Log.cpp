@@ -3,11 +3,6 @@
 #include <iostream>
 #include <sstream>
 
-
-FILE *log_file;
-
-FILE *report_file;
-
 Log* Log::instance = 0;
 
 //at the first time open the log file
@@ -33,18 +28,27 @@ Log* Log::getInstance()
 	return instance;
 }
 
-//flush the buffer and close the file
-void Log::closeLogFile()
-{
-	fflush(this->log_file);
-	fclose(this->log_file);
-}
+/* ----------------------------- GETTER -----------------------------*/
 
 //flush the buffer and close the file
 void Log::closeReportFile()
 {
 	fflush(this->report_file);
 	fclose(this->report_file);
+}
+
+string Log::getBasePath(){
+	return this->base_path;
+}
+
+
+/* ----------------------------- UTILS -----------------------------*/
+
+//flush the buffer and close the file
+void Log::closeLogFile()
+{
+	fflush(this->log_file);
+	fclose(this->log_file);
 }
 
 //return the file pointer
@@ -57,7 +61,7 @@ FILE* Log::getLogFile()
 	#endif
 }
 
-//flush the buffer and close the file
+//write the JSON resulted by the analysis for this write set
 void Log::writeOnReport(ADDRINT ip, WriteInterval wi)
 {
 	fprintf(this->report_file,"{ip : %08x, begin : %08x, end : %08x; entropy_flag : %d, longjmp_flag : %d, jmp_oter_section_flag : %d, pushad_popad_flag : %d},\n", ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag());
@@ -76,7 +80,4 @@ string Log::getCurDateAndTime(){
   return string(buffer);
 }
 
-string Log::getBasePath(){
-	return this->base_path;
-}
 
