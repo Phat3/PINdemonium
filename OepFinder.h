@@ -3,15 +3,15 @@
 #include "pin.H"
 #include "WxorXHandler.h"
 #include "Debug.h"
-namespace W {
-	#include <windows.h>
-}
 #include "Heuristics.h"
 #include "FilterHandler.h"
 #include "ProcInfo.h"
 #include "Log.h"
+namespace W {
+	#include <windows.h>
+}
 
-
+//return value for IsCurrentInOEP function
 #define OEPFINDER_INS_FILTERED -3;
 #define OEPFINDER_HEURISTIC_FAIL -2;
 #define OEPFINDER_NOT_WXORX_INST -1;
