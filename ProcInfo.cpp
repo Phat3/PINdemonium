@@ -4,7 +4,6 @@
 
 ProcInfo* ProcInfo::instance = 0;
 
-
 ProcInfo* ProcInfo::getInstance()
 {
 	if (instance == 0)
@@ -29,7 +28,6 @@ ProcInfo::~ProcInfo(void)
 }
 
 
-/* Setter */
 
 /*
 Save the initial registers inside the struct
@@ -66,6 +64,9 @@ void ProcInfo::setCurrRegContext(CONTEXT * ctx){
 	this->reg_curr_context.esi = PIN_GetContextReg(ctx,REG_ESI);
 }
 
+
+/* ----------------------------- SETTER -----------------------------*/
+
 void ProcInfo::setFirstINSaddress(ADDRINT address){
 	this->first_instruction  = address;
 }
@@ -92,13 +93,13 @@ void ProcInfo::setProcName(string name){
 	this->proc_name =  exe_name.substr(0, exe_name.length() - 4);
 }
 
-/*Increment dump number*/
-void ProcInfo::incrementDumpNumber(){
-	this->dump_number++;
+void ProcInfo::setInitialEntropy(float Entropy){
+	this->InitialEntropy = Entropy;
 }
 
 
-/* Getter */
+/* ----------------------------- GETTER -----------------------------*/
+
 RegContext ProcInfo::getStartRegContext(){
 	return this->reg_start_context;
 }
@@ -135,9 +136,14 @@ string ProcInfo::getProcName(){
 	return this->proc_name;
 }
 
+float ProcInfo::getInitialEntropy(){
+	return this->InitialEntropy;
+}
 
 
-/* Utils + Helper */
+
+/* ----------------------------- HELPER AND UTILS -----------------------------*/
+
 void ProcInfo::PrintStartContext(){
 	MYINFO("======= START REGISTERS ======= \n");
 	MYINFO("EAX: %08x " , this->reg_start_context.eax);
@@ -191,7 +197,7 @@ string ProcInfo::getSectionNameByIp(ADDRINT ip){
 	return s;
 }
 
-
+//rteturn the entropy value of the entire program
 float ProcInfo::GetEntropy(){
 
 	IMG binary_image = APP_ImgHead();
@@ -231,14 +237,8 @@ float ProcInfo::GetEntropy(){
 }
 
 
-float ProcInfo::getInitialEntropy(){
-
-	return this->InitialEntropy;
-
+/*Increment dump number*/
+void ProcInfo::incrementDumpNumber(){
+	this->dump_number++;
 }
 
-void ProcInfo::setInitialEntropy(float Entropy){
-	
-	this->InitialEntropy = Entropy;
-
-}

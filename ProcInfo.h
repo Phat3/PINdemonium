@@ -49,8 +49,6 @@ public:
 	void setPushadFlag(BOOL flag);
 	void setPopadFlag(BOOL flag);
 	void setProcName(string name);
-
-	void incrementDumpNumber();
 	
 	/* debug */
 	void PrintStartContext();
@@ -61,6 +59,7 @@ public:
 	void ProcInfo::insertSection(Section section);
 	string ProcInfo::getSectionNameByIp(ADDRINT ip);
 	float GetEntropy();
+	void incrementDumpNumber();
 	
 private:
 	static ProcInfo* instance;

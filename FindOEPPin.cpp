@@ -40,6 +40,12 @@ INT32 Usage()
 	return -1;
 }
 
+
+//
+// - Get initial entropy
+// - Get PE section data 
+// - Add filtered library
+//
 void imageLoadCallback(IMG img,void *){
 	//get the initial entropy of the PE
 	//we have to consder only the main executable and avìvoid the libraries
@@ -50,15 +56,12 @@ void imageLoadCallback(IMG img,void *){
 		proc_info->setFirstINSaddress(IMG_Entry(img));
 		//get the program name
 		proc_info->setProcName(IMG_Name(img));
-
-		MYINFO("INIT : %08x", proc_info->getFirstINSaddress());
-		MYINFO("MY NAME IS : %s",proc_info->getProcName().c_str());
+		//get the initial entropy
 		MYINFO("----------------------------------------------");
 		float initial_entropy = proc_info->GetEntropy();
 		proc_info->setInitialEntropy(initial_entropy);
 		MYINFO("----------------------------------------------");
-
-
+		//retrieve the section of the PE
 		for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
 			Section item;
 			item.name = SEC_Name(sec);
@@ -66,10 +69,10 @@ void imageLoadCallback(IMG img,void *){
 			item.end = item.begin + SEC_Size(sec);
 			proc_info->insertSection(item);
 		}
-
+		//DEBUG
 		proc_info->PrintSections();
-
 	}
+	//build the filtered libtrary list
 	FilterHandler *filterH = FilterHandler::getInstance();
 	ADDRINT startAddr = IMG_LowAddress(img);
 	ADDRINT endAddr = IMG_HighAddress(img);
@@ -79,23 +82,6 @@ void imageLoadCallback(IMG img,void *){
 	}
 }
 
-void ImageUnloadCallback(IMG img,void *){
-	//TODO Implement this function if want to remove library inside the FilterHandler when library is unloaded
-}
-
-// Trace callback Pin calls this function for every trace
-void Trace(TRACE trace , void *v)
-{
-	for(BBL bbl= TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)){
-		for( INS ins = BBL_InsHead(bbl); INS_Valid(ins) ; ins =INS_Next(ins)){
-
-			oepf.IsCurrentInOEP(ins);
-
-		}
-	}
-
-}
-
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if batter than trace iteration)
@@ -103,13 +89,14 @@ void Instruction(INS ins,void *v){
 	oepf.IsCurrentInOEP(ins);
 }
 
+//
+// - retrive the stack base address
+//
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
 {
-
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	FilterHandler *filterH = FilterHandler::getInstance();
 	filterH->setStackBase(stackBase);
-
 }
 
 
@@ -122,30 +109,22 @@ int main(int argc, char * argv[])
 
 	MYINFO("Strating prototype ins");
 	FilterHandler *filterH = FilterHandler::getInstance();
+	//set the filters for the libraries
 	filterH->setFilters("teb");
-
+	//get the start time of the execution (benchmark)
 	tStart = clock();
-	
 	// Initialize pin
 	PIN_InitSymbols();
 
 	if (PIN_Init(argc, argv)) return Usage();
 	
-	//	TRACE_AddInstrumentFunction(Trace,0);
 	INS_AddInstrumentFunction(Instruction,0);
+
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
-	// Register ImageLoad to be called when an image is loaded
-
-	IMG_AddInstrumentFunction(imageLoadCallback, 0);
-
 	// Register ImageUnload to be called when an image is unloaded
-	IMG_AddUnloadFunction(ImageUnloadCallback, 0);
-
-	//PIN_AddApplicationStartFunction(bootstrap, 0);
-
+	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
-	
 	// Start the program, never returns
 	PIN_StartProgram();
 	
