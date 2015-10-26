@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -42,9 +42,6 @@
     <ClCompile Include="Heuristics.cpp">
       <Filter>Source Files\Heuristics</Filter>
     </ClCompile>
-    <ClCompile Include="InitFunctionCall.cpp">
-      <Filter>Source Files\Heuristics</Filter>
-    </ClCompile>
     <ClCompile Include="WriteInterval.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -57,13 +54,16 @@
     <ClCompile Include="EntropyHeuristic.cpp">
       <Filter>Source Files\Heuristics</Filter>
     </ClCompile>
-    <ClCompile Include="JumpOuterSection.cpp">
-      <Filter>Source Files\Heuristics</Filter>
-    </ClCompile>
     <ClCompile Include="ProcInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PushadPopadHeuristic.cpp">
+      <Filter>Source Files\Heuristics</Filter>
+    </ClCompile>
+    <ClCompile Include="JumpOuterSectionHeuristic.cpp">
+      <Filter>Source Files\Heuristics</Filter>
+    </ClCompile>
+    <ClCompile Include="InitFunctionCallHeuristic.cpp">
       <Filter>Source Files\Heuristics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -79,9 +79,6 @@
     <ClInclude Include="Debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClCompile Include="ProcInfo.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClInclude Include="WxorXHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -89,9 +86,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Heuristics.h">
-      <Filter>Header Files\Heuristics</Filter>
-    </ClInclude>
-	<ClInclude Include="InitFunctionCall.h">
       <Filter>Header Files\Heuristics</Filter>
     </ClInclude>
     <ClInclude Include="WriteInterval.h">
@@ -106,10 +100,16 @@
     <ClInclude Include="EntropyHeuristic.h">
       <Filter>Header Files\Heuristics</Filter>
     </ClInclude>
-    <ClInclude Include="JumpOuterSection.h">
+    <ClInclude Include="PushadPopadHeuristic.h">
       <Filter>Header Files\Heuristics</Filter>
     </ClInclude>
-    <ClInclude Include="PushadPopadHeuristic.h">
+    <ClInclude Include="ProcInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JumpOuterSectionHeuristic.h">
+      <Filter>Header Files\Heuristics</Filter>
+    </ClInclude>
+    <ClInclude Include="InitFunctionCallHeuristic.h">
       <Filter>Header Files\Heuristics</Filter>
     </ClInclude>
   </ItemGroup>

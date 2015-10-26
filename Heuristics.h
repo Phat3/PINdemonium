@@ -6,8 +6,8 @@
 #include "OepFinder.h"
 #include "LongJumpHeuristic.h"
 #include "EntropyHeuristic.h"
-#include "JumpOuterSection.h"
-#include "InitFunctionCall.h"
+#include "JumpOuterSectionHeuristic.h"
+#include "InitFunctionCallHeuristic.h"
 #include "WxorXHandler.h"
 #include "PushadPopadHeuristic.h"
 

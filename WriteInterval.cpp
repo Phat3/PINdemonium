@@ -77,7 +77,7 @@ VOID WriteInterval::update(ADDRINT start_addr, ADDRINT end_addr){
 	//otherwise we have to do nothing
 }
 
-
+//check if the ip reside inside the WriteInterval
 BOOL WriteInterval::checkInside(ADDRINT ip){
 	return (ip >= this->addr_begin && ip <= this->addr_end);
 }
