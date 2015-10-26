@@ -46,11 +46,13 @@ void imageLoadCallback(IMG img,void *){
 	if(IMG_IsMainExecutable(img)){
 		
 		ProcInfo *proc_info = ProcInfo::getInstance();
-
+		//get the  address of the first instruction
 		proc_info->setFirstINSaddress(IMG_Entry(img));
+		//get the program name
+		proc_info->setProcName(IMG_Name(img));
 
 		MYINFO("INIT : %08x", proc_info->getFirstINSaddress());
-
+		MYINFO("MY NAME IS : %s",proc_info->getProcName().c_str());
 		MYINFO("----------------------------------------------");
 		float initial_entropy = proc_info->GetEntropy();
 		proc_info->setInitialEntropy(initial_entropy);
@@ -117,7 +119,6 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
 
 int main(int argc, char * argv[])
 {
-
 
 	MYINFO("Strating prototype ins");
 	FilterHandler *filterH = FilterHandler::getInstance();

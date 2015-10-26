@@ -11,7 +11,6 @@
 	do { if (DEBUG_BUILD) fprintf(stderr, "[DEBUG](%s):%d:%s(): " fmt, __FILENAME__, \
 								__LINE__, __FUNCTION__, __VA_ARGS__); } while (0)
 
-
 #define MYWARN(fmt, ...) \
 	do { if (WARN_BUILD) fprintf(Log::getInstance()->getLogFile(),"[WARNING](%s) "fmt"\n",__FILENAME__, __VA_ARGS__); } while (0)
 

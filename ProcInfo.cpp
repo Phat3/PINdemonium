@@ -84,6 +84,14 @@ void ProcInfo::setPopadFlag(BOOL flag){
 }
 
 
+void ProcInfo::setProcName(string name){
+	//get the starting position of the last element of the path (the exe name)
+	int pos_exe_name = name.find_last_of("\\");
+	string exe_name = name.substr(pos_exe_name + 1);
+	//get the name from the last occurrence of / till the end of the string minus the file extension
+	this->proc_name =  exe_name.substr(0, exe_name.length() - 4);
+}
+
 /*Increment dump number*/
 void ProcInfo::incrementDumpNumber(){
 	this->dump_number++;
@@ -121,6 +129,10 @@ BOOL ProcInfo::getPopadFlag(){
 
 UINT32 ProcInfo::getDumpNumber(){
 	return this->dump_number;
+}
+
+string ProcInfo::getProcName(){
+	return this->proc_name;
 }
 
 
