@@ -49,9 +49,10 @@ void imageLoadCallback(IMG img,void *){
 		//get the  address of the first instruction
 		proc_info->setFirstINSaddress(IMG_Entry(img));
 		//get the program name
-		//proc_info->setIMG_Name(img);
-		MYINFO("INIT : %08x", proc_info->getFirstINSaddress());
+		proc_info->setProcName(IMG_Name(img));
 
+		MYINFO("INIT : %08x", proc_info->getFirstINSaddress());
+		MYINFO("MY NAME IS : %s",proc_info->getProcName().c_str());
 		MYINFO("----------------------------------------------");
 		float initial_entropy = proc_info->GetEntropy();
 		proc_info->setInitialEntropy(initial_entropy);

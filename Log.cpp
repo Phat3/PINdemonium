@@ -12,6 +12,7 @@ Log* Log::instance = 0;
 
 //at the first time open the log file
 Log::Log(){
+
 	//build the path for this execution
 	this->base_path = "C:\\pin\\TempOEPin\\" + this->getCurDateAndTime() + "\\";
 	//mk the directory
