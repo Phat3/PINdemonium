@@ -12,9 +12,7 @@ UINT32 LongJumpHeuristic::run(INS ins, ADDRINT prev_ip){
 		ADDRINT diff = std::abs( (int)ip - (int)prev_ip);
 		//if the difference is greater than our threshold then a long jmp i sdetected
 		if(diff > JMP_THRESHOLD){
-			MYINFO("[LONG JMP DETECTED!!] FROM : %08x	TO : %08x", prev_ip, ip);
-			MYINFO("");
-			MYINFO("");
+			MYWARN("[LONG JMP DETECTED!!] FROM : %08x	TO : %08x", prev_ip, ip);
 			return OEPFINDER_FOUND_OEP
 		}
 	}

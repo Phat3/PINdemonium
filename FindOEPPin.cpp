@@ -23,9 +23,9 @@ VOID Fini(INT32 code, VOID *v)
 
 	//DEBUG --- inspect the write set at the end of the execution
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
-	MYINFO("WRITE SET SIZE: %d\n", wxorxHandler->getWritesSet().size());
+	MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
 	//DEBUG --- get the execution time
-	MYINFO("Total execution Time: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 	CLOSELOG();
 	Log::getInstance()->closeReportFile();
 
@@ -121,7 +121,7 @@ int main(int argc, char * argv[])
 {
 
 
-	MYINFO("Strating prototype ins\n");
+	MYINFO("Strating prototype ins");
 	FilterHandler *filterH = FilterHandler::getInstance();
 	filterH->setFilters("teb");
 

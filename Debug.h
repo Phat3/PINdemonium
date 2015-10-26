@@ -6,18 +6,19 @@
 #define ERROR_BUILD 1
 #define LOG_BUILD 1
 
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define MYDEBUG(fmt, ...) \
-	do { if (DEBUG_BUILD) fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, \
+	do { if (DEBUG_BUILD) fprintf(stderr, "[DEBUG](%s):%d:%s(): " fmt, __FILENAME__, \
 								__LINE__, __FUNCTION__, __VA_ARGS__); } while (0)
 
 #define MYWARN(fmt, ...) \
-	do { if (WARN_BUILD) fprintf(Log::getInstance()->getLogFile(),"[WARNING] "fmt"\n", __VA_ARGS__); } while (0)
+	do { if (WARN_BUILD) fprintf(Log::getInstance()->getLogFile(),"[WARNING](%s) "fmt"\n",__FILENAME__, __VA_ARGS__); } while (0)
 
 #define MYERRORE(fmt, ...) \
-	do { if (ERROR_BUILD) fprintf(Log::getInstance()->getLogFile(),"[ERROR] "fmt"\n", __VA_ARGS__); } while (0)
+	do { if (ERROR_BUILD) fprintf(Log::getInstance()->getLogFile(),"[ERROR](%s) "fmt"\n",__FILENAME__, __VA_ARGS__); } while (0)
 
 #define MYINFO(fmt, ...) \
-	do { if (LOG_BUILD){ fprintf(Log::getInstance()->getLogFile(),"[INFO] "fmt"\n", __VA_ARGS__);} } while (0)
+	do { if (LOG_BUILD){ fprintf(Log::getInstance()->getLogFile(),"[INFO](%s) "fmt"\n",__FILENAME__, __VA_ARGS__); } } while (0)
 
 
 #define CLOSELOG()\

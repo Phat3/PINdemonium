@@ -11,7 +11,7 @@ UINT32 JumpOuterSection::run(INS ins, ADDRINT prev_ip){
 
 		//if they are different then i have detected a jmp outer section
 		if(sec_current.compare(sec_prev) && (sec_current.compare("") != 0) && (sec_prev.compare("") != 0)){
-			MYINFO("[JMP OUTER SECTION DETECTED!!] FROM : %s	TO : %s", sec_current.c_str(), sec_prev.c_str());
+			MYWARN("[JMP OUTER SECTION DETECTED!!] FROM : %s	TO : %s", sec_current.c_str(), sec_prev.c_str());
 			return OEPFINDER_FOUND_OEP
 		}
 	}
