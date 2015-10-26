@@ -24,14 +24,15 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 }
 
 
-
 //Save the initial registers inside the struct
 //You can fine the macro fo the registers at:
 //https://software.intel.com/sites/landingpage/pintool/docs/49306/Pin/html/group__REG__CPU__IA32.html
 VOID getInitialRegisters(CONTEXT * ctx){
+
 	ProcInfo *proc_info = ProcInfo::getInstance();
 	proc_info->setStartRegContext(ctx);	
 	proc_info->PrintStartContext();
+
 }
 
 //check if the current instruction is a pushad or a popad

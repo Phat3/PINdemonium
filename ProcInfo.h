@@ -1,6 +1,8 @@
 #pragma once
 
 #include "pin.H"
+#include "Log.h"
+#include "Debug.h"
 
 struct RegContext {
  ADDRINT eax;

@@ -1,6 +1,4 @@
 #include "ProcInfo.h"
-#include "Log.h"
-#include "Debug.h"
 
 ProcInfo* ProcInfo::instance = 0;
 
@@ -23,6 +21,39 @@ ProcInfo::ProcInfo()
 
 ProcInfo::~ProcInfo(void)
 {
+}
+
+
+/* ----------------------------- SETTER -----------------------------*/
+
+void ProcInfo::setFirstINSaddress(ADDRINT address){
+	this->first_instruction  = address;
+}
+
+void ProcInfo::setPrevIp(ADDRINT ip){
+	this->prev_ip  = ip;
+}
+
+void ProcInfo::setPushadFlag(BOOL flag){
+	this->pushad_flag = flag;
+}
+
+
+void ProcInfo::setPopadFlag(BOOL flag){
+	this->popad_flag = flag;
+}
+
+
+void ProcInfo::setProcName(string name){
+	//get the starting position of the last element of the path (the exe name)
+	int pos_exe_name = name.find_last_of("\\");
+	string exe_name = name.substr(pos_exe_name + 1);
+	//get the name from the last occurrence of / till the end of the string minus the file extension
+	this->proc_name =  exe_name.substr(0, exe_name.length() - 4);
+}
+
+void ProcInfo::setInitialEntropy(float Entropy){
+	this->InitialEntropy = Entropy;
 }
 
 /*
@@ -60,38 +91,6 @@ void ProcInfo::setCurrRegContext(CONTEXT * ctx){
 	this->reg_curr_context.esi = PIN_GetContextReg(ctx,REG_ESI);
 }
 
-
-/* ----------------------------- SETTER -----------------------------*/
-
-void ProcInfo::setFirstINSaddress(ADDRINT address){
-	this->first_instruction  = address;
-}
-
-void ProcInfo::setPrevIp(ADDRINT ip){
-	this->prev_ip  = ip;
-}
-
-void ProcInfo::setPushadFlag(BOOL flag){
-	this->pushad_flag = flag;
-}
-
-
-void ProcInfo::setPopadFlag(BOOL flag){
-	this->popad_flag = flag;
-}
-
-
-void ProcInfo::setProcName(string name){
-	//get the starting position of the last element of the path (the exe name)
-	int pos_exe_name = name.find_last_of("\\");
-	string exe_name = name.substr(pos_exe_name + 1);
-	//get the name from the last occurrence of / till the end of the string minus the file extension
-	this->proc_name =  exe_name.substr(0, exe_name.length() - 4);
-}
-
-void ProcInfo::setInitialEntropy(float Entropy){
-	this->InitialEntropy = Entropy;
-}
 
 
 /* ----------------------------- GETTER -----------------------------*/
@@ -138,9 +137,10 @@ float ProcInfo::getInitialEntropy(){
 
 
 
-/* ----------------------------- HELPER AND UTILS -----------------------------*/
+/* ----------------------------- PUBLIC METHODS -----------------------------*/
 
 void ProcInfo::PrintStartContext(){
+
 	MYINFO("======= START REGISTERS ======= \n");
 	MYINFO("EAX: %08x " , this->reg_start_context.eax);
 	MYINFO("EBX: %08x " , this->reg_start_context.ebx);
@@ -151,6 +151,7 @@ void ProcInfo::PrintStartContext(){
 	MYINFO("ESI: %08x " , this->reg_start_context.esi);
 	MYINFO("EDI: %08x " , this->reg_start_context.edi);
 	MYINFO("============================== \n");
+
 }
 
 void ProcInfo::PrintCurrContext(){
@@ -165,15 +166,18 @@ void ProcInfo::PrintCurrContext(){
 	MYINFO("ESI: %08x " , this->reg_curr_context.esi);
 	MYINFO("EDI: %08x " , this->reg_curr_context.edi);
 	MYINFO("================================= \n");
+
 }
 
 void ProcInfo::PrintSections(){
+
 	MYINFO("======= SECTIONS ======= \n");
 	for(unsigned int i = 0; i < this->Sections.size(); i++) {
 		Section item = this->Sections.at(i);
 		MYINFO("%s	->	begin : %08x		end : %08x", item.name.c_str(), item.begin, item.end);
 	}
 	MYINFO("================================= \n");
+
 }
 
 //insert a new section in our structure
@@ -183,6 +187,7 @@ void ProcInfo::insertSection(Section section){
 
 //return the section's name where the IP resides
 string ProcInfo::getSectionNameByIp(ADDRINT ip){
+
 	string s = "";
 	for(unsigned int i = 0; i < this->Sections.size(); i++) {
 		Section item = this->Sections.at(i);
@@ -191,9 +196,10 @@ string ProcInfo::getSectionNameByIp(ADDRINT ip){
 		}
 	}
 	return s;
+
 }
 
-//rteturn the entropy value of the entire program
+//return the entropy value of the entire program
 float ProcInfo::GetEntropy(){
 
 	IMG binary_image = APP_ImgHead();
@@ -233,7 +239,7 @@ float ProcInfo::GetEntropy(){
 }
 
 
-/*Increment dump number*/
+//Increment dump number
 void ProcInfo::incrementDumpNumber(){
 	this->dump_number++;
 }

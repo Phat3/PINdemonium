@@ -1,25 +1,22 @@
 #pragma once
+
 #include <stdio.h>
 #include "pin.H"
 #include "OepFinder.h"
 #include <time.h>
 #include  "Debug.h"
 #include "Log.h"
+#include "FilterHandler.h"
 namespace W {
 	#include <windows.h>
 }
-
-#include "FilterHandler.h"
-
 
 OepFinder oepf;
 clock_t tStart;
 
 
-
 // This function is called when the application exits
-VOID Fini(INT32 code, VOID *v)
-{
+VOID Fini(INT32 code, VOID *v){
 
 	//DEBUG --- inspect the write set at the end of the execution
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
@@ -32,21 +29,19 @@ VOID Fini(INT32 code, VOID *v)
 }
 
 //cc
-INT32 Usage()
-{
+INT32 Usage(){
 
-	PIN_ERROR("This Pintool unpacks common packers\n" 
-			  + KNOB_BASE::StringKnobSummary() + "\n");
+	PIN_ERROR("This Pintool unpacks common packers\n" + KNOB_BASE::StringKnobSummary() + "\n");
 	return -1;
+
 }
 
 
-//
 // - Get initial entropy
 // - Get PE section data 
 // - Add filtered library
-//
 void imageLoadCallback(IMG img,void *){
+
 	//get the initial entropy of the PE
 	//we have to consder only the main executable and avìvoid the libraries
 	if(IMG_IsMainExecutable(img)){
@@ -80,6 +75,7 @@ void imageLoadCallback(IMG img,void *){
 	if(!IMG_IsMainExecutable(img) && filterH->isKnownLibrary(name)){		
 		filterH->addLibrary(name,startAddr,endAddr);
 	}
+
 }
 
 
@@ -89,14 +85,14 @@ void Instruction(INS ins,void *v){
 	oepf.IsCurrentInOEP(ins);
 }
 
-//
+
 // - retrive the stack base address
-//
-static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
-{
+static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
+
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	FilterHandler *filterH = FilterHandler::getInstance();
 	filterH->setStackBase(stackBase);
+
 }
 
 
@@ -104,8 +100,7 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *)
 /* Main                                                                  */
 /* ===================================================================== */
 
-int main(int argc, char * argv[])
-{
+int main(int argc, char * argv[]){
 
 	MYINFO("Strating prototype ins");
 	FilterHandler *filterH = FilterHandler::getInstance();
