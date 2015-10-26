@@ -11,6 +11,7 @@
 #define FINAL_DUMP_FILENAME "finalDump"									//Name of the final (IAT fixed) Dump NB EXTENSION OF THE FILE IS MANAGED INTERNALLY
 #define IDAPYTHON_LAUNCHER "idaPythonScript.bat"					   //Batch script to lauch IdaPython
 #define IDAPYTHON_SCRIPT "showImports.py"							   //IdaPython script 
+#define IDAPYTHON_INPUT_FILE "initFuncList.txt"
 #define IDAPYTHON_RESULT_FILE "detectedInitFunc.txt"				   //File used by the IdaPython script to write back the results	
 
 
@@ -60,7 +61,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 		return 0;
 	}
 
-	launchIdaScript(IDAW_FULL_PATH, FULLPATH(IDAPYTHON_SCRIPT), FULLPATH(FINAL_DUMP_FILENAME));
+	launchIdaScript(IDAW_FULL_PATH, FULLPATH(IDAPYTHON_SCRIPT),FULLPATH(IDAPYTHON_INPUT_FILE), FULLPATH(IDAPYTHON_RESULT_FILE) ,FULLPATH(FINAL_DUMP_FILENAME));
 	
 	ProcInfo::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
 
@@ -122,7 +123,7 @@ BOOL InitFunctionCall::launchScyllaDump(char *scylla,int pid, int curEip,char *o
 
 
 
-BOOL InitFunctionCall::launchIdaScript(char *idaw,char *idaPythonScript,char * dumpFileName){
+BOOL InitFunctionCall::launchIdaScript(char *idaw,char *idaPythonScript,char *idaPythonInput,char *idaPythonOutput,char * dumpFileName){
 	char *idaScriptLauncher = FULLPATH(IDAPYTHON_LAUNCHER);
 
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
@@ -142,7 +143,9 @@ BOOL InitFunctionCall::launchIdaScript(char *idaw,char *idaPythonScript,char * d
 	si.cb=sizeof(si);
 	// Create a file batch which run the IdaPython script and execute it
 	char idaScript[MAX_PATH*4+20];
-	sprintf(idaScript,"%s -A -S%s %s & rm %s ",idaw,idaPythonScript,dumpFile,idb_name); 
+	//Copy in IdaScript the command to execute in the bat file
+
+	sprintf(idaScript,"%s -A -S\"%s %s  %s\" %s & rm %s ",idaw,idaPythonScript,idaPythonInput,idaPythonOutput,dumpFile,idb_name); 
 	FILE *idaLauncherFile = fopen(idaScriptLauncher,"w");
 	fwrite(idaScript,strlen(idaScript),1,idaLauncherFile);
 	fclose(idaLauncherFile);

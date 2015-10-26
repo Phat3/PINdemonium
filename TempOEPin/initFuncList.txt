@@ -1,4 +1,7 @@
 MessageBoxA
-Cane
+MessageBoxW
 Casa
 ExitProcess
+memcpy
+fflush
+GetModuleFileNameW

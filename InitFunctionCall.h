@@ -20,7 +20,7 @@ public:
 	UINT32 run(ADDRINT curEip,WriteInterval wi);
 private:
 	UINT32 getFileSize(FILE * fp);
-	BOOL launchIdaScript(char *idaw,char *idaPythonScript,char * dumpFileName);
+	BOOL launchIdaScript(char *idaw,char *idaPythonScript,char *idaPythonInput,char *idaPythonOutput,char * dumpFileName);
 	BOOL launchScyllaDump(char *scylla,int pid, int curEip,char *dumpFileName);
 	BOOL existFile (char *name);
 
