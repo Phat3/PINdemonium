@@ -1,7 +1,4 @@
-#pragma once
 #include "OepFinder.h"
-#include "Log.h"
-#include "ProcInfo.h"
 
 /* Global variable useful in order to store the registers saved in the callback */
 RegContext rg;
@@ -20,10 +17,9 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size)
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 
 	//check if the target address belongs to some filtered range		
-	if(!filterHandler->isFilteredWrite(end_addr,ip)){	
-	//	MYINFO("Examining Write instruction: %x Targetaddr: %x  ",ip,end_addr);
-		WxorXHandler *wxorxHandler=WxorXHandler::getInstance();
-		wxorxHandler->writeSetManager(ip, end_addr, size);
+	if(!filterHandler->isFilteredWrite(end_addr,ip)){
+		//if not update the write set
+		WxorXHandler::getInstance()->writeSetManager(ip, end_addr, size);
 	}
 }
 
@@ -92,9 +88,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	if(writeItemIndex != -1 ){
 
 		WriteInterval item = wxorxHandler->getWritesSet().at(writeItemIndex);
-		//DEBUG
-		//MYINFO("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());
-
 		ADDRINT prev_ip = proc_info->getPrevIp();
 		//call the proper heuristics
 		//we have to implement it in a better way!!
@@ -102,33 +95,19 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		item.setEntropyFlag(Heuristics::entropyHeuristic());
 		item.setJmpOuterSectionFlag(Heuristics::jmpOuterSectionHeuristic(ins, prev_ip));
 		item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
-
-		Log::getInstance()->writeOnReport(curEip, item);
-		//MYINFO("[JSON] {ip : %08x, begin : %08x, end : %08x; entropy_flag : %d, longjmp_flag : %d, jmp_oter_section_flag : %d}", curEip, item.getAddrBegin(), item.getAddrEnd(), isOEP_E, isOEP_LJ, isOEP_JOS);
-
-
-		//call the proper heuristics
-		UINT32 isOEP_Witem = 0;//Heuristics::longJmpHeuristic(ins, prev_ip);
-		UINT32 isOEP_Image = 0;//Heuristics::entropyHeuristic();
-		//Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
 		Heuristics::initFunctionCallHeuristic(curEip,item);
-
+		//write the heuristic resuòts on ile
+		Log::getInstance()->writeOnReport(curEip, item);
 		//delete the WriteInterval just analyzed
 		wxorxHandler->deleteWriteItem(writeItemIndex);
-
-
-		//DEBUG
 	    //update the prevuious IP
 		proc_info->setPrevIp(INS_Address(ins));
-
 		return OEPFINDER_HEURISTIC_FAIL;
 
 	}
 	//update the previous IP
 	proc_info->setPrevIp(INS_Address(ins));
 	return OEPFINDER_NOT_WXORX_INST;
-
-
 }
 
 

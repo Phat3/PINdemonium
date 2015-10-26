@@ -7,9 +7,10 @@ namespace W {
 	#include <windows.h>
 }
 #include "Heuristics.h"
-
 #include "FilterHandler.h"
 #include "ProcInfo.h"
+#include "Log.h"
+
 
 #define OEPFINDER_INS_FILTERED -3;
 #define OEPFINDER_HEURISTIC_FAIL -2;

@@ -21,13 +21,9 @@ ProcInfo::ProcInfo()
 	this->dump_number = 0;
 }
 
-
-
 ProcInfo::~ProcInfo(void)
 {
 }
-
-
 
 /*
 Save the initial registers inside the struct
