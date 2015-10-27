@@ -16,6 +16,8 @@ ProcInfo::ProcInfo()
 	this->prev_ip = 0;
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
+	this->start_timer = -1;
+
 }
 
 ProcInfo::~ProcInfo(void)
@@ -55,52 +57,9 @@ void ProcInfo::setInitialEntropy(float Entropy){
 	this->InitialEntropy = Entropy;
 }
 
-/*
-Save the initial registers inside the struct
-You can fine the macro fo the registers at:
-https://software.intel.com/sites/landingpage/pintool/docs/49306/Pin/html/group__REG__CPU__IA32.html
-*/
-void ProcInfo::setStartRegContext(CONTEXT * ctx){
-
-	this->reg_start_context.eax = PIN_GetContextReg(ctx,REG_EAX);
-	this->reg_start_context.ebx = PIN_GetContextReg(ctx,REG_EBX);
-	this->reg_start_context.ecx = PIN_GetContextReg(ctx,REG_ECX);
-	this->reg_start_context.edx = PIN_GetContextReg(ctx,REG_EDX);
-	this->reg_start_context.esp = PIN_GetContextReg(ctx,REG_ESP);
-	this->reg_start_context.ebp = PIN_GetContextReg(ctx,REG_EBP);
-	this->reg_start_context.edi = PIN_GetContextReg(ctx,REG_EDI);
-	this->reg_start_context.esi = PIN_GetContextReg(ctx,REG_ESI);
-
-}
-
-/*
-Save the current registers inside the struct
-You can fine the macro fo the registers at:
-https://software.intel.com/sites/landingpage/pintool/docs/49306/Pin/html/group__REG__CPU__IA32.html
-*/
-void ProcInfo::setCurrRegContext(CONTEXT * ctx){
-
-	this->reg_curr_context.eax = PIN_GetContextReg(ctx,REG_EAX);
-	this->reg_curr_context.ebx = PIN_GetContextReg(ctx,REG_EBX);
-	this->reg_curr_context.ecx = PIN_GetContextReg(ctx,REG_ECX);
-	this->reg_curr_context.edx = PIN_GetContextReg(ctx,REG_EDX);
-	this->reg_curr_context.esp = PIN_GetContextReg(ctx,REG_ESP);
-	this->reg_curr_context.ebp = PIN_GetContextReg(ctx,REG_EBP);
-	this->reg_curr_context.edi = PIN_GetContextReg(ctx,REG_EDI);
-	this->reg_curr_context.esi = PIN_GetContextReg(ctx,REG_ESI);
-}
-
-
 
 /* ----------------------------- GETTER -----------------------------*/
 
-RegContext ProcInfo::getStartRegContext(){
-	return this->reg_start_context;
-}
-
-RegContext ProcInfo::getCurrRegContext(){
-	return this->reg_curr_context;
-}
 
 ADDRINT ProcInfo::getFirstINSaddress(){
 	return this->first_instruction;
@@ -130,39 +89,6 @@ float ProcInfo::getInitialEntropy(){
 	return this->InitialEntropy;
 }
 
-
-
-/* ----------------------------- PUBLIC METHODS -----------------------------*/
-
-void ProcInfo::PrintStartContext(){
-
-	MYINFO("======= START REGISTERS ======= \n");
-	MYINFO("EAX: %08x " , this->reg_start_context.eax);
-	MYINFO("EBX: %08x " , this->reg_start_context.ebx);
-	MYINFO("ECX: %08x " , this->reg_start_context.ecx);
-	MYINFO("EDX: %08x " , this->reg_start_context.edx);
-	MYINFO("ESP: %08x " , this->reg_start_context.esp);
-	MYINFO("EBP: %08x " , this->reg_start_context.ebp);
-	MYINFO("ESI: %08x " , this->reg_start_context.esi);
-	MYINFO("EDI: %08x " , this->reg_start_context.edi);
-	MYINFO("============================== \n");
-
-}
-
-void ProcInfo::PrintCurrContext(){
-
-	MYINFO("======= CURRENT REGISTERS ======= \n");
-	MYINFO("EAX: %08x " , this->reg_curr_context.eax);
-	MYINFO("EBX: %08x " , this->reg_curr_context.ebx);
-	MYINFO("ECX: %08x " , this->reg_curr_context.ecx);
-	MYINFO("EDX: %08x " , this->reg_curr_context.edx);
-	MYINFO("ESP: %08x " , this->reg_curr_context.esp);
-	MYINFO("EBP: %08x " , this->reg_curr_context.ebp);
-	MYINFO("ESI: %08x " , this->reg_curr_context.esi);
-	MYINFO("EDI: %08x " , this->reg_curr_context.edi);
-	MYINFO("================================= \n");
-
-}
 
 void ProcInfo::PrintSections(){
 
@@ -234,4 +160,14 @@ float ProcInfo::GetEntropy(){
 }
 
 
+clock_t ProcInfo::getStartTimer(){
 
+	return this->start_timer;
+}
+
+
+
+void ProcInfo::setStartTimer(clock_t t){
+
+	this->start_timer = t;
+}
