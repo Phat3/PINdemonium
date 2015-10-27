@@ -39,7 +39,6 @@ public:
 	float getInitialEntropy();
 	BOOL getPushadFlag();
 	BOOL getPopadFlag();
-	UINT32 getDumpNumber();
 	string getProcName();
 
 	/* setter */
@@ -76,7 +75,6 @@ private:
 	//this is a common technique to restore the initial register status after the unpacking routine
 	BOOL pushad_flag;
 	BOOL popad_flag;
-	UINT32 dump_number;
 	string proc_name;
 
 };

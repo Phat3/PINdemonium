@@ -16,7 +16,6 @@ ProcInfo::ProcInfo()
 	this->prev_ip = 0;
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
-	this->dump_number = 0;
 }
 
 ProcInfo::~ProcInfo(void)
@@ -121,10 +120,6 @@ BOOL ProcInfo::getPushadFlag(){
 
 BOOL ProcInfo::getPopadFlag(){
 	return this->popad_flag;
-}
-
-UINT32 ProcInfo::getDumpNumber(){
-	return this->dump_number;
 }
 
 string ProcInfo::getProcName(){
@@ -239,8 +234,4 @@ float ProcInfo::GetEntropy(){
 }
 
 
-//Increment dump number
-void ProcInfo::incrementDumpNumber(){
-	this->dump_number++;
-}
 

@@ -1,10 +1,15 @@
 #include "Log.h"
-#include <iomanip>
-#include <iostream>
-#include <sstream>
 
+//constanth path and variable for our logging system
 const string Log::PIN_DIRECTORY_PATH = "C:\\pin\\TempOEPin\\";
 const string Log::LOG_FILENAME = "log_FindOEPPin.txt";
+const string Log::REPORT_FILENAME = "report_FindOEPPin.txt";
+const string Log::IDA_PATH = "\"C:\\Program Files\\IDA 6.6\\idaw.exe\"";
+const string Log::IDAP_BAD_IMPORTS_CHECKER = PIN_DIRECTORY_PATH + "badImportsChecker.py";
+const string Log::BAD_IMPORTS_LIST = PIN_DIRECTORY_PATH + "badImportsList.txt";
+const string Log::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
+const string Log::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH + "Scylla\\ScyllaTest.exe";
+
 
 Log* Log::instance = 0;
 
@@ -12,18 +17,17 @@ Log* Log::instance = 0;
 //at the first time open the log file
 Log::Log(){
 
+	//set the initial dump number
+	this->dump_number = 0;
 	//build the path for this execution
 	this->base_path = PIN_DIRECTORY_PATH + this->getCurDateAndTime() + "\\";
 	//mk the directory
 	_mkdir(this->base_path.c_str());
 	//create the log and report files
 	string log_file_path = this->base_path + LOG_FILENAME;
-	string report_file_path = this->base_path + "report_FindOEPPin.txt";
+	string report_file_path = this->base_path + REPORT_FILENAME;
 	this->log_file = fopen(log_file_path.c_str(),"w");
 	this->report_file = fopen(report_file_path.c_str(),"w");
-
-
-
 
 }
 
@@ -50,12 +54,19 @@ string Log::getBasePath(){
 
 string Log::getCurrentDumpFilePath(){	
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
-	this->cur_dump_path = this->base_path +"finalDump"+ std::to_string((long double)ProcInfo::getInstance()->getDumpNumber()) + ".exe" ;
-
-
+	this->cur_dump_path = this->base_path + ProcInfo::getInstance()->getProcName() + "_" + std::to_string(this->dump_number) + ".exe" ;
 
 	return this->cur_dump_path;	
 }
+
+
+string Log::getCurrentDetectedListPath(){	
+	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
+	this->cur_list_path = this->base_path + this->DETECTED_BAD_IMPORTS_LIST + std::to_string(this->dump_number) + ".txt" ;
+
+	return this->cur_list_path;	
+}
+
 
 /* ----------------------------- UTILS -----------------------------*/
 
@@ -93,6 +104,11 @@ string Log::getCurDateAndTime(){
 
   strftime(buffer,80,"%d_%m_%Y_%I_%M_%S",timeinfo);
   return string(buffer);
+}
+
+//Increment dump number
+void Log::incrementDumpNumber(){
+	this->dump_number++;
 }
 
 
