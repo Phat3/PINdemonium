@@ -63,14 +63,15 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	ProcInfo *proc_info = ProcInfo::getInstance();
 
+	clock_t now = clock();
+
+	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > TIME_OUT  ){
+		MYINFO("TIMER SCADUTO");
+		exit(0);
+	}
+
 	UINT32 writeItemIndex=-1;
 	ADDRINT curEip = INS_Address(ins);
-	
-	//if it is the first instruction executed from the binary
-	if(curEip == proc_info->getFirstINSaddress()){
-	   //save the registers 
-	   INS_InsertCall(ins,IPOINT_BEFORE, (AFUNPTR)getInitialRegisters , IARG_CONTEXT,IARG_END);
-	}
 
 	//check if current instruction is a write
 	if(wxorxHandler->isWriteINS(ins)){
@@ -93,8 +94,12 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		WriteInterval item = wxorxHandler->getWritesSet().at(writeItemIndex);
 		//DEBUG
-		//MYINFO("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());
+		//MYINFO("[W xor X BROKEN!] IP : %08x  BEGIN : %08x  END : %08x", curEip, item.getAddrBegin(), item.getAddrEnd());	
 
+		//update the start timer 
+		proc_info->setStartTimer(clock());
+		MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
+	
 		ADDRINT prev_ip = proc_info->getPrevIp();
 		//call the proper heuristics
 		//we have to implement it in a better way!!

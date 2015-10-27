@@ -20,6 +20,7 @@ ProcInfo::ProcInfo()
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
 	this->dump_number = 0;
+	this->start_timer = -1;
 }
 
 
@@ -137,34 +138,6 @@ string ProcInfo::getProcName(){
 
 
 
-/* Utils + Helper */
-void ProcInfo::PrintStartContext(){
-	MYINFO("======= START REGISTERS ======= \n");
-	MYINFO("EAX: %08x " , this->reg_start_context.eax);
-	MYINFO("EBX: %08x " , this->reg_start_context.ebx);
-	MYINFO("ECX: %08x " , this->reg_start_context.ecx);
-	MYINFO("EDX: %08x " , this->reg_start_context.edx);
-	MYINFO("ESP: %08x " , this->reg_start_context.esp);
-	MYINFO("EBP: %08x " , this->reg_start_context.ebp);
-	MYINFO("ESI: %08x " , this->reg_start_context.esi);
-	MYINFO("EDI: %08x " , this->reg_start_context.edi);
-	MYINFO("============================== \n");
-}
-
-void ProcInfo::PrintCurrContext(){
-
-	MYINFO("======= CURRENT REGISTERS ======= \n");
-	MYINFO("EAX: %08x " , this->reg_curr_context.eax);
-	MYINFO("EBX: %08x " , this->reg_curr_context.ebx);
-	MYINFO("ECX: %08x " , this->reg_curr_context.ecx);
-	MYINFO("EDX: %08x " , this->reg_curr_context.edx);
-	MYINFO("ESP: %08x " , this->reg_curr_context.esp);
-	MYINFO("EBP: %08x " , this->reg_curr_context.ebp);
-	MYINFO("ESI: %08x " , this->reg_curr_context.esi);
-	MYINFO("EDI: %08x " , this->reg_curr_context.edi);
-	MYINFO("================================= \n");
-}
-
 void ProcInfo::PrintSections(){
 	MYINFO("======= SECTIONS ======= \n");
 	for(unsigned int i = 0; i < this->Sections.size(); i++) {
@@ -241,4 +214,17 @@ void ProcInfo::setInitialEntropy(float Entropy){
 	
 	this->InitialEntropy = Entropy;
 
+}
+
+
+clock_t ProcInfo::getStartTimer(){
+
+	return this->start_timer;
+}
+
+
+
+void ProcInfo::setStartTimer(clock_t t){
+
+	this->start_timer = t;
 }

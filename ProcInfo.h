@@ -1,6 +1,8 @@
 #pragma once
 
 #include "pin.H"
+#include <time.h>
+
 
 struct RegContext {
  ADDRINT eax;
@@ -39,6 +41,7 @@ public:
 	BOOL getPopadFlag();
 	UINT32 getDumpNumber();
 	string getProcName();
+	clock_t getStartTimer();
 
 	/* setter */
 	void setStartRegContext(CONTEXT * ctx);
@@ -49,6 +52,7 @@ public:
 	void setPushadFlag(BOOL flag);
 	void setPopadFlag(BOOL flag);
 	void setProcName(string name);
+	void setStartTimer(clock_t t);
 
 	void incrementDumpNumber();
 	
@@ -77,6 +81,6 @@ private:
 	BOOL popad_flag;
 	UINT32 dump_number;
 	string proc_name;
-
+	clock_t start_timer;
 };
 
