@@ -76,11 +76,12 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 BOOL InitFunctionCall::launchScyllaDump(string scylla,int pid, int curEip,string outputFile){	
 
 
+	MYINFO("CURR EIP dio bo %x",curEip);
 	//Creating the string containing the arguments to pass to the ScyllaTest.exe
 	std::stringstream scyllaArgsStream;
 	scyllaArgsStream << scylla << " ";
-	scyllaArgsStream << pid << " ";
-	scyllaArgsStream << curEip << " ";
+	scyllaArgsStream <<  pid << " ";
+	scyllaArgsStream << std::hex  << curEip << " ";
 	scyllaArgsStream << outputFile << " ";
 	string scyllaArgs = scyllaArgsStream.str();	
 
