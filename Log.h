@@ -21,6 +21,8 @@ public:
 	string getCurrentDumpFilePath();
 
 private:
+	static const string PIN_DIRECTORY_PATH;
+	static const string LOG_FILENAME;
 	Log::Log();
 	static Log* instance;
 	FILE *log_file;
