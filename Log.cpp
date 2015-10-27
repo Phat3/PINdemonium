@@ -18,9 +18,8 @@ Log::Log(){
 	this->log_file = fopen(log_file_path.c_str(),"w");
 	this->report_file = fopen(report_file_path.c_str(),"w");
 
-	//Initializing dump file path
-	this->dump_path = this->base_path +"finalDump";
-	printf("----------------------------------------------------dsadump path %s",this->dump_path.c_str());
+
+
 
 }
 
@@ -47,8 +46,8 @@ string Log::getBasePath(){
 
 string Log::getCurrentDumpFilePath(){	
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
-	this->cur_dump_path = this->dump_path + std::to_string((long double)ProcInfo::getInstance()->getDumpNumber()) + ".exe" ;
-	printf("+++++++++++++++++++++++++++++++++++++current path %s",this->cur_dump_path.c_str());
+	this->cur_dump_path = this->base_path +"finalDump"+ std::to_string((long double)ProcInfo::getInstance()->getDumpNumber()) + ".exe" ;
+
 
 
 	return this->cur_dump_path;	

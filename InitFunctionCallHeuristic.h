@@ -2,6 +2,7 @@
 #include "pin.H"
 #include "WxorXHandler.h"
 #include "ProcInfo.h"
+#include <sstream>
 namespace W{
 	#include "windows.h"
 	#include <tlhelp32.h>
@@ -20,9 +21,9 @@ public:
 	UINT32 run(ADDRINT curEip,WriteInterval wi);
 private:
 	UINT32 getFileSize(FILE * fp);
-	BOOL launchIdaScript(char *idaw,char *idaPythonScript,char *idaPythonInput,char *idaPythonOutput,const char * dumpFileName);
-	BOOL launchScyllaDump(char *scylla,int pid, int curEip,const char *dumpFileName);
-	BOOL existFile (const char *name);
+	BOOL launchIdaScript(string idaw,string idaPythonScript,string  idaPythonInput,string idaPythonOutput,string dumpFileName);
+	BOOL launchScyllaDump(string scylla,int pid, int curEip,string dumpFileName);
+	BOOL existFile (string name);
 
 };
 

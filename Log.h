@@ -6,7 +6,7 @@
 #include <direct.h>
 #include "ProcInfo.h"
 
-//#define LOG_WRITE_TO_FILE 1 //if it is uncommented the result will be saved on file otherwise they'll be printed to stdout
+#define LOG_WRITE_TO_FILE 1 //if it is uncommented the result will be saved on file otherwise they'll be printed to stdout
 
 class Log
 {
@@ -26,8 +26,7 @@ private:
 	FILE *log_file;
 	FILE *report_file;
 	string base_path;
-	string dump_path;
-	string cur_dump_path;
+	string cur_dump_path;        //Name of the final (IAT fixed) Dump 
 	string getCurDateAndTime();
 };
 
