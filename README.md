@@ -17,38 +17,38 @@
 
 2. Unzip PIN to the root directory and rename the folder to **pin**
 
-3. Clone this repository in **C:\pin\source\tools\\** ( this will create a folder named **FindOEPPin** )
+3. Clone this repository
 
-4. Open the file **MyPinTool.sln** with Visual Studio 2010 ( **NB: The version is mandatory** )
+4. Open the file **PinUnpacker.sln** with Visual Studio 2010 ( **NB: The version is mandatory** )
 
 5. Set your IDAPro path in **Log.cpp** ( const **Log::IDA_PATH** )
 
-6. Copy the folder **TempOEPin** in **C:\pin\\**
+6. Copy the folders **FindOEPPin\PinUnpackerDependencies** and **FindOEPPin\PinUnpackerResults** in **C:\pin\\**
 
-7. Compile the project 
+7. Compile the solution 
 
 ```
 	\---C
 	    \---pin
 			   \+---source
-			   	| 	     \---tools
-			   	| 	    		 \---FindOEPPin 
-			   	| 	    					  \---MyPinTools.sln
-			   	| 	    					  \---TempOEPin ( copy this )  
+			   	| 	     
 			   	|
 			   	|
-			   \+---TempOEPin ( paste here )
-			   	|			\---badImportsChecker.py
-			   	|			\---badImportsList.txt
-			   	|			\---dumperSelector.py
-			   	|			\---Scylla
-			   	|					\---ScyllaDLLx64.dll
-			   	|					\---ScyllaDLLx86.dll
-			   	|					\---ScyllaTest.exe
-			   	|					\---ScyllaTest.ilk
-			   	|					\---ScyllaTest.pdb
+			   \+---PinUnpackerResults
 			   	|
-			   \+---TempOEPPIin.dll
+			   	|
+			   	|
+			   	|
+			   \+---PinUnpackerDependencies 
+			   	|						  \---badImportsChecker.py
+			   	|			              \---badImportsList.txt
+			   	|						  \---dumperSelector.py
+			   	|						  \---Scylla
+			   	|								\---ScyllaDLLx64.dll
+			   	|								\---ScyllaDLLx86.dll
+			   	|								\---ScyllaDumper.exe
+			   	|
+			   \+---FindOEPPin.dll
 ```
 
 ## Usage
