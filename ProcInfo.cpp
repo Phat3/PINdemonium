@@ -1,14 +1,12 @@
 #include "ProcInfo.h"
-#include "Log.h"
-#include "Debug.h"
 
 ProcInfo* ProcInfo::instance = 0;
-
 
 ProcInfo* ProcInfo::getInstance()
 {
 	if (instance == 0)
 		instance = new ProcInfo();
+		
 	return instance;
 }
 
@@ -18,51 +16,16 @@ ProcInfo::ProcInfo()
 	this->prev_ip = 0;
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
+	this->start_timer = -1;
+
 }
-
-
 
 ProcInfo::~ProcInfo(void)
 {
 }
 
 
-/* Setter */
-
-/*
-Save the initial registers inside the struct
-You can fine the macro fo the registers at:
-https://software.intel.com/sites/landingpage/pintool/docs/49306/Pin/html/group__REG__CPU__IA32.html
-*/
-void ProcInfo::setStartRegContext(CONTEXT * ctx){
-
-	this->reg_start_context.eax = PIN_GetContextReg(ctx,REG_EAX);
-	this->reg_start_context.ebx = PIN_GetContextReg(ctx,REG_EBX);
-	this->reg_start_context.ecx = PIN_GetContextReg(ctx,REG_ECX);
-	this->reg_start_context.edx = PIN_GetContextReg(ctx,REG_EDX);
-	this->reg_start_context.esp = PIN_GetContextReg(ctx,REG_ESP);
-	this->reg_start_context.ebp = PIN_GetContextReg(ctx,REG_EBP);
-	this->reg_start_context.edi = PIN_GetContextReg(ctx,REG_EDI);
-	this->reg_start_context.esi = PIN_GetContextReg(ctx,REG_ESI);
-
-}
-
-/*
-Save the current registers inside the struct
-You can fine the macro fo the registers at:
-https://software.intel.com/sites/landingpage/pintool/docs/49306/Pin/html/group__REG__CPU__IA32.html
-*/
-void ProcInfo::setCurrRegContext(CONTEXT * ctx){
-
-	this->reg_curr_context.eax = PIN_GetContextReg(ctx,REG_EAX);
-	this->reg_curr_context.ebx = PIN_GetContextReg(ctx,REG_EBX);
-	this->reg_curr_context.ecx = PIN_GetContextReg(ctx,REG_ECX);
-	this->reg_curr_context.edx = PIN_GetContextReg(ctx,REG_EDX);
-	this->reg_curr_context.esp = PIN_GetContextReg(ctx,REG_ESP);
-	this->reg_curr_context.ebp = PIN_GetContextReg(ctx,REG_EBP);
-	this->reg_curr_context.edi = PIN_GetContextReg(ctx,REG_EDI);
-	this->reg_curr_context.esi = PIN_GetContextReg(ctx,REG_ESI);
-}
+/* ----------------------------- SETTER -----------------------------*/
 
 void ProcInfo::setFirstINSaddress(ADDRINT address){
 	this->first_instruction  = address;
@@ -82,14 +45,21 @@ void ProcInfo::setPopadFlag(BOOL flag){
 }
 
 
-/* Getter */
-RegContext ProcInfo::getStartRegContext(){
-	return this->reg_start_context;
+void ProcInfo::setProcName(string name){
+	//get the starting position of the last element of the path (the exe name)
+	int pos_exe_name = name.find_last_of("\\");
+	string exe_name = name.substr(pos_exe_name + 1);
+	//get the name from the last occurrence of / till the end of the string minus the file extension
+	this->proc_name =  exe_name.substr(0, exe_name.length() - 4);
 }
 
-RegContext ProcInfo::getCurrRegContext(){
-	return this->reg_curr_context;
+void ProcInfo::setInitialEntropy(float Entropy){
+	this->InitialEntropy = Entropy;
 }
+
+
+/* ----------------------------- GETTER -----------------------------*/
+
 
 ADDRINT ProcInfo::getFirstINSaddress(){
 	return this->first_instruction;
@@ -111,43 +81,24 @@ BOOL ProcInfo::getPopadFlag(){
 	return this->popad_flag;
 }
 
-
-
-/* Utils + Helper */
-void ProcInfo::PrintStartContext(){
-	MYLOG("======= START REGISTERS ======= \n");
-	MYLOG("EAX: %08x " , this->reg_start_context.eax);
-	MYLOG("EBX: %08x " , this->reg_start_context.ebx);
-	MYLOG("ECX: %08x " , this->reg_start_context.ecx);
-	MYLOG("EDX: %08x " , this->reg_start_context.edx);
-	MYLOG("ESP: %08x " , this->reg_start_context.esp);
-	MYLOG("EBP: %08x " , this->reg_start_context.ebp);
-	MYLOG("ESI: %08x " , this->reg_start_context.esi);
-	MYLOG("EDI: %08x " , this->reg_start_context.edi);
-	MYLOG("============================== \n");
+string ProcInfo::getProcName(){
+	return this->proc_name;
 }
 
-void ProcInfo::PrintCurrContext(){
-
-	MYLOG("======= CURRENT REGISTERS ======= \n");
-	MYLOG("EAX: %08x " , this->reg_curr_context.eax);
-	MYLOG("EBX: %08x " , this->reg_curr_context.ebx);
-	MYLOG("ECX: %08x " , this->reg_curr_context.ecx);
-	MYLOG("EDX: %08x " , this->reg_curr_context.edx);
-	MYLOG("ESP: %08x " , this->reg_curr_context.esp);
-	MYLOG("EBP: %08x " , this->reg_curr_context.ebp);
-	MYLOG("ESI: %08x " , this->reg_curr_context.esi);
-	MYLOG("EDI: %08x " , this->reg_curr_context.edi);
-	MYLOG("================================= \n");
+float ProcInfo::getInitialEntropy(){
+	return this->InitialEntropy;
 }
+
 
 void ProcInfo::PrintSections(){
-	MYLOG("======= SECTIONS ======= \n");
-	for(int i = 0; i < this->Sections.size(); i++) {
+
+	MYINFO("======= SECTIONS ======= \n");
+	for(unsigned int i = 0; i < this->Sections.size(); i++) {
 		Section item = this->Sections.at(i);
-		MYLOG("%s	->	begin : %08x		end : %08x", item.name.c_str(), item.begin, item.end);
+		MYINFO("%s	->	begin : %08x		end : %08x", item.name.c_str(), item.begin, item.end);
 	}
-	MYLOG("================================= \n");
+	MYINFO("================================= \n");
+
 }
 
 //insert a new section in our structure
@@ -157,17 +108,19 @@ void ProcInfo::insertSection(Section section){
 
 //return the section's name where the IP resides
 string ProcInfo::getSectionNameByIp(ADDRINT ip){
+
 	string s = "";
-	for(int i = 0; i < this->Sections.size(); i++) {
+	for(unsigned int i = 0; i < this->Sections.size(); i++) {
 		Section item = this->Sections.at(i);
 		if(ip >= item.begin && ip <= item.end){
 			s = item.name;
 		}
 	}
 	return s;
+
 }
 
-
+//return the entropy value of the entire program
 float ProcInfo::GetEntropy(){
 
 	IMG binary_image = APP_ImgHead();
@@ -183,10 +136,10 @@ float ProcInfo::GetEntropy(){
 
 	Buffer = (unsigned char *)malloc(size);
 
-	MYLOG("size to dump is %d" , size);
-	MYLOG("Start address is %08x" , start_address);
-	MYLOG("Start address is %08x" , end_address);
-	MYLOG("IMAGE NAME IS %s" , IMG_Name(binary_image));
+	MYINFO("size to dump is %d" , size);
+	MYINFO("Start address is %08x" , start_address);
+	MYINFO("Start address is %08x" , end_address);
+	MYINFO("IMAGE NAME IS %s" , IMG_Name(binary_image));
 
 	PIN_SafeCopy(Buffer , (void const *)start_address , size);
 
@@ -201,20 +154,20 @@ float ProcInfo::GetEntropy(){
 			Entropy += - Temp*(log(Temp)*d1log2); 
 	}
 
-	MYLOG("ENTROPY IS %f" , Entropy);
+	MYINFO("ENTROPY IS %f" , Entropy);
 
 	return Entropy;
 }
 
 
-float ProcInfo::getInitialEntropy(){
+clock_t ProcInfo::getStartTimer(){
 
-	return this->InitialEntropy;
-
+	return this->start_timer;
 }
 
-void ProcInfo::setInitialEntropy(float Entropy){
-	
-	this->InitialEntropy = Entropy;
 
+
+void ProcInfo::setStartTimer(clock_t t){
+
+	this->start_timer = t;
 }

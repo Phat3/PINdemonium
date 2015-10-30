@@ -42,9 +42,6 @@
     <ClCompile Include="Heuristics.cpp">
       <Filter>Source Files\Heuristics</Filter>
     </ClCompile>
-    <ClCompile Include="InitFunctionCall.cpp">
-      <Filter>Source Files\Heuristics</Filter>
-    </ClCompile>
     <ClCompile Include="WriteInterval.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -57,9 +54,6 @@
     <ClCompile Include="EntropyHeuristic.cpp">
       <Filter>Source Files\Heuristics</Filter>
     </ClCompile>
-    <ClCompile Include="JumpOuterSection.cpp">
-      <Filter>Source Files\Heuristics</Filter>
-    </ClCompile>
     <ClCompile Include="ProcInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -68,6 +62,12 @@
     </ClCompile>
     <ClCompile Include="GdbDebugger.cpp">
       <Filter>Source Files\Helpers</Filter>
+	</ClCompile>
+    <ClCompile Include="JumpOuterSectionHeuristic.cpp">
+      <Filter>Source Files\Heuristics</Filter>
+    </ClCompile>
+    <ClCompile Include="InitFunctionCallHeuristic.cpp">
+      <Filter>Source Files\Heuristics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -106,10 +106,16 @@
     <ClInclude Include="EntropyHeuristic.h">
       <Filter>Header Files\Heuristics</Filter>
     </ClInclude>
-    <ClInclude Include="JumpOuterSection.h">
+    <ClInclude Include="PushadPopadHeuristic.h">
       <Filter>Header Files\Heuristics</Filter>
     </ClInclude>
-    <ClInclude Include="PushadPopadHeuristic.h">
+    <ClInclude Include="ProcInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JumpOuterSectionHeuristic.h">
+      <Filter>Header Files\Heuristics</Filter>
+    </ClInclude>
+    <ClInclude Include="InitFunctionCallHeuristic.h">
       <Filter>Header Files\Heuristics</Filter>
     </ClInclude>
     <ClInclude Include="ProcInfo.h">

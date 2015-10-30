@@ -16,9 +16,9 @@ UINT32 Heuristics::jmpOuterSectionHeuristic(INS ins, ADDRINT prev_ip){
 	return heu.run(ins, prev_ip);
 }
 
-UINT32 Heuristics::initFunctionCallHeuristic(ADDRINT curEip){
+UINT32 Heuristics::initFunctionCallHeuristic(ADDRINT curEip, WriteInterval wi){
 	InitFunctionCall heu = InitFunctionCall();
-	return heu.run(curEip);
+	return heu.run(curEip,wi);
 }
 
 UINT32 Heuristics::pushadPopadHeuristic(){

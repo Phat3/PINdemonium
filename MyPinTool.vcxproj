@@ -252,12 +252,12 @@
   <ItemGroup>
     <ClCompile Include="GdbDebugger.cpp" />
     <ClCompile Include="Heuristics.cpp" />
-    <ClCompile Include="InitFunctionCall.cpp" />
+    <ClCompile Include="InitFunctionCallHeuristic.cpp" />
     <ClCompile Include="ProcInfo.cpp" />
     <ClCompile Include="EntropyHeuristic.cpp" />
     <ClCompile Include="FilterHandler.cpp" />
     <ClCompile Include="FindOEPPin.cpp" />
-    <ClCompile Include="JumpOuterSection.cpp" />
+    <ClCompile Include="JumpOuterSectionHeuristic.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="PushadPopadHeuristic.cpp" />
@@ -272,10 +272,10 @@
     <ClInclude Include="Debug.h" />
     <ClInclude Include="GdbDebugger.h" />
     <ClInclude Include="ProcInfo.h" />
-    <ClInclude Include="InitFunctionCall.h" />
+    <ClInclude Include="InitFunctionCallHeuristic.h" />
     <ClInclude Include="Heuristics.h" />
     <ClInclude Include="EntropyHeuristic.h" />
-    <ClInclude Include="JumpOuterSection.h" />
+    <ClInclude Include="JumpOuterSectionHeuristic.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="FilterHandler.h" />
     <ClInclude Include="OepFinder.h" />

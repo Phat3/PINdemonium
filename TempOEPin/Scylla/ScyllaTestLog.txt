@@ -1,0 +1,14 @@
+[INFO](scyllatest.cpp) argv0 C:\pin\TempOEPin\Scylla\ScyllaTest.exe argv1 2852 argv2 401100 argv3 C:\pin\TempOEPin\finalDump_2.exe
+[INFO](scyllatest.cpp) Loading scylla
+ 
+[INFO](scyllatest.cpp) ----------------IAT Fixing Test----------------
+
+[INFO](scyllatest.cpp) GetExeModuleBase 400000
+
+[INFO](scyllatest.cpp) Original Exe Path: C:\pin\write_test-WinUPack.exe
+
+[INFO](scyllatest.cpp) Successfully dumped Pid: 2852, FileToDump: C:\pin\write_test-WinUPack.exe, Hmod: 400000, oep: 401100, output: ./tmp_dump_file.exe 
+
+[INFO](scyllatest.cpp) (IAT SEARCH) iatStart 4050A4 iatSize 5C
+
+[INFO](scyllatest.cpp) [IAT FIX] Success

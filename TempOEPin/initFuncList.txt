@@ -1,4 +1,0 @@
-MessageBoxA
-Cane
-Casa
-ExitProcess

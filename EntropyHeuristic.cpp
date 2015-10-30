@@ -10,13 +10,13 @@ UINT32 EntropyHeuristic::run(){
 	float initial_entropy = proc_info->getInitialEntropy();
 	float difference = abs(entropy_value - initial_entropy)/initial_entropy;
 
-	MYLOG("ENTROPY INITIAL IS %f\n" , initial_entropy);
-	MYLOG("CURRENT ENTROPY IS %f\n" , entropy_value);
+	MYINFO("ENTROPY INITIAL IS %f" , initial_entropy);
+	MYINFO("CURRENT ENTROPY IS %f" , entropy_value);
 
 
 	if( difference > threshold){
 
-		MYLOG("ENTROPY DIFFERERNCE IS %f\n" , difference);
+		MYWARN("ENTROPY DIFFERERNCE IS %f" , difference);
 		return OEPFINDER_FOUND_OEP;
 	
 	}

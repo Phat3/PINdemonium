@@ -28,7 +28,6 @@ public:
 	void setJmpOuterSectionFlag(UINT32 flag);
 	void setPushadPopadFlag(UINT32 flag);
 
-
 private:
 	ADDRINT addr_begin;
 	ADDRINT addr_end;

@@ -1,6 +1,10 @@
 #pragma once
 
 #include "pin.H"
+#include "Log.h"
+#include "Debug.h"
+#include <time.h>
+
 
 struct RegContext {
  ADDRINT eax;
@@ -29,23 +33,23 @@ public:
 	~ProcInfo(void);
 
 	/* getter */
-	RegContext getStartRegContext();
-	RegContext getCurrRegContext();
 	ADDRINT getFirstINSaddress();
 	ADDRINT getPrevIp();
 	std::vector<Section> getSections();
 	float getInitialEntropy();
 	BOOL getPushadFlag();
 	BOOL getPopadFlag();
+	string getProcName();
+	clock_t getStartTimer();
 
 	/* setter */
-	void setStartRegContext(CONTEXT * ctx);
-	void setCurrRegContext(CONTEXT * ctx);
 	void setFirstINSaddress(ADDRINT address);
 	void setPrevIp(ADDRINT ip);
 	void setInitialEntropy(float Entropy);
 	void setPushadFlag(BOOL flag);
 	void setPopadFlag(BOOL flag);
+	void setProcName(string name);
+	void setStartTimer(clock_t t);
 	
 	/* debug */
 	void PrintStartContext();
@@ -60,8 +64,6 @@ public:
 private:
 	static ProcInfo* instance;
 	ProcInfo::ProcInfo();
-	RegContext reg_start_context;
-	RegContext reg_curr_context;
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
 	std::vector<Section> Sections;
@@ -70,6 +72,7 @@ private:
 	//this is a common technique to restore the initial register status after the unpacking routine
 	BOOL pushad_flag;
 	BOOL popad_flag;
-
+	string proc_name;
+	clock_t start_timer;
 };
 

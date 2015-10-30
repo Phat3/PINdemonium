@@ -1,14 +1,19 @@
 import idaapi
 import idc
-tmpDirectory = "C:\Users\phate\Desktop\pin\TempOEPin"
-outputFile = tmpDirectory + "\detectedInitFunc.txt"
-inputFile =  tmpDirectory + "\initFuncList.txt"
-initFunc = []
 
+
+if len(idc.ARGV) < 3:
+  print idc.ARGV[0]+"  <inputFile> <outputFile>"
+  idc.Exit(-1)
+  
+inputFile = idc.ARGV[1]
+outputFile = idc.ARGV[2]
+initFunc = []
+print "input File "+inputFile
+print "output File "+outputFile
 outputF = open(outputFile,"w") 
 
 def imp_cb(ea, name, ord):
-  
   for func in initFunc:
     if not name:
       print "%08x: ord#%d" % (ea, ord)
@@ -26,6 +31,8 @@ def loadInitFunc():
 
 
 def main():
+
+  print "AAAAAAAAAAAAAAAAAAAAA"
   loadInitFunc()
   nimps = idaapi.get_import_module_qty()
 
