@@ -83,8 +83,9 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	ProcInfo *proc_info = ProcInfo::getInstance();
-
+	
 	clock_t now = clock();
+	
 
 	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > TIME_OUT  ){
 		MYINFO("TIMER SCADUTO");

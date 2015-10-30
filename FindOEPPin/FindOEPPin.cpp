@@ -110,7 +110,7 @@ void initDebug(){
 int main(int argc, char * argv[]){
 
 	//initDebug();
-
+	W::DebugBreak();
 	MYINFO("Strating prototype ins");
 
 	FilterHandler *filterH = FilterHandler::getInstance();
