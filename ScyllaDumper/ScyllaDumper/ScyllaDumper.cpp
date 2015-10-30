@@ -5,6 +5,14 @@
 #include "debug.h"
 #include "Log.h"
 
+#define SCYLLA_DLL_DEBUG
+
+#ifdef SCYLLA_DLL_DEBUG
+#define SCYLLA_DLL L"./ScyllaDllDebug/ScyllaDLLx86.dll"
+#else
+#define SCYLLA_DLL L"./ScyllaDllRelease/ScyllaDLLx86.dll"
+#endif
+
 
 
 
@@ -34,7 +42,7 @@ void LoadScyllaLibrary(){
 	#ifdef _WIN64
 		hScylla = LoadLibraryW(L"./ScyllaDLLx64.dll");
 	#else
-		hScylla = LoadLibraryW(L"./ScyllaDLLx86.dll");
+		hScylla = LoadLibraryW(SCYLLA_DLL);
 	#endif
 		INFO("Loading scylla\n ");
 		if (hScylla)
