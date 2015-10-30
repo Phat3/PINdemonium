@@ -1,4 +1,5 @@
 #include "OepFinder.h"
+#include "GdbDebugger.h"
 
 OepFinder::OepFinder(void){
 	
@@ -45,7 +46,6 @@ static void ConnectDebugger()
 		 return;
 	}
 
-
     DEBUG_CONNECTION_INFO info;
     if (!PIN_GetDebugConnectionInfo(&info) || info._type != DEBUG_CONNECTION_TYPE_TCP_SERVER){
 		  MYINFO("errore  3");
@@ -53,8 +53,14 @@ static void ConnectDebugger()
 	}
     MYINFO("uscitos  1");
 	int timeout = 30000;
+
+	DEBUG_CONNECTION_INFO infoDbg;
+	PIN_GetDebugConnectionInfo(&infoDbg);
+
+	GdbDebugger::getInstance()->connectRemote(infoDbg._tcpServer._tcpPort);
     if (PIN_WaitForDebuggerToConnect(timeout))
         return;
+
 }
 
 //insert a breakpoint on the current instruction
@@ -120,9 +126,9 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
 
 		//wait for scylla
-		//ConnectDebugger();
-		//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
-		Heuristics::initFunctionCallHeuristic(curEip,item);
+		ConnectDebugger();
+		INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
+		//Heuristics::initFunctionCallHeuristic(curEip,item);
 		//write the heuristic resuòts on ile
 		Log::getInstance()->writeOnReport(curEip, item);
 		//delete the WriteInterval just analyzed

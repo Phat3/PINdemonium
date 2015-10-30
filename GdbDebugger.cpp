@@ -23,18 +23,14 @@ GdbDebugger::GdbDebugger(void)
    saAttr.lpSecurityDescriptor = NULL; 
 
    //Create a pipe for the child process's STDIN. 
- 
    if (! CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0)) 
       ErrorExit(TEXT("Stdin CreatePipe")); 
 	
-
-// Ensure the write handle to the pipe for STDIN is not inherited. 
- 
+   // Ensure the write handle to the pipe for STDIN is not inherited. 
    if ( ! SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0) )
       ErrorExit(TEXT("Stdin SetHandleInformation")); 
  
-// Create the child process. 
-   
+   // Create the child process.   
    CreateChildProcess();
 
    ReadFromPipe();
@@ -46,6 +42,13 @@ GdbDebugger::~GdbDebugger(void)
 {
 }
 
+// ----------------------------- SETTER ----------------------------- //
+
+void GdbDebugger::connectRemote(int port){
+	std::stringstream cmd;
+	cmd << "target remote :" << port;
+	this->executeCmd((char *)cmd.str().c_str());
+}
 
 
 // ----------------------------- UTILS ----------------------------- //

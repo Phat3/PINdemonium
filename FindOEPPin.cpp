@@ -7,7 +7,6 @@
 #include  "Debug.h"
 #include "Log.h"
 #include "FilterHandler.h"
-#include "GdbDebugger.h"
 namespace W {
 	#include <windows.h>
 }
@@ -96,12 +95,21 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 
 }
 
+void initDebug(){
+	DEBUG_MODE mode;
+	mode._type = DEBUG_CONNECTION_TYPE_TCP_SERVER;
+	mode._options = DEBUG_MODE_OPTION_NONE;
+	PIN_SetDebugMode(&mode);
+}
+
 
 /* ===================================================================== */
 /* Main                                                                  */
 /* ===================================================================== */
 
 int main(int argc, char * argv[]){
+
+	initDebug();
 
 	MYINFO("Strating prototype ins");
 
