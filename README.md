@@ -59,4 +59,4 @@
 	pin -t FindOEPPin.dll -- <path_to_the_exe_to_be_instrumented>
 	```
 
-2. Check your result in **C:\pin\TempOEPin\\< current_date_and_time >\\**
+2. Check your result in **C:\pin\PinUnpackerResults\\< current_date_and_time >\\**
