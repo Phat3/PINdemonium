@@ -50,6 +50,8 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
 	MYINFO("Current output file dump %s",Log::getInstance()->getCurrentDumpFilePath().c_str());
 
+
+	//W::DebugBreak();
 	//Dumping the process memory and try to reconstructing the IAT
 	if(!launchScyllaDump(Log::SCYLLA_DUMPER_PATH,pid,curEip,dumpFile)){
 		MYERRORE("Scylla execution Failed");

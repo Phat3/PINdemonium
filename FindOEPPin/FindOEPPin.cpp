@@ -82,6 +82,7 @@ void imageLoadCallback(IMG img,void *){
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
+
 	oepf.IsCurrentInOEP(ins);
 }
 
@@ -112,6 +113,7 @@ int main(int argc, char * argv[]){
 	//initDebug();
 
 	MYINFO("Strating prototype ins");
+	
 
 	FilterHandler *filterH = FilterHandler::getInstance();
 	//set the filters for the libraries

@@ -113,6 +113,8 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	if(writeItemIndex != -1 ){
 		WriteInterval item = wxorxHandler->getWritesSet().at(writeItemIndex);
 
+	//	MYINFO("Current WriteInterval  start %08x eend %08x",item.getAddrBegin(),item.getAddrEnd());
+
 		//update the start timer 
 		proc_info->setStartTimer(clock());
 		MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
@@ -134,6 +136,11 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		Log::getInstance()->writeOnReport(curEip, item);
 		//delete the WriteInterval just analyzed
 		wxorxHandler->deleteWriteItem(writeItemIndex);
+		
+		//Why this instruction crash the program with write-test UPX?
+		//wxorxHandler->displayWriteSet();
+	
+
 	    //update the prevuious IP
 		proc_info->setPrevIp(INS_Address(ins));
 		return OEPFINDER_HEURISTIC_FAIL;

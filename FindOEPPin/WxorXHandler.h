@@ -22,11 +22,13 @@ public:
 	VOID deleteWriteItem(UINT32 writeItemIndex);
 	//getter for the data structure
 	std::vector<WriteInterval> getWritesSet();
+	VOID displayWriteSet();
 
 private: 
 	//set of the write inteval
 	 std::vector<WriteInterval> WritesSet;
 	 static WxorXHandler* instance;
 	 WxorXHandler(){};
+
 };
 

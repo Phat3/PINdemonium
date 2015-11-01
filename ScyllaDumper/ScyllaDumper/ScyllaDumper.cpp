@@ -79,8 +79,7 @@ void IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	}
 	INFO("Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
 		
-	
-	
+	//DebugBreak();
 	//Searching the IAT
 	int error = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, TRUE);
 	if(error){
@@ -89,7 +88,7 @@ void IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	}
 	INFO("(IAT SEARCH) iatStart %X iatSize %X\n",iatStart, iatSize);
 	
-
+	
 	//Fixing the IAT
 	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,dumpFile,outputFile);
 	if(error){

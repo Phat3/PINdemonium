@@ -72,3 +72,23 @@ UINT32 WxorXHandler::getWxorXindex(ADDRINT ip){
 VOID WxorXHandler::deleteWriteItem(UINT32 writeItemIndex){
 	this->WritesSet.erase(this->WritesSet.begin() + writeItemIndex);
 }
+
+
+
+//Why this crash the porgram with UPX?
+VOID WxorXHandler::displayWriteSet(){
+	
+	for(unsigned index=0; index <  this->WritesSet.size(); index++) {
+		MYINFO("WriteInterval number %d  start %08x eend %08x",index,this->WritesSet.at(index).getAddrBegin(),this->WritesSet.at(index).getAddrEnd());
+	}
+	/*
+	int i = 0;y doesn't WORK?
+	for(std::vector<WriteInterval>::iterator item = this->WritesSet.begin(); item != this->WritesSet.end(); ++item) {
+
+		MYINFO("WriteInterval number %d  start %08x eend %08x",i,item->getAddrBegin(),item->getAddrEnd());
+		i++;
+	}
+	*/
+	
+	
+}

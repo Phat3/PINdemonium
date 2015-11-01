@@ -59,7 +59,7 @@ bool IATSearch::findIATAdvanced( DWORD_PTR startAddress, DWORD_PTR* addressIAT, 
 	BYTE * tempBuf = dataBuffer;
 	while(decomposeMemory(tempBuf, memorySize, (DWORD_PTR)baseAddress) && decomposerInstructionsCount != 0)
 	{
-		findIATPointers(iatPointers);
+		findIATPointers(iatPointers);    //Checks if there are jmp or call in all the executable memory pages
 
 		next = (DWORD_PTR)(decomposerResult[decomposerInstructionsCount - 1].addr - baseAddress);
 		next += decomposerResult[decomposerInstructionsCount - 1].size;

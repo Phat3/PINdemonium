@@ -253,7 +253,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	{
 		if(it->PID == dwProcessId)
 		{
-			processPtr = &(*it);
+			processPtr = &(*it);					//Get the Processn which has the PID dwProcessPid
 			break;
 		}
 	}
@@ -267,14 +267,14 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	{
 		return SCY_ERROR_PROCOPEN;
 	}
-	ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
+	ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);  //In ProcessAccessHelp::moduleList List of the Dll loaded by the process and other useful information of the Process with PID equal dwProcessId
 	ProcessAccessHelp::selectedModule = 0;
 	ProcessAccessHelp::targetImageBase = processPtr->imageBase;
 	ProcessAccessHelp::targetSizeOfImage = processPtr->imageSize;
 
-	apiReader.readApisFromModuleList();
+	apiReader.readApisFromModuleList();						//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
 
-	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
+	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);  //in moduleList now I have the list of API which match the API loaded in "apiList"(contains the API obtained by parsing the Export Directory of the Loaded DLL's)
 
 	//add IAT section to dump
 

@@ -13,7 +13,7 @@ std::map<DWORD_PTR, ImportModuleThunk> *  ApiReader::moduleThunkList; //store fo
 DWORD_PTR ApiReader::minApiAddress = (DWORD_PTR)-1;
 DWORD_PTR ApiReader::maxApiAddress = 0;
 
-//#define DEBUG_COMMENTS
+#define DEBUG_COMMENTS
 
 void ApiReader::readApisFromModuleList()
 {
@@ -906,7 +906,7 @@ void  ApiReader::readAndParseIAT(DWORD_PTR addressIAT, DWORD sizeIAT, std::map<D
 {
 	moduleThunkList = &moduleListNew;
 	BYTE *dataIat = new BYTE[sizeIAT];
-	if (readMemoryFromProcess(addressIAT,sizeIAT,dataIat))
+	if (readMemoryFromProcess(addressIAT,sizeIAT,dataIat))  //In dataIat I have the contents of the IAT
 	{
 		parseIAT(addressIAT,dataIat,sizeIAT);
 	}
@@ -927,21 +927,21 @@ void ApiReader::parseIAT(DWORD_PTR addressIAT, BYTE * iatBuffer, SIZE_T size)
 	bool isSuspect = false;
 	int countApiFound = 0, countApiNotFound = 0;
 	DWORD_PTR * pIATAddress = (DWORD_PTR *)iatBuffer;
-	SIZE_T sizeIAT = size / sizeof(DWORD_PTR);
+	SIZE_T sizeIAT = size / sizeof(DWORD_PTR);   //number of entry of the IAT
 
 	for (SIZE_T i = 0; i < sizeIAT; i++)
 	{
 		//Scylla::windowLog.log(L"%08X %08X %d von %d", addressIAT + (DWORD_PTR)&pIATAddress[i] - (DWORD_PTR)iatBuffer, pIATAddress[i],i,sizeIAT);
 
-        if (!isInvalidMemoryForIat(pIATAddress[i]))
+        if (!isInvalidMemoryForIat(pIATAddress[i]))  //Check if it is a mapped address in the running process
         {
 #ifdef DEBUG_COMMENTS
 			Scylla::debugLog.log(L"min %p max %p address %p", minApiAddress, maxApiAddress, pIATAddress[i]);
 #endif
-            if ( (pIATAddress[i] > minApiAddress) && (pIATAddress[i] < maxApiAddress) )
+            if ( (pIATAddress[i] > minApiAddress) && (pIATAddress[i] < maxApiAddress) )     //Checks if the value of the current API address belongs to the address space of the API parse in the exports before(apiList)
             {
 
-                apiFound = getApiByVirtualAddress(pIATAddress[i], &isSuspect);
+                apiFound = getApiByVirtualAddress(pIATAddress[i], &isSuspect);   //check if the current API address belongs to the apiList loaded before with the addresses of the API in the Export Directory of the Dll's
 
 #ifdef DEBUG_COMMENTS
 				Scylla::debugLog.log(L"apiFound %p address %p", apiFound, pIATAddress[i]);
