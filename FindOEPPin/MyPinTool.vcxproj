@@ -250,6 +250,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DumpHandler.cpp" />
     <ClCompile Include="GdbDebugger.cpp" />
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="InitFunctionCallHeuristic.cpp" />
@@ -270,6 +271,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="DumpHandler.h" />
     <ClInclude Include="GdbDebugger.h" />
     <ClInclude Include="ProcInfo.h" />
     <ClInclude Include="InitFunctionCallHeuristic.h" />

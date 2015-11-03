@@ -3,6 +3,7 @@
 #include "WxorXHandler.h"
 #include "ProcInfo.h"
 #include <sstream>
+#include "DumpHandler.h"
 namespace W{
 	#include "windows.h"
 	#include <tlhelp32.h>
@@ -22,8 +23,7 @@ public:
 private:
 	UINT32 getFileSize(FILE * fp);
 	BOOL launchIdaScript(string idaw,string idaPythonScript,string  idaPythonInput,string idaPythonOutput,string dumpFileName);
-	BOOL launchScyllaDump(string scylla,int pid, int curEip,string dumpFileName);
-	BOOL existFile (string name);
+
 
 };
 

@@ -69,6 +69,9 @@
     <ClCompile Include="InitFunctionCallHeuristic.cpp">
       <Filter>Source Files\Heuristics</Filter>
     </ClCompile>
+    <ClCompile Include="DumpHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README">
@@ -120,6 +123,9 @@
     </ClInclude>
     <ClInclude Include="GdbDebugger.h">
       <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="DumpHandler.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
