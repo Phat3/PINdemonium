@@ -85,8 +85,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	ProcInfo *proc_info = ProcInfo::getInstance();
 	
 	clock_t now = clock();
-	
-
+	//check the timeout
 	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > TIME_OUT  ){
 		MYINFO("TIMER SCADUTO");
 		exit(0);
@@ -94,6 +93,15 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	UINT32 writeItemIndex=-1;
 	ADDRINT curEip = INS_Address(ins);
+	ADDRINT prev_ip = proc_info->getPrevIp();
+
+	/* if the WxorX is already broken and the curEip is not in the list of the dumped address let's trigger the heuristic of long jump */
+	if( proc_info->getWXorXFlagBroken() && ( ! proc_info->isInsideJmpBlacklist(curEip) ) && curEip >= 0x00400000 && curEip <= 0x004fffff ){
+		if( Heuristics::longJmpHeuristic(ins, prev_ip) == 0){
+			MYWARN("HEURISTICA LONG JUMP --- DIFFERENCE : %d", std::abs((int)curEip - (int)prev_ip));	
+			proc_info->insertInJmpBlacklist(curEip);
+		}
+	}
 
 	//check if current instruction is a write
 	if(wxorxHandler->isWriteINS(ins)){
@@ -111,6 +119,9 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
 	//W xor X broken
 	if(writeItemIndex != -1 ){
+
+		proc_info->setWXorXFlagBroken(true);
+
 		WriteInterval item = wxorxHandler->getWritesSet().at(writeItemIndex);
 
 	//	MYINFO("Current WriteInterval  start %08x eend %08x",item.getAddrBegin(),item.getAddrEnd());
@@ -118,8 +129,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//update the start timer 
 		proc_info->setStartTimer(clock());
 		MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
-
-		ADDRINT prev_ip = proc_info->getPrevIp();
 
 		//call the proper heuristics
 		//we have to implement it in a better way!!

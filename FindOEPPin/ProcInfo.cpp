@@ -17,6 +17,7 @@ ProcInfo::ProcInfo()
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
 	this->start_timer = -1;
+	this->w_xor_x_broken_flag = FALSE;
 
 }
 
@@ -57,6 +58,16 @@ void ProcInfo::setInitialEntropy(float Entropy){
 	this->InitialEntropy = Entropy;
 }
 
+void ProcInfo::setWXorXFlagBroken(BOOL flag){
+	this->w_xor_x_broken_flag = flag;
+}
+
+
+void ProcInfo::setStartTimer(clock_t t){
+	this->start_timer = t;
+}
+
+
 
 /* ----------------------------- GETTER -----------------------------*/
 
@@ -89,6 +100,22 @@ float ProcInfo::getInitialEntropy(){
 	return this->InitialEntropy;
 }
 
+BOOL ProcInfo::getWXorXFlagBroken(){
+	return this->w_xor_x_broken_flag;
+}
+
+std::unordered_set<ADDRINT> ProcInfo::getJmpBlacklist(){
+	return this->addr_jmp_blacklist;
+}
+
+clock_t ProcInfo::getStartTimer(){
+	return this->start_timer;
+}
+
+
+
+
+/* ----------------------------- UTILS -----------------------------*/
 
 void ProcInfo::PrintSections(){
 
@@ -117,7 +144,6 @@ string ProcInfo::getSectionNameByIp(ADDRINT ip){
 		}
 	}
 	return s;
-
 }
 
 //return the entropy value of the entire program
@@ -159,15 +185,10 @@ float ProcInfo::GetEntropy(){
 	return Entropy;
 }
 
-
-clock_t ProcInfo::getStartTimer(){
-
-	return this->start_timer;
+void ProcInfo::insertInJmpBlacklist(ADDRINT ip){
+	this->addr_jmp_blacklist.insert(ip);
 }
 
-
-
-void ProcInfo::setStartTimer(clock_t t){
-
-	this->start_timer = t;
+BOOL ProcInfo::isInsideJmpBlacklist(ADDRINT ip){
+	return this->addr_jmp_blacklist.find(ip) != this->addr_jmp_blacklist.end();
 }

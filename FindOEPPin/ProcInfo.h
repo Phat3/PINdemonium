@@ -4,6 +4,7 @@
 #include "Log.h"
 #include "Debug.h"
 #include <time.h>
+#include <unordered_set>
 
 
 struct RegContext {
@@ -41,6 +42,8 @@ public:
 	BOOL getPopadFlag();
 	string getProcName();
 	clock_t getStartTimer();
+	BOOL getWXorXFlagBroken();
+	std::unordered_set<ADDRINT> getJmpBlacklist();
 
 	/* setter */
 	void setFirstINSaddress(ADDRINT address);
@@ -50,6 +53,7 @@ public:
 	void setPopadFlag(BOOL flag);
 	void setProcName(string name);
 	void setStartTimer(clock_t t);
+	void setWXorXFlagBroken(BOOL flag);
 	
 	/* debug */
 	void PrintStartContext();
@@ -57,16 +61,21 @@ public:
 	void PrintSections();
 
 	/* helper */
-	void ProcInfo::insertSection(Section section);
-	string ProcInfo::getSectionNameByIp(ADDRINT ip);
+	void insertSection(Section section);
+	string getSectionNameByIp(ADDRINT ip);
 	float GetEntropy();
+	void insertInJmpBlacklist(ADDRINT ip);
+	BOOL isInsideJmpBlacklist(ADDRINT ip);
+
 	
 private:
 	static ProcInfo* instance;
 	ProcInfo::ProcInfo();
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
+	BOOL w_xor_x_broken_flag;
 	std::vector<Section> Sections;
+	std::unordered_set<ADDRINT> addr_jmp_blacklist;
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad
 	//this is a common technique to restore the initial register status after the unpacking routine

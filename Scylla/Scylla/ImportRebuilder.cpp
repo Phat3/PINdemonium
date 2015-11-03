@@ -86,8 +86,13 @@ bool ImportRebuilder::buildNewImportTable(std::map<DWORD_PTR, ImportModuleThunk>
 		return false;
 	}
 
-	setFlagToIATSection((*moduleList.begin()).second.firstThunk);
-
+	//do not dereference this structure if it is emptyqqs
+	if(moduleList.size() != 0){
+		setFlagToIATSection((*moduleList.begin()).second.firstThunk);
+	}
+	else{
+		return false;
+	}
 	DWORD vaImportAddress = listPeSection[importSectionIndex].sectionHeader.VirtualAddress;
 
 	if (useOFT)
