@@ -42,7 +42,6 @@ public:
 	BOOL getPopadFlag();
 	string getProcName();
 	clock_t getStartTimer();
-	BOOL getWXorXFlagBroken();
 	std::unordered_set<ADDRINT> getJmpBlacklist();
 
 	/* setter */
@@ -53,7 +52,6 @@ public:
 	void setPopadFlag(BOOL flag);
 	void setProcName(string name);
 	void setStartTimer(clock_t t);
-	void setWXorXFlagBroken(BOOL flag);
 	
 	/* debug */
 	void PrintStartContext();
@@ -73,7 +71,6 @@ private:
 	ProcInfo::ProcInfo();
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
-	BOOL w_xor_x_broken_flag;
 	std::vector<Section> Sections;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
 	float InitialEntropy;

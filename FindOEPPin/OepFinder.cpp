@@ -95,14 +95,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	ADDRINT curEip = INS_Address(ins);
 	ADDRINT prev_ip = proc_info->getPrevIp();
 
-	/* if the WxorX is already broken and the curEip is not in the list of the dumped address let's trigger the heuristic of long jump */
-	if( proc_info->getWXorXFlagBroken() && ( ! proc_info->isInsideJmpBlacklist(curEip) ) && curEip >= 0x00400000 && curEip <= 0x004fffff ){
-		if( Heuristics::longJmpHeuristic(ins, prev_ip) == 0){
-			MYWARN("HEURISTICA LONG JUMP --- DIFFERENCE : %d", std::abs((int)curEip - (int)prev_ip));	
-			proc_info->insertInJmpBlacklist(curEip);
-		}
-	}
-
 	//check if current instruction is a write
 	if(wxorxHandler->isWriteINS(ins)){
 		INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);
@@ -120,42 +112,51 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//W xor X broken
 	if(writeItemIndex != -1 ){
 
-		proc_info->setWXorXFlagBroken(true);
-
 		WriteInterval item = wxorxHandler->getWritesSet().at(writeItemIndex);
-
-	//	MYINFO("Current WriteInterval  start %08x eend %08x",item.getAddrBegin(),item.getAddrEnd());
-
 		//update the start timer 
 		proc_info->setStartTimer(clock());
-		MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
-
-		//call the proper heuristics
-		//we have to implement it in a better way!!
-		item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
-		item.setEntropyFlag(Heuristics::entropyHeuristic());
-		item.setJmpOuterSectionFlag(Heuristics::jmpOuterSectionHeuristic(ins, prev_ip));
-		item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
-
-		//wait for scylla
-		//ConnectDebugger();
-		//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
-		Heuristics::initFunctionCallHeuristic(curEip,item);
-		//write the heuristic resuòts on ile
-		Log::getInstance()->writeOnReport(curEip, item);
+		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
+		//not the firtst broken in this write set
+		if(item.getBrokenFlag()){
+			//long jump detected intra-writeset ---> trigger analysis and dump
+			if( std::abs( (int)curEip - (int)prev_ip) > item.getThreshold() ){
+				this->analysis(item, ins, prev_ip, curEip);
+			}
+		}
+		//first broken in this write set ---> analysis and dump ---> set the broken flag of this write ionterval 
+		else{
+			this->analysis(item, ins, prev_ip, curEip);
+		}
 		//delete the WriteInterval just analyzed
-		wxorxHandler->deleteWriteItem(writeItemIndex);
-		
-		//Why this instruction crash the program with write-test UPX?
-		//wxorxHandler->displayWriteSet();
+		//wxorxHandler->deleteWriteItem(writeItemIndex);
 	
-
-	    //update the prevuious IP
+		//update the prevuious IP
 		proc_info->setPrevIp(INS_Address(ins));
-		return OEPFINDER_HEURISTIC_FAIL;
+
 	}
 	//update the previous IP
 	proc_info->setPrevIp(INS_Address(ins));
 	return OEPFINDER_NOT_WXORX_INST;
 
+}
+
+BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip){
+
+	//call the proper heuristics
+	//we have to implement it in a better way!!
+	item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
+	item.setEntropyFlag(Heuristics::entropyHeuristic());
+	item.setJmpOuterSectionFlag(Heuristics::jmpOuterSectionHeuristic(ins, prev_ip));
+	item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
+
+	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
+
+	//wait for scylla
+	//ConnectDebugger();
+	//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
+	Heuristics::initFunctionCallHeuristic(curEip,item);
+	//write the heuristic resuòts on ile
+	Log::getInstance()->writeOnReport(curEip, item);
+
+	return OEPFINDER_HEURISTIC_FAIL;
 }

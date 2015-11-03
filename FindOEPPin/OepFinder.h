@@ -31,6 +31,7 @@ private:
 	//check if the current instruction is a pushad or a popad
 	//if so then set the proper flags in ProcInfo
 	void handlePopadAndPushad(INS ins);
+	BOOL analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip);
 
 };
 

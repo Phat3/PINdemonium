@@ -59,6 +59,8 @@ UINT32 WxorXHandler::getWxorXindex(ADDRINT ip){
 		//if we found that the current ip is in a memory area that was previously written
 		//we have to return the address of the WriteInterval that has to be analyzed by our heuristics
 		if(item->checkInside(ip)){
+			//XXXXXXX DANGER!!!!!
+			item->setBrokenFlag(1);
 			int index = item - WritesSet.begin();
 			return index;
 		}

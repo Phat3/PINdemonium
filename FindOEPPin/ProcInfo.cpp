@@ -17,8 +17,6 @@ ProcInfo::ProcInfo()
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
 	this->start_timer = -1;
-	this->w_xor_x_broken_flag = FALSE;
-
 }
 
 ProcInfo::~ProcInfo(void)
@@ -58,11 +56,6 @@ void ProcInfo::setInitialEntropy(float Entropy){
 	this->InitialEntropy = Entropy;
 }
 
-void ProcInfo::setWXorXFlagBroken(BOOL flag){
-	this->w_xor_x_broken_flag = flag;
-}
-
-
 void ProcInfo::setStartTimer(clock_t t){
 	this->start_timer = t;
 }
@@ -98,10 +91,6 @@ string ProcInfo::getProcName(){
 
 float ProcInfo::getInitialEntropy(){
 	return this->InitialEntropy;
-}
-
-BOOL ProcInfo::getWXorXFlagBroken(){
-	return this->w_xor_x_broken_flag;
 }
 
 std::unordered_set<ADDRINT> ProcInfo::getJmpBlacklist(){

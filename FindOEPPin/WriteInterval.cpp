@@ -5,6 +5,7 @@ WriteInterval::WriteInterval(ADDRINT addr_begin, ADDRINT addr_end)
 {
 	this->addr_begin = addr_begin;
 	this->addr_end = addr_end;
+	this->broken_flag = 0;
 }
 
 
@@ -38,6 +39,10 @@ UINT32 WriteInterval::getPushadPopadflag(){
 	return this->pushad_popad_flag;
 }
 
+UINT32 WriteInterval::getBrokenFlag(){
+	return this->broken_flag;
+}
+
 void WriteInterval::setEntropyFlag(UINT32 flag){
 	this->entropy_flag = flag;
 }
@@ -52,6 +57,10 @@ void WriteInterval::setJmpOuterSectionFlag(UINT32 flag){
 
 void WriteInterval::setPushadPopadFlag(UINT32 flag){
 	this->pushad_popad_flag = flag;
+}
+
+void WriteInterval::setBrokenFlag(UINT32 flag){
+	this->broken_flag = flag;
 }
 
 //----------------------- PUBLIC METHODS -----------------------
@@ -81,3 +90,8 @@ VOID WriteInterval::update(ADDRINT start_addr, ADDRINT end_addr){
 BOOL WriteInterval::checkInside(ADDRINT ip){
 	return (ip >= this->addr_begin && ip <= this->addr_end);
 }
+
+UINT32 WriteInterval::getThreshold(){
+	return (this->addr_end - this->addr_begin)/8;
+}
+ 
