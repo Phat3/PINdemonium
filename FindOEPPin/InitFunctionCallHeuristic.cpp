@@ -29,14 +29,7 @@ UINT32 InitFunctionCall::getFileSize(FILE * fp){
 return size;
 }
 
-BOOL InitFunctionCall::existFile (string name) {
-	if (FILE *file = fopen(name.c_str(), "r")) {
-        fclose(file);
-        return true;
-    } else {
-        return false;
-    }   
-}
+
 
 UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
@@ -53,7 +46,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
 	//W::DebugBreak();
 	//Dumping the process memory and try to reconstructing the IAT
-	if(!launchScyllaDump(Log::SCYLLA_DUMPER_PATH,pid,curEip,dumpFile)){
+	if(!DumpHandler::launchScyllaDumpAndFix(Log::SCYLLA_DUMPER_PATH,pid,curEip,dumpFile)){
 		MYERRORE("Scylla execution Failed");
 		Log::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 		return 0;
@@ -75,42 +68,6 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	return 0;
 }
 
-BOOL InitFunctionCall::launchScyllaDump(string scylla,int pid, int curEip,string outputFile){	
-
-
-	MYINFO("CURR EIP dio bo %x",curEip);
-	//Creating the string containing the arguments to pass to the ScyllaTest.exe
-	std::stringstream scyllaArgsStream;
-	scyllaArgsStream << scylla << " ";
-	scyllaArgsStream <<  pid << " ";
-	scyllaArgsStream << std::hex  << curEip << " ";
-	scyllaArgsStream << outputFile << " ";
-	string scyllaArgs = scyllaArgsStream.str();	
-
-	//sprintf(scyllaArgs,"%s %d %x %s",scylla,pid,curEip,outputFile); //argv[0] is the name of the program
-	MYINFO("Scylla cmd %s %s",scylla.c_str(),scyllaArgs.c_str());
-
-	//Running external Scyllatest.exe executable
-	W::STARTUPINFO si ={0};
-	W::PROCESS_INFORMATION pi ={0};
-
-	si.cb=sizeof(si);
-
-	if(!W::CreateProcess(scylla.c_str(),(char *)scyllaArgs.c_str(),NULL,NULL,FALSE,0,NULL,NULL,&si,&pi)){
-		MYERRORE("(INITFUNCTIONCALL)Can't launch Scylla");
-		return false;
-	}
-	W::WaitForSingleObject(pi.hProcess,INFINITE);
-	W::CloseHandle(pi.hProcess);
-	W::CloseHandle(pi.hThread);
-	
-	if(!existFile(outputFile)){
-		MYERRORE("Scylla Can't dump the process");
-		return false;
-	}
-	MYINFO("Scylla Finished");
-	return true;
-}
 
 
 
