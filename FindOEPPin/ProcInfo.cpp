@@ -135,6 +135,10 @@ string ProcInfo::getSectionNameByIp(ADDRINT ip){
 	return s;
 }
 
+void ProcInfo::insertHeapZone(HeapZone heap_zone){
+	this->HeapMap.push_back(heap_zone);
+}
+
 //return the entropy value of the entire program
 float ProcInfo::GetEntropy(){
 

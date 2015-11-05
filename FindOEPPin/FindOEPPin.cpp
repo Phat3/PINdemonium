@@ -38,10 +38,21 @@ INT32 Usage(){
 
 
 
-VOID VirtualAllocHook(UINT32 value ){
+VOID VirtualAllocHook(UINT32 arg0, UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
 
   MYINFO("INSIDE THE INSTRUMENTATION OF VIRTUAL ALLOC\n");
-  MYINFO("%d" , value);
+  MYINFO("size : %08x" , virtual_alloc_size);
+  MYINFO("return address : %08x" , ret_heap_address);
+
+  ProcInfo *proc_info = ProcInfo::getInstance();
+
+  HeapZone hz;
+  hz.begin = ret_heap_address;
+  hz.size = virtual_alloc_size;
+  hz.end = ret_heap_address + virtual_alloc_size;
+
+  //saving this heap zone in the map inside ProcInfo
+  proc_info->insertHeapZone(hz); 
 
 }
 
@@ -93,7 +104,7 @@ void imageLoadCallback(IMG img,void *){
 			MYINFO("Address of VirtualAlloc: %08x\n" , va_address);
 
 			RTN_Open(rtn); 	
-			RTN_InsertCall(rtn, IPOINT_BEFORE , (AFUNPTR)VirtualAllocHook , IARG_END);
+			RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualAllocHook , IARG_G_ARG0_CALLEE , IARG_G_ARG1_CALLEE , IARG_G_RESULT0, IARG_END);
 			RTN_Close(rtn);
 		}
 
