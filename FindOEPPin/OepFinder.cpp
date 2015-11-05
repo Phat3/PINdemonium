@@ -113,13 +113,12 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
 	//W xor X broken
 	if(writeItemIndex != -1 ){
-		
 
-		WriteInterval& item = wxorxHandler->getWritesSet()[writeItemIndex];
+		WriteInterval item = wxorxHandler->getWritesSet()[writeItemIndex];
 		//update the start timer 
 		proc_info->setStartTimer(clock());
 		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
-		MYINFO("TEST");
+
 		//not the first broken in this write set		
 		if(item.getBrokenFlag()){
 
@@ -127,7 +126,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			if(Log::INTER_WRITESET_ANALYSIS_ENABLE){ 
 				interWriteSetJMPAnalysis(curEip,prev_ip,ins,item );
 			}
-			MYINFO("CASA");
+		
 		}
 		//first broken in this write set ---> analysis and dump ---> set the broken flag of this write ionterval 
 		else{
