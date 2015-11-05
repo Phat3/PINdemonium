@@ -71,7 +71,8 @@ void IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 		return;
 	}
 	INFO("Original Exe Path: %S\n",originalExe);
-		
+	
+	/* hMod is the reference to the ExE module base */
 	success = ScyllaDumpProcessW(pid,originalExe,hMod,oep,dumpFile);
 	if(!success){
 		ERRORE("Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);

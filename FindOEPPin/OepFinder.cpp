@@ -17,7 +17,6 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 		//if not update the write set
 		WxorXHandler::getInstance()->writeSetManager(ip, end_addr, size);
 	}
-
 }
 
 //check if the current instruction is a pushad or a popad

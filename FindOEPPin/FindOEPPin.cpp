@@ -11,7 +11,6 @@ namespace W {
 	#include <windows.h>
 }
 
-
 OepFinder oepf;
 clock_t tStart;
 
@@ -38,10 +37,21 @@ INT32 Usage(){
 }
 
 
+
+VOID VirtualAllocHook(UINT32 value ){
+
+  MYINFO("INSIDE THE INSTRUMENTATION OF VIRTUAL ALLOC\n");
+  MYINFO("%d" , value);
+
+}
+
+
 // - Get initial entropy
 // - Get PE section data 
 // - Add filtered library
 void imageLoadCallback(IMG img,void *){
+
+	Section item;
 
 	//get the initial entropy of the PE
 	//we have to consder only the main executable and avìvoid the libraries
@@ -59,7 +69,6 @@ void imageLoadCallback(IMG img,void *){
 		MYINFO("----------------------------------------------");
 		//retrieve the section of the PE
 		for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
-			Section item;
 			item.name = SEC_Name(sec);
 			item.begin = SEC_Address(sec);
 			item.end = item.begin + SEC_Size(sec);
@@ -73,10 +82,24 @@ void imageLoadCallback(IMG img,void *){
 	ADDRINT startAddr = IMG_LowAddress(img);
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
-	if(!IMG_IsMainExecutable(img) && filterH->isKnownLibrary(name)){		
-		filterH->addLibrary(name,startAddr,endAddr);
-	}
 
+	if(!IMG_IsMainExecutable(img) && filterH->isKnownLibrary(name)){	
+
+		/* searching for VirtualAlloc */ 
+		RTN rtn = RTN_FindByName( img, "VirtualAlloc");
+		if(rtn != RTN_Invalid()){
+			MYINFO("BECCATO LA VIRTUAL ALLOC\n");
+			ADDRINT va_address = RTN_Address(rtn);
+			MYINFO("Address of VirtualAlloc: %08x\n" , va_address);
+
+			RTN_Open(rtn); 	
+			RTN_InsertCall(rtn, IPOINT_BEFORE , (AFUNPTR)VirtualAllocHook , IARG_END);
+			RTN_Close(rtn);
+		}
+
+		filterH->addLibrary(name,startAddr,endAddr);
+
+	}
 }
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
@@ -133,6 +156,8 @@ int main(int argc, char * argv[]){
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
 	// Start the program, never returns
+
+	
 	PIN_StartProgram();
 	
 	return 0;
