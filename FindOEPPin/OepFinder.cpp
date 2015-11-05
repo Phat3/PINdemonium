@@ -111,21 +111,26 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
 	//W xor X broken
 	if(writeItemIndex != -1 ){
+		//W::DebugBreak();
 
-		WriteInterval item = wxorxHandler->getWritesSet().at(writeItemIndex);
+		WriteInterval& item = wxorxHandler->getWritesSet()[writeItemIndex];
 		//update the start timer 
 		proc_info->setStartTimer(clock());
 		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
 		//not the firtst broken in this write set
+		
 		if(item.getBrokenFlag()){
 			//long jump detected intra-writeset ---> trigger analysis and dump
-			if( std::abs( (int)curEip - (int)prev_ip) > item.getThreshold() ){
-				this->analysis(item, ins, prev_ip, curEip);
-			}
+			
+				if( std::abs( (int)curEip - (int)prev_ip) > item.getThreshold() ){
+					this->analysis(item, ins, prev_ip, curEip);
+				}
+			
 		}
 		//first broken in this write set ---> analysis and dump ---> set the broken flag of this write ionterval 
 		else{
 			this->analysis(item, ins, prev_ip, curEip);
+			wxorxHandler->setBrokenFlag(writeItemIndex); 
 		}
 		//delete the WriteInterval just analyzed
 		//wxorxHandler->deleteWriteItem(writeItemIndex);

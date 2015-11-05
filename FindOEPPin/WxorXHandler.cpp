@@ -59,8 +59,6 @@ UINT32 WxorXHandler::getWxorXindex(ADDRINT ip){
 		//if we found that the current ip is in a memory area that was previously written
 		//we have to return the address of the WriteInterval that has to be analyzed by our heuristics
 		if(item->checkInside(ip)){
-			//XXXXXXX DANGER!!!!!
-			item->setBrokenFlag(1);
 			int index = item - WritesSet.begin();
 			return index;
 		}
@@ -73,6 +71,11 @@ UINT32 WxorXHandler::getWxorXindex(ADDRINT ip){
 //delete the analyzed WriteInterval
 VOID WxorXHandler::deleteWriteItem(UINT32 writeItemIndex){
 	this->WritesSet.erase(this->WritesSet.begin() + writeItemIndex);
+}
+
+VOID WxorXHandler::setBrokenFlag(int writeItemIndex){
+
+	this->WritesSet[writeItemIndex].setBrokenFlag(true);
 }
 
 

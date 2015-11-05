@@ -23,6 +23,8 @@ public:
 	//getter for the data structure
 	std::vector<WriteInterval> getWritesSet();
 	VOID displayWriteSet();
+	VOID setBrokenFlag(int writeItemIndex);
+
 
 private: 
 	//set of the write inteval

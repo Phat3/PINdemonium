@@ -59,7 +59,7 @@ void WriteInterval::setPushadPopadFlag(UINT32 flag){
 	this->pushad_popad_flag = flag;
 }
 
-void WriteInterval::setBrokenFlag(UINT32 flag){
+void WriteInterval::setBrokenFlag(BOOL flag){
 	this->broken_flag = flag;
 }
 
