@@ -116,6 +116,8 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		proc_info->setStartTimer(clock());
 		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
 		//not the firtst broken in this write set
+		int heap_index = proc_info->searchHeapMap(curEip);
+
 		if(item.getBrokenFlag()){
 			//long jump detected intra-writeset ---> trigger analysis and dump
 			if( std::abs( (int)curEip - (int)prev_ip) > item.getThreshold() ){

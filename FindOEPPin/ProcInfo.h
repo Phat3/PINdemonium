@@ -57,6 +57,7 @@ public:
 	void insertSection(Section section);
 	string getSectionNameByIp(ADDRINT ip);
 	void insertHeapZone(HeapZone heap_zone);
+	UINT32 searchHeapMap(ADDRINT ip);
 	float GetEntropy();
 	void insertInJmpBlacklist(ADDRINT ip);
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
