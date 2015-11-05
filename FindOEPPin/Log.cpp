@@ -11,6 +11,10 @@ const string Log::BAD_IMPORTS_LIST = PIN_DIRECTORY_PATH_DEP + "badImportsList.tx
 const string Log::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
 const string Log::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
 
+//Tuning Flags
+const bool  Log::INTER_WRITESET_ANALYSIS_ENABLE = false;
+const string Log::FILTER_WRITES_ENABLES = "teb";
+
 
 Log* Log::instance = 0;
 

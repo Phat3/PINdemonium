@@ -117,6 +117,7 @@ int main(int argc, char * argv[]){
 
 	FilterHandler *filterH = FilterHandler::getInstance();
 	//set the filters for the libraries
+	MYINFO("%s",Log::FILTER_WRITES_ENABLES.c_str());
 	filterH->setFilters("teb");
 	//get the start time of the execution (benchmark)
 	tStart = clock();
