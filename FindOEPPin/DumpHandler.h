@@ -14,8 +14,8 @@ public:
 	DumpHandler(void);
 	~DumpHandler(void);
 	static BOOL launchScyllaDumpAndFix(string scylla,int pid, int curEip,string dumpFileName);
+	static BOOL launchScyllaAddSection(string scylla, string dumped_file );
 private:
-	
 	static BOOL existFile (string name);
 	
 };

@@ -154,6 +154,11 @@ UINT32 ProcInfo::searchHeapMap(ADDRINT ip){
 	return -1;
 }
 
+HeapZone* ProcInfo::getHeapZoneByIndex(UINT32 index){
+
+	return &this->HeapMap.at(index);
+}
+
 
 //return the entropy value of the entire program
 float ProcInfo::GetEntropy(){

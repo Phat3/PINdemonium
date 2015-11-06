@@ -82,6 +82,9 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	ProcInfo *proc_info = ProcInfo::getInstance();
+
+	int heap_index = -1;
+	unsigned char * Buffer; 
 	
 	clock_t now = clock();
 	//check the timeout
@@ -116,7 +119,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		proc_info->setStartTimer(clock());
 		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
 		//not the firtst broken in this write set
-		int heap_index = proc_info->searchHeapMap(curEip);
+		heap_index = proc_info->searchHeapMap(curEip);
 
 		if(item.getBrokenFlag()){
 			//long jump detected intra-writeset ---> trigger analysis and dump
@@ -132,6 +135,21 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//wxorxHandler->deleteWriteItem(writeItemIndex);
 	
 		//update the prevuious IP
+
+		/* Check if we need to dump the heap too */
+		if(heap_index != -1){
+		   HeapZone *hz = proc_info->getHeapZoneByIndex(heap_index);
+		   printf("DUMPING HEAP: %08x" , hz->begin);
+
+		   /* prepare the buffer to copy inside the stuff into the heap section to dump */
+		   Buffer = (unsigned char *)malloc(hz->size);
+
+		   /* copy the heap zone into the buffer */
+		   PIN_SafeCopy(Buffer , (void const *)hz->begin , hz->size);
+
+
+		}
+
 		proc_info->setPrevIp(INS_Address(ins));
 
 	}
@@ -156,6 +174,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	//ConnectDebugger();
 	//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
 	Heuristics::initFunctionCallHeuristic(curEip,item);
+
 	//write the heuristic resuòts on ile
 	Log::getInstance()->writeOnReport(curEip, item);
 
