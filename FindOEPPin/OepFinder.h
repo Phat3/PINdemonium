@@ -6,7 +6,7 @@
 #include "Heuristics.h"
 #include "FilterHandler.h"
 #include "ProcInfo.h"
-#include "Log.h"
+#include "Config.h"
 namespace W {
 	#include <windows.h>
 }

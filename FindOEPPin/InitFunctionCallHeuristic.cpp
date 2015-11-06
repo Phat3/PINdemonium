@@ -38,21 +38,21 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	UINT32 pid = W::GetCurrentProcessId();
 	MYINFO("Curr PID %d",pid);
 	
-	string  dumpFile = Log::getInstance()->getCurrentDumpFilePath();
-	string idap_res_file = Log::getInstance()->getCurrentDetectedListPath();
+	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
+	string idap_res_file = Config::getInstance()->getCurrentDetectedListPath();
 
-	MYINFO("Current output file dump %s",Log::getInstance()->getCurrentDumpFilePath().c_str());
+	MYINFO("Current output file dump %s",Config::getInstance()->getCurrentDumpFilePath().c_str());
 
 
 	//W::DebugBreak();
 	//Dumping the process memory and try to reconstructing the IAT
-	if(!DumpHandler::launchScyllaDumpAndFix(Log::SCYLLA_DUMPER_PATH,pid,curEip,dumpFile)){
+	if(!DumpHandler::launchScyllaDumpAndFix(Config::SCYLLA_DUMPER_PATH,pid,curEip,dumpFile)){
 		MYERRORE("Scylla execution Failed");
-		Log::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
+		Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 		return 0;
 	}
 
-	launchIdaScript(Log::IDA_PATH, Log::IDAP_BAD_IMPORTS_CHECKER, Log::BAD_IMPORTS_LIST, idap_res_file, dumpFile);
+	launchIdaScript(Config::IDA_PATH, Config::IDAP_BAD_IMPORTS_CHECKER, Config::BAD_IMPORTS_LIST, idap_res_file, dumpFile);
 
 	//Read the result of IdaPython script
 	
@@ -64,7 +64,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
 	MYWARN("Found init functions %s\n",init_func_detected);
 	
-	Log::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
+	Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
 	return 0;
 }
 
@@ -72,7 +72,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
 
 BOOL InitFunctionCall::launchIdaScript(string idaw,string idaPythonScript,string idaPythonInput,string idaPythonOutput,string dumpFile){
-	string idaScriptLauncher = Log::getInstance()->getBasePath() + IDAPYTHON_LAUNCHER;
+	string idaScriptLauncher = Config::getInstance()->getBasePath() + IDAPYTHON_LAUNCHER;
 
 	//Running external idaPython script
 	W::STARTUPINFO si ={0};
