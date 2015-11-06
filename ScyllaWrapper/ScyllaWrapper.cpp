@@ -8,6 +8,7 @@
 
 
 VOID myFunc(){
+
 	printf("HELLO WANDERsz %d",ScyllaVersionInformationDword());
 
 
