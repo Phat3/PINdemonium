@@ -11,7 +11,7 @@
 // File di intestazione di Windows:
 #include <windows.h>
 #include <stdio.h>
-
+#include "FunctionExport.h"
 
 
 // TODO: fare riferimento qui alle intestazioni aggiuntive richieste dal programma

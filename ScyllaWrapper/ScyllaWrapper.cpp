@@ -6,8 +6,10 @@
 #include "ScyllaWrapper.h"
 
 
+
 VOID myFunc(){
-	printf("HELLO WANDERs");
+	printf("HELLO WANDERsz %d",ScyllaVersionInformationDword());
+
 
 }
 
