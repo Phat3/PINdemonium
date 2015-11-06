@@ -9,8 +9,8 @@
 #include "FilterHandler.h"
 namespace W {
 	#include <windows.h>
+	#include "FunctionExport.h"
 }
-
 
 OepFinder oepf;
 clock_t tStart;
@@ -114,6 +114,7 @@ int main(int argc, char * argv[]){
 
 	MYINFO("Strating prototype ins");
 	
+	W::provaFun();
 
 	FilterHandler *filterH = FilterHandler::getInstance();
 	//set the filters for the libraries

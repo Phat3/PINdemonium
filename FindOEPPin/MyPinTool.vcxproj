@@ -95,7 +95,7 @@
     <ClCompile>
       <AdditionalOptions>/EHs- /EHa- %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>C:\pin\source\include\pin;C:\pin\source\include\pin\gen;C:\pin\source\tools\InstLib;C:\pin\extras\xed-ia32\include;C:\pin\extras\components\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Scylla\Scylla;C:\pin\source\include\pin;C:\pin\source\include\pin\gen;C:\pin\source\tools\InstLib;C:\pin\extras\xed-ia32\include;C:\pin\extras\components\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TARGET_IA32;HOST_IA32;TARGET_WINDOWS;BIGARRAY_MULTIPLIER=1;_CRT_SECURE_NO_DEPRECATE;_SECURE_SCL=0;WIN32</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>
@@ -114,8 +114,8 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/export:main %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>pin.lib;libxed.lib;libcpmt.lib;libcmt.lib;pinvm.lib;kernel32.lib;ntdll-32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\pin\ia32\lib;C:\pin\ia32\lib-ext;C:\pin\extras\xed-ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>pin.lib;libxed.lib;libcpmt.lib;libcmt.lib;pinvm.lib;kernel32.lib;ntdll-32.lib;ScyllaDLLx86.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllDebug;C:\pin\ia32\lib;C:\pin\ia32\lib-ext;C:\pin\extras\xed-ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -170,7 +170,7 @@
       <AdditionalOptions>/EHs- /EHa- %(AdditionalOptions)</AdditionalOptions>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>C:\pin\source\include\pin;C:\pin\source\include\pin\gen;C:\pin\source\tools\InstLib;C:\pin\extras\xed-ia32\include;C:\pin\extras\components\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Scylla\Scylla;C:\pin\source\include\pin;C:\pin\source\include\pin\gen;C:\pin\source\tools\InstLib;C:\pin\extras\xed-ia32\include;C:\pin\extras\components\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TARGET_IA32;HOST_IA32;TARGET_WINDOWS;BIGARRAY_MULTIPLIER=1;_CRT_SECURE_NO_DEPRECATE;_SECURE_SCL=0;WIN32</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>
@@ -190,8 +190,8 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/export:main %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>pin.lib;libxed.lib;libcpmt.lib;libcmt.lib;pinvm.lib;kernel32.lib;ntdll-32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\pin\ia32\lib;C:\pin\ia32\lib-ext;C:\pin\extras\xed-ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>pin.lib;libxed.lib;libcpmt.lib;libcmt.lib;pinvm.lib;kernel32.lib;ntdll-32.lib;ScyllaDLLx86.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllRelease;C:\pin\ia32\lib;C:\pin\ia32\lib-ext;C:\pin\extras\xed-ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>

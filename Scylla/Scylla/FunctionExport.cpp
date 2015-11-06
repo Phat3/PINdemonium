@@ -298,3 +298,8 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 
 	return retVal;
 }
+
+
+void WINAPI provaFun(){
+	printf("chiamata!!!!!!!\n");
+}
