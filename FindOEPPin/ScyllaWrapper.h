@@ -14,7 +14,7 @@ public:
 private:
 	ScyllaWrapper::ScyllaWrapper();
 	static ScyllaWrapper* instance;
-	HMODULE hScyllaWrapper;
+	void * hScyllaWrapper;
 
 };
 
