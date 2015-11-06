@@ -259,7 +259,7 @@
     <ClCompile Include="FilterHandler.cpp" />
     <ClCompile Include="FindOEPPin.cpp" />
     <ClCompile Include="JumpOuterSectionHeuristic.cpp" />
-    <ClCompile Include="Log.cpp" />
+    <ClCompile Include="Config.cpp" />
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="PushadPopadHeuristic.cpp" />
     <ClCompile Include="WriteInterval.cpp" />
@@ -278,7 +278,7 @@
     <ClInclude Include="Heuristics.h" />
     <ClInclude Include="EntropyHeuristic.h" />
     <ClInclude Include="JumpOuterSectionHeuristic.h" />
-    <ClInclude Include="Log.h" />
+    <ClInclude Include="Config.h" />
     <ClInclude Include="FilterHandler.h" />
     <ClInclude Include="OepFinder.h" />
     <ClInclude Include="PushadPopadHeuristic.h" />

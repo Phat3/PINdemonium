@@ -123,7 +123,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		if(item.getBrokenFlag()){
 
 			//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis
-			if(Log::INTER_WRITESET_ANALYSIS_ENABLE){ 
+			if(Config::INTER_WRITESET_ANALYSIS_ENABLE){ 
 				interWriteSetJMPAnalysis(curEip,prev_ip,ins,item );
 			}
 		
@@ -170,7 +170,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
 	Heuristics::initFunctionCallHeuristic(curEip,item);
 	//write the heuristic resuòts on ile
-	Log::getInstance()->writeOnReport(curEip, item);
+	Config::getInstance()->writeOnReport(curEip, item);
 
 	return OEPFINDER_HEURISTIC_FAIL;
 }

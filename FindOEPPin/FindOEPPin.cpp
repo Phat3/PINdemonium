@@ -5,7 +5,7 @@
 #include "OepFinder.h"
 #include <time.h>
 #include  "Debug.h"
-#include "Log.h"
+#include "Config.h"
 #include "FilterHandler.h"
 namespace W {
 	#include <windows.h>
@@ -25,7 +25,7 @@ VOID Fini(INT32 code, VOID *v){
 	//DEBUG --- get the execution time
 	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 	CLOSELOG();
-	Log::getInstance()->closeReportFile();
+	Config::getInstance()->closeReportFile();
 
 }
 
@@ -117,8 +117,8 @@ int main(int argc, char * argv[]){
 
 	FilterHandler *filterH = FilterHandler::getInstance();
 	//set the filters for the libraries
-	MYINFO("%s",Log::FILTER_WRITES_ENABLES.c_str());
-	filterH->setFilters(Log::FILTER_WRITES_ENABLES);
+	MYINFO("%s",Config::FILTER_WRITES_ENABLES.c_str());
+	filterH->setFilters(Config::FILTER_WRITES_ENABLES);
 	//get the start time of the execution (benchmark)
 	tStart = clock();
 	// Initialize pin

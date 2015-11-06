@@ -6,7 +6,7 @@
 #include <sstream> 
 #include <iostream>
 #include "math.h"
-#include "Log.h"
+#include "Config.h"
 namespace W {
 	#include <Windows.h>
 }

@@ -2,7 +2,7 @@
 
 #include "pin.H"
 #include "Debug.h"
-#include "Log.h"
+#include "Config.h"
 #include "OepFinder.h"
 #include "LongJumpHeuristic.h"
 #include "EntropyHeuristic.h"
