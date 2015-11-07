@@ -313,9 +313,14 @@ BOOL ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD 
 	}
 
 	peFile->readPeSectionsFromFile();
-
 	bool res = peFile->addNewLastSection(sectionName, sectionSize, sectionData);
+
+	peFile->alignAllSectionHeaders();
+	peFile->fixPeHeader();
+	
 	int retValue = peFile->savePeFileToDisk(dump_path);
+
+
 
 	return TRUE;
 }
