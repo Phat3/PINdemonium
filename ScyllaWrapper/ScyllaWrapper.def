@@ -1,2 +1,3 @@
 EXPORTS
    myFunc   @1
+   ScyllaAddSection @2

@@ -298,3 +298,19 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 
 	return retVal;
 }
+
+
+/* ADDED FROM OUR TEAM */
+
+BOOL ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, BYTE * sectionData){
+
+	PeParser * peFile = 0;
+
+	/* open the dumped file */
+	if (dump_path)
+	{
+		peFile = new PeParser(dump_path, true);
+	}
+
+	return peFile->addNewLastSection(sectionName, sectionSize, sectionData);
+}

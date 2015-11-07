@@ -16,11 +16,14 @@ ScyllaWrapper::ScyllaWrapper(void)
 	this->myFunc = 0;
 	this->hScyllaWrapper = 0;
 	//load library
-	this->hScyllaWrapper = LoadLibraryW(L"C:\\pin\\PinUnpackerDependencies\\Scylla\\ScyllaWrapper.dll");
+	this->hScyllaWrapper = W::LoadLibraryW(L"C:\\pin\\PinUnpackerDependencies\\Scylla\\ScyllaWrapper.dll");
 	//get proc address
 	if (this->hScyllaWrapper)
 	{
-		this->myFunc = (def_myFunc)GetProcAddress((HMODULE)this->hScyllaWrapper, "myFunc");
+		this->myFunc = (def_myFunc)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "myFunc");
+		this->ScyllaWrapAddSection = (def_ScyllaWrapAddSection)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaWrapAddSection");
 	}
 }
+
+
 

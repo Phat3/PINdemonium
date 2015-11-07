@@ -1,5 +1,6 @@
 #include "OepFinder.h"
 #include "GdbDebugger.h"
+#include "ScyllaWrapper.h"
 
 OepFinder::OepFinder(void){
 	
@@ -153,6 +154,15 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		   /* copy the heap zone into the buffer */
 		   PIN_SafeCopy(Buffer , (void const *)hz->begin , hz->size);
 
+
+		   ScyllaWrapper *scylla_wrapper = ScyllaWrapper::getInstance();
+		   Config *config = Config::getInstance();
+
+		   string dump_path = config->getCurrentDumpFilePath();
+		   std::wstring widestr = std::wstring(dump_path.begin(), dump_path.end());
+		   const wchar_t* widecstr = widestr.c_str();
+
+		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" , sizeof(Buffer) , Buffer); 
 
 		}
 
