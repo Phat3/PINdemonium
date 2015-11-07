@@ -167,7 +167,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		   scylla_wrapper->myFunc();
 
-		   W::DebugBreak();
 		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" , hz->size, Buffer); 
 		   free(Buffer);
 	

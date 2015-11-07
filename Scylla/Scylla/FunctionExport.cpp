@@ -309,11 +309,13 @@ BOOL ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD 
 	/* open the dumped file */
 	if (dump_path)
 	{
-		peFile = new PeParser(dump_path, true);
+		peFile = new PeParser(dump_path, TRUE);
 	}
 
+	peFile->readPeSectionsFromFile();
 
 	bool res = peFile->addNewLastSection(sectionName, sectionSize, sectionData);
+	int retValue = peFile->savePeFileToDisk(dump_path);
 
 	return TRUE;
 }
