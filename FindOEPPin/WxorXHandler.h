@@ -3,7 +3,7 @@
 #include "WriteInterval.h"
 #include "pin.H"
 #include "Debug.h"
-#include "Log.h"
+#include "Config.h"
 
 class WxorXHandler
 {
@@ -23,6 +23,8 @@ public:
 	//getter for the data structure
 	std::vector<WriteInterval> getWritesSet();
 	VOID displayWriteSet();
+	VOID setBrokenFlag(int writeItemIndex);
+
 
 private: 
 	//set of the write inteval

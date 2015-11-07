@@ -8,10 +8,14 @@
 
 #define SCYLLA_DLL_DEBUG
 
+#define SCYLLA_ERROR_FILE_FROM_PID -4
+#define SCYLLA_ERROR_DUMP -3
+#define SCYLLA_ERROR_IAT_NOT_FOUND -2
+#define SCYLLA_ERROR_IAT_NOT_FIXED -1
+#define SCYLLA_SUCCESS_FIX 0
 
 
-
-void IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile);
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile);
 BOOL GetFilePathFromPID(DWORD dwProcessId, WCHAR *filename);
 DWORD_PTR GetExeModuleBase(DWORD dwProcessId);
 
@@ -34,8 +38,8 @@ int wmain(int argc, wchar_t *argv[]){
 	DWORD_PTR oep = wcstoul(argv[2],NULL,16);
 	
 	WCHAR *outputFile = argv[3];
-	IATAutoFix(pid, oep, outputFile);
-	return 0;
+	return IATAutoFix(pid, oep, outputFile);
+	
 }
 
 
@@ -45,7 +49,7 @@ int wmain(int argc, wchar_t *argv[]){
 
 
 
-void IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 {
 	INFO("----------------IAT Fixing Test----------------\n");
 
@@ -68,7 +72,7 @@ void IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	BOOL success = GetFilePathFromPID(pid,originalExe);
 	if(!success){
 		ERRORE("Error in getting original Path from Pid: %d\n",pid);
-		return;
+		return SCYLLA_ERROR_FILE_FROM_PID;
 	}
 	INFO("Original Exe Path: %S\n",originalExe);
 	
@@ -76,7 +80,7 @@ void IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	success = ScyllaDumpProcessW(pid,originalExe,hMod,oep,dumpFile);
 	if(!success){
 		ERRORE("Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
-		return;
+		return SCYLLA_ERROR_DUMP;
 	}
 	INFO("Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
 		
@@ -85,7 +89,7 @@ void IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	int error = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, TRUE);
 	if(error){
 		ERRORE("(IAT SEARCH) error %d \n",error);
-		return;
+		return SCYLLA_ERROR_IAT_NOT_FOUND;
 	}
 	INFO("(IAT SEARCH) iatStart %X iatSize %X\n",iatStart, iatSize);
 	
@@ -94,9 +98,10 @@ void IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,dumpFile,outputFile);
 	if(error){
 		ERRORE("(IAT FIX) error %d",error);
-		return;
+		return SCYLLA_ERROR_IAT_NOT_FIXED;
 	}
 	INFO("[IAT FIX] Success");
+	return SCYLLA_SUCCESS_FIX;
 	
 }
 

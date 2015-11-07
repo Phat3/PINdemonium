@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pin.H"
-#include "Log.h"
+#include "Config.h"
 #include "Debug.h"
 #include <time.h>
 #include <unordered_set>

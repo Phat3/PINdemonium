@@ -29,7 +29,8 @@ public:
 	void setLongJmpFlag(UINT32 flag);
 	void setJmpOuterSectionFlag(UINT32 flag);
 	void setPushadPopadFlag(UINT32 flag);
-	void setBrokenFlag(UINT32 flag);
+	void setBrokenFlag(BOOL flag);
+
 
 private:
 	ADDRINT addr_begin;
@@ -38,7 +39,8 @@ private:
 	UINT32 long_jmp_flag;
 	UINT32 jmp_outer_section_flag;
 	UINT32 pushad_popad_flag;
-	UINT32 broken_flag;
+	BOOL broken_flag;
+
 
 };
 

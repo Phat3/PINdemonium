@@ -13,21 +13,21 @@
 
 
 
-class Log
+class Config
 {
 
 public:
-	static Log* getInstance();
+	static Config* getInstance();
 	
-	FILE* Log::getLogFile();
+	FILE* Config::getLogFile();
 	//getter
 	string getBasePath();
 	string getCurrentDumpFilePath();
 	string getCurrentDetectedListPath();
 	//utils
 	void incrementDumpNumber();
-	void Log::closeLogFile();
-	void Log::closeReportFile();
+	void Config::closeLogFile();
+	void Config::closeReportFile();
 	void writeOnReport(ADDRINT ip, WriteInterval wi);
 
 	static const string PIN_DIRECTORY_PATH_DEP;
@@ -45,8 +45,8 @@ public:
 	static const string FILTER_WRITES_ENABLES;
 private:
 
-	Log::Log();
-	static Log* instance;
+	Config::Config();
+	static Config* instance;
 	FILE *log_file;
 	FILE *report_file;
 	string base_path;

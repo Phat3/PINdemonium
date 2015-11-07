@@ -1,26 +1,26 @@
-#include "Log.h"
+#include "Config.h"
 
 //constanth path and variable for our logging system
-const string Log::PIN_DIRECTORY_PATH_OUTPUT = "C:\\pin\\PinUnpackerResults\\";
-const string Log::PIN_DIRECTORY_PATH_DEP = "C:\\pin\\PinUnpackerDependencies\\";
-const string Log::LOG_FILENAME = "log_FindOEPPin.txt";
-const string Log::REPORT_FILENAME = "report_FindOEPPin.txt";
-const string Log::IDA_PATH = "\"C:\\Program Files\\IDA 6.6\\idaw.exe\"";
-const string Log::IDAP_BAD_IMPORTS_CHECKER = PIN_DIRECTORY_PATH_DEP + "badImportsChecker.py";
-const string Log::BAD_IMPORTS_LIST = PIN_DIRECTORY_PATH_DEP + "badImportsList.txt";
-const string Log::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
-const string Log::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
+const string Config::PIN_DIRECTORY_PATH_OUTPUT = "C:\\pin\\PinUnpackerResults\\";
+const string Config::PIN_DIRECTORY_PATH_DEP = "C:\\pin\\PinUnpackerDependencies\\";
+const string Config::LOG_FILENAME = "log_FindOEPPin.txt";
+const string Config::REPORT_FILENAME = "report_FindOEPPin.txt";
+const string Config::IDA_PATH = "\"C:\\Program Files\\IDA 6.6\\idaw.exe\"";
+const string Config::IDAP_BAD_IMPORTS_CHECKER = PIN_DIRECTORY_PATH_DEP + "badImportsChecker.py";
+const string Config::BAD_IMPORTS_LIST = PIN_DIRECTORY_PATH_DEP + "badImportsList.txt";
+const string Config::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
+const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
 
 //Tuning Flags
-const bool  Log::INTER_WRITESET_ANALYSIS_ENABLE = true;
-const string Log::FILTER_WRITES_ENABLES = "teb stack";
+const bool  Config::INTER_WRITESET_ANALYSIS_ENABLE = true;
+const string Config::FILTER_WRITES_ENABLES = "teb stack";
 
 
-Log* Log::instance = 0;
+Config* Config::instance = 0;
 
 
 //at the first time open the log file
-Log::Log(){
+Config::Config(){
 
 	//set the initial dump number
 	this->dump_number = 0;
@@ -37,27 +37,27 @@ Log::Log(){
 }
 
 //singleton
-Log* Log::getInstance()
+Config* Config::getInstance()
 {
 	if (instance == 0)
-		instance = new Log();
+		instance = new Config();
 	return instance;
 }
 
 /* ----------------------------- GETTER -----------------------------*/
 
 //flush the buffer and close the file
-void Log::closeReportFile()
+void Config::closeReportFile()
 {
 	fflush(this->report_file);
 	fclose(this->report_file);
 }
 
-string Log::getBasePath(){
+string Config::getBasePath(){
 	return this->base_path;
 }
 
-string Log::getCurrentDumpFilePath(){	
+string Config::getCurrentDumpFilePath(){	
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
 	this->cur_dump_path = this->base_path + ProcInfo::getInstance()->getProcName() + "_" + std::to_string(this->dump_number) + ".exe" ;
 
@@ -65,7 +65,7 @@ string Log::getCurrentDumpFilePath(){
 }
 
 
-string Log::getCurrentDetectedListPath(){	
+string Config::getCurrentDetectedListPath(){	
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
 	this->cur_list_path = this->base_path + this->DETECTED_BAD_IMPORTS_LIST + "_" + std::to_string(this->dump_number) + ".txt" ;
 
@@ -76,14 +76,14 @@ string Log::getCurrentDetectedListPath(){
 /* ----------------------------- UTILS -----------------------------*/
 
 //flush the buffer and close the file
-void Log::closeLogFile()
+void Config::closeLogFile()
 {
 	fflush(this->log_file);
 	fclose(this->log_file);
 }
 
 //return the file pointer
-FILE* Log::getLogFile()
+FILE* Config::getLogFile()
 {
 	#ifdef LOG_WRITE_TO_FILE
 		return this->log_file;
@@ -93,13 +93,13 @@ FILE* Log::getLogFile()
 }
 
 //write the JSON resulted by the analysis for this write set
-void Log::writeOnReport(ADDRINT ip, WriteInterval wi)
+void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 {
 	fprintf(this->report_file,"{\"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_oter_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\"}\n", ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag());
 }
 
 //return the current date and time as a string
-string Log::getCurDateAndTime(){
+string Config::getCurDateAndTime(){
   time_t rawtime;
   struct tm * timeinfo;
   char buffer[80];
@@ -112,7 +112,7 @@ string Log::getCurDateAndTime(){
 }
 
 //Increment dump number
-void Log::incrementDumpNumber(){
+void Config::incrementDumpNumber(){
 	this->dump_number++;
 }
 

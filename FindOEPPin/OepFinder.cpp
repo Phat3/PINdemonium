@@ -108,28 +108,34 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	}
 	//check if the current instruction is a popad or a pushad
 	this->handlePopadAndPushad(ins);
+
+	
 	//If the instruction violate WxorX return the index of the WriteItem in which the EIP is
 	//If the instruction doesn't violate WxorX return -1
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
 	//W xor X broken
 	if(writeItemIndex != -1 ){
 
-		WriteInterval item = wxorxHandler->getWritesSet().at(writeItemIndex);
+		WriteInterval item = wxorxHandler->getWritesSet()[writeItemIndex];
 		//update the start timer 
 		proc_info->setStartTimer(clock());
 		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
-		//not the firtst broken in this write set
+
 		heap_index = proc_info->searchHeapMap(curEip);
 
+		//not the first broken in this write set		
 		if(item.getBrokenFlag()){
-			//long jump detected intra-writeset ---> trigger analysis and dump
-			if( std::abs( (int)curEip - (int)prev_ip) > item.getThreshold() ){
-				this->analysis(item, ins, prev_ip, curEip);
+
+			//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis
+			if(Config::INTER_WRITESET_ANALYSIS_ENABLE){ 
+				interWriteSetJMPAnalysis(curEip,prev_ip,ins,item );
 			}
+		
 		}
 		//first broken in this write set ---> analysis and dump ---> set the broken flag of this write ionterval 
 		else{
 			this->analysis(item, ins, prev_ip, curEip);
+			wxorxHandler->setBrokenFlag(writeItemIndex); 
 		}
 		//delete the WriteInterval just analyzed
 		//wxorxHandler->deleteWriteItem(writeItemIndex);
@@ -159,6 +165,14 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 }
 
+
+void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins, WriteInterval item){
+	//long jump detected intra-writeset ---> trigger analysis and dump
+	if( std::abs( (int)curEip - (int)prev_ip) > item.getThreshold()){
+				this->analysis(item, ins, prev_ip, curEip);
+			}
+}
+
 BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip){
 
 	//call the proper heuristics
@@ -176,7 +190,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	Heuristics::initFunctionCallHeuristic(curEip,item);
 
 	//write the heuristic resuòts on ile
-	Log::getInstance()->writeOnReport(curEip, item);
+	Config::getInstance()->writeOnReport(curEip, item);
 
 	return OEPFINDER_HEURISTIC_FAIL;
 }
