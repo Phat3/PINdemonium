@@ -49,7 +49,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	if(sc->dump(pid, curEip, dumpFile) != 0){
 		MYWARN("ERRORE DUMP!!!!!");
 	};
-	/*
+	
 	launchIdaScript(Config::IDA_PATH, Config::IDAP_BAD_IMPORTS_CHECKER, Config::BAD_IMPORTS_LIST, idap_res_file, dumpFile);
 
 	//Read the result of IdaPython script
@@ -61,7 +61,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	fclose(fd);
 
 	MYWARN("Found init functions %s\n",init_func_detected);
-	*/
+	
 	Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
 	return 0;
 }
