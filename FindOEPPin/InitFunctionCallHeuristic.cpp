@@ -43,10 +43,10 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
 	MYINFO("Current output file dump %s",Config::getInstance()->getCurrentDumpFilePath().c_str());
 
-
+	ScyllaWrapper* scyllaWrap = ScyllaWrapper::getInstance();
 	//W::DebugBreak();
 	//Dumping the process memory and try to reconstructing the IAT
-	if(!DumpHandler::launchScyllaDumpAndFix(Config::SCYLLA_DUMPER_PATH,pid,curEip,dumpFile)){
+	if(!scyllaWrap->launchScyllaDumpAndFix(Config::SCYLLA_DUMPER_PATH,pid,curEip,dumpFile)){
 		MYERRORE("Scylla execution Failed");
 		Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 		return 0;

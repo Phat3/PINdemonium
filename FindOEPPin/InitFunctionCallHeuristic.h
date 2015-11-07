@@ -3,7 +3,7 @@
 #include "WxorXHandler.h"
 #include "ProcInfo.h"
 #include <sstream>
-#include "DumpHandler.h"
+#include "ScyllaWrapper.h"
 namespace W{
 	#include "windows.h"
 	#include <tlhelp32.h>
