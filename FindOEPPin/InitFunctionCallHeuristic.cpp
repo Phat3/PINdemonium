@@ -63,8 +63,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	fclose(fd);
 
 	MYWARN("Found init functions %s\n",init_func_detected);
-	
-	Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
+
 	return 0;
 }
 
@@ -94,6 +93,7 @@ BOOL InitFunctionCall::launchIdaScript(string idaw,string idaPythonScript,string
 	fclose(idaLauncherFile);
 	MYINFO("Launching the IdaPython Script %s Containing %s",idaLauncherFile,idaScript.c_str());
 	
+	
 	if(!W::CreateProcess(idaScriptLauncher.c_str(),NULL,NULL,NULL,FALSE,CREATE_NEW_CONSOLE,NULL,NULL,&si,&pi)){
 		MYERRORE("Can't launch idaPythonScript");
 		return false;
@@ -102,6 +102,7 @@ BOOL InitFunctionCall::launchIdaScript(string idaw,string idaPythonScript,string
 	W::WaitForSingleObject(pi.hProcess,INFINITE);
 	W::CloseHandle(pi.hProcess);
 	W::CloseHandle(pi.hThread);
+	
 	MYINFO("idaPythonScript Finished");
 	return true;
 

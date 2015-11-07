@@ -312,5 +312,8 @@ BOOL ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD 
 		peFile = new PeParser(dump_path, true);
 	}
 
-	return peFile->addNewLastSection(sectionName, sectionSize, sectionData);
+
+	bool res = peFile->addNewLastSection(sectionName, sectionSize, sectionData);
+
+	return TRUE;
 }

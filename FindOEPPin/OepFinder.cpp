@@ -146,26 +146,34 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		/* Check if we need to dump the heap too */
 		if(heap_index != -1){
 		   HeapZone *hz = proc_info->getHeapZoneByIndex(heap_index);
-		   printf("DUMPING HEAP: %08x" , hz->begin);
+		   MYINFO("DUMPING HEAP: %08x" , hz->begin);
 
 		   /* prepare the buffer to copy inside the stuff into the heap section to dump */
 		   Buffer = (unsigned char *)malloc(hz->size);
 
 		   /* copy the heap zone into the buffer */
-		   PIN_SafeCopy(Buffer , (void const *)hz->begin , hz->size);
-
+		   PIN_SafeCopy(Buffer , (void const *)hz->begin , hz->size);	
 
 		   ScyllaWrapper *scylla_wrapper = ScyllaWrapper::getInstance();
-		   Config *config = Config::getInstance();
 
+		   Config *config = Config::getInstance();
 		   string dump_path = config->getCurrentDumpFilePath();
+
+		    MYINFO("DUMP PATH: %s" , dump_path.c_str());
+
 		   std::wstring widestr = std::wstring(dump_path.begin(), dump_path.end());
 		   const wchar_t* widecstr = widestr.c_str();
+		   MYINFO("DUMP PATH CONVERTED: %S" , widecstr);
 
-		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" , sizeof(Buffer) , Buffer); 
+		   scylla_wrapper->myFunc();
 
+		   W::DebugBreak();
+		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" , hz->size, Buffer); 
+		   free(Buffer);
+	
 		}
 
+		Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
 		proc_info->setPrevIp(INS_Address(ins));
 
 	}

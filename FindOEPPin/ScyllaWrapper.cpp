@@ -21,7 +21,13 @@ ScyllaWrapper::ScyllaWrapper(void)
 	if (this->hScyllaWrapper)
 	{
 		this->myFunc = (def_myFunc)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "myFunc");
+			if(this->myFunc == NULL){
+		printf("myFunc is NULL!!!");
+		}
 		this->ScyllaWrapAddSection = (def_ScyllaWrapAddSection)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaWrapAddSection");
+		if(this->ScyllaWrapAddSection == NULL){
+		printf("ScyllaWrapAddSection is NULL!!!");
+		}
 	}
 }
 

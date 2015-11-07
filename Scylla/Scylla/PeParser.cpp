@@ -837,9 +837,12 @@ DWORD PeParser::alignValue(DWORD badValue, DWORD alignTo)
 
 bool PeParser::addNewLastSection(const CHAR * sectionName, DWORD sectionSize, BYTE * sectionData)
 {
+
 	size_t nameLength = strlen(sectionName);
 	DWORD fileAlignment = 0, sectionAlignment = 0;
 	PeFileSection peFileSection;
+
+	
 
 	if (nameLength > IMAGE_SIZEOF_SHORT_NAME)
 	{
