@@ -1,4 +1,5 @@
 #include "InitFunctionCallHeuristic.h"
+#include "ScyllaWrapper.h"
 
 #define MAX_PID_LEN_DECIMAL_REP 6 
 #define MAX_ADDRESS_SIZE 8
@@ -43,15 +44,12 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
 	MYINFO("Current output file dump %s",Config::getInstance()->getCurrentDumpFilePath().c_str());
 
+	ScyllaWrapper *sc = ScyllaWrapper::getInstance();
 
-	//W::DebugBreak();
-	//Dumping the process memory and try to reconstructing the IAT
-	if(!DumpHandler::launchScyllaDumpAndFix(Config::SCYLLA_DUMPER_PATH,pid,curEip,dumpFile)){
-		MYERRORE("Scylla execution Failed");
-		Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
-		return 0;
-	}
-
+	if(sc->dump(pid, curEip, dumpFile) != 0){
+		MYWARN("ERRORE DUMP!!!!!");
+	};
+	/*
 	launchIdaScript(Config::IDA_PATH, Config::IDAP_BAD_IMPORTS_CHECKER, Config::BAD_IMPORTS_LIST, idap_res_file, dumpFile);
 
 	//Read the result of IdaPython script
@@ -63,7 +61,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	fclose(fd);
 
 	MYWARN("Found init functions %s\n",init_func_detected);
-	
+	*/
 	Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
 	return 0;
 }

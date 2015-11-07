@@ -7,9 +7,9 @@
 #include  "Debug.h"
 #include "Config.h"
 #include "FilterHandler.h"
+#include "ScyllaWrapper.h"
 namespace W {
 	#include <windows.h>
-	#include "FunctionExport.h"
 }
 
 OepFinder oepf;
@@ -114,7 +114,8 @@ int main(int argc, char * argv[]){
 
 	MYINFO("Strating prototype ins");
 	
-	W::provaFun();
+	//ScyllaWrapper *sc = ScyllaWrapper::getInstance();
+	//sc->myFunc();
 
 	FilterHandler *filterH = FilterHandler::getInstance();
 	//set the filters for the libraries

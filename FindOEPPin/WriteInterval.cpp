@@ -83,7 +83,12 @@ VOID WriteInterval::update(ADDRINT start_addr, ADDRINT end_addr){
 		this->addr_begin = start_addr;
 		return;
 	}
-	//otherwise we have to do nothing
+	//if the new write contains the Write interval we have to update the add_begin and addr end
+	if( (start_addr < this->addr_begin) && (end_addr > this->addr_begin) ){
+		this->addr_begin = start_addr;
+		this->addr_end = end_addr;
+		return;
+	}
 }
 
 //check if the ip reside inside the WriteInterval
