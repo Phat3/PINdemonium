@@ -72,7 +72,7 @@
     <ClCompile Include="Config.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="ScyllaWrapper.cpp">
+    <ClCompile Include="ScyllaWrapperInterface.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
   </ItemGroup>
@@ -130,7 +130,7 @@
     <ClInclude Include="Config.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="ScyllaWrapper.h">
+    <ClInclude Include="ScyllaWrapperInterface.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
   </ItemGroup>

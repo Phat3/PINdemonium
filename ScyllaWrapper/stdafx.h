@@ -12,6 +12,8 @@
 #include <windows.h>
 #include <stdio.h>
 #include "FunctionExport.h"
+#include <tlhelp32.h>
+#include <psapi.h> 
 
 
 // TODO: fare riferimento qui alle intestazioni aggiuntive richieste dal programma

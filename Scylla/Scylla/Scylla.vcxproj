@@ -107,7 +107,7 @@
       <ModuleDefinitionFile>scylla_export_functions.def</ModuleDefinitionFile>
     </Link>
     <PostBuildEvent>
-      <Command>copy C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllDebug\ScyllaDLLx86.dll   C:\pin\PinUnpackerDependencies\Scylla\ScyllaDLLx86.dll</Command>
+      <Command>copy C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllDebug\ScyllaDLLx86.dll   C:\pin\PinUnpackerDependencies\Scylla\ScyllaDLLx86.dll &amp; copy C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllDebug\ScyllaDLLx86.dll   C:\pin\ScyllaDLLx86.dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -153,7 +153,7 @@
       <GenerateMapFile>true</GenerateMapFile>
     </Link>
     <PostBuildEvent>
-      <Command>copy C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllRelease\ScyllaDLLx86.dll   C:\pin\PinUnpackerDependencies\Scylla\ScyllaDLLx86.dll</Command>
+      <Command>copy C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllRelease\ScyllaDLLx86.dll   C:\pin\PinUnpackerDependencies\Scylla\ScyllaDLLx86.dll &amp; copy C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllRelease\ScyllaDLLx86.dll   C:\pin\ScyllaDLLx86.dll</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -7,11 +7,9 @@
 #include  "Debug.h"
 #include "Config.h"
 #include "FilterHandler.h"
-#include "ScyllaWrapper.h"
 namespace W {
 	#include <windows.h>
 }
-
 
 OepFinder oepf;
 clock_t tStart;
@@ -114,9 +112,6 @@ int main(int argc, char * argv[]){
 	//initDebug();
 
 	MYINFO("Strating prototype ins");
-	
-	//ScyllaWrapper *sc = ScyllaWrapper::getInstance();
-	//sc->myFunc();
 
 	FilterHandler *filterH = FilterHandler::getInstance();
 	//set the filters for the libraries

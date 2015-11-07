@@ -94,6 +94,8 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	
 	
 	//Fixing the IAT
+	INFO("\n\n\n\nFIXING ...... start : %08x\t size : %08x\t pid : %d\t output : %s\n\n\n\n", iatStart,iatSize,pid,dumpFile,outputFile);
+
 	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,dumpFile,outputFile);
 	if(error){
 		ERRORE("(IAT FIX) error %d",error);
