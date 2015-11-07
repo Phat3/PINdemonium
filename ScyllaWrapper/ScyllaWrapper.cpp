@@ -114,11 +114,11 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 
 
 
-UINT32 ScyllaDumpAndFix(int pid, int oep,std::string output_file){
+UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file){
 	
-	printf("PID : %d\t OEP : %08x\t OUTPUT : %s\n", pid, oep, output_file.c_str());
-	std::wstring widestr = std::wstring(output_file.begin(), output_file.end());
-	return IATAutoFix(pid, oep, (WCHAR *)widestr.c_str());
+	printf("PID : %d\t OEP : %08x\t OUTPUT : %S\n", pid, oep, output_file);
+
+	return IATAutoFix(pid, oep, output_file);
 }
 
 

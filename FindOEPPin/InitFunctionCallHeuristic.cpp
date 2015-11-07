@@ -40,13 +40,15 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	MYINFO("Curr PID %d",pid);
 	
 	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
+	std::wstring dumpFile_w = std::wstring(dumpFile.begin(), dumpFile.end());
+
 	string idap_res_file = Config::getInstance()->getCurrentDetectedListPath();
 
 	MYINFO("Current output file dump %s",Config::getInstance()->getCurrentDumpFilePath().c_str());
 
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();
-
-	if(!sc->launchScyllaDumpAndFix(Config::SCYLLA_DUMPER_PATH,pid, curEip, dumpFile)){
+	
+	if(sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)dumpFile_w.c_str()) != 0){
 		MYERRORE("Scylla execution Failed");
 		Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 		return 0;

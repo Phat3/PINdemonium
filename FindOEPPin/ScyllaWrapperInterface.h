@@ -9,7 +9,7 @@ namespace W{
 #include <sstream>
 
 typedef void (WINAPI * def_myFunc)();
-typedef UINT32 (WINAPI * def_ScyllaDumpAndFix)(int pid, int oep, std::string output_file);
+typedef UINT32 (WINAPI * def_ScyllaDumpAndFix)(int pid, int oep, W::WCHAR * output_file);
 
 class ScyllaWrapperInterface
 {
