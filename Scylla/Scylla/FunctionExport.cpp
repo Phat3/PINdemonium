@@ -316,7 +316,9 @@ BOOL ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD 
 	bool res = peFile->addNewLastSection(sectionName, sectionSize, sectionData);
 
 	peFile->alignAllSectionHeaders();
+	peFile->setDefaultFileAlignment();
 	peFile->fixPeHeader();
+	
 	
 	int retValue = peFile->savePeFileToDisk(dump_path);
 
