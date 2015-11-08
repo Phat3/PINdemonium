@@ -8,6 +8,8 @@
 #include "ApiReader.h"
 #include "IATSearch.h"
 #include "ImportRebuilder.h"
+#include "DllInjectionPlugin.h"
+#include  "libdasm.h"
 
 
 extern HINSTANCE hDllModule;
@@ -238,6 +240,76 @@ int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatS
 }
 
 
+DWORD_PTR getNumberOfUnresolvedImports( std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
+{
+	std::map<DWORD_PTR, ImportModuleThunk>::iterator iterator1;
+	std::map<DWORD_PTR, ImportThunk>::iterator iterator2;
+	ImportModuleThunk * moduleThunk = 0;
+	ImportThunk * importThunk = 0;
+	DWORD_PTR dwNumber = 0;
+
+	iterator1 = moduleList.begin();
+
+	while (iterator1 != moduleList.end())
+	{
+		moduleThunk = &(iterator1->second);
+
+		iterator2 = moduleThunk->thunkList.begin();
+
+		while (iterator2 != moduleThunk->thunkList.end())
+		{
+			importThunk = &(iterator2->second);
+
+			if (importThunk->valid == false)
+			{
+				dwNumber++;
+			}
+
+			iterator2++;
+		}
+
+		iterator1++;
+	}
+
+	return dwNumber;
+}
+
+void addUnresolvedImports( PUNRESOLVED_IMPORT firstUnresImp, std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
+{
+	std::map<DWORD_PTR, ImportModuleThunk>::iterator iterator1;
+	std::map<DWORD_PTR, ImportThunk>::iterator iterator2;
+	ImportModuleThunk * moduleThunk = 0;
+	ImportThunk * importThunk = 0;
+
+	iterator1 = moduleList.begin();
+
+	while (iterator1 != moduleList.end())
+	{
+		moduleThunk = &(iterator1->second);
+
+		iterator2 = moduleThunk->thunkList.begin();
+
+		while (iterator2 != moduleThunk->thunkList.end())
+		{
+			importThunk = &(iterator2->second);
+
+			if (importThunk->valid == false)
+			{
+				firstUnresImp->InvalidApiAddress = importThunk->apiAddressVA;
+				firstUnresImp->ImportTableAddressPointer = importThunk->va;
+				firstUnresImp++;
+			}
+
+			iterator2++;
+		}
+
+		iterator1++;
+	}
+
+	firstUnresImp->InvalidApiAddress = 0;
+	firstUnresImp->ImportTableAddressPointer = 0;
+}
+
 int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile)
 {
 
@@ -277,6 +349,69 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 
 	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);  //in moduleList now I have the list of API which match the API loaded in "apiList"(contains the API obtained by parsing the Export Directory of the Loaded DLL's)
 
+	//DEBUG
+
+	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
+	
+	if (numberOfUnresolvedImports != 0)
+	{
+		printf("Unresolved imports detected...\n");
+
+		PUNRESOLVED_IMPORT unresolvedImport = 0;
+		unresolvedImport = (PUNRESOLVED_IMPORT)calloc(numberOfUnresolvedImports, sizeof(UNRESOLVED_IMPORT));
+
+		addUnresolvedImports(unresolvedImport, moduleList);
+		//local variable
+		int insDelta;
+		char buffer[2048];
+		DWORD_PTR IATbase;
+		int i,j;
+		INSTRUCTION inst;
+		DWORD_PTR invalidApiAddress = 0;
+		
+		while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
+		{
+			memset(buffer, 0x00, sizeof(buffer));
+			insDelta = 0;
+			invalidApiAddress = unresolvedImport->InvalidApiAddress;
+			printf(buffer, "API Address = 0x%p\t IAT Address = 0x%p\n",  invalidApiAddress, unresolvedImport->ImportTableAddressPointer);
+			//get the starting IAT address to be analyzed yet
+			IATbase = unresolvedImport->InvalidApiAddress;
+			for (j = 0; j <  1000; j++)
+			{
+				memset(&inst, 0x00, sizeof(INSTRUCTION));
+				//get the disassembled instruction
+				i = get_instruction(&inst, (BYTE *)IATbase, MODE_32);
+				memset(buffer, 0x00, sizeof(buffer));
+				get_instruction_string(&inst, FORMAT_ATT, 0, buffer, sizeof(buffer));
+				printf("\n\n\n\n\n\n INSTR = %s\n", buffer);
+				char buffer2[2048];
+				//check if it is a jump
+				if (strstr(buffer, "jmp"))
+				{
+					//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
+					unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
+					//sprintf(buffer2, " JUMP Dest = %08x\n" , correct_address);
+					//writeToLogFile(buffer2);
+					//*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
+					//unresolvedImport->InvalidApiAddress = correct_address;
+					printf(" JUMP Dest = %08x\n\n\n\n\n\n" , correct_address);
+					break;
+				}
+				//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
+				else{
+					insDelta = insDelta + i;
+				}
+				//check the next row inthe IAT
+				IATbase = IATbase + i;
+			}
+			unresolvedImport++; //next pointer to struct
+		}
+		
+	}
+	
+	//FINE DEBUG
+
 	//add IAT section to dump
 
 	ImportRebuilder importRebuild(dumpFile);
@@ -300,7 +435,3 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	return retVal;
 }
 
-
-void WINAPI provaFun(){
-	printf("chiamata!!!!!!!\n");
-}
