@@ -315,8 +315,18 @@ BOOL ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD 
 	peFile->readPeSectionsFromFile();
 	bool res = peFile->addNewLastSection(sectionName, sectionSize, sectionData);
 
+	/* fix the PE file */
 	peFile->alignAllSectionHeaders();
+	peFile->setDefaultFileAlignment();
 	peFile->fixPeHeader();
+	
+	PeFileSection last_section = peFile->getSectionHeaderList().back();
+	
+	IMAGE_SECTION_HEADER last_section_header = last_section.sectionHeader;
+
+	UINT32 last_section_header_va = last_section_header.VirtualAddress;
+
+	peFile->setEntryPointVa(last_section_header_va);
 	
 	int retValue = peFile->savePeFileToDisk(dump_path);
 
