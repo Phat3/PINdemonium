@@ -334,7 +334,5 @@ BOOL ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD 
 	/* save the pe */
 	int retValue = peFile->savePeFileToDisk(dump_path);
 
-
-
 	return TRUE;
 }
