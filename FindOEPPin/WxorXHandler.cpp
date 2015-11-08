@@ -79,6 +79,11 @@ VOID WxorXHandler::setBrokenFlag(int writeItemIndex){
 }
 
 
+VOID WxorXHandler::incrementCurrJMPNumber(int writeItemIndex){
+	this->WritesSet[writeItemIndex].incrementCurrNumberJMP();
+}
+
+
 
 //Why this crash the porgram with UPX?
 VOID WxorXHandler::displayWriteSet(){

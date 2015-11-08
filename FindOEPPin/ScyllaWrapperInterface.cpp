@@ -50,12 +50,14 @@ BOOL ScyllaWrapperInterface::existFile (std::string name) {
  pid: pid of the process to dump (Current PID if you want to use the Pin Instrumented Binary)
  curEip: curre
 **/
-BOOL ScyllaWrapperInterface::launchScyllaDumpAndFix(std::string scylla,int pid, int curEip,std::string outputFile){	
+UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(std::string scylla,int pid, int curEip,std::string outputFile){	
 
 	MYINFO("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 	MYINFO("LAUNCHING SCYLLADUMP AS AN EXTERNAL PROCESS!!");
 	MYINFO("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 	MYINFO("CURR EIP  %x",curEip);
+
+	W::DWORD exitCode;
 	//Creating the string containing the arguments to pass to the ScyllaTest.exe
 	std::stringstream scyllaArgsStream;
 	scyllaArgsStream << scylla << " ";
@@ -75,18 +77,19 @@ BOOL ScyllaWrapperInterface::launchScyllaDumpAndFix(std::string scylla,int pid, 
 
 	if(!W::CreateProcess(scylla.c_str(),(char *)scyllaArgs.c_str(),NULL,NULL,FALSE,0,NULL,NULL,&si,&pi)){
 		MYERRORE("(INITFUNCTIONCALL)Can't launch Scylla");
-		return false;
+		return -5;
 	}
+	W::GetExitCodeProcess(pi.hProcess, &exitCode);
 	W::WaitForSingleObject(pi.hProcess,INFINITE);
 	W::CloseHandle(pi.hProcess);
 	W::CloseHandle(pi.hThread);
 	
 	if(!existFile(outputFile)){
 		MYERRORE("Scylla Can't dump the process");
-		return false;
+		return exitCode;
 	}
 	MYINFO("Scylla Finished");
-	return true;
+	return exitCode;
 }
 
 

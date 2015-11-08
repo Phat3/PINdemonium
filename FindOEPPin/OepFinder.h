@@ -32,7 +32,8 @@ private:
 	//if so then set the proper flags in ProcInfo
 	void handlePopadAndPushad(INS ins);
 	BOOL analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip);
-	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins, WriteInterval item);
+	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex);
+	UINT32 DumpAndFixIAT(ADDRINT curEip);
 
 };
 

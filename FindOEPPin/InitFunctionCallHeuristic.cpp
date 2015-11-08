@@ -20,6 +20,17 @@ InitFunctionCall::~InitFunctionCall(void)
 }
 
 
+BOOL InitFunctionCall::existFile (std::string name) {
+	if (FILE *file = fopen(name.c_str(), "r")) {
+        fclose(file);
+        return true;
+    } else {
+        return false;
+    }   
+}
+
+
+
 /**
 	Get the size of the file passed as fp
 **/
@@ -34,25 +45,14 @@ return size;
 
 UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
-	
-	//Getting Current process PID and Base Address
-	UINT32 pid = W::GetCurrentProcessId();
-	MYINFO("Curr PID %d",pid);
-	
+	string idap_res_file = Config::getInstance()->getCurrentDetectedListPath();
 	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
 	std::wstring dumpFile_w = std::wstring(dumpFile.begin(), dumpFile.end());
 
-	string idap_res_file = Config::getInstance()->getCurrentDetectedListPath();
-
-	MYINFO("Current output file dump %s",Config::getInstance()->getCurrentDumpFilePath().c_str());
-
-	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();
-	
-	if(sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)dumpFile_w.c_str()) != 0){
-		MYERRORE("Scylla execution Failed");
-		Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
-		return 0;
-	};
+	if(!existFile(dumpFile)){
+		MYERRORE("Dump file hasn't been created");
+		return -1;
+	}
 
 	launchIdaScript(Config::IDA_PATH, Config::IDAP_BAD_IMPORTS_CHECKER, Config::BAD_IMPORTS_LIST, idap_res_file, dumpFile);
 
@@ -66,7 +66,6 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
 	MYWARN("Found init functions %s\n",init_func_detected);
 	
-	Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
 	return 0;
 }
 
