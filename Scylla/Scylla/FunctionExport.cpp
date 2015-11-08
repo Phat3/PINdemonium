@@ -310,6 +310,35 @@ void addUnresolvedImports( PUNRESOLVED_IMPORT firstUnresImp, std::map<DWORD_PTR,
 	firstUnresImp->ImportTableAddressPointer = 0;
 }
 
+void displayModuleList(std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
+{
+	std::map<DWORD_PTR, ImportModuleThunk>::iterator iterator1;
+	std::map<DWORD_PTR, ImportThunk>::iterator iterator2;
+	ImportModuleThunk * moduleThunk = 0;
+	ImportThunk * importThunk = 0;
+
+	iterator1 = moduleList.begin();
+
+	while (iterator1 != moduleList.end())
+	{
+		moduleThunk = &(iterator1->second);
+
+		iterator2 = moduleThunk->thunkList.begin();
+
+		while (iterator2 != moduleThunk->thunkList.end())
+		{
+			importThunk = &(iterator2->second);
+
+			printf("VA : %08x\t API ADDRESS : %08x\n", importThunk->va, importThunk->apiAddressVA);
+
+			iterator2++;
+		}
+
+		iterator1++;
+	}
+
+}
+
 int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile)
 {
 
@@ -384,18 +413,18 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 				i = get_instruction(&inst, (BYTE *)IATbase, MODE_32);
 				memset(buffer, 0x00, sizeof(buffer));
 				get_instruction_string(&inst, FORMAT_ATT, 0, buffer, sizeof(buffer));
-				printf("\n\n\n\n\n\n INSTR = %s\n", buffer);
 				char buffer2[2048];
 				//check if it is a jump
 				if (strstr(buffer, "jmp"))
 				{
 					//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
 					unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
-					//sprintf(buffer2, " JUMP Dest = %08x\n" , correct_address);
+					printf(" \nIAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
 					//writeToLogFile(buffer2);
-					//*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
+					*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
+					printf(" IAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
 					//unresolvedImport->InvalidApiAddress = correct_address;
-					printf(" JUMP Dest = %08x\n\n\n\n\n\n" , correct_address);
+					printf(" JUMP Dest = %08x\n\n" , correct_address);
 					break;
 				}
 				//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
@@ -409,7 +438,16 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 		}
 		
 	}
-	
+	apiReader.clearAll();
+
+	ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
+
+	apiReader.readApisFromModuleList();						//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
+
+	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
+
+	displayModuleList(moduleList);
+
 	//FINE DEBUG
 
 	//add IAT section to dump
