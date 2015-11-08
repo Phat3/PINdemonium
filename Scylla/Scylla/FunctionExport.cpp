@@ -182,7 +182,6 @@ INT WINAPI ScyllaStartGui(DWORD dwProcessId, HINSTANCE mod)
 int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatSize, DWORD_PTR searchStart, BOOL advancedSearch)
 {
 	ApiReader apiReader;
-	apiReader.moduleThunkList = 0;
 	ProcessLister processLister;
 	Process *processPtr = 0;
 	IATSearch iatSearch;
@@ -330,6 +329,7 @@ void displayModuleList(std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
 			importThunk = &(iterator2->second);
 
 			printf("VA : %08x\t API ADDRESS : %08x\n", importThunk->va, importThunk->apiAddressVA);
+			fflush(stdout);
 
 			iterator2++;
 		}
@@ -380,6 +380,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 				printf(" IAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
 				//unresolvedImport->InvalidApiAddress = correct_address;
 				printf(" JUMP Dest = %08x\n\n" , correct_address);
+				fflush(stdout);
 				break;
 			}
 			//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
@@ -396,13 +397,12 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 
 int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile)
 {
-
+	printf("\n\n\n\n\n STIANO ENTRANDO!!\n\n\n\n");	
 	ApiReader apiReader;
 	ProcessLister processLister;
 	Process *processPtr = 0;
 
 	std::map<DWORD_PTR, ImportModuleThunk> moduleList;
-
 
 	std::vector<Process>& processList = processLister.getProcessListSnapshotNative();
 
@@ -436,18 +436,24 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	//DEBUG
 
 	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
+	printf("n\n\n\n\nNUMERO : %d!!!!\n\n\n\n", numberOfUnresolvedImports);
 	
 	if (numberOfUnresolvedImports != 0){
 
 		customFix(numberOfUnresolvedImports, moduleList);
-		
+
 		apiReader.clearAll();
+
+		moduleList.clear();
 
 		ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
 
-		apiReader.readApisFromModuleList();						//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
+		//apiReader.readApisFromModuleList();
 
 		apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
+
+		printf("\n\n\n\n\n CI SIAMO!!\n\n\n\n");	
+		
 	}
 
 	displayModuleList(moduleList);
@@ -462,8 +468,6 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 
 	int retVal = SCY_ERROR_IATWRITE;
 
-	displayModuleList(moduleList);
-
 	if (importRebuild.rebuildImportTable(iatFixFile, moduleList))
 	{	
 		retVal = SCY_ERROR_SUCCESS;
@@ -473,8 +477,10 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 
 	moduleList.clear();
 	ProcessAccessHelp::closeProcessHandle();
-	
+		
 	apiReader.clearAll();
+
+	printf("\n\n\n\n\n STIANO USCENDO!!\n\n\n\n");	
 
 	return retVal;
 }
