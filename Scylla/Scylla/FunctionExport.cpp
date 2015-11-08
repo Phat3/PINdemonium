@@ -339,6 +339,60 @@ void displayModuleList(std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
 
 }
 
+void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportModuleThunk> moduleList){
+	printf("Unresolved imports detected...\n");
+
+	PUNRESOLVED_IMPORT unresolvedImport = 0;
+	unresolvedImport = (PUNRESOLVED_IMPORT)calloc(numberOfUnresolvedImports, sizeof(UNRESOLVED_IMPORT));
+
+	addUnresolvedImports(unresolvedImport, moduleList);
+	//local variable
+	int insDelta;
+	char buffer[2048];
+	DWORD_PTR IATbase;
+	int i,j;
+	INSTRUCTION inst;
+	DWORD_PTR invalidApiAddress = 0;
+		
+	while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
+	{
+		memset(buffer, 0x00, sizeof(buffer));
+		insDelta = 0;
+		invalidApiAddress = unresolvedImport->InvalidApiAddress;
+		printf(buffer, "API Address = 0x%p\t IAT Address = 0x%p\n",  invalidApiAddress, unresolvedImport->ImportTableAddressPointer);
+		//get the starting IAT address to be analyzed yet
+		IATbase = unresolvedImport->InvalidApiAddress;
+		for (j = 0; j <  1000; j++)
+		{
+			memset(&inst, 0x00, sizeof(INSTRUCTION));
+			//get the disassembled instruction
+			i = get_instruction(&inst, (BYTE *)IATbase, MODE_32);
+			memset(buffer, 0x00, sizeof(buffer));
+			get_instruction_string(&inst, FORMAT_ATT, 0, buffer, sizeof(buffer));
+			//check if it is a jump
+			if (strstr(buffer, "jmp"))
+			{
+				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
+				unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
+				printf(" \nIAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
+				//writeToLogFile(buffer2);
+				*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
+				printf(" IAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
+				//unresolvedImport->InvalidApiAddress = correct_address;
+				printf(" JUMP Dest = %08x\n\n" , correct_address);
+				break;
+			}
+			//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
+			else{
+				insDelta = insDelta + i;
+			}
+			//check the next row inthe IAT
+			IATbase = IATbase + i;
+		}
+		unresolvedImport++; //next pointer to struct
+	}
+}
+
 int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile)
 {
 
@@ -382,69 +436,18 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 
 	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
 	
-	if (numberOfUnresolvedImports != 0)
-	{
-		printf("Unresolved imports detected...\n");
+	if (numberOfUnresolvedImports != 0){
 
-		PUNRESOLVED_IMPORT unresolvedImport = 0;
-		unresolvedImport = (PUNRESOLVED_IMPORT)calloc(numberOfUnresolvedImports, sizeof(UNRESOLVED_IMPORT));
+		customFix(numberOfUnresolvedImports, moduleList);
+		
+		apiReader.clearAll();
 
-		addUnresolvedImports(unresolvedImport, moduleList);
-		//local variable
-		int insDelta;
-		char buffer[2048];
-		DWORD_PTR IATbase;
-		int i,j;
-		INSTRUCTION inst;
-		DWORD_PTR invalidApiAddress = 0;
-		
-		while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
-		{
-			memset(buffer, 0x00, sizeof(buffer));
-			insDelta = 0;
-			invalidApiAddress = unresolvedImport->InvalidApiAddress;
-			printf(buffer, "API Address = 0x%p\t IAT Address = 0x%p\n",  invalidApiAddress, unresolvedImport->ImportTableAddressPointer);
-			//get the starting IAT address to be analyzed yet
-			IATbase = unresolvedImport->InvalidApiAddress;
-			for (j = 0; j <  1000; j++)
-			{
-				memset(&inst, 0x00, sizeof(INSTRUCTION));
-				//get the disassembled instruction
-				i = get_instruction(&inst, (BYTE *)IATbase, MODE_32);
-				memset(buffer, 0x00, sizeof(buffer));
-				get_instruction_string(&inst, FORMAT_ATT, 0, buffer, sizeof(buffer));
-				char buffer2[2048];
-				//check if it is a jump
-				if (strstr(buffer, "jmp"))
-				{
-					//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
-					unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
-					printf(" \nIAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
-					//writeToLogFile(buffer2);
-					*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
-					printf(" IAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
-					//unresolvedImport->InvalidApiAddress = correct_address;
-					printf(" JUMP Dest = %08x\n\n" , correct_address);
-					break;
-				}
-				//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
-				else{
-					insDelta = insDelta + i;
-				}
-				//check the next row inthe IAT
-				IATbase = IATbase + i;
-			}
-			unresolvedImport++; //next pointer to struct
-		}
-		
+		ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
+
+		apiReader.readApisFromModuleList();						//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
+
+		apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 	}
-	apiReader.clearAll();
-
-	ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
-
-	apiReader.readApisFromModuleList();						//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
-
-	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 
 	displayModuleList(moduleList);
 
