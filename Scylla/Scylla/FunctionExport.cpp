@@ -310,6 +310,34 @@ void addUnresolvedImports( PUNRESOLVED_IMPORT firstUnresImp, std::map<DWORD_PTR,
 	firstUnresImp->ImportTableAddressPointer = 0;
 }
 
+void displayModuleList(std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
+{
+	std::map<DWORD_PTR, ImportModuleThunk>::iterator iterator1;
+	std::map<DWORD_PTR, ImportThunk>::iterator iterator2;
+	ImportModuleThunk * moduleThunk = 0;
+	ImportThunk * importThunk = 0;
+
+	iterator1 = moduleList.begin();
+
+	while (iterator1 != moduleList.end())
+	{
+		moduleThunk = &(iterator1->second);
+
+		iterator2 = moduleThunk->thunkList.begin();
+
+		while (iterator2 != moduleThunk->thunkList.end())
+		{
+			importThunk = &(iterator2->second);
+
+			printf("VA : %08x,\t CONTENT : %08x\n", importThunk->va, importThunk->apiAddressVA);
+
+			iterator2++;
+		}
+
+		iterator1++;
+	}
+}
+
 int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile)
 {
 
@@ -345,10 +373,6 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	ProcessAccessHelp::targetImageBase = processPtr->imageBase;
 	ProcessAccessHelp::targetSizeOfImage = processPtr->imageSize;
 
-	apiReader.readApisFromModuleList();						//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
-
-	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);  //in moduleList now I have the list of API which match the API loaded in "apiList"(contains the API obtained by parsing the Export Directory of the Loaded DLL's)
-
 	//DEBUG
 
 	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
@@ -368,9 +392,23 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 		int i,j;
 		INSTRUCTION inst;
 		DWORD_PTR invalidApiAddress = 0;
+		/*
+		std::map<DWORD_PTR, ImportModuleThunk>::iterator iterator1;
+		std::map<DWORD_PTR, ImportThunk>::iterator iterator2;
+		ImportModuleThunk * moduleThunk = 0;
+		ImportThunk * importThunk = 0;
 		
+		iterator1 = moduleList.begin(); //pointer to the first dll 
+
+		moduleThunk = &(iterator1->second);
+
+		iterator2 = moduleThunk->thunkList.begin(); //pointer to the firs function of the first dll
+*/
 		while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
 		{
+			//get the import
+			//importThunk = &(iterator2->second);
+
 			memset(buffer, 0x00, sizeof(buffer));
 			insDelta = 0;
 			invalidApiAddress = unresolvedImport->InvalidApiAddress;
@@ -393,8 +431,10 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 					unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
 					//sprintf(buffer2, " JUMP Dest = %08x\n" , correct_address);
 					//writeToLogFile(buffer2);
-					//*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
+					printf("IAT ENTRY : %08x\t CONTENT : %08x\n", unresolvedImport->ImportTableAddressPointer,*(DWORD*)(unresolvedImport->ImportTableAddressPointer));
+					*(DWORD*)(unresolvedImport->ImportTableAddressPointer) = correct_address;
 					//unresolvedImport->InvalidApiAddress = correct_address;
+					printf("IAT ENTRY : %08x\t CONTENT : %08x\n", unresolvedImport->ImportTableAddressPointer,*(DWORD*)(unresolvedImport->ImportTableAddressPointer));
 					printf(" JUMP Dest = %08x\n\n\n\n\n\n" , correct_address);
 					break;
 				}
@@ -405,20 +445,40 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 				//check the next row inthe IAT
 				IATbase = IATbase + i;
 			}
+			/*
+			if(iterator2 == moduleThunk->thunkList.end()){
+				if(iterator1 != moduleList.end()){
+					iterator1 ++; //go to the next thunk
+					moduleThunk = &(iterator1->second);
+					iterator2 = moduleThunk->thunkList.begin();
+				}
+			}
+			else{
+				iterator2++;
+			}
+			*/
+			
 			unresolvedImport++; //next pointer to struct
 		}
 		
 	}
 	
 	//FINE DEBUG
-
+	//DebugBreak();
 	//add IAT section to dump
+	ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);  //In ProcessAccessHelp::moduleList List of the Dll loaded by the process and other useful information of the Process with PID equal dwProcessId
+
+	apiReader.readApisFromModuleList();		//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
+
+	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);  //in moduleList now I have the list of API which match the API loaded in "apiList"(contains the API obtained by parsing the Export Directory of the Loaded DLL's)
 
 	ImportRebuilder importRebuild(dumpFile);
 
 	importRebuild.enableOFTSupport();
 
 	int retVal = SCY_ERROR_IATWRITE;
+
+	displayModuleList(moduleList);
 
 	if (importRebuild.rebuildImportTable(iatFixFile, moduleList))
 	{	
