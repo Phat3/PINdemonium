@@ -17,4 +17,4 @@ VOID myFunc();
    Ret:
    True or False if Scylla sucessfully add the new section  
 */
-BOOL ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, BYTE * sectionData);
+BOOL ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData);

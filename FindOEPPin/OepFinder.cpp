@@ -165,9 +165,9 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		   const wchar_t* widecstr = widestr.c_str();
 		   MYINFO("DUMP PATH CONVERTED: %S" , widecstr);
 
-		   scylla_wrapper->myFunc();
+		   UINT32 offset = curEip - hz->begin; // calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone )
 
-		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" , hz->size, Buffer); 
+		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" , hz->size , offset , Buffer); 
 		   free(Buffer);
 	
 		}
