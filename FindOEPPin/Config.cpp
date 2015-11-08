@@ -12,7 +12,7 @@ const string Config::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
 const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
 
 //Tuning Flags
-const bool  Config::INTER_WRITESET_ANALYSIS_ENABLE = false;
+const bool  Config::INTER_WRITESET_ANALYSIS_ENABLE = true;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
 
 

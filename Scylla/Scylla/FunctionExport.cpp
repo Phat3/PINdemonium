@@ -329,13 +329,69 @@ void displayModuleList(std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
 		{
 			importThunk = &(iterator2->second);
 
-			printf("VA : %08x,\t CONTENT : %08x\n", importThunk->va, importThunk->apiAddressVA);
+			printf("VA : %08x\t API ADDRESS : %08x\n", importThunk->va, importThunk->apiAddressVA);
 
 			iterator2++;
 		}
 
 		iterator1++;
 	}
+
+}
+
+void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportModuleThunk> moduleList){
+	printf("Unresolved imports detected...\n");
+
+	PUNRESOLVED_IMPORT unresolvedImport = 0;
+	unresolvedImport = (PUNRESOLVED_IMPORT)calloc(numberOfUnresolvedImports, sizeof(UNRESOLVED_IMPORT));
+
+	addUnresolvedImports(unresolvedImport, moduleList);
+	//local variable
+	int insDelta;
+	char buffer[2048];
+	DWORD_PTR IATbase;
+	int i,j;
+	INSTRUCTION inst;
+	DWORD_PTR invalidApiAddress = 0;
+		
+	while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
+	{
+		memset(buffer, 0x00, sizeof(buffer));
+		insDelta = 0;
+		invalidApiAddress = unresolvedImport->InvalidApiAddress;
+		printf(buffer, "API Address = 0x%p\t IAT Address = 0x%p\n",  invalidApiAddress, unresolvedImport->ImportTableAddressPointer);
+		//get the starting IAT address to be analyzed yet
+		IATbase = unresolvedImport->InvalidApiAddress;
+		for (j = 0; j <  1000; j++)
+		{
+			memset(&inst, 0x00, sizeof(INSTRUCTION));
+			//get the disassembled instruction
+			i = get_instruction(&inst, (BYTE *)IATbase, MODE_32);
+			memset(buffer, 0x00, sizeof(buffer));
+			get_instruction_string(&inst, FORMAT_ATT, 0, buffer, sizeof(buffer));
+			//check if it is a jump
+			if (strstr(buffer, "jmp"))
+			{
+				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
+				unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
+				printf(" \nIAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
+				//writeToLogFile(buffer2);
+				*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
+				printf(" IAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
+				//unresolvedImport->InvalidApiAddress = correct_address;
+				printf(" JUMP Dest = %08x\n\n" , correct_address);
+				break;
+			}
+			//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
+			else{
+				insDelta = insDelta + i;
+			}
+			//check the next row inthe IAT
+			IATbase = IATbase + i;
+		}
+		unresolvedImport++; //next pointer to struct
+	}
+
 }
 
 int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile)
@@ -372,105 +428,33 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	ProcessAccessHelp::selectedModule = 0;
 	ProcessAccessHelp::targetImageBase = processPtr->imageBase;
 	ProcessAccessHelp::targetSizeOfImage = processPtr->imageSize;
+	
+	apiReader.readApisFromModuleList();		//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
+
+	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 
 	//DEBUG
 
 	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
 	
-	if (numberOfUnresolvedImports != 0)
-	{
-		printf("Unresolved imports detected...\n");
+	if (numberOfUnresolvedImports != 0){
 
-		PUNRESOLVED_IMPORT unresolvedImport = 0;
-		unresolvedImport = (PUNRESOLVED_IMPORT)calloc(numberOfUnresolvedImports, sizeof(UNRESOLVED_IMPORT));
-
-		addUnresolvedImports(unresolvedImport, moduleList);
-		//local variable
-		int insDelta;
-		char buffer[2048];
-		DWORD_PTR IATbase;
-		int i,j;
-		INSTRUCTION inst;
-		DWORD_PTR invalidApiAddress = 0;
-		/*
-		std::map<DWORD_PTR, ImportModuleThunk>::iterator iterator1;
-		std::map<DWORD_PTR, ImportThunk>::iterator iterator2;
-		ImportModuleThunk * moduleThunk = 0;
-		ImportThunk * importThunk = 0;
+		customFix(numberOfUnresolvedImports, moduleList);
 		
-		iterator1 = moduleList.begin(); //pointer to the first dll 
+		apiReader.clearAll();
 
-		moduleThunk = &(iterator1->second);
+		ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
 
-		iterator2 = moduleThunk->thunkList.begin(); //pointer to the firs function of the first dll
-*/
-		while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
-		{
-			//get the import
-			//importThunk = &(iterator2->second);
+		apiReader.readApisFromModuleList();						//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
 
-			memset(buffer, 0x00, sizeof(buffer));
-			insDelta = 0;
-			invalidApiAddress = unresolvedImport->InvalidApiAddress;
-			printf(buffer, "API Address = 0x%p\t IAT Address = 0x%p\n",  invalidApiAddress, unresolvedImport->ImportTableAddressPointer);
-			//get the starting IAT address to be analyzed yet
-			IATbase = unresolvedImport->InvalidApiAddress;
-			for (j = 0; j <  1000; j++)
-			{
-				memset(&inst, 0x00, sizeof(INSTRUCTION));
-				//get the disassembled instruction
-				i = get_instruction(&inst, (BYTE *)IATbase, MODE_32);
-				memset(buffer, 0x00, sizeof(buffer));
-				get_instruction_string(&inst, FORMAT_ATT, 0, buffer, sizeof(buffer));
-				printf("\n\n\n\n\n\n INSTR = %s\n", buffer);
-				char buffer2[2048];
-				//check if it is a jump
-				if (strstr(buffer, "jmp"))
-				{
-					//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
-					unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
-					//sprintf(buffer2, " JUMP Dest = %08x\n" , correct_address);
-					//writeToLogFile(buffer2);
-					printf("IAT ENTRY : %08x\t CONTENT : %08x\n", unresolvedImport->ImportTableAddressPointer,*(DWORD*)(unresolvedImport->ImportTableAddressPointer));
-					*(DWORD*)(unresolvedImport->ImportTableAddressPointer) = correct_address;
-					//unresolvedImport->InvalidApiAddress = correct_address;
-					printf("IAT ENTRY : %08x\t CONTENT : %08x\n", unresolvedImport->ImportTableAddressPointer,*(DWORD*)(unresolvedImport->ImportTableAddressPointer));
-					printf(" JUMP Dest = %08x\n\n\n\n\n\n" , correct_address);
-					break;
-				}
-				//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
-				else{
-					insDelta = insDelta + i;
-				}
-				//check the next row inthe IAT
-				IATbase = IATbase + i;
-			}
-			/*
-			if(iterator2 == moduleThunk->thunkList.end()){
-				if(iterator1 != moduleList.end()){
-					iterator1 ++; //go to the next thunk
-					moduleThunk = &(iterator1->second);
-					iterator2 = moduleThunk->thunkList.begin();
-				}
-			}
-			else{
-				iterator2++;
-			}
-			*/
-			
-			unresolvedImport++; //next pointer to struct
-		}
-		
+		apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 	}
-	
+
+	displayModuleList(moduleList);
+
 	//FINE DEBUG
-	//DebugBreak();
+
 	//add IAT section to dump
-	ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);  //In ProcessAccessHelp::moduleList List of the Dll loaded by the process and other useful information of the Process with PID equal dwProcessId
-
-	apiReader.readApisFromModuleList();		//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
-
-	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);  //in moduleList now I have the list of API which match the API loaded in "apiList"(contains the API obtained by parsing the Export Directory of the Loaded DLL's)
 
 	ImportRebuilder importRebuild(dumpFile);
 
