@@ -193,8 +193,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		   MYINFO("DUMPED HEAP OK\n");
 
 		}
-
-		Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
 		proc_info->setPrevIp(INS_Address(ins));
 
 	}
