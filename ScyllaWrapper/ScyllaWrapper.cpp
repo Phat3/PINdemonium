@@ -13,12 +13,6 @@
 #define SCYLLA_SUCCESS_FIX 0
 
 
-
-
-VOID myFunc(){
-	printf("HELLO WANDERsz %d",ScyllaVersionInformationDword());
-}
-
 /**
 Extract the .EXE file which has lauched the process having PID pid
 **/
@@ -122,7 +116,7 @@ UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file){
 }
 
 
-void WINAPI ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData){
+void ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData){
 	ScyllaAddSection(dump_path , sectionName, sectionSize, offset , sectionData);
 }
 

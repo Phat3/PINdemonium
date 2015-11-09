@@ -7,7 +7,7 @@ class WriteInterval
 
 public:
 	//create a new WriteInterval 
-	WriteInterval(ADDRINT addr_begin, ADDRINT addr_end);
+	WriteInterval(ADDRINT addr_begin, ADDRINT addr_end, BOOL heap_flag);
 	~WriteInterval(void);
 	//check if we have to expand our interval
 	BOOL checkUpdate(ADDRINT start_addr, ADDRINT end_addr);
@@ -25,6 +25,7 @@ public:
 	UINT32 getBrokenFlag();
 	UINT32 getThreshold();
 	UINT32 getCurrNumberJMP();
+	BOOL getHeapFlag();
 	//setter
 	void setEntropyFlag(UINT32 flag);
 	void setLongJmpFlag(UINT32 flag);
@@ -43,6 +44,7 @@ private:
 	UINT32 pushad_popad_flag;
 	BOOL broken_flag;
 	UINT32 cur_number_jmp;
+	BOOL heap_flag;
 
 
 };
