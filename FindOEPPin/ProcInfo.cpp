@@ -139,6 +139,11 @@ void ProcInfo::insertHeapZone(HeapZone heap_zone){
 	this->HeapMap.push_back(heap_zone);
 }
 
+void ProcInfo::deleteHeapZone(UINT32 index){
+     
+	this->HeapMap.erase(this->HeapMap.begin()+index);
+}
+
 UINT32 ProcInfo::searchHeapMap(ADDRINT ip){
 
 	int i=0;

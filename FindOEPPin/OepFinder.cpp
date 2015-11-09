@@ -80,18 +80,19 @@ static VOID DoBreakpoint(const CONTEXT *ctxt, THREADID tid, ADDRINT ip)
 // - Set the previous ip to the current ip ( useful for some heuristics like jumpOuterSection )
 UINT32 OepFinder::IsCurrentInOEP(INS ins){
    	
+
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	ProcInfo *proc_info = ProcInfo::getInstance();
 
 	int heap_index = -1;
 	unsigned char * Buffer; 
-	
+
 	clock_t now = clock();
 	//check the timeout
 	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > TIME_OUT  ){
 		MYINFO("TIMER SCADUTO");
-		exit(0);
+		//exit(0);
 	}
 
 	UINT32 writeItemIndex=-1;
@@ -145,31 +146,43 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		/* Check if we need to dump the heap too */
 		if(heap_index != -1){
+
 		   HeapZone *hz = proc_info->getHeapZoneByIndex(heap_index);
+
+		   MYINFO("CURRENT INSTRUCTION EXECUTED ON HEAP: %s" , INS_Disassemble(ins).c_str()); 	
+
+
 		   MYINFO("DUMPING HEAP: %08x" , hz->begin);
 
 		   /* prepare the buffer to copy inside the stuff into the heap section to dump */
+		  
 		   Buffer = (unsigned char *)malloc(hz->size);
 
 		   /* copy the heap zone into the buffer */
 		   PIN_SafeCopy(Buffer , (void const *)hz->begin , hz->size);	
-
+		   
 		   ScyllaWrapper *scylla_wrapper = ScyllaWrapper::getInstance();
 
+		   /* get the name of the last dump from the Config object */
 		   Config *config = Config::getInstance();
 		   string dump_path = config->getCurrentDumpFilePath();
 
-		    MYINFO("DUMP PATH: %s" , dump_path.c_str());
-
+		   /* and convert it into the WCHAR representation */
 		   std::wstring widestr = std::wstring(dump_path.begin(), dump_path.end());
 		   const wchar_t* widecstr = widestr.c_str();
-		   MYINFO("DUMP PATH CONVERTED: %S" , widecstr);
 
-		   UINT32 offset = curEip - hz->begin; // calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone )
+		   /* calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone ) */
+		   UINT32 offset = curEip - hz->begin;
 
-		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" , hz->size , offset , Buffer); 
+		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" , hz->size , offset , Buffer);
+
 		   free(Buffer);
-	
+
+		   proc_info->deleteHeapZone(heap_index);
+
+		   /* delete the HeapZone item? Keep it? Long jump heuristic? */
+		   MYINFO("DUMPED HEAP OK\n");
+
 		}
 
 		Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
@@ -178,8 +191,8 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	}
 	//update the previous IP
 	proc_info->setPrevIp(INS_Address(ins));
-	return OEPFINDER_NOT_WXORX_INST;
 
+	return OEPFINDER_NOT_WXORX_INST;
 }
 
 

@@ -10,10 +10,8 @@ VOID myFunc(){
 }
 
 
-BOOL ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData){
-	
-	//DebugBreak();
-	fflush(stdout);
-	return ScyllaAddSection(dump_path , sectionName,sectionSize, offset , sectionData);
+void WINAPI ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData){
+
+	ScyllaAddSection(dump_path , sectionName, sectionSize, offset , sectionData);
 }
 

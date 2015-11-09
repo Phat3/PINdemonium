@@ -64,6 +64,7 @@ VOID VirtualAllocHook(UINT32 arg0, UINT32 virtual_alloc_size , UINT32 ret_heap_a
 void imageLoadCallback(IMG img,void *){
 
 	Section item;
+	static int va_hooked = 0;
 
 	//get the initial entropy of the PE
 	//we have to consder only the main executable and avìvoid the libraries
@@ -107,6 +108,7 @@ void imageLoadCallback(IMG img,void *){
 			RTN_Open(rtn); 	
 			RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualAllocHook , IARG_G_ARG0_CALLEE , IARG_G_ARG1_CALLEE , IARG_G_RESULT0, IARG_END);
 			RTN_Close(rtn);
+		
 		}
 
 		filterH->addLibrary(name,startAddr,endAddr);

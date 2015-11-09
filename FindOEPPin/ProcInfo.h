@@ -57,6 +57,7 @@ public:
 	void insertSection(Section section);
 	string getSectionNameByIp(ADDRINT ip);
 	void insertHeapZone(HeapZone heap_zone);
+	void deleteHeapZone(UINT32 index);
 	UINT32 searchHeapMap(ADDRINT ip);
 	HeapZone *getHeapZoneByIndex(UINT32 index);
 	float GetEntropy();

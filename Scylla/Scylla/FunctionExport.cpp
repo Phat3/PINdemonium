@@ -302,7 +302,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 
 /* ADDED FROM OUR TEAM */
 
-BOOL ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData){
+void WINAPI ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData){
 
 	PeParser * peFile = 0;
 
@@ -334,5 +334,4 @@ BOOL ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD 
 	/* save the pe */
 	int retValue = peFile->savePeFileToDisk(dump_path);
 
-	return TRUE;
 }
