@@ -145,6 +145,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//update the prevuious IP
 
 		/* Check if we need to dump the heap too */
+		/* BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST */
 		if(heap_index != -1){
 
 		   HeapZone *hz = proc_info->getHeapZoneByIndex(heap_index);
