@@ -93,7 +93,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\phate\Desktop\FindOEPPin\Scylla\libdasm-1.5;$(SolutionDir)\Scylla\tinyxml;$(SolutionDir)\Scylla\diStorm\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Scylla\libdasm-1.5;$(SolutionDir)\Scylla\tinyxml;$(SolutionDir)\Scylla\diStorm\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -105,11 +105,14 @@
       <EntryPointSymbol>
       </EntryPointSymbol>
       <ModuleDefinitionFile>scylla_export_functions.def</ModuleDefinitionFile>
-      <AdditionalLibraryDirectories>C:\Users\phate\Desktop\FindOEPPin\Scylla\libdasm-1.5\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\Scylla\libdasm-1.5\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllDebug\ScyllaDLLx86.dll   C:\pin\PinUnpackerDependencies\Scylla\ScyllaDLLx86.dll &amp; copy C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllDebug\ScyllaDLLx86.dll   C:\pin\ScyllaDLLx86.dll</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>copy $(SolutionDir)\Scylla\libdasm-1.5\bin\libdasm.dll C:\pin\</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -152,11 +155,14 @@
       <EntryPointSymbol>
       </EntryPointSymbol>
       <GenerateMapFile>true</GenerateMapFile>
-      <AdditionalLibraryDirectories>C:\Users\phate\Desktop\FindOEPPin\Scylla\libdasm-1.5\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\Scylla\libdasm-1.5\bin;C:\Users\phate\Desktop\FindOEPPin\Scylla\libdasm-1.5\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>copy C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllRelease\ScyllaDLLx86.dll   C:\pin\PinUnpackerDependencies\Scylla\ScyllaDLLx86.dll &amp; copy C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllRelease\ScyllaDLLx86.dll   C:\pin\ScyllaDLLx86.dll</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>copy $(SolutionDir)\Scylla\libdasm-1.5\bin\libdasm.dll C:\pin\</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
