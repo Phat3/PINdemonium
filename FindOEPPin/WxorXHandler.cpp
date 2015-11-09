@@ -74,8 +74,13 @@ VOID WxorXHandler::deleteWriteItem(UINT32 writeItemIndex){
 }
 
 VOID WxorXHandler::setBrokenFlag(int writeItemIndex){
-
+	MYPRINT("dentro set broken flag %d", this->WritesSet[writeItemIndex].getBrokenFlag());
 	this->WritesSet[writeItemIndex].setBrokenFlag(true);
+}
+
+
+VOID WxorXHandler::incrementCurrJMPNumber(int writeItemIndex){
+	this->WritesSet[writeItemIndex].incrementCurrNumberJMP();
 }
 
 

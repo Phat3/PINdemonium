@@ -1,11 +1,13 @@
 #include "WriteInterval.h"
 
+
 //set the new WriteInterval object with the begin address and the end address of the current write operation
 WriteInterval::WriteInterval(ADDRINT addr_begin, ADDRINT addr_end)
 {
 	this->addr_begin = addr_begin;
 	this->addr_end = addr_end;
 	this->broken_flag = 0;
+	this->cur_number_jmp = 0;
 }
 
 
@@ -43,6 +45,17 @@ UINT32 WriteInterval::getBrokenFlag(){
 	return this->broken_flag;
 }
 
+
+UINT32 WriteInterval::getThreshold(){
+	return (this->addr_end - this->addr_begin)/8;
+}
+
+UINT32 WriteInterval::getCurrNumberJMP(){
+	return this->cur_number_jmp;
+}
+
+
+
 void WriteInterval::setEntropyFlag(UINT32 flag){
 	this->entropy_flag = flag;
 }
@@ -59,9 +72,18 @@ void WriteInterval::setPushadPopadFlag(UINT32 flag){
 	this->pushad_popad_flag = flag;
 }
 
+
 void WriteInterval::setBrokenFlag(BOOL flag){
 	this->broken_flag = flag;
 }
+
+void WriteInterval::incrementCurrNumberJMP(){
+	this->cur_number_jmp = this->cur_number_jmp +1 ;
+}
+
+
+
+
 
 //----------------------- PUBLIC METHODS -----------------------
 
@@ -96,7 +118,7 @@ BOOL WriteInterval::checkInside(ADDRINT ip){
 	return (ip >= this->addr_begin && ip <= this->addr_end);
 }
 
-UINT32 WriteInterval::getThreshold(){
-	return (this->addr_end - this->addr_begin)/8;
-}
+
+
+
  

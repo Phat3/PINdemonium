@@ -23,6 +23,7 @@ public:
 private:
 	UINT32 getFileSize(FILE * fp);
 	BOOL launchIdaScript(string idaw,string idaPythonScript,string  idaPythonInput,string idaPythonOutput,string dumpFileName);
+	BOOL existFile (std::string name);
 
 
 };

@@ -24,6 +24,7 @@ public:
 	std::vector<WriteInterval> getWritesSet();
 	VOID displayWriteSet();
 	VOID setBrokenFlag(int writeItemIndex);
+	VOID incrementCurrJMPNumber(int writeItemIndex);
 
 
 private: 

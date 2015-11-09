@@ -182,7 +182,6 @@ INT WINAPI ScyllaStartGui(DWORD dwProcessId, HINSTANCE mod)
 int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatSize, DWORD_PTR searchStart, BOOL advancedSearch)
 {
 
-	printf("DOING SEARCH...\n");	
 	ApiReader apiReader;
 	apiReader.moduleThunkList = 0;
 	ProcessLister processLister;
@@ -237,7 +236,6 @@ int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatS
 	processList.clear();
 	ProcessAccessHelp::closeProcessHandle();
 	apiReader.clearAll();
-	printf("SEARCH FINISHED!\n");
 	return retVal;
 }
 
@@ -401,7 +399,6 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 
 int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile)
 {
-	printf("DOING FIX...\n");	
 	ApiReader apiReader;
 	ProcessLister processLister;
 	Process *processPtr = 0;
@@ -481,8 +478,6 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	ProcessAccessHelp::closeProcessHandle();
 		
 	apiReader.clearAll();
-
-	printf("FIX FINISHED!!\n");	
 
 	return retVal;
 }
