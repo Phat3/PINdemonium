@@ -139,11 +139,11 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			//W::DebugBreak();
 			this->analysis(item, ins, prev_ip, curEip);
 			wxorxHandler->setBrokenFlag(writeItemIndex);
+			Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 			
 		}
 		//delete the WriteInterval just analyzed
 		//wxorxHandler->deleteWriteItem(writeItemIndex);
-		Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 		//update the prevuious IP
 		proc_info->setPrevIp(INS_Address(ins));
 

@@ -108,7 +108,7 @@ string Config::getCurDateAndTime(){
   time (&rawtime);
   timeinfo = localtime(&rawtime);
 
-  strftime(buffer,80,"%d_%m_%Y_%I_%M_%S",timeinfo);
+  strftime(buffer,80,"%Y_%m_%d_%I_%M_%S",timeinfo);
   return string(buffer);
 }
 
