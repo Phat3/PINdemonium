@@ -75,7 +75,8 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 		return SCYLLA_ERROR_FILE_FROM_PID;
 	}
 	INFO("Original Exe Path: %S\n",originalExe);
-		
+	
+	/* hMod is the reference to the ExE module base */
 	success = ScyllaDumpProcessW(pid,originalExe,hMod,oep,dumpFile);
 	if(!success){
 		ERRORE("Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
@@ -83,7 +84,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	}
 	INFO("Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
 		
-	//DebugBreak();
+	DebugBreak();
 	//Searching the IAT
 	int error = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, TRUE);
 	if(error){
@@ -94,6 +95,8 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	
 	
 	//Fixing the IAT
+	INFO("\n\n\n\nFIXING ...... start : %08x\t size : %08x\t pid : %d\t output : %s\n\n\n\n", iatStart,iatSize,pid,dumpFile,outputFile);
+
 	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,dumpFile,outputFile);
 	if(error){
 		ERRORE("(IAT FIX) error %d",error);

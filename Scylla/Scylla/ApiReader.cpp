@@ -15,6 +15,7 @@ DWORD_PTR ApiReader::maxApiAddress = 0;
 
 #define DEBUG_COMMENTS
 
+
 void ApiReader::readApisFromModuleList()
 {
     if (Scylla::config[APIS_ALWAYS_FROM_DISK].isTrue())

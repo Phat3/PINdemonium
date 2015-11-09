@@ -1,0 +1,5 @@
+EXPORTS
+   myFunc   @1
+   ScyllaDumpAndFix		@2
+   ScyllaWrapAddSection @3
+

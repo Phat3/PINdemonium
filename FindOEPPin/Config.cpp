@@ -14,6 +14,7 @@ const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\Scyl
 //Tuning Flags
 const bool  Config::INTER_WRITESET_ANALYSIS_ENABLE = true;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
+const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 2;
 
 
 Config* Config::instance = 0;
@@ -107,7 +108,7 @@ string Config::getCurDateAndTime(){
   time (&rawtime);
   timeinfo = localtime(&rawtime);
 
-  strftime(buffer,80,"%d_%m_%Y_%I_%M_%S",timeinfo);
+  strftime(buffer,80,"%Y_%m_%d_%I_%M_%S",timeinfo);
   return string(buffer);
 }
 

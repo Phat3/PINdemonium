@@ -17,6 +17,7 @@ New Scylla section contains:
 
 bool ImportRebuilder::rebuildImportTable(const WCHAR * newFilePath, std::map<DWORD_PTR, ImportModuleThunk> & moduleList)
 {
+	
 	bool retValue = false;
 
 	std::map<DWORD_PTR, ImportModuleThunk> copyModule;

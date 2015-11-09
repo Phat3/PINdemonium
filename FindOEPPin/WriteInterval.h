@@ -24,12 +24,14 @@ public:
 	UINT32 getPushadPopadflag();
 	UINT32 getBrokenFlag();
 	UINT32 getThreshold();
+	UINT32 getCurrNumberJMP();
 	//setter
 	void setEntropyFlag(UINT32 flag);
 	void setLongJmpFlag(UINT32 flag);
 	void setJmpOuterSectionFlag(UINT32 flag);
 	void setPushadPopadFlag(UINT32 flag);
 	void setBrokenFlag(BOOL flag);
+	void incrementCurrNumberJMP();
 
 
 private:
@@ -40,6 +42,7 @@ private:
 	UINT32 jmp_outer_section_flag;
 	UINT32 pushad_popad_flag;
 	BOOL broken_flag;
+	UINT32 cur_number_jmp;
 
 
 };

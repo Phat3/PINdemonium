@@ -21,15 +21,17 @@ BOOL DumpHandler::existFile (string name) {
     }   
 }
 
-/**Lauch external tool ScyllaDumper to dump the process with PID pid 
+/**
+ Lauch external tool ScyllaDumper to dump the process with PID pid 
  scylla: string containing the path to the scyllaDumper executable
  pid: pid of the process to dump (Current PID if you want to use the Pin Instrumented Binary)
- curEip: curre
+ curEip: current eip 
+ outputFile: path to the dump file 
 **/
 BOOL DumpHandler::launchScyllaDumpAndFix(string scylla,int pid, int curEip,string outputFile){	
 
 
-	MYINFO("CURR EIP dio bo %x",curEip);
+	MYINFO("CURR EIP %x",curEip);
 	//Creating the string containing the arguments to pass to the ScyllaTest.exe
 	std::stringstream scyllaArgsStream;
 	scyllaArgsStream << scylla << " ";
@@ -62,4 +64,3 @@ BOOL DumpHandler::launchScyllaDumpAndFix(string scylla,int pid, int curEip,strin
 	MYINFO("Scylla Finished");
 	return true;
 }
-

@@ -135,6 +135,36 @@ string ProcInfo::getSectionNameByIp(ADDRINT ip){
 	return s;
 }
 
+void ProcInfo::insertHeapZone(HeapZone heap_zone){
+	this->HeapMap.push_back(heap_zone);
+}
+
+void ProcInfo::deleteHeapZone(UINT32 index){
+     
+	this->HeapMap.erase(this->HeapMap.begin()+index);
+}
+
+UINT32 ProcInfo::searchHeapMap(ADDRINT ip){
+
+	int i=0;
+	HeapZone hz;
+	for(i=0; i<this->HeapMap.size();i++){
+	    
+		hz = this->HeapMap.at(i);
+		if(ip >= hz.begin && ip <= hz.end){
+		   MYWARN("EIP ON THE HEAP DETECTED!\n");
+		   return i;
+		}
+	}
+	return -1;
+}
+
+HeapZone* ProcInfo::getHeapZoneByIndex(UINT32 index){
+
+	return &this->HeapMap.at(index);
+}
+
+
 //return the entropy value of the entire program
 float ProcInfo::GetEntropy(){
 

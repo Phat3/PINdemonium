@@ -292,14 +292,19 @@ bool PeParser::readPeSectionsFromProcess()
 	bool retValue = true;
 	DWORD_PTR readOffset = 0;
 
-	listPeSection.reserve(getNumberOfSections());
+	// reserve space for x number of section readed from the PE on disk 
+	
+	listPeSection.reserve(getNumberOfSections()); 
 
-	for (WORD i = 0; i < getNumberOfSections(); i++)
+	WORD i;
+
+	for (i = 0; i < getNumberOfSections(); i++)
 	{
 		readOffset = listPeSection[i].sectionHeader.VirtualAddress + moduleBaseAddress;
 
 		listPeSection[i].normalSize = listPeSection[i].sectionHeader.Misc.VirtualSize;
 
+		// go to read in memory these
 		if (!readSectionFromProcess(readOffset, listPeSection[i]))
 		{
 			retValue = false;
@@ -373,6 +378,7 @@ bool PeParser::getSectionNameUnicode(const int sectionIndex, WCHAR * output, con
 	return (swprintf_s(output, outputLen, L"%S", sectionNameA) != -1);
 }
 
+/* Take the number of the sections from the PE file */
 WORD PeParser::getNumberOfSections()
 {
 	return pNTHeader32->FileHeader.NumberOfSections;
@@ -831,9 +837,12 @@ DWORD PeParser::alignValue(DWORD badValue, DWORD alignTo)
 
 bool PeParser::addNewLastSection(const CHAR * sectionName, DWORD sectionSize, BYTE * sectionData)
 {
+
 	size_t nameLength = strlen(sectionName);
 	DWORD fileAlignment = 0, sectionAlignment = 0;
 	PeFileSection peFileSection;
+
+	
 
 	if (nameLength > IMAGE_SIZEOF_SHORT_NAME)
 	{
@@ -1094,11 +1103,12 @@ void PeParser::alignAllSectionHeaders()
 	std::sort(listPeSection.begin(), listPeSection.end(), PeFileSectionSortByVirtualAddress); //sort by VirtualAddress ascending
 }
 
+/* Function used to dump the process indicated by the pid */
 bool PeParser::dumpProcess(DWORD_PTR modBase, DWORD_PTR entryPoint, const WCHAR * dumpFilePath)
 {
 	moduleBaseAddress = modBase;
 
-	if (readPeSectionsFromProcess())
+	if (readPeSectionsFromProcess()) // reads all the section from memory by reading the original PE on disk 
 	{
 		setDefaultFileAlignment();
 

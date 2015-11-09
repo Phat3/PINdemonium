@@ -8,6 +8,8 @@
 #include "ApiReader.h"
 #include "IATSearch.h"
 #include "ImportRebuilder.h"
+#include "DllInjectionPlugin.h"
+#include  "libdasm.h"
 
 
 extern HINSTANCE hDllModule;
@@ -174,12 +176,14 @@ INT WINAPI ScyllaStartGui(DWORD dwProcessId, HINSTANCE mod)
 	guiParam.dwProcessId = dwProcessId;
 	guiParam.mod = mod;
 
-	return InitializeGui(hDllModule, (LPARAM)&guiParam);
+	return InitializeGui(hDllModule, (LPARAM)&guiParam); 
 }
 
 int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatSize, DWORD_PTR searchStart, BOOL advancedSearch)
 {
+
 	ApiReader apiReader;
+	apiReader.moduleThunkList = 0;
 	ProcessLister processLister;
 	Process *processPtr = 0;
 	IATSearch iatSearch;
@@ -197,8 +201,8 @@ int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatS
 	if(!processPtr) return SCY_ERROR_PIDNOTFOUND;
 
 	ProcessAccessHelp::closeProcessHandle();
+	
 	apiReader.clearAll();
-
 	if (!ProcessAccessHelp::openProcessHandle(processPtr->PID))
 	{
 		return SCY_ERROR_PROCOPEN;
@@ -209,8 +213,8 @@ int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatS
 	ProcessAccessHelp::selectedModule = 0;
 	ProcessAccessHelp::targetImageBase = processPtr->imageBase;
 	ProcessAccessHelp::targetSizeOfImage = processPtr->imageSize;
-
 	apiReader.readApisFromModuleList();
+	
 
 	int retVal = SCY_ERROR_IATNOTFOUND;
 
@@ -232,20 +236,174 @@ int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatS
 	processList.clear();
 	ProcessAccessHelp::closeProcessHandle();
 	apiReader.clearAll();
-
 	return retVal;
+}
+
+
+DWORD_PTR getNumberOfUnresolvedImports( std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
+{
+	std::map<DWORD_PTR, ImportModuleThunk>::iterator iterator1;
+	std::map<DWORD_PTR, ImportThunk>::iterator iterator2;
+	ImportModuleThunk * moduleThunk = 0;
+	ImportThunk * importThunk = 0;
+	DWORD_PTR dwNumber = 0;
+
+	iterator1 = moduleList.begin();
+
+	while (iterator1 != moduleList.end())
+	{
+		moduleThunk = &(iterator1->second);
+
+		iterator2 = moduleThunk->thunkList.begin();
+
+		while (iterator2 != moduleThunk->thunkList.end())
+		{
+			importThunk = &(iterator2->second);
+
+			if (importThunk->valid == false)
+			{
+				dwNumber++;
+			}
+
+			iterator2++;
+		}
+
+		iterator1++;
+	}
+
+	return dwNumber;
+}
+
+void addUnresolvedImports( PUNRESOLVED_IMPORT firstUnresImp, std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
+{
+	std::map<DWORD_PTR, ImportModuleThunk>::iterator iterator1;
+	std::map<DWORD_PTR, ImportThunk>::iterator iterator2;
+	ImportModuleThunk * moduleThunk = 0;
+	ImportThunk * importThunk = 0;
+
+	iterator1 = moduleList.begin();
+
+	while (iterator1 != moduleList.end())
+	{
+		moduleThunk = &(iterator1->second);
+
+		iterator2 = moduleThunk->thunkList.begin();
+
+		while (iterator2 != moduleThunk->thunkList.end())
+		{
+			importThunk = &(iterator2->second);
+
+			if (importThunk->valid == false)
+			{
+				firstUnresImp->InvalidApiAddress = importThunk->apiAddressVA;
+				firstUnresImp->ImportTableAddressPointer = importThunk->va;
+				firstUnresImp++;
+			}
+
+			iterator2++;
+		}
+
+		iterator1++;
+	}
+
+	firstUnresImp->InvalidApiAddress = 0;
+	firstUnresImp->ImportTableAddressPointer = 0;
+}
+
+void displayModuleList(std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
+{
+	std::map<DWORD_PTR, ImportModuleThunk>::iterator iterator1;
+	std::map<DWORD_PTR, ImportThunk>::iterator iterator2;
+	ImportModuleThunk * moduleThunk = 0;
+	ImportThunk * importThunk = 0;
+
+	iterator1 = moduleList.begin();
+
+	while (iterator1 != moduleList.end())
+	{
+		moduleThunk = &(iterator1->second);
+
+		iterator2 = moduleThunk->thunkList.begin();
+
+		while (iterator2 != moduleThunk->thunkList.end())
+		{
+			importThunk = &(iterator2->second);
+
+			printf("VA : %08x\t API ADDRESS : %08x\n", importThunk->va, importThunk->apiAddressVA);
+			fflush(stdout);
+
+			iterator2++;
+		}
+
+		iterator1++;
+	}
+
+}
+
+void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportModuleThunk> moduleList){
+	printf("Unresolved imports detected...\n");
+
+	PUNRESOLVED_IMPORT unresolvedImport = 0;
+	unresolvedImport = (PUNRESOLVED_IMPORT)calloc(numberOfUnresolvedImports, sizeof(UNRESOLVED_IMPORT));
+
+	addUnresolvedImports(unresolvedImport, moduleList);
+	//local variable
+	int insDelta;
+	char buffer[2048];
+	DWORD_PTR IATbase;
+	int i,j;
+	INSTRUCTION inst;
+	DWORD_PTR invalidApiAddress = 0;
+		
+	while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
+	{
+		memset(buffer, 0x00, sizeof(buffer));
+		insDelta = 0;
+		invalidApiAddress = unresolvedImport->InvalidApiAddress;
+		printf(buffer, "API Address = 0x%p\t IAT Address = 0x%p\n",  invalidApiAddress, unresolvedImport->ImportTableAddressPointer);
+		//get the starting IAT address to be analyzed yet
+		IATbase = unresolvedImport->InvalidApiAddress;
+		for (j = 0; j <  1000; j++)
+		{
+			memset(&inst, 0x00, sizeof(INSTRUCTION));
+			//get the disassembled instruction
+			i = get_instruction(&inst, (BYTE *)IATbase, MODE_32);
+			memset(buffer, 0x00, sizeof(buffer));
+			get_instruction_string(&inst, FORMAT_ATT, 0, buffer, sizeof(buffer));
+			//check if it is a jump
+			if (strstr(buffer, "jmp"))
+			{
+				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
+				unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
+				printf(" \nIAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
+				//writeToLogFile(buffer2);
+				*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
+				printf(" IAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
+				//unresolvedImport->InvalidApiAddress = correct_address;
+				printf(" JUMP Dest = %08x\n\n" , correct_address);
+				fflush(stdout);
+				break;
+			}
+			//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
+			else{
+				insDelta = insDelta + i;
+			}
+			//check the next row inthe IAT
+			IATbase = IATbase + i;
+		}
+		unresolvedImport++; //next pointer to struct
+	}
+
 }
 
 
 int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile)
 {
-
 	ApiReader apiReader;
 	ProcessLister processLister;
 	Process *processPtr = 0;
 
 	std::map<DWORD_PTR, ImportModuleThunk> moduleList;
-
 
 	std::vector<Process>& processList = processLister.getProcessListSnapshotNative();
 
@@ -271,10 +429,35 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	ProcessAccessHelp::selectedModule = 0;
 	ProcessAccessHelp::targetImageBase = processPtr->imageBase;
 	ProcessAccessHelp::targetSizeOfImage = processPtr->imageSize;
+	
+	apiReader.readApisFromModuleList();		//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
 
-	apiReader.readApisFromModuleList();						//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
+	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 
-	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);  //in moduleList now I have the list of API which match the API loaded in "apiList"(contains the API obtained by parsing the Export Directory of the Loaded DLL's)
+	//DEBUG
+
+	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
+	printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImports);
+	
+	if (numberOfUnresolvedImports != 0){
+
+		customFix(numberOfUnresolvedImports, moduleList);
+
+		apiReader.clearAll();
+
+		//moduleList.clear();
+
+		ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
+
+		apiReader.readApisFromModuleList();
+
+		apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
+		
+	}
+
+	displayModuleList(moduleList);
+
+	//FINE DEBUG
 
 	//add IAT section to dump
 
@@ -293,13 +476,46 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 
 	moduleList.clear();
 	ProcessAccessHelp::closeProcessHandle();
-	
+		
 	apiReader.clearAll();
 
 	return retVal;
 }
 
 
-void WINAPI provaFun(){
-	printf("chiamata!!!!!!!\n");
+/* ADDED FROM OUR TEAM */
+
+void WINAPI ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData){
+
+	PeParser * peFile = 0;
+
+	/* open the dumped file */
+	if (dump_path)
+	{
+		peFile = new PeParser(dump_path, TRUE);
+	}
+
+	/* read the data inside all the section from the PE in order to left unchanged the dumped PE */
+	peFile->readPeSectionsFromFile();
+
+	/* add a new last section */
+	bool res = peFile->addNewLastSection(sectionName, sectionSize, sectionData);
+
+	/* fix the PE file */
+	peFile->alignAllSectionHeaders();
+	peFile->setDefaultFileAlignment();
+	peFile->fixPeHeader();
+	
+	/* get the last inserted section in order to retreive the VA */
+	PeFileSection last_section = peFile->getSectionHeaderList().back();
+	IMAGE_SECTION_HEADER last_section_header = last_section.sectionHeader;
+	UINT32 last_section_header_va = last_section_header.VirtualAddress;
+
+	/* set the entry point of the dumped program to the .heap section */
+	peFile->setEntryPointVa(last_section_header_va + offset );
+	
+	/* save the pe */
+	int retValue = peFile->savePeFileToDisk(dump_path);
+
 }
+

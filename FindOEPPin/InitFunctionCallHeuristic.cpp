@@ -1,4 +1,5 @@
 #include "InitFunctionCallHeuristic.h"
+#include "ScyllaWrapperInterface.h"
 
 #define MAX_PID_LEN_DECIMAL_REP 6 
 #define MAX_ADDRESS_SIZE 8
@@ -19,6 +20,17 @@ InitFunctionCall::~InitFunctionCall(void)
 }
 
 
+BOOL InitFunctionCall::existFile (std::string name) {
+	if (FILE *file = fopen(name.c_str(), "r")) {
+        fclose(file);
+        return true;
+    } else {
+        return false;
+    }   
+}
+
+
+
 /**
 	Get the size of the file passed as fp
 **/
@@ -33,38 +45,24 @@ return size;
 
 UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
-	
-	//Getting Current process PID and Base Address
-	UINT32 pid = W::GetCurrentProcessId();
-	MYINFO("Curr PID %d",pid);
-	
-	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
 	string idap_res_file = Config::getInstance()->getCurrentDetectedListPath();
+	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
 
-	MYINFO("Current output file dump %s",Config::getInstance()->getCurrentDumpFilePath().c_str());
-
-
-	//W::DebugBreak();
-	//Dumping the process memory and try to reconstructing the IAT
-	if(!DumpHandler::launchScyllaDumpAndFix(Config::SCYLLA_DUMPER_PATH,pid,curEip,dumpFile)){
-		MYERRORE("Scylla execution Failed");
-		Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
-		return 0;
+	if(!existFile(dumpFile)){
+		MYERRORE("Dump file hasn't been created");
+		return -1;
 	}
 
 	launchIdaScript(Config::IDA_PATH, Config::IDAP_BAD_IMPORTS_CHECKER, Config::BAD_IMPORTS_LIST, idap_res_file, dumpFile);
 
 	//Read the result of IdaPython script
-	
 	FILE *fd = fopen(idap_res_file.c_str(),"r");
 	UINT32 file_size = getFileSize(fd);
 	char * init_func_detected = (char *)malloc(file_size);
 	fread(init_func_detected,file_size,1,fd);
 	fclose(fd);
-
 	MYWARN("Found init functions %s\n",init_func_detected);
-	
-	Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
+
 	return 0;
 }
 
@@ -81,7 +79,6 @@ BOOL InitFunctionCall::launchIdaScript(string idaw,string idaPythonScript,string
 	si.cb=sizeof(si);
 	// Create a file batch which run the IdaPython script and execute it
 
-	//sprintf(idaScript,"%s -A -S\"%s %s  %s\" %s",idaw,idaPythonScript,idaPythonInput,idaPythonOutput,dumpFile);
 	//Creating the string used to launch the idaPython script
 	std::stringstream idaScriptStream;
 	idaScriptStream << idaw << " -A -S";
@@ -94,6 +91,7 @@ BOOL InitFunctionCall::launchIdaScript(string idaw,string idaPythonScript,string
 	fclose(idaLauncherFile);
 	MYINFO("Launching the IdaPython Script %s Containing %s",idaLauncherFile,idaScript.c_str());
 	
+	
 	if(!W::CreateProcess(idaScriptLauncher.c_str(),NULL,NULL,NULL,FALSE,CREATE_NEW_CONSOLE,NULL,NULL,&si,&pi)){
 		MYERRORE("Can't launch idaPythonScript");
 		return false;
@@ -102,6 +100,7 @@ BOOL InitFunctionCall::launchIdaScript(string idaw,string idaPythonScript,string
 	W::WaitForSingleObject(pi.hProcess,INFINITE);
 	W::CloseHandle(pi.hProcess);
 	W::CloseHandle(pi.hThread);
+	
 	MYINFO("idaPythonScript Finished");
 	return true;
 

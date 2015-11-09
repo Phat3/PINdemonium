@@ -66,10 +66,10 @@
     <ClCompile Include="InitFunctionCallHeuristic.cpp">
       <Filter>Source Files\Heuristics</Filter>
     </ClCompile>
-    <ClCompile Include="DumpHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Config.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ScyllaWrapperInterface.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
   </ItemGroup>
@@ -121,10 +121,10 @@
     <ClInclude Include="GdbDebugger.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="DumpHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Config.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ScyllaWrapperInterface.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
   </ItemGroup>
