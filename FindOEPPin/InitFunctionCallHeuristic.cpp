@@ -63,8 +63,6 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	fclose(fd);
 	MYWARN("Found init functions %s\n",init_func_detected);
 
-	Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
-
 	return 0;
 }
 
