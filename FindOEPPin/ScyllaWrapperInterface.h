@@ -17,6 +17,7 @@ namespace W{
 
 typedef void (WINAPI * def_myFunc)();
 typedef UINT32 (* def_ScyllaDumpAndFix)(int pid, int oep, W::WCHAR * output_file);
+typedef void (* def_ScyllaWrapAddSection)(const W::WCHAR * dump_path , const W::CHAR * sectionName, W::DWORD sectionSize, UINT32 offset , W::BYTE * sectionData);
 
 
 
@@ -28,8 +29,8 @@ public:
 	//Create a process which launch the ScyllaDumper.exe executable to dump the binary and fix the IAT
 	UINT32 launchScyllaDumpAndFix(string scylla,int pid, int curEip,string dumpFileName);
 	//interface to the ScyllaWrapper.dll
-	def_myFunc myFunc;
 	def_ScyllaDumpAndFix	ScyllaDumpAndFix;
+	def_ScyllaWrapAddSection ScyllaWrapAddSection;
 
 private:
 	ScyllaWrapperInterface::ScyllaWrapperInterface();

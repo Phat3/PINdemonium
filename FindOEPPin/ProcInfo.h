@@ -7,22 +7,17 @@
 #include <unordered_set>
 
 
-struct RegContext {
- ADDRINT eax;
- ADDRINT ecx;
- ADDRINT edx;
- ADDRINT ebx;
- ADDRINT esp;
- ADDRINT ebp;
- ADDRINT edi;
- ADDRINT esi;
-};
-
 //memorize the PE section information
 struct Section {
  ADDRINT begin;
  ADDRINT end;
  string name;
+};
+
+struct HeapZone {
+	ADDRINT begin;
+	ADDRINT end;
+	UINT32 size;
 };
 
 class ProcInfo
@@ -61,6 +56,10 @@ public:
 	/* helper */
 	void insertSection(Section section);
 	string getSectionNameByIp(ADDRINT ip);
+	void insertHeapZone(HeapZone heap_zone);
+	void deleteHeapZone(UINT32 index);
+	UINT32 searchHeapMap(ADDRINT ip);
+	HeapZone *getHeapZoneByIndex(UINT32 index);
 	float GetEntropy();
 	void insertInJmpBlacklist(ADDRINT ip);
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
@@ -72,6 +71,7 @@ private:
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
 	std::vector<Section> Sections;
+	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad

@@ -72,6 +72,10 @@ public:
 	DWORD getSectionAddressRVAByIndex( int index );
 
     PIMAGE_NT_HEADERS getCurrentNtHeader();
+
+	/* moved here because we need it in FunctionExport.cpp [ it was protected ] */
+	bool addNewLastSection(const CHAR * sectionName, DWORD sectionSize, BYTE * sectionData);
+
 protected:
 	PeParser();
 
@@ -132,7 +136,6 @@ protected:
 	
 	DWORD_PTR getStandardImagebase();
 
-	bool addNewLastSection(const CHAR * sectionName, DWORD sectionSize, BYTE * sectionData);
 	DWORD alignValue(DWORD badValue, DWORD alignTo);
 
 	void setNumberOfSections(WORD numberOfSections);

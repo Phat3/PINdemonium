@@ -3,7 +3,6 @@
 #include "Config.h"
 
 
-
 ScyllaWrapperInterface* ScyllaWrapperInterface::instance = 0;
 
 //singleton
@@ -17,7 +16,6 @@ ScyllaWrapperInterface* ScyllaWrapperInterface::getInstance()
 ScyllaWrapperInterface::ScyllaWrapperInterface(void)
 {
 	//init
-	this->myFunc = 0;
 	this->hScyllaWrapper = 0;
 	//load library
 	this->hScyllaWrapper = W::LoadLibraryW(L"C:\\pin\\PinUnpackerDependencies\\Scylla\\ScyllaWrapper.dll");
@@ -25,8 +23,8 @@ ScyllaWrapperInterface::ScyllaWrapperInterface(void)
 	if (this->hScyllaWrapper)
 	{
 
-		this->myFunc = (def_myFunc)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "myFunc");
 		this->ScyllaDumpAndFix = (def_ScyllaDumpAndFix)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaDumpAndFix");
+		this->ScyllaWrapAddSection = (def_ScyllaWrapAddSection)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaWrapAddSection");
 
 	}
 }

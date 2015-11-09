@@ -482,3 +482,40 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	return retVal;
 }
 
+
+/* ADDED FROM OUR TEAM */
+
+void WINAPI ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData){
+
+	PeParser * peFile = 0;
+
+	/* open the dumped file */
+	if (dump_path)
+	{
+		peFile = new PeParser(dump_path, TRUE);
+	}
+
+	/* read the data inside all the section from the PE in order to left unchanged the dumped PE */
+	peFile->readPeSectionsFromFile();
+
+	/* add a new last section */
+	bool res = peFile->addNewLastSection(sectionName, sectionSize, sectionData);
+
+	/* fix the PE file */
+	peFile->alignAllSectionHeaders();
+	peFile->setDefaultFileAlignment();
+	peFile->fixPeHeader();
+	
+	/* get the last inserted section in order to retreive the VA */
+	PeFileSection last_section = peFile->getSectionHeaderList().back();
+	IMAGE_SECTION_HEADER last_section_header = last_section.sectionHeader;
+	UINT32 last_section_header_va = last_section_header.VirtualAddress;
+
+	/* set the entry point of the dumped program to the .heap section */
+	peFile->setEntryPointVa(last_section_header_va + offset );
+	
+	/* save the pe */
+	int retValue = peFile->savePeFileToDisk(dump_path);
+
+}
+

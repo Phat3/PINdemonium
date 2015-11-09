@@ -1,5 +1,6 @@
 #include "OepFinder.h"
 #include "GdbDebugger.h"
+#include "ScyllaWrapperInterface.h"
 
 OepFinder::OepFinder(void){
 	
@@ -17,7 +18,6 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 		//if not update the write set
 		WxorXHandler::getInstance()->writeSetManager(ip, end_addr, size);
 	}
-
 }
 
 //check if the current instruction is a pushad or a popad
@@ -80,15 +80,19 @@ static VOID DoBreakpoint(const CONTEXT *ctxt, THREADID tid, ADDRINT ip)
 // - Set the previous ip to the current ip ( useful for some heuristics like jumpOuterSection )
 UINT32 OepFinder::IsCurrentInOEP(INS ins){
    	
+
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	ProcInfo *proc_info = ProcInfo::getInstance();
-	
+
+	int heap_index = -1;
+	unsigned char * Buffer; 
+
 	clock_t now = clock();
 	//check the timeout
 	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > TIME_OUT  ){
 		MYINFO("TIMER SCADUTO");
-		exit(0);
+		//exit(0);
 	}
 	
 	UINT32 writeItemIndex=-1;
@@ -118,7 +122,9 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//update the start timer 
 		proc_info->setStartTimer(clock());
 		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
-		
+
+		heap_index = proc_info->searchHeapMap(curEip);
+
 		//not the first broken in this write set		
 		if(item.getBrokenFlag()){
 
@@ -145,13 +151,57 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//delete the WriteInterval just analyzed
 		//wxorxHandler->deleteWriteItem(writeItemIndex);
 		//update the prevuious IP
+
+		/* Check if we need to dump the heap too */
+		/* BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST */
+		if(heap_index != -1){
+
+		   HeapZone *hz = proc_info->getHeapZoneByIndex(heap_index);
+
+		   MYINFO("CURRENT INSTRUCTION EXECUTED ON HEAP: %s" , INS_Disassemble(ins).c_str()); 	
+
+
+		   MYINFO("DUMPING HEAP: %08x" , hz->begin);
+
+		   /* prepare the buffer to copy inside the stuff into the heap section to dump */
+		  
+		   Buffer = (unsigned char *)malloc(hz->size);
+
+		   /* copy the heap zone into the buffer */
+		   PIN_SafeCopy(Buffer , (void const *)hz->begin , hz->size);	
+		   
+		   ScyllaWrapperInterface *scylla_wrapper = ScyllaWrapperInterface::getInstance();
+
+		   /* get the name of the last dump from the Config object */
+		   Config *config = Config::getInstance();
+		   string dump_path = config->getCurrentDumpFilePath();
+
+		   /* and convert it into the WCHAR representation */
+		   std::wstring widestr = std::wstring(dump_path.begin(), dump_path.end());
+		   const wchar_t* widecstr = widestr.c_str();
+
+		   /* calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone ) */
+		   UINT32 offset = curEip - hz->begin;
+
+		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" , hz->size , offset , Buffer);
+
+		   free(Buffer);
+
+		   proc_info->deleteHeapZone(heap_index);
+
+		   /* delete the HeapZone item? Keep it? Long jump heuristic? */
+		   MYINFO("DUMPED HEAP OK\n");
+
+		}
+
+		Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
 		proc_info->setPrevIp(INS_Address(ins));
 
 	}
 	//update the previous IP
 	proc_info->setPrevIp(INS_Address(ins));
-	return OEPFINDER_NOT_WXORX_INST;
 
+	return OEPFINDER_NOT_WXORX_INST;
 }
 
 
@@ -194,6 +244,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	//ConnectDebugger();
 	//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
 	Heuristics::initFunctionCallHeuristic(curEip,item);
+
 	//write the heuristic resuòts on ile
 	Config::getInstance()->writeOnReport(curEip, item);
 
