@@ -58,10 +58,13 @@ string Config::getBasePath(){
 	return this->base_path;
 }
 
+long double Config::getDumpNumber(){
+	return this->dump_number;
+}
+
 string Config::getCurrentDumpFilePath(){	
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
 	this->cur_dump_path = this->base_path + ProcInfo::getInstance()->getProcName() + "_" + std::to_string(this->dump_number) + ".exe" ;
-
 	return this->cur_dump_path;	
 }
 

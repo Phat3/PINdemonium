@@ -147,6 +147,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			wxorxHandler->setBrokenFlag(writeItemIndex);
 			Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 			
+			
 		}
 		//delete the WriteInterval just analyzed
 		//wxorxHandler->deleteWriteItem(writeItemIndex);
@@ -221,7 +222,7 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 			this->analysis(item, ins, prev_ip, curEip);
 
 			wxorxH->incrementCurrJMPNumber(writeItemIndex);
-
+			Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 		}
 				
 	}

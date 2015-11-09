@@ -26,6 +26,7 @@ public:
 	string getBasePath();
 	string getCurrentDumpFilePath();
 	string getCurrentDetectedListPath();
+	long double getDumpNumber();
 	//utils
 	void incrementDumpNumber();
 	void Config::closeLogFile();
