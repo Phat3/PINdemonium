@@ -2,12 +2,13 @@
 
 
 //set the new WriteInterval object with the begin address and the end address of the current write operation
-WriteInterval::WriteInterval(ADDRINT addr_begin, ADDRINT addr_end)
+WriteInterval::WriteInterval(ADDRINT addr_begin, ADDRINT addr_end, BOOL heap_flag)
 {
 	this->addr_begin = addr_begin;
 	this->addr_end = addr_end;
 	this->broken_flag = 0;
 	this->cur_number_jmp = 0;
+	this->heap_flag = heap_flag;
 }
 
 
@@ -52,6 +53,10 @@ UINT32 WriteInterval::getThreshold(){
 
 UINT32 WriteInterval::getCurrNumberJMP(){
 	return this->cur_number_jmp;
+}
+
+BOOL WriteInterval::getHeapFlag(){
+	return this->heap_flag;
 }
 
 

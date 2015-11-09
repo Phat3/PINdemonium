@@ -4,6 +4,7 @@
 #include "pin.H"
 #include "Debug.h"
 #include "Config.h"
+#include "ProcInfo.h"
 
 class WxorXHandler
 {

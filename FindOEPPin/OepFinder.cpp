@@ -123,14 +123,10 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		proc_info->setStartTimer(clock());
 		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
 
-		heap_index = proc_info->searchHeapMap(curEip);
-
 		//not the first broken in this write set		
 		if(item.getBrokenFlag()){
-
 			//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis
-			if(Config::INTER_WRITESET_ANALYSIS_ENABLE){ 
-				
+			if(Config::INTER_WRITESET_ANALYSIS_ENABLE){ 				
 				interWriteSetJMPAnalysis(curEip,prev_ip,ins,writeItemIndex );
 			}
 		
@@ -146,8 +142,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			this->analysis(item, ins, prev_ip, curEip);
 			wxorxHandler->setBrokenFlag(writeItemIndex);
 			Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
-			
-			
+				
 		}
 		//delete the WriteInterval just analyzed
 		//wxorxHandler->deleteWriteItem(writeItemIndex);
@@ -155,45 +150,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		/* Check if we need to dump the heap too */
 		/* BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST */
-		if(heap_index != -1){
-
-		   HeapZone *hz = proc_info->getHeapZoneByIndex(heap_index);
-
-		   MYINFO("CURRENT INSTRUCTION EXECUTED ON HEAP: %s" , INS_Disassemble(ins).c_str()); 	
-
-
-		   MYINFO("DUMPING HEAP: %08x" , hz->begin);
-
-		   /* prepare the buffer to copy inside the stuff into the heap section to dump */
-		  
-		   Buffer = (unsigned char *)malloc(hz->size);
-
-		   /* copy the heap zone into the buffer */
-		   PIN_SafeCopy(Buffer , (void const *)hz->begin , hz->size);	
-		   
-		   ScyllaWrapperInterface *scylla_wrapper = ScyllaWrapperInterface::getInstance();
-
-		   /* get the name of the last dump from the Config object */
-		   Config *config = Config::getInstance();
-		   string dump_path = config->getCurrentDumpFilePath();
-
-		   /* and convert it into the WCHAR representation */
-		   std::wstring widestr = std::wstring(dump_path.begin(), dump_path.end());
-		   const wchar_t* widecstr = widestr.c_str();
-
-		   /* calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone ) */
-		   UINT32 offset = curEip - hz->begin;
-
-		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" , hz->size , offset , Buffer);
-
-		   free(Buffer);
-
-		   proc_info->deleteHeapZone(heap_index);
-
-		   /* delete the HeapZone item? Keep it? Long jump heuristic? */
-		   MYINFO("DUMPED HEAP OK\n");
-
-		}
+		
 		proc_info->setPrevIp(INS_Address(ins));
 
 	}
@@ -242,7 +199,40 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	//wait for scylla
 	//ConnectDebugger();
 	//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
-	Heuristics::initFunctionCallHeuristic(curEip,item);
+	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,item);
+	//CHECK IF THE DUMP EXISTS!!!!
+	
+	if( item.getHeapFlag() && (error != -1) ){
+
+		   //MYINFO("DUMPING HEAP: %08x" , hz->begin);
+			unsigned char * Buffer;
+			UINT32 size_write_set = item.getAddrEnd() - item.getAddrBegin();
+		   /* prepare the buffer to copy inside the stuff into the heap section to dump */		  
+			Buffer = (unsigned char *)malloc( size_write_set );
+
+		   /* copy the heap zone into the buffer */
+		   PIN_SafeCopy(Buffer , (void const *)item.getAddrBegin() , size_write_set);	
+		   
+		   ScyllaWrapperInterface *scylla_wrapper = ScyllaWrapperInterface::getInstance();
+
+		   /* get the name of the last dump from the Config object */
+		   Config *config = Config::getInstance();
+		   string dump_path = config->getCurrentDumpFilePath();
+
+		   /* and convert it into the WCHAR representation */
+		   std::wstring widestr = std::wstring(dump_path.begin(), dump_path.end());
+		   const wchar_t* widecstr = widestr.c_str();
+
+		   /* calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone ) */
+		   UINT32 offset = curEip - item.getAddrBegin();
+
+		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" ,size_write_set , offset , Buffer);
+
+		   free(Buffer);
+
+		   MYINFO("DUMPED HEAP OK\n");
+
+	}
 
 	//write the heuristic resuòts on ile
 	Config::getInstance()->writeOnReport(curEip, item);
@@ -270,3 +260,4 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	MYINFO("Scylla execution Success");
 	return result;
 }
+

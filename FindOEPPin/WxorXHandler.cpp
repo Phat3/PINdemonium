@@ -45,10 +45,15 @@ VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size){
 			return;
 		}
 	}
-	//otherwise create a new WriteInterval object and add it to our structure
-	WriteInterval new_interval(start_addr, end_addr);
+	//check if the write is on the heap
+	UINT32 heapzone_index = ProcInfo::getInstance()->searchHeapMap(start_addr);
+	BOOL heap_flag = FALSE;
+	if(heapzone_index != -1){
+		heap_flag = TRUE;
+	}
+	//create and add it to our structure
+	WriteInterval new_interval(start_addr, end_addr, heap_flag);
 	WritesSet.push_back(new_interval);
-
 }
 
 //return the WriteItem index inside our vector that broke the W xor X index
@@ -76,6 +81,7 @@ VOID WxorXHandler::deleteWriteItem(UINT32 writeItemIndex){
 VOID WxorXHandler::setBrokenFlag(int writeItemIndex){
 	MYPRINT("dentro set broken flag %d", this->WritesSet[writeItemIndex].getBrokenFlag());
 	this->WritesSet[writeItemIndex].setBrokenFlag(true);
+	MYPRINT("dentro set broken flag dopo %d", this->WritesSet[writeItemIndex].getBrokenFlag());
 }
 
 

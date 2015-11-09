@@ -2,8 +2,6 @@
 #include "stdafx.h"
 #include <string>
 
-VOID myFunc();
-
 UINT32 ScyllaDumpAndFix(int pid, int oep,std::string output_file);
 
 
@@ -19,5 +17,5 @@ UINT32 ScyllaDumpAndFix(int pid, int oep,std::string output_file);
    Ret:
    True or False if Scylla sucessfully add the new section  
 */
-void WINAPI ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData);
+void ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData);
 
