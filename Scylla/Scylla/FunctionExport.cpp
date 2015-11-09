@@ -176,12 +176,15 @@ INT WINAPI ScyllaStartGui(DWORD dwProcessId, HINSTANCE mod)
 	guiParam.dwProcessId = dwProcessId;
 	guiParam.mod = mod;
 
-	return InitializeGui(hDllModule, (LPARAM)&guiParam);
+	return InitializeGui(hDllModule, (LPARAM)&guiParam); 
 }
 
 int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatSize, DWORD_PTR searchStart, BOOL advancedSearch)
 {
+
+	printf("DOING SEARCH...\n");	
 	ApiReader apiReader;
+	apiReader.moduleThunkList = 0;
 	ProcessLister processLister;
 	Process *processPtr = 0;
 	IATSearch iatSearch;
@@ -199,8 +202,8 @@ int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatS
 	if(!processPtr) return SCY_ERROR_PIDNOTFOUND;
 
 	ProcessAccessHelp::closeProcessHandle();
+	
 	apiReader.clearAll();
-
 	if (!ProcessAccessHelp::openProcessHandle(processPtr->PID))
 	{
 		return SCY_ERROR_PROCOPEN;
@@ -211,8 +214,8 @@ int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatS
 	ProcessAccessHelp::selectedModule = 0;
 	ProcessAccessHelp::targetImageBase = processPtr->imageBase;
 	ProcessAccessHelp::targetSizeOfImage = processPtr->imageSize;
-
 	apiReader.readApisFromModuleList();
+	
 
 	int retVal = SCY_ERROR_IATNOTFOUND;
 
@@ -234,7 +237,7 @@ int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatS
 	processList.clear();
 	ProcessAccessHelp::closeProcessHandle();
 	apiReader.clearAll();
-
+	printf("SEARCH FINISHED!\n");
 	return retVal;
 }
 
@@ -395,9 +398,10 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 
 }
 
+
 int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile)
 {
-	printf("\n\n\n\n\n STIANO ENTRANDO!!\n\n\n\n");	
+	printf("DOING FIX...\n");	
 	ApiReader apiReader;
 	ProcessLister processLister;
 	Process *processPtr = 0;
@@ -436,7 +440,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	//DEBUG
 
 	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
-	printf("n\n\n\n\nNUMERO : %d!!!!\n\n\n\n", numberOfUnresolvedImports);
+	printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImports);
 	
 	if (numberOfUnresolvedImports != 0){
 
@@ -444,15 +448,13 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 
 		apiReader.clearAll();
 
-		moduleList.clear();
+		//moduleList.clear();
 
 		ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
 
-		//apiReader.readApisFromModuleList();
+		apiReader.readApisFromModuleList();
 
 		apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
-
-		printf("\n\n\n\n\n CI SIAMO!!\n\n\n\n");	
 		
 	}
 
@@ -480,7 +482,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 		
 	apiReader.clearAll();
 
-	printf("\n\n\n\n\n STIANO USCENDO!!\n\n\n\n");	
+	printf("FIX FINISHED!!\n");	
 
 	return retVal;
 }

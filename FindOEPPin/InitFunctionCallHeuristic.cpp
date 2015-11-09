@@ -48,7 +48,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();
 	
-	if(sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)dumpFile_w.c_str()) != 0){
+	if(sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)dumpFile_w.c_str())){
 		MYERRORE("Scylla execution Failed");
 		Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 		return 0;
@@ -57,15 +57,14 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	launchIdaScript(Config::IDA_PATH, Config::IDAP_BAD_IMPORTS_CHECKER, Config::BAD_IMPORTS_LIST, idap_res_file, dumpFile);
 
 	//Read the result of IdaPython script
-	
+	/*
 	FILE *fd = fopen(idap_res_file.c_str(),"r");
 	UINT32 file_size = getFileSize(fd);
 	char * init_func_detected = (char *)malloc(file_size);
 	fread(init_func_detected,file_size,1,fd);
 	fclose(fd);
-
 	MYWARN("Found init functions %s\n",init_func_detected);
-	
+		*/
 	Config::getInstance()->incrementDumpNumber();    //Incrementing the dump number AFTER the launchIdaScript
 	return 0;
 }
