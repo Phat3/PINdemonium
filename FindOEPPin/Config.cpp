@@ -100,6 +100,7 @@ FILE* Config::getLogFile()
 void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 {
 	fprintf(this->report_file,"{\"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_oter_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\"}\n", ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag());
+	fflush(this->report_file);
 }
 
 //return the current date and time as a string
