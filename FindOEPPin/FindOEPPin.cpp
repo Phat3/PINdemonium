@@ -135,7 +135,7 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 void initDebug(){
 	DEBUG_MODE mode;
 	mode._type = DEBUG_CONNECTION_TYPE_TCP_SERVER;
-	mode._options = DEBUG_MODE_OPTION_NONE;
+	mode._options = DEBUG_MODE_OPTION_STOP_AT_ENTRY;
 	PIN_SetDebugMode(&mode);
 }
 
@@ -145,8 +145,10 @@ void initDebug(){
 /* ===================================================================== */
 
 int main(int argc, char * argv[]){
-
-	//initDebug();
+	//If we want to debug the program manually setup the proper options in order to attach an external debugger
+	if(Config::ATTACH_DEBUGGER){
+		initDebug();
+	}
 
 	MYINFO("Strating prototype ins");
 

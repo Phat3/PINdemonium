@@ -150,7 +150,10 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		/* Check if we need to dump the heap too */
 		/* BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST */
-		
+		//If we want to debug the program manually let's set the breakpoint after the triggered analysis
+		if(Config::ATTACH_DEBUGGER){
+			INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
+		}
 		proc_info->setPrevIp(INS_Address(ins));
 
 	}
