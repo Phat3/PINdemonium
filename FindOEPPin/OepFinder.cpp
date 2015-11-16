@@ -92,7 +92,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//check the timeout
 	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > TIME_OUT  ){
 		MYINFO("TIMER SCADUTO");
-		//exit(0);
+		exit(0);
 	}
 	
 	UINT32 writeItemIndex=-1;
