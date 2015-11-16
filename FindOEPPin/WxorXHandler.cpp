@@ -79,9 +79,7 @@ VOID WxorXHandler::deleteWriteItem(UINT32 writeItemIndex){
 }
 
 VOID WxorXHandler::setBrokenFlag(int writeItemIndex){
-	MYPRINT("dentro set broken flag %d", this->WritesSet[writeItemIndex].getBrokenFlag());
 	this->WritesSet[writeItemIndex].setBrokenFlag(true);
-	MYPRINT("dentro set broken flag dopo %d", this->WritesSet[writeItemIndex].getBrokenFlag());
 }
 
 

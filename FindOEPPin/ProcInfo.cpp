@@ -152,7 +152,6 @@ UINT32 ProcInfo::searchHeapMap(ADDRINT ip){
 	    
 		hz = this->HeapMap.at(i);
 		if(ip >= hz.begin && ip <= hz.end){
-		   MYWARN("EIP ON THE HEAP DETECTED!\n");
 		   return i;
 		}
 	}
@@ -181,11 +180,6 @@ float ProcInfo::GetEntropy(){
 
 	Buffer = (unsigned char *)malloc(size);
 
-	MYINFO("size to dump is %d" , size);
-	MYINFO("Start address is %08x" , start_address);
-	MYINFO("Start address is %08x" , end_address);
-	MYINFO("IMAGE NAME IS %s" , IMG_Name(binary_image));
-
 	PIN_SafeCopy(Buffer , (void const *)start_address , size);
 
 	memset(Entries, 0, sizeof(unsigned long) * 256);
@@ -199,7 +193,6 @@ float ProcInfo::GetEntropy(){
 			Entropy += - Temp*(log(Temp)*d1log2); 
 	}
 
-	MYINFO("ENTROPY IS %f" , Entropy);
 
 	return Entropy;
 }
