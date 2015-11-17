@@ -210,10 +210,9 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	//wait for scylla
 	//ConnectDebugger();
 	//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
-	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,item);
 
-	
-	//W::DebugBreak();
+	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
+
 	
 	if( item.getHeapFlag() && (error != -1) ){
 

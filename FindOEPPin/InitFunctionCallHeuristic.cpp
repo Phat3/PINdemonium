@@ -1,6 +1,7 @@
 #include "InitFunctionCallHeuristic.h"
 #include "ScyllaWrapperInterface.h"
 
+
 #define MAX_PID_LEN_DECIMAL_REP 6 
 #define MAX_ADDRESS_SIZE 8
 
@@ -43,7 +44,7 @@ return size;
 
 
 
-UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
+UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval* wi){
 
 	string idap_res_file = Config::getInstance()->getCurrentDetectedListPath();
 	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
@@ -60,9 +61,16 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval wi){
 	UINT32 file_size = getFileSize(fd);
 	char * init_func_detected = (char *)malloc(file_size);
 	fread(init_func_detected,file_size,1,fd);
-	fclose(fd);
 	MYWARN("Found init functions %s\n",init_func_detected);
-
+	fclose(fd);
+	
+	int numberOfLines = 0;
+	string line;
+	std::ifstream myfile(idap_res_file.c_str());
+	while (getline(myfile, line))
+        ++numberOfLines;
+	wi->setDetectedFunctions(numberOfLines);
+	
 	return 0;
 }
 

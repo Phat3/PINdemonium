@@ -26,6 +26,7 @@ public:
 	UINT32 getThreshold();
 	UINT32 getCurrNumberJMP();
 	BOOL getHeapFlag();
+	UINT32 getDetectedFunctions();
 	//setter
 	void setEntropyFlag(UINT32 flag);
 	void setLongJmpFlag(UINT32 flag);
@@ -33,6 +34,7 @@ public:
 	void setPushadPopadFlag(UINT32 flag);
 	void setBrokenFlag(BOOL flag);
 	void incrementCurrNumberJMP();
+	void setDetectedFunctions(UINT32 numberOfFunctions);
 
 
 private:
@@ -45,7 +47,6 @@ private:
 	BOOL broken_flag;
 	UINT32 cur_number_jmp;
 	BOOL heap_flag;
-
-
+	UINT32 detectedFunctions;
 };
 
