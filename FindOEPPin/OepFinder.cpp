@@ -16,11 +16,6 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 	//check if the target address belongs to some filtered range		
 	if(!filterHandler->isFilteredWrite(end_addr,ip)){
 		//if not update the write set
-	
-		if(!((0x00610320 & 0x0000ffff) ^ (end_addr & 0x0000ffff))){
-			W::DebugBreak();
-		}
-		
 		WxorXHandler::getInstance()->writeSetManager(ip, end_addr, size);
 	//	MYINFO("Writing start %x   ->  %x",end_addr,end_addr + size);
 	}
@@ -216,7 +211,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,item);
 
 	
-	W::DebugBreak();
+	//W::DebugBreak();
 	
 	if( item.getHeapFlag() && (error != -1) ){
 

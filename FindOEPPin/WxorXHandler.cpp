@@ -35,21 +35,21 @@ BOOL WxorXHandler::isWriteINS(INS ins){
 // - Update an existing WriteInterval / create a new one
 VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size){
 
+	//check if the write is on the heap
+	UINT32 heapzone_index = ProcInfo::getInstance()->searchHeapMap(start_addr);
+	BOOL heap_flag = FALSE;
+	if(heapzone_index != -1){
+		heap_flag = TRUE;
+	}
 	//calculate the end address of the write
 	UINT32 end_addr = start_addr + size;
 	//iterate through our structure in order to find if we have to update one of our WriteInterval
 	for(std::vector<WriteInterval>::iterator item = this->WritesSet.begin(); item != this->WritesSet.end(); ++item) {
 		//if we foud that an item has to be updated then update it and return
 		if(item->checkUpdate(start_addr, end_addr)){
-			item->update(start_addr, end_addr);	
-			//return; In order to check if an updated writeSet in inside a HeapZone
+			item->update(start_addr, end_addr, heap_flag);	
+			return; 
 		}
-	}
-	//check if the write is on the heap
-	UINT32 heapzone_index = ProcInfo::getInstance()->searchHeapMap(start_addr);
-	BOOL heap_flag = FALSE;
-	if(heapzone_index != -1){
-		heap_flag = TRUE;
 	}
 	//create and add it to our structure
 	WriteInterval new_interval(start_addr, end_addr, heap_flag);

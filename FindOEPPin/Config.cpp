@@ -13,7 +13,7 @@ const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\Scyl
 
 //Tuning Flags
 
-const bool  Config::INTER_WRITESET_ANALYSIS_ENABLE = false;
+const bool  Config::INTER_WRITESET_ANALYSIS_ENABLE = true;
 const bool  Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
 const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 2;

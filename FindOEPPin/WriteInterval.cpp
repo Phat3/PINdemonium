@@ -99,7 +99,8 @@ BOOL WriteInterval::checkUpdate(ADDRINT start_addr, ADDRINT end_addr){
 }
 
 //update the current obj
-VOID WriteInterval::update(ADDRINT start_addr, ADDRINT end_addr){
+VOID WriteInterval::update(ADDRINT start_addr, ADDRINT end_addr, BOOL heap_flag){
+	this->heap_flag = heap_flag;
 	//if the new write overlaps the WriteInteval at the end then we have to update the end_addr 
 	if( (start_addr >= this->addr_begin) && (start_addr <= this->addr_end) && (end_addr > this->addr_end) ){
 		this->addr_end = end_addr;

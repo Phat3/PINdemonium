@@ -72,10 +72,6 @@ VOID HeapAllocHook(UINT32 heap_alloc_size , UINT32 ret_heap_address ){
 		return;
 	}
 
-	MYINFO("INSIDE THE INSTRUMENTATION OF HEAP ALLOC\n");
-	MYINFO("size : %08x" , heap_alloc_size);
-	MYINFO("return address : %08x" , ret_heap_address);
-
 	ProcInfo *proc_info = ProcInfo::getInstance();
 
 	HeapZone hz;
@@ -156,21 +152,6 @@ void imageLoadCallback(IMG img,void *){
 	const string name = IMG_Name(img); 
 
 	if(!IMG_IsMainExecutable(img) && filterH->isKnownLibrary(name)){	
-	
-		/* DEBUG print the 
-		for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
-			for( RTN rtn= SEC_RtnHead(sec); RTN_Valid(rtn); rtn = RTN_Next(rtn) ){
-				RTN_Open(rtn);
-				std::stringstream ss;
-				
-				cout << "Inside" << IMG_Name(img)<<" Found " <<RTN_Name(rtn)<<"\n";
-				
-			
-
-				RTN_Close(rtn);
-			}
-		}*/
-
 
 		HookFuncDispatcher(img,"VirtualAlloc",VirtualAllocHook);
 		HookFuncDispatcher(img,"RtlAllocateHeap",HeapAllocHook);

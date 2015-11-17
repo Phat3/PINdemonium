@@ -14,7 +14,7 @@ public:
 	//check if a given address is inside our interval
 	BOOL checkInside(ADDRINT ip);	
 	//update our inteval with the new bounds
-	VOID update(ADDRINT start_addr, ADDRINT end_addr);
+	VOID update(ADDRINT start_addr, ADDRINT end_addr, BOOL heap_flag);
 	//getter
 	ADDRINT getAddrBegin();
 	ADDRINT getAddrEnd();
