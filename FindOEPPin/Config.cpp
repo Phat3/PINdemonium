@@ -12,7 +12,9 @@ const string Config::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
 const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
 
 //Tuning Flags
+
 const bool  Config::INTER_WRITESET_ANALYSIS_ENABLE = false;
+const bool  Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
 const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 2;
 
@@ -100,6 +102,7 @@ FILE* Config::getLogFile()
 void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 {
 	fprintf(this->report_file,"{\"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_oter_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\"}\n", ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag());
+	fflush(this->report_file);
 }
 
 //return the current date and time as a string

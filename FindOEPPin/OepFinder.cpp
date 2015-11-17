@@ -16,7 +16,13 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 	//check if the target address belongs to some filtered range		
 	if(!filterHandler->isFilteredWrite(end_addr,ip)){
 		//if not update the write set
+	
+		if(!((0x00610320 & 0x0000ffff) ^ (end_addr & 0x0000ffff))){
+			W::DebugBreak();
+		}
+		
 		WxorXHandler::getInstance()->writeSetManager(ip, end_addr, size);
+	//	MYINFO("Writing start %x   ->  %x",end_addr,end_addr + size);
 	}
 }
 
@@ -92,7 +98,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//check the timeout
 	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > TIME_OUT  ){
 		MYINFO("TIMER SCADUTO");
-		//exit(0);
+		exit(0);
 	}
 	
 	UINT32 writeItemIndex=-1;
@@ -117,6 +123,9 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
 	//W xor X broken
 	if(writeItemIndex != -1 ){
+
+	//	proc_info->printHeapList();
+	//	wxorxHandler->displayWriteSet();
 		//W::DebugBreak();
 		WriteInterval item = wxorxHandler->getWritesSet()[writeItemIndex];
 		//update the start timer 
@@ -150,7 +159,10 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		/* Check if we need to dump the heap too */
 		/* BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST */
-		
+		//If we want to debug the program manually let's set the breakpoint after the triggered analysis
+		if(Config::ATTACH_DEBUGGER){
+			INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
+		}
 		proc_info->setPrevIp(INS_Address(ins));
 
 	}
@@ -172,7 +184,7 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 		//Check if the current WriteSet has already dumped more than WRITEINTERVAL_MAX_NUMBER_JMP times
 		if(item.getCurrNumberJMP() < Config::WRITEINTERVAL_MAX_NUMBER_JMP){
 			//Try to dump and Fix the IAT if successful trigger the analysis
-			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+			MYPRINT("\n\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYPRINT("- - - - - - - - - - - - - - JUMP NUMBER %d OF LENGHT %d  IN STUB FORM %08x TO %08x- - - - - - - - - - - - - -",item.getCurrNumberJMP(),currJMPLength, item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			this->DumpAndFixIAT(curEip);
@@ -187,6 +199,8 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 
 BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip){
 
+	
+
 	//call the proper heuristics
 	//we have to implement it in a better way!!
 	item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
@@ -200,7 +214,9 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	//ConnectDebugger();
 	//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
 	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,item);
-	//CHECK IF THE DUMP EXISTS!!!!
+
+	
+	W::DebugBreak();
 	
 	if( item.getHeapFlag() && (error != -1) ){
 

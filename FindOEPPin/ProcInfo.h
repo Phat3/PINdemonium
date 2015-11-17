@@ -63,6 +63,8 @@ public:
 	float GetEntropy();
 	void insertInJmpBlacklist(ADDRINT ip);
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
+	//Debug
+	void printHeapList();
 
 	
 private:

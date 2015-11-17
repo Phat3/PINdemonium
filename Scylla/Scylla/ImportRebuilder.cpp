@@ -54,7 +54,7 @@ bool ImportRebuilder::rebuildImportTable(const WCHAR * newFilePath, std::map<DWO
 }
 
 
-//CRASH INSIDE HERE 
+
 bool ImportRebuilder::buildNewImportTable(std::map<DWORD_PTR, ImportModuleThunk> & moduleList)
 {
 

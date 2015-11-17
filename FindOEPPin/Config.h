@@ -44,6 +44,7 @@ public:
 	static const string SCYLLA_DUMPER_PATH;
 
 	//Tuning Flags
+	static const bool  ATTACH_DEBUGGER;
 	static const bool INTER_WRITESET_ANALYSIS_ENABLE; //Trigger the analysis inside a WriteSet in which WxorX is already broken if a Long JMP is encontered (MPress packer)
 	static const string FILTER_WRITES_ENABLES;
 	static const UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;

@@ -12,7 +12,7 @@ namespace W {
 }
 
 #define VIRTUALALLOC_INDEX 0
-#define HEAPALLOC_INDEX 1
+#define RTLALLOCATEHEAP_INDEX 1
 
 OepFinder oepf;
 clock_t tStart;
@@ -42,7 +42,7 @@ INT32 Usage(){
 
 VOID initHeapFunctionMap(){
 	HeapFunctionsMap.insert( std::pair<string,UINT32>("VirtualAlloc",VIRTUALALLOC_INDEX) );
-	HeapFunctionsMap.insert( std::pair<string,UINT32>("HeapAlloc",HEAPALLOC_INDEX) );
+	HeapFunctionsMap.insert( std::pair<string,UINT32>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	HeapFunctionsMap.insert( std::pair<string,UINT32>("vedere",2) );
 	HeapFunctionsMap.insert( std::pair<string,UINT32>("credere",3) );
 }
@@ -67,20 +67,24 @@ VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
 }
 
 VOID HeapAllocHook(UINT32 heap_alloc_size , UINT32 ret_heap_address ){
+	
+	if (heap_alloc_size == 0){
+		return;
+	}
 
-  MYINFO("INSIDE THE INSTRUMENTATION OF VIRTUAL ALLOC\n");
-  MYINFO("size : %08x" , heap_alloc_size);
-  MYINFO("return address : %08x" , ret_heap_address);
+	MYINFO("INSIDE THE INSTRUMENTATION OF HEAP ALLOC\n");
+	MYINFO("size : %08x" , heap_alloc_size);
+	MYINFO("return address : %08x" , ret_heap_address);
 
-  ProcInfo *proc_info = ProcInfo::getInstance();
+	ProcInfo *proc_info = ProcInfo::getInstance();
 
-  HeapZone hz;
-  hz.begin = ret_heap_address;
-  hz.size = heap_alloc_size;
-  hz.end = ret_heap_address + heap_alloc_size;
+	HeapZone hz;
+	hz.begin = ret_heap_address;
+	hz.size = heap_alloc_size;
+	hz.end = ret_heap_address + heap_alloc_size;
 
-  //saving this heap zone in the map inside ProcInfo
-  proc_info->insertHeapZone(hz); 
+	//saving this heap zone in the map inside ProcInfo
+	proc_info->insertHeapZone(hz); 
 
 }
 
@@ -88,6 +92,7 @@ VOID HeapAllocHook(UINT32 heap_alloc_size , UINT32 ret_heap_address ){
 void HookFuncDispatcher(IMG img, string func_name,void * func_pointer){
 /* searching for VirtualAlloc */ 
 		RTN rtn = RTN_FindByName( img, func_name.c_str());
+		MYINFO("Trying to hook of %s\n" ,func_name.c_str());
 		if(rtn != RTN_Invalid()){
 			
 			ADDRINT va_address = RTN_Address(rtn);
@@ -96,11 +101,12 @@ void HookFuncDispatcher(IMG img, string func_name,void * func_pointer){
 			RTN_Open(rtn); 	
 			int index = HeapFunctionsMap.at(func_name);
 			MYINFO("index of %s is %d",func_name.c_str(),index);
+			//Different arguments are passed to the hooking routine based on the function
 			switch(index){
 				case(VIRTUALALLOC_INDEX):
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)func_pointer , IARG_G_ARG1_CALLEE , IARG_G_RESULT0, IARG_END);
 					break;
-				case(HEAPALLOC_INDEX):
+				case(RTLALLOCATEHEAP_INDEX):
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)func_pointer , IARG_G_ARG2_CALLEE, IARG_G_RESULT0, IARG_END);
 					break;
 
@@ -150,9 +156,25 @@ void imageLoadCallback(IMG img,void *){
 	const string name = IMG_Name(img); 
 
 	if(!IMG_IsMainExecutable(img) && filterH->isKnownLibrary(name)){	
+	
+		/* DEBUG print the 
+		for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
+			for( RTN rtn= SEC_RtnHead(sec); RTN_Valid(rtn); rtn = RTN_Next(rtn) ){
+				RTN_Open(rtn);
+				std::stringstream ss;
+				
+				cout << "Inside" << IMG_Name(img)<<" Found " <<RTN_Name(rtn)<<"\n";
+				
+			
+
+				RTN_Close(rtn);
+			}
+		}*/
+
 
 		HookFuncDispatcher(img,"VirtualAlloc",VirtualAllocHook);
-	//	HookFuncDispatcher(img,"HeapAlloc",VirtualAllocHook);
+		HookFuncDispatcher(img,"RtlAllocateHeap",HeapAllocHook);
+		
 		filterH->addLibrary(name,startAddr,endAddr);
 
 	}
@@ -181,7 +203,7 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 void initDebug(){
 	DEBUG_MODE mode;
 	mode._type = DEBUG_CONNECTION_TYPE_TCP_SERVER;
-	mode._options = DEBUG_MODE_OPTION_NONE;
+	mode._options = DEBUG_MODE_OPTION_STOP_AT_ENTRY;
 	PIN_SetDebugMode(&mode);
 }
 
@@ -191,8 +213,10 @@ void initDebug(){
 /* ===================================================================== */
 
 int main(int argc, char * argv[]){
-
-	//initDebug();
+	//If we want to debug the program manually setup the proper options in order to attach an external debugger
+	if(Config::ATTACH_DEBUGGER){
+		initDebug();
+	}
 
 	MYINFO("Strating prototype ins");
 	initHeapFunctionMap();

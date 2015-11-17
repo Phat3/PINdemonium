@@ -357,6 +357,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 		
 	while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
 	{
+		bool resolved = false;
 		memset(buffer, 0x00, sizeof(buffer));
 		insDelta = 0;
 		invalidApiAddress = unresolvedImport->InvalidApiAddress;
@@ -382,6 +383,8 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 				//unresolvedImport->InvalidApiAddress = correct_address;
 				printf(" JUMP Dest = %08x\n\n" , correct_address);
 				fflush(stdout);
+				//unresolved import probably resolved
+				resolved = true;
 				break;
 			}
 			//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
@@ -390,6 +393,11 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			}
 			//check the next row inthe IAT
 			IATbase = IATbase + i;
+		}
+		//if we cannot resolve the import fix it with a dummy address so scylla isn't able to resolve the API and it will remove the unresolved import
+		if(!resolved){
+			*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  0x0;
+			resolved = false;
 		}
 		unresolvedImport++; //next pointer to struct
 	}

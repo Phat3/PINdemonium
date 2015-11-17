@@ -42,7 +42,7 @@ VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size){
 		//if we foud that an item has to be updated then update it and return
 		if(item->checkUpdate(start_addr, end_addr)){
 			item->update(start_addr, end_addr);	
-			return;
+			//return; In order to check if an updated writeSet in inside a HeapZone
 		}
 	}
 	//check if the write is on the heap
@@ -79,9 +79,7 @@ VOID WxorXHandler::deleteWriteItem(UINT32 writeItemIndex){
 }
 
 VOID WxorXHandler::setBrokenFlag(int writeItemIndex){
-	MYPRINT("dentro set broken flag %d", this->WritesSet[writeItemIndex].getBrokenFlag());
 	this->WritesSet[writeItemIndex].setBrokenFlag(true);
-	MYPRINT("dentro set broken flag dopo %d", this->WritesSet[writeItemIndex].getBrokenFlag());
 }
 
 
@@ -95,7 +93,7 @@ VOID WxorXHandler::incrementCurrJMPNumber(int writeItemIndex){
 VOID WxorXHandler::displayWriteSet(){
 	
 	for(unsigned index=0; index <  this->WritesSet.size(); index++) {
-		MYINFO("WriteInterval number %d  start %08x eend %08x",index,this->WritesSet.at(index).getAddrBegin(),this->WritesSet.at(index).getAddrEnd());
+		MYINFO("WriteInterval number %d  start %08x end %08x",index,this->WritesSet.at(index).getAddrBegin(),this->WritesSet.at(index).getAddrEnd());
 	}
 	/*
 	int i = 0;y doesn't WORK?

@@ -151,9 +151,9 @@ UINT32 ProcInfo::searchHeapMap(ADDRINT ip){
 	for(i=0; i<this->HeapMap.size();i++){
 	    
 		hz = this->HeapMap.at(i);
-		if(ip >= hz.begin && ip <= hz.end){
-		   MYWARN("EIP ON THE HEAP DETECTED!\n");
-		   return i;
+		if(ip >= hz.begin){
+		   if(ip <= hz.end) 
+			   return i;
 		}
 	}
 	return -1;
@@ -181,11 +181,6 @@ float ProcInfo::GetEntropy(){
 
 	Buffer = (unsigned char *)malloc(size);
 
-	MYINFO("size to dump is %d" , size);
-	MYINFO("Start address is %08x" , start_address);
-	MYINFO("Start address is %08x" , end_address);
-	MYINFO("IMAGE NAME IS %s" , IMG_Name(binary_image));
-
 	PIN_SafeCopy(Buffer , (void const *)start_address , size);
 
 	memset(Entries, 0, sizeof(unsigned long) * 256);
@@ -199,7 +194,6 @@ float ProcInfo::GetEntropy(){
 			Entropy += - Temp*(log(Temp)*d1log2); 
 	}
 
-	MYINFO("ENTROPY IS %f" , Entropy);
 
 	return Entropy;
 }
@@ -210,4 +204,10 @@ void ProcInfo::insertInJmpBlacklist(ADDRINT ip){
 
 BOOL ProcInfo::isInsideJmpBlacklist(ADDRINT ip){
 	return this->addr_jmp_blacklist.find(ip) != this->addr_jmp_blacklist.end();
+}
+
+void ProcInfo::printHeapList(){
+	for(unsigned index=0; index <  this->HeapMap.size(); index++) {
+		MYINFO("Heapzone number  %d  start %08x end %08x",index,this->HeapMap.at(index).begin,this->HeapMap.at(index).end);
+	}
 }
