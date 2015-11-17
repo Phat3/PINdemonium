@@ -140,6 +140,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			MYPRINT("\n\n-------------------------------------------------------------------------------------------------------");
 			MYPRINT("------------------------------------ NEW STUB FROM begin: %08x TO %08x -------------------------------------",item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("-------------------------------------------------------------------------------------------------------");
+			MYINFO("Current EIP %08x",curEip);
 			//W::DebugBreak();
 			this->DumpAndFixIAT(curEip);
 			//W::DebugBreak();
@@ -182,6 +183,7 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 			MYPRINT("\n\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYPRINT("- - - - - - - - - - - - - - JUMP NUMBER %d OF LENGHT %d  IN STUB FORM %08x TO %08x- - - - - - - - - - - - - -",item.getCurrNumberJMP(),currJMPLength, item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+			MYINFO("Current EIP %08x",curEip);
 			this->DumpAndFixIAT(curEip);
 			this->analysis(item, ins, prev_ip, curEip);
 

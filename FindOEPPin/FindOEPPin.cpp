@@ -88,7 +88,6 @@ VOID HeapAllocHook(UINT32 heap_alloc_size , UINT32 ret_heap_address ){
 void HookFuncDispatcher(IMG img, string func_name,void * func_pointer){
 /* searching for VirtualAlloc */ 
 		RTN rtn = RTN_FindByName( img, func_name.c_str());
-		MYINFO("Trying to hook of %s\n" ,func_name.c_str());
 		if(rtn != RTN_Invalid()){
 			
 			ADDRINT va_address = RTN_Address(rtn);
