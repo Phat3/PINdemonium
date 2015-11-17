@@ -67,40 +67,38 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	}
 	printf("GetExeModuleBase %X\n", hMod);
 
-	
 	//Dumping Process
 	BOOL success = GetFilePathFromPID(pid,originalExe);
 	if(!success){
 		printf("Error in getting original Path from Pid: %d\n",pid);
 		return SCYLLA_ERROR_FILE_FROM_PID;
 	}
-	printf("Original Exe Path: %S\n",originalExe);
+	printf("\nOriginal Exe Path: %S\n",originalExe);
 		
 	success = ScyllaDumpProcessW(pid,originalExe,hMod,oep,dumpFile);
 	if(!success){
-		printf("Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
+		printf("\n[SCYLLA DUMP] Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
 		return SCYLLA_ERROR_DUMP;
 	}
-	printf("Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
+	printf("\n[SCYLLA DUMP] Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
 		
 	//DebugBreak();
 	//Searching the IAT
 	int error = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, TRUE);
 	if(error){
-		printf("(IAT SEARCH) error %d \n",error);
+		printf("\n[SCYLLA SEARCH] error %d \n",error);
 		return SCYLLA_ERROR_IAT_NOT_FOUND;
 	}
-	printf("(IAT SEARCH) iatStart %X iatSize %X\n",iatStart, iatSize);
 	
-	printf("\n\n\n\nFIXING ...... start : %08x\t size : %08x\t pid : %d\t output : %S\n\n\n\n", iatStart,iatSize,pid,outputFile);
+	printf("\n[SCYLLA FIX] FIXING ...... iat_start : %08x\t iat_size : %08x\t pid : %d\n", iatStart,iatSize,pid,outputFile);
 
 	//Fixing the IAT
 	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,dumpFile,outputFile);
 	if(error){
-		printf("(IAT FIX) error %d\n",error);
+		printf("\n[SCYLLA FIX] error %d\n",error);
 		return SCYLLA_ERROR_IAT_NOT_FIXED;
 	}
-	printf("[IAT FIX] Success\n");
+	printf("\n[SCYLLA FIX] Success\n");
 	return SCYLLA_SUCCESS_FIX;
 	
 }
@@ -110,8 +108,6 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 
 UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file){
 	
-	printf("PID : %d\t OEP : %08x\t OUTPUT : %S\n", pid, oep, output_file);
-
 	return IATAutoFix(pid, oep, output_file);
 }
 

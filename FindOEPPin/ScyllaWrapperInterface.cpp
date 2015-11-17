@@ -13,6 +13,7 @@ ScyllaWrapperInterface* ScyllaWrapperInterface::getInstance()
 	return instance;
 }
 
+//we have to use loadLibrary and GetProcAddress because PIN doesn't support external libraries
 ScyllaWrapperInterface::ScyllaWrapperInterface(void)
 {
 	//init
@@ -22,10 +23,8 @@ ScyllaWrapperInterface::ScyllaWrapperInterface(void)
 	//get proc address
 	if (this->hScyllaWrapper)
 	{
-
 		this->ScyllaDumpAndFix = (def_ScyllaDumpAndFix)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaDumpAndFix");
 		this->ScyllaWrapAddSection = (def_ScyllaWrapAddSection)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaWrapAddSection");
-
 	}
 }
 

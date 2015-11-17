@@ -361,7 +361,6 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 		memset(buffer, 0x00, sizeof(buffer));
 		insDelta = 0;
 		invalidApiAddress = unresolvedImport->InvalidApiAddress;
-		printf(buffer, "API Address = 0x%p\t IAT Address = 0x%p\n",  invalidApiAddress, unresolvedImport->ImportTableAddressPointer);
 		//get the starting IAT address to be analyzed yet
 		IATbase = unresolvedImport->InvalidApiAddress;
 		for (j = 0; j <  1000; j++)
@@ -376,13 +375,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			{
 				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
 				unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
-				printf(" \nIAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
-				//writeToLogFile(buffer2);
 				*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
-				printf(" IAT ENTRY = %08x\t CONTENT = %08x\n" , unresolvedImport->ImportTableAddressPointer, *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
-				//unresolvedImport->InvalidApiAddress = correct_address;
-				printf(" JUMP Dest = %08x\n\n" , correct_address);
-				fflush(stdout);
 				//unresolved import probably resolved
 				resolved = true;
 				break;

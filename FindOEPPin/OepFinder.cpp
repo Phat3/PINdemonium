@@ -246,11 +246,10 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	//Getting Current process PID and Base Address
 	UINT32 pid = W::GetCurrentProcessId();
-	MYINFO("Curr PID %d",pid);
 	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
 	std::wstring dumpFile_w = std::wstring(dumpFile.begin(), dumpFile.end());
 	
-	MYINFO("Current output file dump %s",Config::getInstance()->getCurrentDumpFilePath().c_str());
+	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s",pid, Config::getInstance()->getCurrentDumpFilePath().c_str());
 
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();
 	UINT32 result =  sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)dumpFile_w.c_str());
