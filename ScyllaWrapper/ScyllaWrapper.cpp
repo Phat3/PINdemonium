@@ -89,7 +89,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 		printf("\n[SCYLLA SEARCH] error %d \n",error);
 		return SCYLLA_ERROR_IAT_NOT_FOUND;
 	}
-	
+	//DebugBreak();
 	printf("\n[SCYLLA FIX] FIXING ...... iat_start : %08x\t iat_size : %08x\t pid : %d\n", iatStart,iatSize,pid,outputFile);
 
 	//Fixing the IAT
