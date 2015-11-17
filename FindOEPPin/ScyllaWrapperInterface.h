@@ -15,7 +15,6 @@ namespace W{
 #define SCYLLA_ERROR_IAT_NOT_FIXED -1
 #define SCYLLA_SUCCESS_FIX 0
 
-typedef void (WINAPI * def_myFunc)();
 typedef UINT32 (* def_ScyllaDumpAndFix)(int pid, int oep, W::WCHAR * output_file);
 typedef void (* def_ScyllaWrapAddSection)(const W::WCHAR * dump_path , const W::CHAR * sectionName, W::DWORD sectionSize, UINT32 offset , W::BYTE * sectionData);
 
