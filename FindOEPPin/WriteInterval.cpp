@@ -9,6 +9,7 @@ WriteInterval::WriteInterval(ADDRINT addr_begin, ADDRINT addr_end, BOOL heap_fla
 	this->broken_flag = 0;
 	this->cur_number_jmp = 0;
 	this->heap_flag = heap_flag;
+	this->detectedFunctions = 0;
 }
 
 
@@ -46,7 +47,6 @@ UINT32 WriteInterval::getBrokenFlag(){
 	return this->broken_flag;
 }
 
-
 UINT32 WriteInterval::getThreshold(){
 	return (this->addr_end - this->addr_begin)/8;
 }
@@ -59,7 +59,9 @@ BOOL WriteInterval::getHeapFlag(){
 	return this->heap_flag;
 }
 
-
+UINT32 WriteInterval::getDetectedFunctions(){
+	return this->detectedFunctions;
+}
 
 void WriteInterval::setEntropyFlag(UINT32 flag){
 	this->entropy_flag = flag;
@@ -86,8 +88,9 @@ void WriteInterval::incrementCurrNumberJMP(){
 	this->cur_number_jmp = this->cur_number_jmp +1 ;
 }
 
-
-
+void WriteInterval::setDetectedFunctions(UINT32 numberOfFunctions){
+	this->detectedFunctions = numberOfFunctions;
+}
 
 
 //----------------------- PUBLIC METHODS -----------------------
