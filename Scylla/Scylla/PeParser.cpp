@@ -853,11 +853,15 @@ bool PeParser::addNewLastSection(const CHAR * sectionName, DWORD sectionSize, BY
 	{
 		fileAlignment = pNTHeader32->OptionalHeader.FileAlignment;
 		sectionAlignment = pNTHeader32->OptionalHeader.SectionAlignment;
+		//avoid PE relocation
+		pNTHeader32->OptionalHeader.DllCharacteristics = 0x8100;
 	}
 	else
 	{
 		fileAlignment = pNTHeader64->OptionalHeader.FileAlignment;
 		sectionAlignment = pNTHeader64->OptionalHeader.SectionAlignment;
+		//avoid PE relocation
+		pNTHeader64->OptionalHeader.DllCharacteristics = 0x8100;
 	}
 
 	memcpy_s(peFileSection.sectionHeader.Name, IMAGE_SIZEOF_SHORT_NAME, sectionName, nameLength);
@@ -873,6 +877,7 @@ bool PeParser::addNewLastSection(const CHAR * sectionName, DWORD sectionSize, BY
 
 	peFileSection.normalSize = peFileSection.sectionHeader.SizeOfRawData;
 	peFileSection.dataSize = peFileSection.sectionHeader.SizeOfRawData;
+
 
 	if (sectionData == 0)
 	{

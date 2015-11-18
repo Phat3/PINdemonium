@@ -50,9 +50,6 @@ VOID initHeapFunctionMap(){
 
 VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
 
-  MYINFO("INSIDE THE INSTRUMENTATION OF VIRTUAL ALLOC\n");
-  MYINFO("size : %08x" , virtual_alloc_size);
-  MYINFO("return address : %08x" , ret_heap_address);
 
   ProcInfo *proc_info = ProcInfo::getInstance();
 
