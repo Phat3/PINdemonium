@@ -91,7 +91,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	clock_t now = clock();
 	//check the timeout
-	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > TIME_OUT  ){
+	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > Config::TIMEOUT_TIMER_SECONDS  ){
 		MYINFO("TIMER SCADUTO");
 		exit(0);
 	}
@@ -174,11 +174,14 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 	WxorXHandler *wxorxH = WxorXHandler::getInstance();
 	WriteInterval item = wxorxH->getWritesSet()[writeItemIndex];
 
+	 FilterHandler *filterH = FilterHandler::getInstance();
+
 	//long jump detected intra-writeset ---> trigger analysis and dump
 	UINT32 currJMPLength = std::abs( (int)curEip - (int)prev_ip);
 	if( currJMPLength > item.getThreshold()){
 		//Check if the current WriteSet has already dumped more than WRITEINTERVAL_MAX_NUMBER_JMP times
-		if(item.getCurrNumberJMP() < Config::WRITEINTERVAL_MAX_NUMBER_JMP){
+		//and check if the previous instruction was in the library (Long jump because return from Library)
+		if(item.getCurrNumberJMP() < Config::WRITEINTERVAL_MAX_NUMBER_JMP  && !filterH->isLibraryInstruction(prev_ip)){
 			//Try to dump and Fix the IAT if successful trigger the analysis
 			MYPRINT("\n\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYPRINT("- - - - - - - - - - - - - - JUMP NUMBER %d OF LENGHT %d  IN STUB FORM %08x TO %08x- - - - - - - - - - - - - -",item.getCurrNumberJMP(),currJMPLength, item.getAddrBegin(),item.getAddrEnd());

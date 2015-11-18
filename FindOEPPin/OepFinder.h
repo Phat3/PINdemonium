@@ -17,7 +17,7 @@ namespace W {
 #define OEPFINDER_NOT_WXORX_INST -1;
 #define OEPFINDER_FOUND_OEP 0;
 
-#define TIME_OUT 300 // 5 minutes
+
 
 class OepFinder
 {
