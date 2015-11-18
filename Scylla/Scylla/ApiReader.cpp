@@ -13,7 +13,7 @@ std::map<DWORD_PTR, ImportModuleThunk> *  ApiReader::moduleThunkList; //store fo
 DWORD_PTR ApiReader::minApiAddress = (DWORD_PTR)-1;
 DWORD_PTR ApiReader::maxApiAddress = 0;
 
-#define DEBUG_COMMENTS
+//#define DEBUG_COMMENTS
 
 
 void ApiReader::readApisFromModuleList()

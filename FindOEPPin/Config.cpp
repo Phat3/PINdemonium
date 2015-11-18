@@ -37,6 +37,7 @@ Config::Config(){
 	string report_file_path = this->base_path + REPORT_FILENAME;
 	this->log_file = fopen(log_file_path.c_str(),"w");
 	this->report_file = fopen(report_file_path.c_str(),"w");
+	this->numberOfBadImports = calculateNumberOfBadImports();
 
 }
 
@@ -102,7 +103,7 @@ FILE* Config::getLogFile()
 //write the JSON resulted by the analysis for this write set
 void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 {
-	fprintf(this->report_file,"{%d)\"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_oter_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d\"}\n",(int)this->getDumpNumber(),  ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions());
+	fprintf(this->report_file,"{%d)\"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_oter_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n",(int)this->getDumpNumber(),  ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
 	fflush(this->report_file);
 }
 
@@ -122,6 +123,18 @@ string Config::getCurDateAndTime(){
 //Increment dump number
 void Config::incrementDumpNumber(){
 	this->dump_number++;
+}
+
+int Config::calculateNumberOfBadImports(){
+
+	int numberOfLines = 0;
+	string line;
+
+	std::ifstream myfile(BAD_IMPORTS_LIST.c_str());
+	while (getline(myfile, line))
+        ++numberOfLines;
+	
+	return numberOfLines;	
 }
 
 

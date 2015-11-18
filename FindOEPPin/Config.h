@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 
 #define LOG_WRITE_TO_FILE 1 //if it is uncommented the result will be saved on file otherwise they'll be printed to stdout
@@ -19,11 +20,13 @@ public:
 	static Config* getInstance();
 	
 	FILE* Config::getLogFile();
+
 	//getter
 	string getBasePath();
 	string getCurrentDumpFilePath();
 	string getCurrentDetectedListPath();
 	long double getDumpNumber();
+
 	//utils
 	void incrementDumpNumber();
 	void Config::closeLogFile();
@@ -48,7 +51,6 @@ public:
 	static const UINT32 TIMEOUT_TIMER_SECONDS;
 
 private:
-
 	Config::Config();
 	static Config* instance;
 	FILE *log_file;
@@ -58,5 +60,7 @@ private:
 	string cur_list_path;		 //Path of the list of the detected function
 	long double dump_number;
 	string getCurDateAndTime();
+	int numberOfBadImports;
+	int calculateNumberOfBadImports();
 };
 

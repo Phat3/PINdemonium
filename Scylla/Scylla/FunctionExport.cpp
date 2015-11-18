@@ -354,7 +354,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 	int i,j;
 	INSTRUCTION inst;
 	DWORD_PTR invalidApiAddress = 0;
-		
+	MEMORY_BASIC_INFORMATION memBasic = {0};
 	while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
 	{
 		bool resolved = false;
@@ -365,9 +365,23 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 		IATbase = unresolvedImport->InvalidApiAddress;
 		for (j = 0; j <  1000; j++)
 		{
+			//if we cannot query this memory address then bypass the analysis of this address
+			if (!VirtualQuery((LPVOID)(IATbase), &memBasic, sizeof(MEMORY_BASIC_INFORMATION)))
+			{
+				insDelta = insDelta + i;
+				IATbase = IATbase + i;
+				continue;
+			}
 			memset(&inst, 0x00, sizeof(INSTRUCTION));
 			//get the disassembled instruction
+			fflush(stdout);
 			i = get_instruction(&inst, (BYTE *)IATbase, MODE_32);
+			//if libdasm fails to recognize the insruction bypass this instruction
+			if(i==0){
+				insDelta = insDelta + i;
+				IATbase = IATbase + i;
+				continue;
+			}
 			memset(buffer, 0x00, sizeof(buffer));
 			get_instruction_string(&inst, FORMAT_ATT, 0, buffer, sizeof(buffer));
 			//check if it is a jump
