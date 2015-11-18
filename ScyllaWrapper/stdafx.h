@@ -11,6 +11,7 @@
 // File di intestazione di Windows:
 #include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "FunctionExport.h"
 #include <tlhelp32.h>
 #include <psapi.h> 

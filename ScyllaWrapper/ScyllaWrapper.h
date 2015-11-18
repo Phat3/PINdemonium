@@ -3,7 +3,8 @@
 #include <string>
 
 
-UINT32 ScyllaDumpAndFix(int pid, int oep,std::string output_file);
+
+UINT32 ScyllaDumpAndFix(int pid, int oep,WCHAR * output_file,const char * cur_path);
 
 
 /* 

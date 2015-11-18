@@ -39,6 +39,9 @@ Config::Config(){
 	this->report_file = fopen(report_file_path.c_str(),"w");
 	this->numberOfBadImports = calculateNumberOfBadImports();
 
+	//initialize the path of the ScyllaWrapperLog
+
+
 }
 
 //singleton
