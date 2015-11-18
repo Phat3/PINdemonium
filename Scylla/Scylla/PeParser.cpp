@@ -889,6 +889,11 @@ bool PeParser::addNewLastSection(const CHAR * sectionName, DWORD sectionSize, BY
 		peFileSection.data = sectionData;
 	}
 
+	for (WORD i = 0; i < getNumberOfSections(); i++)
+	{
+		listPeSection[i].sectionHeader.Characteristics = IMAGE_SCN_MEM_EXECUTE|IMAGE_SCN_MEM_READ|IMAGE_SCN_MEM_WRITE|IMAGE_SCN_CNT_CODE|IMAGE_SCN_CNT_INITIALIZED_DATA;
+	}
+
 	listPeSection.push_back(peFileSection);
 
 	setNumberOfSections(getNumberOfSections() + 1);
