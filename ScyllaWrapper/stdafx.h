@@ -14,6 +14,8 @@
 #include "FunctionExport.h"
 #include <tlhelp32.h>
 #include <psapi.h> 
+#include "Log.h"
+
 
 
 // TODO: fare riferimento qui alle intestazioni aggiuntive richieste dal programma

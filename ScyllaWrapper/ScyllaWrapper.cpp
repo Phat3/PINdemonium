@@ -4,6 +4,8 @@
 #pragma once
 #include "stdafx.h"
 #include "ScyllaWrapper.h"
+#include "debug.h"
+#include "Log.h"
 
 
 #define SCYLLA_ERROR_FILE_FROM_PID -4
@@ -12,6 +14,9 @@
 #define SCYLLA_ERROR_IAT_NOT_FIXED -1
 #define SCYLLA_SUCCESS_FIX 0
 
+void SetCurrentLogDirectory(const CHAR * currentPath){
+	
+}
 
 /**
 Extract the .EXE file which has lauched the process having PID pid
@@ -24,12 +29,12 @@ BOOL GetFilePathFromPID(DWORD dwProcessId, WCHAR *filename){
 	if (processHandle) {
 	if (GetModuleFileNameEx(processHandle,NULL, filename, MAX_PATH) == 0) {
     //if (GetProcessImageFileName(processHandle, filename, MAX_PATH) == 0) {
-		printf("Failed to get module filename.\n");
+		INFO("Failed to get module filename.");
 		return false;
 	}
 	CloseHandle(processHandle);
 	} else {
-		printf("Failed to open process.\n" );
+		INFO("Failed to open process." );
 		return false;
 	}
 
@@ -52,7 +57,7 @@ DWORD_PTR GetExeModuleBase(DWORD dwProcessId)
 
 UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 {
-	printf("----------------IAT Fixing Test----------------\n");
+	INFO("----------------IAT Fixing Test----------------");
 
 	
 	DWORD_PTR iatStart = 0;
@@ -63,42 +68,42 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	//getting the Base Address
 	DWORD_PTR hMod = GetExeModuleBase(pid);
 	if(!hMod){
-		printf("Can't find PID\n");
+		INFO("Can't find PID");
 	}
-	printf("GetExeModuleBase %X\n", hMod);
+	INFO("GetExeModuleBase %X", hMod);
 
 	//Dumping Process
 	BOOL success = GetFilePathFromPID(pid,originalExe);
 	if(!success){
-		printf("Error in getting original Path from Pid: %d\n",pid);
+		INFO("Error in getting original Path from Pid: %d",pid);
 		return SCYLLA_ERROR_FILE_FROM_PID;
 	}
-	printf("\nOriginal Exe Path: %S\n",originalExe);
+	INFO("Original Exe Path: %S",originalExe);
 		
 	success = ScyllaDumpProcessW(pid,originalExe,hMod,oep,dumpFile);
 	if(!success){
-		printf("\n[SCYLLA DUMP] Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
+		INFO("\n[SCYLLA DUMP] Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,dumpFile);
 		return SCYLLA_ERROR_DUMP;
 	}
-	printf("\n[SCYLLA DUMP] Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
+	INFO("[SCYLLA DUMP] Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,dumpFile);
 		
 	//DebugBreak();
 	//Searching the IAT
 	int error = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, TRUE);
 	if(error){
-		printf("\n[SCYLLA SEARCH] error %d \n",error);
+		INFO("[SCYLLA SEARCH] error %d ",error);
 		return SCYLLA_ERROR_IAT_NOT_FOUND;
 	}
 	//DebugBreak();
-	printf("\n[SCYLLA FIX] FIXING ...... iat_start : %08x\t iat_size : %08x\t pid : %d\n", iatStart,iatSize,pid,outputFile);
+	INFO("[SCYLLA FIX] FIXING ...... iat_start : %08x\t iat_size : %08x\t pid : %d", iatStart,iatSize,pid,outputFile);
 
 	//Fixing the IAT
 	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,dumpFile,outputFile);
 	if(error){
-		printf("\n[SCYLLA FIX] error %d\n",error);
+		INFO("[SCYLLA FIX] error %d",error);
 		return SCYLLA_ERROR_IAT_NOT_FIXED;
 	}
-	printf("\n[SCYLLA FIX] Success\n");
+	INFO("[SCYLLA FIX] Success");
 	return SCYLLA_SUCCESS_FIX;
 	
 }
