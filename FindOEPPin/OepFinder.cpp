@@ -104,7 +104,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//DEBUG , PRINT ALL THE EIP MOVE DIFFERENT FROM 1 ------------------
 
 	UINT32 delta = abs( (int)prev_ip - (int)curEip) ;
-	if( delta > 1 ){
+	if( delta > 1 && !(filterHandler->isLibraryInstruction(curEip) || filterHandler->isLibraryInstruction(prev_ip) )){
 	  FILE * f = fopen("jump_log.txt", "a");
 	  fprintf(f, "%d ", delta);
 	  fflush(f);
