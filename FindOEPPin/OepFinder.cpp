@@ -100,20 +100,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	ADDRINT curEip = INS_Address(ins);
 	ADDRINT prev_ip = proc_info->getPrevIp();
 
-
-	//DEBUG , PRINT ALL THE EIP MOVE DIFFERENT FROM 1 ------------------
-
-	UINT32 delta = abs( (int)prev_ip - (int)curEip) ;
-	if( delta > 1 && !(filterHandler->isLibraryInstruction(curEip) || filterHandler->isLibraryInstruction(prev_ip) )){
-	  FILE * f = fopen("jump_log.txt", "a");
-	  fprintf(f, "%d ", delta);
-	  fflush(f);
-	  fclose(f);
-	}
-
-	//------------------------------------------------------------------
-
-
 	//check if current instruction is a write
 	if(wxorxHandler->isWriteINS(ins)){
 		INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);
@@ -137,6 +123,24 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//	wxorxHandler->displayWriteSet();
 		//W::DebugBreak();
 		WriteInterval item = wxorxHandler->getWritesSet()[writeItemIndex];
+
+	//DEBUG , PRINT ALL THE EIP MOVEMENTS DIFFERENT FROM 1 ------------------
+
+		UINT32 delta = abs( (int)prev_ip - (int)curEip) ;
+		if( delta > 1 && !(filterHandler->isLibraryInstruction(curEip) || filterHandler->isLibraryInstruction(prev_ip) )){
+		FILE * f = fopen("jump_log.txt", "a");
+		FILE * f2 = fopen("jump_log_value.txt", "a");
+		fprintf(f2, "%d ", delta);
+		fprintf(f, "prev_ip = %08x , curr_eip = %08x , delta_jump: %d , write_set_index: %d , curr_write_set_size: %d \n ", prev_ip , curEip , delta , writeItemIndex ,  (int)(item.getAddrEnd() - item.getAddrBegin()));
+		fflush(f);
+		fclose(f);
+		fflush(f2);
+		fclose(f2);
+		}
+
+	//------------------------------------------------------------------
+
+
 		//update the start timer 
 		proc_info->setStartTimer(clock());
 		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
