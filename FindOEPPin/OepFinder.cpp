@@ -131,7 +131,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		if(item.getBrokenFlag()){
 			//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis
 			if(Config::INTER_WRITESET_ANALYSIS_ENABLE){ 				
-				interWriteSetJMPAnalysis(curEip,prev_ip,ins,writeItemIndex );
+				interWriteSetJMPAnalysis(curEip,prev_ip,ins,writeItemIndex,item );
 			}
 		
 		}
@@ -169,10 +169,9 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 }
 
 
-void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex){
+void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex, WriteInterval item){
 	
 	WxorXHandler *wxorxH = WxorXHandler::getInstance();
-	WriteInterval item = wxorxH->getWritesSet()[writeItemIndex];
 
 	 FilterHandler *filterH = FilterHandler::getInstance();
 
