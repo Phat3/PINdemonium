@@ -216,29 +216,29 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 
 	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
 
-	
+	/*
 	if( item.getHeapFlag() && (error != -1) ){
 
 		   //MYINFO("DUMPING HEAP: %08x" , hz->begin);
 			unsigned char * Buffer;
 			UINT32 size_write_set = item.getAddrEnd() - item.getAddrBegin();
-		   /* prepare the buffer to copy inside the stuff into the heap section to dump */		  
+		    //prepare the buffer to copy inside the stuff into the heap section to dump 		  
 			Buffer = (unsigned char *)malloc( size_write_set );
 
-		   /* copy the heap zone into the buffer */
+		   // copy the heap zone into the buffer 
 		   PIN_SafeCopy(Buffer , (void const *)item.getAddrBegin() , size_write_set);	
 		   
 		   ScyllaWrapperInterface *scylla_wrapper = ScyllaWrapperInterface::getInstance();
 
-		   /* get the name of the last dump from the Config object */
+		   // get the name of the last dump from the Config object 
 		   Config *config = Config::getInstance();
 		   string dump_path = config->getCurrentDumpFilePath();
 
-		   /* and convert it into the WCHAR representation */
+		   // and convert it into the WCHAR representation 
 		   std::wstring widestr = std::wstring(dump_path.begin(), dump_path.end());
 		   const wchar_t* widecstr = widestr.c_str();
 
-		   /* calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone ) */
+		   // calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone ) 
 		   UINT32 offset = curEip - item.getAddrBegin();
 
 		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" ,size_write_set , offset , Buffer);
@@ -248,6 +248,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		   MYINFO("DUMPED HEAP OK\n");
 
 	}
+	*/
 
 	//write the heuristic resuòts on ile
 	Config::getInstance()->writeOnReport(curEip, item);

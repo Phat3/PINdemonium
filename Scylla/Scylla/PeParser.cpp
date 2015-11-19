@@ -853,11 +853,15 @@ bool PeParser::addNewLastSection(const CHAR * sectionName, DWORD sectionSize, BY
 	{
 		fileAlignment = pNTHeader32->OptionalHeader.FileAlignment;
 		sectionAlignment = pNTHeader32->OptionalHeader.SectionAlignment;
+		//avoid PE relocation
+		pNTHeader32->OptionalHeader.DllCharacteristics = 0x8100;
 	}
 	else
 	{
 		fileAlignment = pNTHeader64->OptionalHeader.FileAlignment;
 		sectionAlignment = pNTHeader64->OptionalHeader.SectionAlignment;
+		//avoid PE relocation
+		pNTHeader64->OptionalHeader.DllCharacteristics = 0x8100;
 	}
 
 	memcpy_s(peFileSection.sectionHeader.Name, IMAGE_SIZEOF_SHORT_NAME, sectionName, nameLength);
@@ -874,6 +878,7 @@ bool PeParser::addNewLastSection(const CHAR * sectionName, DWORD sectionSize, BY
 	peFileSection.normalSize = peFileSection.sectionHeader.SizeOfRawData;
 	peFileSection.dataSize = peFileSection.sectionHeader.SizeOfRawData;
 
+
 	if (sectionData == 0)
 	{
 		peFileSection.data = new BYTE[peFileSection.sectionHeader.SizeOfRawData];
@@ -882,6 +887,11 @@ bool PeParser::addNewLastSection(const CHAR * sectionName, DWORD sectionSize, BY
 	else
 	{
 		peFileSection.data = sectionData;
+	}
+
+	for (WORD i = 0; i < getNumberOfSections(); i++)
+	{
+		listPeSection[i].sectionHeader.Characteristics = IMAGE_SCN_MEM_EXECUTE|IMAGE_SCN_MEM_READ|IMAGE_SCN_MEM_WRITE|IMAGE_SCN_CNT_CODE|IMAGE_SCN_CNT_INITIALIZED_DATA;
 	}
 
 	listPeSection.push_back(peFileSection);
