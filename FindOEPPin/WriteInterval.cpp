@@ -48,7 +48,7 @@ UINT32 WriteInterval::getBrokenFlag(){
 }
 
 UINT32 WriteInterval::getThreshold(){
-	return (this->addr_end - this->addr_begin)/8;
+	return (this->addr_end - this->addr_begin)/20;
 }
 
 UINT32 WriteInterval::getCurrNumberJMP(){

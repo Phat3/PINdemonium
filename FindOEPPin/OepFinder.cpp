@@ -100,6 +100,20 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	ADDRINT curEip = INS_Address(ins);
 	ADDRINT prev_ip = proc_info->getPrevIp();
 
+
+	//DEBUG , PRINT ALL THE EIP MOVE DIFFERENT FROM 1 ------------------
+
+	UINT32 delta = abs( (int)prev_ip - (int)curEip) ;
+	if( delta > 1 ){
+	  FILE * f = fopen("jump_log.txt", "a");
+	  fprintf(f, "%d ", delta);
+	  fflush(f);
+	  fclose(f);
+	}
+
+	//------------------------------------------------------------------
+
+
 	//check if current instruction is a write
 	if(wxorxHandler->isWriteINS(ins)){
 		INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);
@@ -153,8 +167,8 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//wxorxHandler->deleteWriteItem(writeItemIndex);
 		//update the prevuious IP
 
-		/* Check if we need to dump the heap too */
-		/* BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST */
+		// Check if we need to dump the heap too
+		// BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST 
 		//If we want to debug the program manually let's set the breakpoint after the triggered analysis
 		if(Config::ATTACH_DEBUGGER){
 			INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
@@ -162,6 +176,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		proc_info->setPrevIp(INS_Address(ins));
 
 	}
+	
 	//update the previous IP
 	proc_info->setPrevIp(INS_Address(ins));
 
