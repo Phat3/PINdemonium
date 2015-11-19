@@ -55,6 +55,18 @@ DWORD_PTR GetExeModuleBase(DWORD dwProcessId)
 	return (DWORD_PTR)lpModuleEntry.modBaseAddr;
 }
 
+BOOL isMemoryReadable(void *ptr, size_t byteCount)
+{
+  MEMORY_BASIC_INFORMATION mbi;
+  if (VirtualQuery(ptr, &mbi, sizeof(MEMORY_BASIC_INFORMATION)) == 0)
+    return false;
+
+  if (mbi.State != MEM_COMMIT || mbi.Protect == PAGE_NOACCESS)
+    return false;
+
+
+  return true;
+}
 
 
 UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR * cur_path)
@@ -96,12 +108,27 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR * cur_path)
 	//DebugBreak();
 	//Searching the IAT
 	int error = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, TRUE);
-	if(error){
-		INFO("[SCYLLA SEARCH] error %d ",error);
-		return SCYLLA_ERROR_IAT_NOT_FOUND;
+	
+	//check if ScyllaIATSearch failed and if the result IAT address is readable
+	if(error || !isMemoryReadable((void *) iatStart,iatSize)){
+		
+		INFO("[SCYLLA ADVANCED SEARCH] error %d or IAT address not readable/mapped (if error is 0) ",error);
+		INFO("[SCYLLA ADVANCED SEARCH] Trying advanced IAT search");
+		
+		//
+		int error2 = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, FALSE);
+		if(error2  || !isMemoryReadable((void *) iatStart,iatSize)){
+			INFO("[SCYLLA BASIC SEARCH] error %d ",error);
+			return SCYLLA_ERROR_IAT_NOT_FOUND;
+		}
 	}
-	//DebugBreak();
+
 	INFO("[SCYLLA SEARCH] iat_start : %08x\t iat_size : %08x\t pid : %d", iatStart,iatSize,pid,outputFile);
+	
+	//DebugBreak();
+
+
+
 
 	//Fixing the IAT
 	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,dumpFile,outputFile);
@@ -126,5 +153,6 @@ UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file,WCHAR * cur_path){
 void ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData){
 	ScyllaAddSection(dump_path , sectionName, sectionSize, offset , sectionData);
 }
+
 
 

@@ -181,7 +181,7 @@ INT WINAPI ScyllaStartGui(DWORD dwProcessId, HINSTANCE mod)
 
 int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatSize, DWORD_PTR searchStart, BOOL advancedSearch)
 {
-
+	
 	ApiReader apiReader;
 	apiReader.moduleThunkList = 0;
 	ProcessLister processLister;

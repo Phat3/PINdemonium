@@ -35,6 +35,7 @@ private:
 	ScyllaWrapperInterface::ScyllaWrapperInterface();
 	static ScyllaWrapperInterface* instance;
 	void * hScyllaWrapper;
+
 	
 	BOOL existFile (std::string name);
 
