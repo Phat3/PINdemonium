@@ -74,7 +74,10 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR * cur_path)
 
 	Log::getInstance()->initLogPath(cur_path);//Initialize the log File NEED TO BE BEFORE ANY INFO(),WARN(),ERROR()
 
-	INFO("\n----------------IAT Fixing at %08x----------------",oep);
+
+	PRINT("\n\n-------------------------------------------------------------------------------------------------------");
+	PRINT("------------------------------------ IAT Fixing at %08x -------------------------------------",oep);
+	PRINT("-------------------------------------------------------------------------------------------------------");
 
 	
 	
@@ -106,29 +109,36 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR * cur_path)
 	INFO("[SCYLLA DUMP] Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,dumpFile);
 		
 	//DebugBreak();
-	//Searching the IAT
-	int error = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, TRUE);
-	
-	//check if ScyllaIATSearch failed and if the result IAT address is readable
-	if(error || !isMemoryReadable((void *) iatStart,iatSize)){
-		
-		INFO("[SCYLLA ADVANCED SEARCH] error %d or IAT address not readable/mapped (if error is 0) ",error);
-		INFO("[SCYLLA ADVANCED SEARCH] Trying advanced IAT search");
-		
-		//
+		//Searching the IAT
+	int error = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, TRUE);
+	
+	//check if ScyllaIATSearch failed and if the result IAT address is readable
+	if(error || !isMemoryReadable((void *) iatStart,iatSize)){
+		/*Display why the Scylla IAT Search failed: 
+		 - error in IAT search
+		 - address found not readable */
+		if(error){  
+			ERRORE("[SCYLLA ADVANCED SEARCH] error %d  ",error); }
+		else{
+			 ERRORE("[SCYLLA ADVANCED SEARCH] IAT address not readable/mapped iat_start : %08x\t iat_size : %08x\t  ",iatStart,iatSize);
+		}
+				INFO("[SCYLLA SEARCH] Trying basic IAT search");
+		//Trying  Basic IAT search
 		int error2 = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, FALSE);
 		if(error2  || !isMemoryReadable((void *) iatStart,iatSize)){
-			INFO("[SCYLLA BASIC SEARCH] error %d ",error);
+
+			/*Display why the Scylla IAT Search failed: 
+			 - error in IAT search
+			 - address found not readable */
+			if(error2){  
+				ERRORE("[SCYLLA BASIC SEARCH] error %d  ",error2); }
+			else{
+				 ERRORE("[SCYLLA BASIC SEARCH] IAT address  not readable/mapped iat_start : %08x\t iat_size : %08x\t ",iatStart,iatSize);
+			}
 			return SCYLLA_ERROR_IAT_NOT_FOUND;
 		}
 	}
-
-	INFO("[SCYLLA SEARCH] iat_start : %08x\t iat_size : %08x\t pid : %d", iatStart,iatSize,pid,outputFile);
-	
-	//DebugBreak();
-
-
-
+	INFO("[SCYLLA SEARCH] iat_start : %08x\t iat_size : %08x\t pid : %d", iatStart,iatSize,pid,outputFile);	
 
 	//Fixing the IAT
 	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,dumpFile,outputFile);

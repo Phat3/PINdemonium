@@ -21,6 +21,8 @@
 #define INFO(fmt, ...) \
 	do { if (LOG_BUILD){ fprintf(Log::getInstance()->getLogFile(),"[INFO](%s) "fmt"\n",__FILENAME__, __VA_ARGS__);fflush(Log::getInstance()->getLogFile()); } } while (0)
 
+#define PRINT(fmt, ...) \
+	do { if (LOG_BUILD){ fprintf(Log::getInstance()->getLogFile(),fmt"\n", __VA_ARGS__); } } while (0)
 
 #define CLOSELOG()\
 	do { if (LOG_BUILD){ Log::getInstance()->closeLogFile();}}while (0)
