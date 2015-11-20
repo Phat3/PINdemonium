@@ -35,6 +35,7 @@ bool IATSearch::searchImportAddressTableInProcess( DWORD_PTR startAddress, DWORD
 
 bool IATSearch::findIATAdvanced( DWORD_PTR startAddress, DWORD_PTR* addressIAT, DWORD* sizeIAT )
 {
+	
 	BYTE *dataBuffer;
 	DWORD_PTR baseAddress;
 	SIZE_T memorySize;
@@ -76,7 +77,7 @@ bool IATSearch::findIATAdvanced( DWORD_PTR startAddress, DWORD_PTR* addressIAT, 
 
 	if (iatPointers.size() == 0)
 		return false;
-
+	//Remove from the IAT pointers list 
 	filterIATPointersList(iatPointers);
 
 	if (iatPointers.size() == 0)
@@ -217,6 +218,10 @@ DWORD_PTR IATSearch::findIATPointer()
 	return 0;
 }
 
+/*
+Try to read in the memory area poited by iatPointer and  return true if this memory is readable(readMemoryFromProcess) and the content of this area is 
+the address of an API in apilist
+*/
 bool IATSearch::isIATPointerValid(DWORD_PTR iatPointer, bool checkRedirects)
 {
 	DWORD_PTR apiAddress = 0;
@@ -459,6 +464,8 @@ void IATSearch::filterIATPointersList( std::set<DWORD_PTR> & iatPointers )
 	DWORD_PTR lastPointer = *iter;
 	iter++;
 
+	
+
 	for (; iter != iatPointers.end(); iter++)
 	{
 		if ((*iter - lastPointer) > 0x100) //check difference
@@ -498,8 +505,10 @@ void IATSearch::filterIATPointersList( std::set<DWORD_PTR> & iatPointers )
 
 		for (; iter != iatPointers.end(); iter++)
 		{
+			//check if pointer are near one to the other (distance is less than 0x100)
 			if ((*iter - lastPointer) > 0x100) //check pointer difference, a typical difference is 4 on 32bit systems
 			{
+				//check if it is possible to Readmemory at lastPointer address
 				bool isLastValid = isIATPointerValid(lastPointer, false);
 				bool isCurrentValid = isIATPointerValid(*iter, false);
                 if (isLastValid == false || isCurrentValid == false)

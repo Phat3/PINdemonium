@@ -124,6 +124,8 @@ BOOL FilterHandler::isLibStackWrite(ADDRINT addr,ADDRINT eip){
 	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase +STACK_BASE_PADDING) && isLibraryInstruction(eip);
 }
 
+
+
 /**
 add library in a list sorted by address
 **/

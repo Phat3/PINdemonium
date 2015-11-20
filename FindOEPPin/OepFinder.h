@@ -17,7 +17,7 @@ namespace W {
 #define OEPFINDER_NOT_WXORX_INST -1;
 #define OEPFINDER_FOUND_OEP 0;
 
-#define TIME_OUT 300 // 5 minutes
+
 
 class OepFinder
 {
@@ -32,7 +32,7 @@ private:
 	//if so then set the proper flags in ProcInfo
 	void handlePopadAndPushad(INS ins);
 	BOOL analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip);
-	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex);
+	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex, WriteInterval item);
 	UINT32 DumpAndFixIAT(ADDRINT curEip);
 
 };

@@ -91,7 +91,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	clock_t now = clock();
 	//check the timeout
-	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > TIME_OUT  ){
+	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > Config::TIMEOUT_TIMER_SECONDS  ){
 		MYINFO("TIMER SCADUTO");
 		exit(0);
 	}
@@ -149,7 +149,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		if(item.getBrokenFlag()){
 			//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis
 			if(Config::INTER_WRITESET_ANALYSIS_ENABLE){ 				
-				interWriteSetJMPAnalysis(curEip,prev_ip,ins,writeItemIndex );
+				interWriteSetJMPAnalysis(curEip,prev_ip,ins,writeItemIndex,item );
 			}
 		
 		}
@@ -188,16 +188,18 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 }
 
 
-void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex){
+void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex, WriteInterval item){
 	
 	WxorXHandler *wxorxH = WxorXHandler::getInstance();
-	WriteInterval item = wxorxH->getWritesSet()[writeItemIndex];
+
+	 FilterHandler *filterH = FilterHandler::getInstance();
 
 	//long jump detected intra-writeset ---> trigger analysis and dump
 	UINT32 currJMPLength = std::abs( (int)curEip - (int)prev_ip);
 	if( currJMPLength > item.getThreshold()){
 		//Check if the current WriteSet has already dumped more than WRITEINTERVAL_MAX_NUMBER_JMP times
-		if(item.getCurrNumberJMP() < Config::WRITEINTERVAL_MAX_NUMBER_JMP){
+		//and check if the previous instruction was in the library (Long jump because return from Library)
+		if(item.getCurrNumberJMP() < Config::WRITEINTERVAL_MAX_NUMBER_JMP  && !filterH->isLibraryInstruction(prev_ip)){
 			//Try to dump and Fix the IAT if successful trigger the analysis
 			MYPRINT("\n\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYPRINT("- - - - - - - - - - - - - - JUMP NUMBER %d OF LENGHT %d  IN STUB FORM %08x TO %08x- - - - - - - - - - - - - -",item.getCurrNumberJMP(),currJMPLength, item.getAddrBegin(),item.getAddrEnd());
@@ -277,11 +279,15 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	UINT32 pid = W::GetCurrentProcessId();
 	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
 	std::wstring dumpFile_w = std::wstring(dumpFile.begin(), dumpFile.end());
+
+	
+	string base_path =  Config::getInstance()->getBasePath();
+	std::wstring base_path_w = std::wstring(base_path.begin(), base_path.end());
 	
 	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s",pid, Config::getInstance()->getCurrentDumpFilePath().c_str());
 
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();
-	UINT32 result =  sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)dumpFile_w.c_str());
+	UINT32 result =  sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)dumpFile_w.c_str(),(W::WCHAR *)base_path_w.c_str());
 	//Check if Scylla ha Succeded
 	if(result != SCYLLA_SUCCESS_FIX){
 		MYERRORE("Scylla execution Failed error %d",result);

@@ -15,7 +15,7 @@ namespace W{
 #define SCYLLA_ERROR_IAT_NOT_FIXED -1
 #define SCYLLA_SUCCESS_FIX 0
 
-typedef UINT32 (* def_ScyllaDumpAndFix)(int pid, int oep, W::WCHAR * output_file);
+typedef UINT32 (* def_ScyllaDumpAndFix)(int pid, int oep, W::WCHAR * output_file,W::WCHAR * base_path);
 typedef void (* def_ScyllaWrapAddSection)(const W::WCHAR * dump_path , const W::CHAR * sectionName, W::DWORD sectionSize, UINT32 offset , W::BYTE * sectionData);
 
 
@@ -35,6 +35,7 @@ private:
 	ScyllaWrapperInterface::ScyllaWrapperInterface();
 	static ScyllaWrapperInterface* instance;
 	void * hScyllaWrapper;
+
 	
 	BOOL existFile (std::string name);
 
