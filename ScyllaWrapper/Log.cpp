@@ -16,11 +16,11 @@ Log::Log(){
 
 void Log::initLogPath(WCHAR * cur_path){
 	
-	std::wstring s(cur_path);
-	s += std::wstring(Log::LOG_FILENAME);
+	WCHAR buffer[MAX_PATH];
 
-	const WCHAR *current_log_path = s.c_str();
-	this->log_file = _wfopen(current_log_path,L"a");
+	swprintf(buffer,MAX_PATH, L"%S%S", cur_path ,Log::LOG_FILENAME);
+
+	this->log_file = _wfopen(buffer,L"a");
 }
 
 //singleton

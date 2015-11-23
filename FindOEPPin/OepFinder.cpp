@@ -215,7 +215,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 
 	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
 
-	/*
+	
 	if( item.getHeapFlag() && (error != -1) ){
 
 		   //MYINFO("DUMPING HEAP: %08x" , hz->begin);
@@ -247,7 +247,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		   MYINFO("DUMPED HEAP OK\n");
 
 	}
-	*/
+	
 
 	//write the heuristic resuòts on ile
 	Config::getInstance()->writeOnReport(curEip, item);
