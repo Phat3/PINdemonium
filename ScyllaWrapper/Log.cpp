@@ -18,7 +18,7 @@ void Log::initLogPath(WCHAR * cur_path){
 	
 	WCHAR buffer[MAX_PATH];
 
-	swprintf(buffer,MAX_PATH, L"%S%S", cur_path ,Log::LOG_FILENAME);
+	swprintf(buffer,MAX_PATH, L"%s%s", cur_path ,Log::LOG_FILENAME);
 
 	this->log_file = _wfopen(buffer,L"a");
 }
