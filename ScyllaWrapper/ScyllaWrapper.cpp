@@ -79,7 +79,6 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR * cur_path,
 	DWORD_PTR iatStart = 0;
 	DWORD iatSize = 0;
 	WCHAR originalExe[MAX_PATH]; // Path of the original PE which as launched the current process
-	INFO ("Not working path: %S\n", tmp_dump);  // Path of the temporary dump file (file with the IAT non reconstructed yet)
 
 	//getting the Base Address
 	DWORD_PTR hMod = GetExeModuleBase(pid);
