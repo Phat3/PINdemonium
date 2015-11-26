@@ -2,9 +2,7 @@
 #include "stdafx.h"
 #include <string>
 
-
-
-UINT32 ScyllaDumpAndFix(int pid, int oep,WCHAR * output_file,const char * cur_path);
+UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file, const char * cur_path, WCHAR * tmp_dump);
 
 
 /* 

@@ -25,6 +25,7 @@ public:
 	string getBasePath();
 	string getCurrentDumpFilePath();
 	string getCurrentDetectedListPath();
+	string getNotWorkingPath();
 	long double getDumpNumber();
 
 	//utils
@@ -32,6 +33,7 @@ public:
 	void Config::closeLogFile();
 	void Config::closeReportFile();
 	void writeOnReport(ADDRINT ip, WriteInterval wi);
+	void writeFailureOnReport();
 
 	static const string PIN_DIRECTORY_PATH_DEP;
 	static const string PIN_DIRECTORY_PATH_OUTPUT;
@@ -56,6 +58,7 @@ private:
 	FILE *log_file;
 	FILE *report_file;
 	string base_path;
+	string not_working_path;
 	string cur_dump_path;        //Path of the final (IAT fixed) Dump
 	string cur_list_path;		 //Path of the list of the detected function
 	long double dump_number;

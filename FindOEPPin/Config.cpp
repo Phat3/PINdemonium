@@ -10,6 +10,8 @@ const string Config::IDAP_BAD_IMPORTS_CHECKER = PIN_DIRECTORY_PATH_DEP + "badImp
 const string Config::BAD_IMPORTS_LIST = PIN_DIRECTORY_PATH_DEP + "badImportsList.txt";
 const string Config::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
 const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
+const string PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING = "NotWorking\\";
+
 
 //Tuning Flags
 
@@ -31,13 +33,14 @@ Config::Config(){
 	this->base_path = PIN_DIRECTORY_PATH_OUTPUT + this->getCurDateAndTime() + "\\";
 	//mk the directory
 	_mkdir(this->base_path.c_str());
+	this->not_working_path = this->base_path + PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING;
+	_mkdir(this->not_working_path.c_str());
 	//create the log and report files
 	string log_file_path = this->base_path + LOG_FILENAME;
 	string report_file_path = this->base_path + REPORT_FILENAME;
 	this->log_file = fopen(log_file_path.c_str(),"w");
 	this->report_file = fopen(report_file_path.c_str(),"w");
 	this->numberOfBadImports = calculateNumberOfBadImports();
-
 	//initialize the path of the ScyllaWrapperLog
 
 
@@ -66,6 +69,10 @@ string Config::getBasePath(){
 
 long double Config::getDumpNumber(){
 	return this->dump_number;
+}
+
+string Config::getNotWorkingPath(){
+	return this->not_working_path + ProcInfo::getInstance()->getProcName() + "_" + std::to_string(this->dump_number) + ".exe";
 }
 
 string Config::getCurrentDumpFilePath(){	
@@ -105,7 +112,14 @@ FILE* Config::getLogFile()
 //write the JSON resulted by the analysis for this write set
 void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 {
-	fprintf(this->report_file,"{%d)\"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_oter_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n",(int)this->getDumpNumber(),  ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
+	fprintf(this->report_file,"{%d)\"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_oter_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n", (int)this->getDumpNumber(), ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
+	fflush(this->report_file);
+}
+
+//write the failure of Scylla on the report
+void Config::writeFailureOnReport()
+{
+	fprintf(this->report_file,"{%d) Not Working\n", (int)this->getDumpNumber()); 
 	fflush(this->report_file);
 }
 
