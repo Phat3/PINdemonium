@@ -85,7 +85,6 @@ string Config::getCurrentDumpFilePath(){
 string Config::getCurrentDetectedListPath(){	
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
 	this->cur_list_path = this->base_path + this->DETECTED_BAD_IMPORTS_LIST + "_" + std::to_string(this->dump_number) + ".txt" ;
-
 	return this->cur_list_path;	
 }
 

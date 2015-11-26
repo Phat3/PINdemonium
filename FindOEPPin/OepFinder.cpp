@@ -259,7 +259,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		   // calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone ) 
 		   UINT32 offset = curEip - item.getAddrBegin();
 
-		   scylla_wrapper->ScyllaWrapAddSection( widecstr, ".heap" ,size_write_set , offset , Buffer);
+		   scylla_wrapper->ScyllaWrapAddSection(widecstr, ".heap" ,size_write_set , offset , Buffer);
 
 		   free(Buffer);
 
