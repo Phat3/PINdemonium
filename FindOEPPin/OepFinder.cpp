@@ -160,7 +160,8 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			MYPRINT("-------------------------------------------------------------------------------------------------------");
 			MYINFO("Current EIP %08x",curEip);
 			//W::DebugBreak();
-			this->DumpAndFixIAT(curEip);
+			int result = this->DumpAndFixIAT(curEip);
+			Config::getInstance()->setWorking(result);
 			//W::DebugBreak();
 			this->analysis(item, ins, prev_ip, curEip);
 			wxorxHandler->setBrokenFlag(writeItemIndex);
@@ -205,7 +206,8 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 			MYPRINT("- - - - - - - - - - - - - - JUMP NUMBER %d OF LENGHT %d  IN STUB FORM %08x TO %08x- - - - - - - - - - - - - -",item.getCurrNumberJMP(),currJMPLength, item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYINFO("Current EIP %08x",curEip);
-			this->DumpAndFixIAT(curEip);
+			int result = this->DumpAndFixIAT(curEip);
+			Config::getInstance()->setWorking(result);
 			this->analysis(item, ins, prev_ip, curEip);
 
 			wxorxH->incrementCurrJMPNumber(writeItemIndex);
@@ -216,8 +218,6 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 }
 
 BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip){
-
-	
 
 	//call the proper heuristics
 	//we have to implement it in a better way!!
@@ -290,11 +290,10 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s",pid, Config::getInstance()->getCurrentDumpFilePath().c_str());
 
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();
-	UINT32 result =  sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)outputFile_w.c_str(),(W::WCHAR *)base_path_w.c_str(), (W::WCHAR *)tmpDump_w.c_str());
+	UINT32 result = sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)outputFile_w.c_str(),(W::WCHAR *)base_path_w.c_str(), (W::WCHAR *)tmpDump_w.c_str());
 	//Check if Scylla ha Succeded
 	if(result != SCYLLA_SUCCESS_FIX){
 		MYERRORE("Scylla execution Failed error %d",result);
-		Config::getInstance()->writeFailureOnReport();
 		return result;
 	};
 	

@@ -33,7 +33,7 @@ public:
 	void Config::closeLogFile();
 	void Config::closeReportFile();
 	void writeOnReport(ADDRINT ip, WriteInterval wi);
-	void writeFailureOnReport();
+	void setWorking (int working);
 
 	static const string PIN_DIRECTORY_PATH_DEP;
 	static const string PIN_DIRECTORY_PATH_OUTPUT;
@@ -65,5 +65,6 @@ private:
 	string getCurDateAndTime();
 	int numberOfBadImports;
 	int calculateNumberOfBadImports();
+	int working;
 };
 
