@@ -11,7 +11,6 @@ OepFinder::~OepFinder(void){
 
 //update the write set manager
 VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){	
-
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	//check if the target address belongs to some filtered range		
 	if(!filterHandler->isFilteredWrite(end_addr,ip)){
@@ -24,7 +23,6 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 //check if the current instruction is a pushad or a popad
 //if so then set the proper flags in ProcInfo
 void OepFinder::handlePopadAndPushad(INS ins){
-
 	string s = INS_Disassemble(ins);
 	if( s.compare("popad ") == 0){
 		ProcInfo::getInstance()->setPopadFlag(TRUE);
@@ -80,8 +78,6 @@ static VOID DoBreakpoint(const CONTEXT *ctxt, THREADID tid, ADDRINT ip)
 // - Check if the current instruction broke the W xor X law  -----> trigger the heuristics and write the report
 // - Set the previous ip to the current ip ( useful for some heuristics like jumpOuterSection )
 UINT32 OepFinder::IsCurrentInOEP(INS ins){
-   	
-
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	ProcInfo *proc_info = ProcInfo::getInstance();
@@ -121,64 +117,47 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	//	proc_info->printHeapList();
 	//	wxorxHandler->displayWriteSet();
-		//W::DebugBreak();
-		WriteInterval item = wxorxHandler->getWritesSet()[writeItemIndex];
+	//W::DebugBreak();
+	WriteInterval item = wxorxHandler->getWritesSet()[writeItemIndex];
 
-	//DEBUG , PRINT ALL THE EIP MOVEMENTS DIFFERENT FROM 1 ------------------
+	//update the start timer 
+	proc_info->setStartTimer(clock());
+	//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
 
-		UINT32 delta = abs( (int)prev_ip - (int)curEip) ;
-		if( delta > 1 && !(filterHandler->isLibraryInstruction(curEip) || filterHandler->isLibraryInstruction(prev_ip) )){
-		FILE * f = fopen("jump_log.txt", "a");
-		FILE * f2 = fopen("jump_log_value.txt", "a");
-		fprintf(f2, "%d ", delta);
-		fprintf(f, "prev_ip = %08x , curr_eip = %08x , delta_jump: %d , write_set_index: %d , curr_write_set_size: %d \n ", prev_ip , curEip , delta , writeItemIndex ,  (int)(item.getAddrEnd() - item.getAddrBegin()));
-		fflush(f);
-		fclose(f);
-		fflush(f2);
-		fclose(f2);
+	//not the first broken in this write set		
+	if(item.getBrokenFlag()){
+		//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis
+		if(Config::INTER_WRITESET_ANALYSIS_ENABLE){ 				
+			interWriteSetJMPAnalysis(curEip,prev_ip,ins,writeItemIndex,item );
 		}
-
-	//------------------------------------------------------------------
-
-
-		//update the start timer 
-		proc_info->setStartTimer(clock());
-		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
-
-		//not the first broken in this write set		
-		if(item.getBrokenFlag()){
-			//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis
-			if(Config::INTER_WRITESET_ANALYSIS_ENABLE){ 				
-				interWriteSetJMPAnalysis(curEip,prev_ip,ins,writeItemIndex,item );
-			}
 		
-		}
-		//first broken in this write set ---> analysis and dump ---> set the broken flag of this write ionterval 
-		else{
-			MYPRINT("\n\n-------------------------------------------------------------------------------------------------------");
-			MYPRINT("------------------------------------ NEW STUB FROM begin: %08x TO %08x -------------------------------------",item.getAddrBegin(),item.getAddrEnd());
-			MYPRINT("-------------------------------------------------------------------------------------------------------");
-			MYINFO("Current EIP %08x",curEip);
-			//W::DebugBreak();
-			int result = this->DumpAndFixIAT(curEip);
-			Config::getInstance()->setWorking(result);
-			//W::DebugBreak();
-			this->analysis(item, ins, prev_ip, curEip);
-			wxorxHandler->setBrokenFlag(writeItemIndex);
-			Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
+	}
+	//first broken in this write set ---> analysis and dump ---> set the broken flag of this write ionterval 
+	else{
+		MYPRINT("\n\n-------------------------------------------------------------------------------------------------------");
+		MYPRINT("------------------------------------ NEW STUB FROM begin: %08x TO %08x -------------------------------------",item.getAddrBegin(),item.getAddrEnd());
+		MYPRINT("-------------------------------------------------------------------------------------------------------");
+		MYINFO("Current EIP %08x",curEip);
+		//W::DebugBreak();
+		int result = this->DumpAndFixIAT(curEip);
+		Config::getInstance()->setWorking(result);
+		//W::DebugBreak();
+		this->analysis(item, ins, prev_ip, curEip);
+		wxorxHandler->setBrokenFlag(writeItemIndex);
+		Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 				
-		}
-		//delete the WriteInterval just analyzed
-		//wxorxHandler->deleteWriteItem(writeItemIndex);
-		//update the prevuious IP
+	}
+	//delete the WriteInterval just analyzed
+	//wxorxHandler->deleteWriteItem(writeItemIndex);
+	//update the prevuious IP
 
-		// Check if we need to dump the heap too
-		// BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST 
-		//If we want to debug the program manually let's set the breakpoint after the triggered analysis
-		if(Config::ATTACH_DEBUGGER){
-			INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
-		}
-		proc_info->setPrevIp(INS_Address(ins));
+	// Check if we need to dump the heap too
+	// BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST 
+	//If we want to debug the program manually let's set the breakpoint after the triggered analysis
+	if(Config::ATTACH_DEBUGGER){
+		INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
+	}
+	proc_info->setPrevIp(INS_Address(ins));
 
 	}
 	
@@ -193,7 +172,7 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 	
 	WxorXHandler *wxorxH = WxorXHandler::getInstance();
 
-	 FilterHandler *filterH = FilterHandler::getInstance();
+	FilterHandler *filterH = FilterHandler::getInstance();
 
 	//long jump detected intra-writeset ---> trigger analysis and dump
 	UINT32 currJMPLength = std::abs( (int)curEip - (int)prev_ip);
@@ -218,7 +197,6 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 }
 
 BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip){
-
 	//call the proper heuristics
 	//we have to implement it in a better way!!
 	item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
@@ -234,7 +212,6 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 
 	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
 
-	
 	if( item.getHeapFlag() && (error != -1) ){
 
 		   //MYINFO("DUMPING HEAP: %08x" , hz->begin);
@@ -264,10 +241,8 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		   free(Buffer);
 
 		   MYINFO("DUMPED HEAP OK\n");
-
 	}
 	
-
 	//write the heuristic results on ile
 	Config::getInstance()->writeOnReport(curEip, item);
 
