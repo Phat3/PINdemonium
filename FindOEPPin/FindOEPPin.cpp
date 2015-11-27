@@ -88,11 +88,11 @@ void HookFuncDispatcher(IMG img, string func_name,void * func_pointer){
 		if(rtn != RTN_Invalid()){
 			
 			ADDRINT va_address = RTN_Address(rtn);
-			MYINFO("Address of %s: %08x\n" ,func_name.c_str(), va_address);
+			MYINFO("Address of %s: %08x" ,func_name.c_str(), va_address);
 
 			RTN_Open(rtn); 	
 			int index = HeapFunctionsMap.at(func_name);
-			MYINFO("index of %s is %d",func_name.c_str(),index);
+			MYINFO("index of %s is %d\n",func_name.c_str(),index);
 			//Different arguments are passed to the hooking routine based on the function
 			switch(index){
 				case(VIRTUALALLOC_INDEX):
