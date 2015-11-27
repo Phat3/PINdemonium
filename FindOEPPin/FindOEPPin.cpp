@@ -7,16 +7,16 @@
 #include  "Debug.h"
 #include "Config.h"
 #include "FilterHandler.h"
+#include "HookFunctions.h"
 namespace W {
 	#include <windows.h>
 }
 
-#define VIRTUALALLOC_INDEX 0
-#define RTLALLOCATEHEAP_INDEX 1
 
 OepFinder oepf;
+HookFunctions hookFun;
 clock_t tStart;
-std::map<string, UINT32> HeapFunctionsMap;
+
 
 
 // This function is called when the application exits
@@ -37,71 +37,7 @@ INT32 Usage(){
 	return -1;
 }
 
-VOID initHeapFunctionMap(){
-	HeapFunctionsMap.insert( std::pair<string,UINT32>("VirtualAlloc",VIRTUALALLOC_INDEX) );
-	HeapFunctionsMap.insert( std::pair<string,UINT32>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
-	HeapFunctionsMap.insert( std::pair<string,UINT32>("vedere",2) );
-	HeapFunctionsMap.insert( std::pair<string,UINT32>("credere",3) );
-}
 
-
-VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
-
-  ProcInfo *proc_info = ProcInfo::getInstance();
-
-  HeapZone hz;
-  hz.begin = ret_heap_address;
-  hz.size = virtual_alloc_size;
-  hz.end = ret_heap_address + virtual_alloc_size;
-
-  //saving this heap zone in the map inside ProcInfo
-  proc_info->insertHeapZone(hz); 
-
-}
-
-VOID HeapAllocHook(UINT32 heap_alloc_size , UINT32 ret_heap_address ){
-	
-	if (heap_alloc_size == 0){
-		return;
-	}
-
-	ProcInfo *proc_info = ProcInfo::getInstance();
-
-	HeapZone hz;
-	hz.begin = ret_heap_address;
-	hz.size = heap_alloc_size;
-	hz.end = ret_heap_address + heap_alloc_size;
-
-	//saving this heap zone in the map inside ProcInfo
-	proc_info->insertHeapZone(hz); 
-
-}
-
-
-void HookFuncDispatcher(IMG img, string func_name,void * func_pointer){
-	/* searching for VirtualAlloc */ 
-	RTN rtn = RTN_FindByName( img, func_name.c_str());
-	if(rtn != RTN_Invalid()){
-			
-		ADDRINT va_address = RTN_Address(rtn);
-		MYINFO("Address of %s: %08x\n" ,func_name.c_str(), va_address);
-
-		RTN_Open(rtn); 	
-		int index = HeapFunctionsMap.at(func_name);
-		MYINFO("index of %s is %d",func_name.c_str(),index);
-		//Different arguments are passed to the hooking routine based on the function
-		switch(index){
-			case(VIRTUALALLOC_INDEX):
-				RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)func_pointer , IARG_G_ARG1_CALLEE , IARG_G_RESULT0, IARG_END);
-				break;
-			case(RTLALLOCATEHEAP_INDEX):
-				RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)func_pointer , IARG_G_ARG2_CALLEE, IARG_G_RESULT0, IARG_END);
-				break;
-
-		}			
-		RTN_Close(rtn);
-	}
-}
 
 // - Get initial entropy
 // - Get PE section data 
@@ -142,10 +78,7 @@ void imageLoadCallback(IMG img,void *){
 	const string name = IMG_Name(img); 
 
 	if(!IMG_IsMainExecutable(img) && filterH->isKnownLibrary(name)){	
-
-		HookFuncDispatcher(img,"VirtualAlloc",VirtualAllocHook);
-		HookFuncDispatcher(img,"RtlAllocateHeap",HeapAllocHook);
-		
+		hookFun.hookDispatcher(img);		
 		filterH->addLibrary(name,startAddr,endAddr);
 	}
 }
@@ -186,8 +119,7 @@ int main(int argc, char * argv[]){
 	}
 
 	MYINFO("Strating prototype ins");
-	initHeapFunctionMap();
-
+		//W::DebugBreak();
 	FilterHandler *filterH = FilterHandler::getInstance();
 	//set the filters for the libraries
 	MYINFO("%s",Config::FILTER_WRITES_ENABLES.c_str());
