@@ -254,6 +254,7 @@
   <ItemGroup>
     <ClCompile Include="GdbDebugger.cpp" />
     <ClCompile Include="Heuristics.cpp" />
+    <ClCompile Include="HookFunctions.cpp" />
     <ClCompile Include="InitFunctionCallHeuristic.cpp" />
     <ClCompile Include="ProcInfo.cpp" />
     <ClCompile Include="EntropyHeuristic.cpp" />
@@ -264,6 +265,7 @@
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="PushadPopadHeuristic.cpp" />
     <ClCompile Include="ScyllaWrapperInterface.cpp" />
+    <ClCompile Include="ToolHider.cpp" />
     <ClCompile Include="WriteInterval.cpp" />
     <ClCompile Include="LongJumpHeuristic.cpp" />
     <ClCompile Include="WxorXHandler.cpp" />
@@ -274,6 +276,7 @@
   <ItemGroup>
     <ClInclude Include="Debug.h" />
     <ClInclude Include="GdbDebugger.h" />
+    <ClInclude Include="HookFunctions.h" />
     <ClInclude Include="ProcInfo.h" />
     <ClInclude Include="InitFunctionCallHeuristic.h" />
     <ClInclude Include="Heuristics.h" />
@@ -284,6 +287,7 @@
     <ClInclude Include="OepFinder.h" />
     <ClInclude Include="PushadPopadHeuristic.h" />
     <ClInclude Include="ScyllaWrapperInterface.h" />
+    <ClInclude Include="ToolHider.h" />
     <ClInclude Include="WriteInterval.h" />
     <ClInclude Include="LongJumpHeuristic.h" />
     <ClInclude Include="WxorXHandler.h" />

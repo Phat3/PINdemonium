@@ -21,7 +21,6 @@ std::map<string, UINT32> HeapFunctionsMap;
 
 // This function is called when the application exits
 VOID Fini(INT32 code, VOID *v){
-
 	//DEBUG --- inspect the write set at the end of the execution
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 	MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
@@ -34,10 +33,8 @@ VOID Fini(INT32 code, VOID *v){
 
 //cc
 INT32 Usage(){
-
 	PIN_ERROR("This Pintool unpacks common packers\n" + KNOB_BASE::StringKnobSummary() + "\n");
 	return -1;
-
 }
 
 VOID initHeapFunctionMap(){
@@ -49,7 +46,6 @@ VOID initHeapFunctionMap(){
 
 
 VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
-
 
   ProcInfo *proc_info = ProcInfo::getInstance();
 
@@ -83,30 +79,28 @@ VOID HeapAllocHook(UINT32 heap_alloc_size , UINT32 ret_heap_address ){
 
 
 void HookFuncDispatcher(IMG img, string func_name,void * func_pointer){
-/* searching for VirtualAlloc */ 
-		RTN rtn = RTN_FindByName( img, func_name.c_str());
-		if(rtn != RTN_Invalid()){
+	/* searching for VirtualAlloc */ 
+	RTN rtn = RTN_FindByName( img, func_name.c_str());
+	if(rtn != RTN_Invalid()){
 			
-			ADDRINT va_address = RTN_Address(rtn);
-			MYINFO("Address of %s: %08x\n" ,func_name.c_str(), va_address);
+		ADDRINT va_address = RTN_Address(rtn);
+		MYINFO("Address of %s: %08x\n" ,func_name.c_str(), va_address);
 
-			RTN_Open(rtn); 	
-			int index = HeapFunctionsMap.at(func_name);
-			MYINFO("index of %s is %d",func_name.c_str(),index);
-			//Different arguments are passed to the hooking routine based on the function
-			switch(index){
-				case(VIRTUALALLOC_INDEX):
-					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)func_pointer , IARG_G_ARG1_CALLEE , IARG_G_RESULT0, IARG_END);
-					break;
-				case(RTLALLOCATEHEAP_INDEX):
-					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)func_pointer , IARG_G_ARG2_CALLEE, IARG_G_RESULT0, IARG_END);
-					break;
+		RTN_Open(rtn); 	
+		int index = HeapFunctionsMap.at(func_name);
+		MYINFO("index of %s is %d",func_name.c_str(),index);
+		//Different arguments are passed to the hooking routine based on the function
+		switch(index){
+			case(VIRTUALALLOC_INDEX):
+				RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)func_pointer , IARG_G_ARG1_CALLEE , IARG_G_RESULT0, IARG_END);
+				break;
+			case(RTLALLOCATEHEAP_INDEX):
+				RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)func_pointer , IARG_G_ARG2_CALLEE, IARG_G_RESULT0, IARG_END);
+				break;
 
-			}
-			
-			RTN_Close(rtn);
-		
-		}
+		}			
+		RTN_Close(rtn);
+	}
 }
 
 // - Get initial entropy
@@ -153,7 +147,6 @@ void imageLoadCallback(IMG img,void *){
 		HookFuncDispatcher(img,"RtlAllocateHeap",HeapAllocHook);
 		
 		filterH->addLibrary(name,startAddr,endAddr);
-
 	}
 }
 
@@ -163,18 +156,15 @@ void imageLoadCallback(IMG img,void *){
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
-
 	oepf.IsCurrentInOEP(ins);
 }
 
 
 // - retrive the stack base address
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
-
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	FilterHandler *filterH = FilterHandler::getInstance();
 	filterH->setStackBase(stackBase);
-
 }
 
 void initDebug(){
@@ -217,10 +207,7 @@ int main(int argc, char * argv[]){
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
 	// Start the program, never returns
-
-	
 	PIN_StartProgram();
 	
 	return 0;
-
 }
