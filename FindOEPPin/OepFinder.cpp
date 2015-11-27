@@ -100,14 +100,15 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	if(wxorxHandler->isWriteINS(ins)){
 		INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);
 	}
+
 	//Tracking violating WxorX instructions
 	//Filter instructions inside a known library
 	if(filterHandler->isLibraryInstruction(curEip)){
 		return OEPFINDER_INS_FILTERED; 
 	}
+
 	//check if the current instruction is a popad or a pushad
 	this->handlePopadAndPushad(ins);
-
 	
 	//If the instruction violate WxorX return the index of the WriteItem in which the EIP is
 	//If the instruction doesn't violate WxorX return -1
