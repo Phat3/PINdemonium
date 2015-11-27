@@ -1,7 +1,4 @@
 #include "HookFunctions.h"
-namespace W{
-	#include "windows.h"
-}
 
 
 HookFunctions::HookFunctions(void)
@@ -89,7 +86,6 @@ void HookFunctions::hookDispatcher(IMG img){
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)HeapAllocHook , IARG_G_ARG2_CALLEE, IARG_G_RESULT0, IARG_END);
 					break;
 				case(ISDEBUGGERPRESENT_INDEX):
-					W::DebugBreak();
 					RTN_Replace(rtn, AFUNPTR(IsDebuggerPresentHook));
 					break;
 
