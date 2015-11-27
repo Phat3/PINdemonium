@@ -11,6 +11,7 @@ const string Config::BAD_IMPORTS_LIST = PIN_DIRECTORY_PATH_DEP + "badImportsList
 const string Config::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
 const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
 const string PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING = "NotWorking\\";
+const string DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "dumperSelector.py";
 
 
 //Tuning Flags
@@ -18,7 +19,7 @@ const string PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING = "NotWorking\\";
 const bool  Config::INTER_WRITESET_ANALYSIS_ENABLE = true;
 const bool  Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
-const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 10;
+const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 2;
 const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
 
 Config* Config::instance = 0;
@@ -43,7 +44,8 @@ Config::Config(){
 	this->numberOfBadImports = calculateNumberOfBadImports();
 	//initialize the path of the ScyllaWrapperLog
 	this->working = -1;
-
+	//move the dumper selector in the directory of the current execution
+	W::CopyFile(DUMPER_SELECTOR_PATH.c_str(), (this->base_path + "dumperSelector.py").c_str(), FALSE);
 }
 
 //singleton
