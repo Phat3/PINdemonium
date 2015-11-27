@@ -35,6 +35,11 @@ public:
 	void writeOnReport(ADDRINT ip, WriteInterval wi);
 	void setWorking (int working);
 
+	//mode of operation
+	static const bool UNPACKING_MODE;
+	static const bool EVASION_MODE;
+
+	//files and paths
 	static const string PIN_DIRECTORY_PATH_DEP;
 	static const string PIN_DIRECTORY_PATH_OUTPUT;
 	static const string LOG_FILENAME;

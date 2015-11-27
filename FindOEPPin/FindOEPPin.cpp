@@ -11,6 +11,7 @@ namespace W {
 	#include <windows.h>
 }
 
+
 #define VIRTUALALLOC_INDEX 0
 #define RTLALLOCATEHEAP_INDEX 1
 
@@ -163,8 +164,14 @@ void imageLoadCallback(IMG img,void *){
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
+	if(Config::EVASION_MODE){
+		printf("dsa");
+	}
+	if(Config::UNPACKING_MODE){
+		oepf.IsCurrentInOEP(ins);
+	}
+	
 
-	oepf.IsCurrentInOEP(ins);
 }
 
 
