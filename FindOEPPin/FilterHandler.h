@@ -38,7 +38,7 @@ public:
 	//utils
 	BOOL isLibraryInstruction(ADDRINT eip);
 	BOOL isFilteredWrite(ADDRINT addr, ADDRINT eip);
-	BOOL isKnownLibrary(const string name);
+	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID showFilteredLibs();
 

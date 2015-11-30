@@ -6,6 +6,7 @@
 #include <time.h>
 #include  "Debug.h"
 #include "Config.h"
+#include "ToolHider.h"
 #include "FilterHandler.h"
 namespace W {
 	#include <windows.h>
@@ -16,6 +17,7 @@ namespace W {
 #define RTLALLOCATEHEAP_INDEX 1
 
 OepFinder oepf;
+ToolHider thider;
 clock_t tStart;
 std::map<string, UINT32> HeapFunctionsMap;
 
@@ -142,7 +144,7 @@ void imageLoadCallback(IMG img,void *){
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
 
-	if(!IMG_IsMainExecutable(img) && filterH->isKnownLibrary(name)){	
+	if(!IMG_IsMainExecutable(img) && filterH->isKnownLibrary(name,startAddr,endAddr)){	
 
 		HookFuncDispatcher(img,"VirtualAlloc",VirtualAllocHook);
 		HookFuncDispatcher(img,"RtlAllocateHeap",HeapAllocHook);
@@ -158,12 +160,12 @@ void imageLoadCallback(IMG img,void *){
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
 	if(Config::EVASION_MODE){
-		printf("dsa");
+		thider.avoidEvasion(ins);
 	}
 	if(Config::UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
 	}
-	
+
 }
 
 
