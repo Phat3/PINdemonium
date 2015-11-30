@@ -100,14 +100,15 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	if(wxorxHandler->isWriteINS(ins)){
 		INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);
 	}
+
 	//Tracking violating WxorX instructions
 	//Filter instructions inside a known library
 	if(filterHandler->isLibraryInstruction(curEip)){
 		return OEPFINDER_INS_FILTERED; 
 	}
+
 	//check if the current instruction is a popad or a pushad
 	this->handlePopadAndPushad(ins);
-
 	
 	//If the instruction violate WxorX return the index of the WriteItem in which the EIP is
 	//If the instruction doesn't violate WxorX return -1
@@ -115,49 +116,50 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//W xor X broken
 	if(writeItemIndex != -1 ){
 
-	//	proc_info->printHeapList();
-	//	wxorxHandler->displayWriteSet();
-	//W::DebugBreak();
-	WriteInterval item = wxorxHandler->getWritesSet()[writeItemIndex];
+		//	proc_info->printHeapList();
+		//	wxorxHandler->displayWriteSet();
+		//W::DebugBreak();
+		WriteInterval item = wxorxHandler->getWritesSet()[writeItemIndex];
 
-	//update the start timer 
-	proc_info->setStartTimer(clock());
-	//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
+		//update the start timer 
+		proc_info->setStartTimer(clock());
+		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
 
-	//not the first broken in this write set		
-	if(item.getBrokenFlag()){
-		//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis
-		if(Config::INTER_WRITESET_ANALYSIS_ENABLE){ 				
-			interWriteSetJMPAnalysis(curEip,prev_ip,ins,writeItemIndex,item );
-		}
+		//not the first broken in this write set		
+		if(item.getBrokenFlag()){
+			//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis
+			if(Config::INTER_WRITESET_ANALYSIS_ENABLE){ 				
+				interWriteSetJMPAnalysis(curEip,prev_ip,ins,writeItemIndex,item );
+			}
 		
-	}
-	//first broken in this write set ---> analysis and dump ---> set the broken flag of this write ionterval 
-	else{
-		MYPRINT("\n\n-------------------------------------------------------------------------------------------------------");
-		MYPRINT("------------------------------------ NEW STUB FROM begin: %08x TO %08x -------------------------------------",item.getAddrBegin(),item.getAddrEnd());
-		MYPRINT("-------------------------------------------------------------------------------------------------------");
-		MYINFO("Current EIP %08x",curEip);
-		//W::DebugBreak();
-		int result = this->DumpAndFixIAT(curEip);
-		Config::getInstance()->setWorking(result);
-		//W::DebugBreak();
-		this->analysis(item, ins, prev_ip, curEip);
-		wxorxHandler->setBrokenFlag(writeItemIndex);
-		Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
-				
-	}
-	//delete the WriteInterval just analyzed
-	//wxorxHandler->deleteWriteItem(writeItemIndex);
-	//update the prevuious IP
+		}
 
-	// Check if we need to dump the heap too
-	// BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST 
-	//If we want to debug the program manually let's set the breakpoint after the triggered analysis
-	if(Config::ATTACH_DEBUGGER){
-		INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
-	}
-	proc_info->setPrevIp(INS_Address(ins));
+		//first broken in this write set ---> analysis and dump ---> set the broken flag of this write ionterval 
+		else{
+			MYPRINT("\n\n-------------------------------------------------------------------------------------------------------");
+			MYPRINT("------------------------------------ NEW STUB FROM begin: %08x TO %08x -------------------------------------",item.getAddrBegin(),item.getAddrEnd());
+			MYPRINT("-------------------------------------------------------------------------------------------------------");
+			MYINFO("Current EIP %08x",curEip);
+			//W::DebugBreak();
+			int result = this->DumpAndFixIAT(curEip);
+			Config::getInstance()->setWorking(result);
+			//W::DebugBreak();
+			this->analysis(item, ins, prev_ip, curEip);
+			wxorxHandler->setBrokenFlag(writeItemIndex);
+			Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
+				
+		}
+		//delete the WriteInterval just analyzed
+		//wxorxHandler->deleteWriteItem(writeItemIndex);
+		//update the prevuious IP
+
+		// Check if we need to dump the heap too
+		// BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST 
+		//If we want to debug the program manually let's set the breakpoint after the triggered analysis
+		if(Config::ATTACH_DEBUGGER){
+			INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
+		}
+		proc_info->setPrevIp(INS_Address(ins));
 
 	}
 	
