@@ -77,7 +77,7 @@ public:
 	//Library
 	VOID SearchPinVMDll();
 	BOOL isLibraryInstruction(ADDRINT address);
-	BOOL isKnownLibrary(const string name);
+	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 
 	//Debug

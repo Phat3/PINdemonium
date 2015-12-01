@@ -75,8 +75,6 @@ VOID FilterHandler::setStackBase(ADDRINT addr){
 
 
 
-
-
 /**
 Check if the instuction at "eip" which writes at "addr" is filtered based on the active filters(i.e. stack,teb)
 **/

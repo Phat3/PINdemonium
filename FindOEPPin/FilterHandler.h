@@ -30,7 +30,6 @@ public:
 	//utils
 	BOOL isFilteredWrite(ADDRINT addr, ADDRINT eip);
 
-
 private:
 static FilterHandler* instance;
 	ProcInfo *pInfo;

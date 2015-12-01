@@ -6,7 +6,9 @@
 #include <time.h>
 #include  "Debug.h"
 #include "Config.h"
+#include "ToolHider.h"
 #include "FilterHandler.h"
+#include "HookFunctions.h"
 namespace W {
 	#include <windows.h>
 }
@@ -15,9 +17,12 @@ namespace W {
 #define VIRTUALALLOC_INDEX 0
 #define RTLALLOCATEHEAP_INDEX 1
 
+
+ToolHider thider;
 OepFinder oepf;
+HookFunctions hookFun;
 clock_t tStart;
-std::map<string, UINT32> HeapFunctionsMap;
+
 
 
 // This function is called when the application exits
@@ -38,71 +43,7 @@ INT32 Usage(){
 	return -1;
 }
 
-VOID initHeapFunctionMap(){
-	HeapFunctionsMap.insert( std::pair<string,UINT32>("VirtualAlloc",VIRTUALALLOC_INDEX) );
-	HeapFunctionsMap.insert( std::pair<string,UINT32>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
-	HeapFunctionsMap.insert( std::pair<string,UINT32>("vedere",2) );
-	HeapFunctionsMap.insert( std::pair<string,UINT32>("credere",3) );
-}
 
-
-VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
-
-  ProcInfo *proc_info = ProcInfo::getInstance();
-
-  HeapZone hz;
-  hz.begin = ret_heap_address;
-  hz.size = virtual_alloc_size;
-  hz.end = ret_heap_address + virtual_alloc_size;
-
-  //saving this heap zone in the map inside ProcInfo
-  proc_info->insertHeapZone(hz); 
-
-}
-
-VOID HeapAllocHook(UINT32 heap_alloc_size , UINT32 ret_heap_address ){
-	
-	if (heap_alloc_size == 0){
-		return;
-	}
-
-	ProcInfo *proc_info = ProcInfo::getInstance();
-
-	HeapZone hz;
-	hz.begin = ret_heap_address;
-	hz.size = heap_alloc_size;
-	hz.end = ret_heap_address + heap_alloc_size;
-
-	//saving this heap zone in the map inside ProcInfo
-	proc_info->insertHeapZone(hz); 
-
-}
-
-
-void HookFuncDispatcher(IMG img, string func_name,void * func_pointer){
-	/* searching for VirtualAlloc */ 
-	RTN rtn = RTN_FindByName( img, func_name.c_str());
-	if(rtn != RTN_Invalid()){
-			
-		ADDRINT va_address = RTN_Address(rtn);
-		MYINFO("Address of %s: %08x\n" ,func_name.c_str(), va_address);
-
-		RTN_Open(rtn); 	
-		int index = HeapFunctionsMap.at(func_name);
-		MYINFO("index of %s is %d",func_name.c_str(),index);
-		//Different arguments are passed to the hooking routine based on the function
-		switch(index){
-			case(VIRTUALALLOC_INDEX):
-				RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)func_pointer , IARG_G_ARG1_CALLEE , IARG_G_RESULT0, IARG_END);
-				break;
-			case(RTLALLOCATEHEAP_INDEX):
-				RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)func_pointer , IARG_G_ARG2_CALLEE, IARG_G_RESULT0, IARG_END);
-				break;
-
-		}			
-		RTN_Close(rtn);
-	}
-}
 
 // - Get initial entropy
 // - Get PE section data 
@@ -142,12 +83,10 @@ void imageLoadCallback(IMG img,void *){
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
 
-	if(!IMG_IsMainExecutable(img) && proc_info->isKnownLibrary(name)){	
-
-		HookFuncDispatcher(img,"VirtualAlloc",VirtualAllocHook);
-		HookFuncDispatcher(img,"RtlAllocateHeap",HeapAllocHook);
-		
+	if(!IMG_IsMainExecutable(img) && proc_info->isKnownLibrary(name,startAddr,endAddr)){	
+		hookFun.hookDispatcher(img);		
 		proc_info->addLibrary(name,startAddr,endAddr);
+
 	}
 }
 
@@ -158,12 +97,12 @@ void imageLoadCallback(IMG img,void *){
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
 	if(Config::EVASION_MODE){
-		//printf("dsa");
+		thider.avoidEvasion(ins);
 	}
 	if(Config::UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
 	}
-	
+
 }
 
 
@@ -193,8 +132,7 @@ int main(int argc, char * argv[]){
 	}
 
 	MYINFO("Strating prototype ins");
-	initHeapFunctionMap();
-
+		//W::DebugBreak();
 	FilterHandler *filterH = FilterHandler::getInstance();
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	//set the filters for the libraries
@@ -217,6 +155,8 @@ int main(int argc, char * argv[]){
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
 	// Start the program, never returns
+
+
 	PIN_StartProgram();
 	
 	return 0;

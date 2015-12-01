@@ -267,8 +267,12 @@ VOID  ProcInfo::showFilteredLibs(){
 Check the current name against a set of whitelisted library names
 (IDEA don't track kernel32.dll ... but track custom dll which may contain malicious payloads)
 **/
-BOOL ProcInfo::isKnownLibrary(const string name){
-	//TODO return true if this is a know windows dll
+BOOL ProcInfo::isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
+	BOOL isExaitDll = name.find("detect") != std::string::npos;
+	if(isExaitDll){
+		MYINFO("FOUND EXAIT DLL %s from %08x  to   %08x\n",name.c_str(),startAddr,endAddr);
+		return FALSE;
+	}
 	return TRUE;
 }
 
