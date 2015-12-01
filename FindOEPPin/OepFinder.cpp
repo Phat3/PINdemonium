@@ -20,6 +20,16 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 	}
 }
 
+ADDRINT handleRead (ADDRINT ip, ADDRINT read_addr, UINT32 size){
+	if(read_addr > 0x00400000 && read_addr < 0x00410000){
+		//printf ("HOOK\n");
+		string hook = "Cane";
+		//return (int)&hook;
+	}
+	//printf("NON HOOK\n");
+	return read_addr;
+}
+
 //check if the current instruction is a pushad or a popad
 //if so then set the proper flags in ProcInfo
 void OepFinder::handlePopadAndPushad(INS ins){
@@ -100,6 +110,14 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	if(wxorxHandler->isWriteINS(ins)){
 		INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);
 	}
+
+	for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++)
+    {
+		if (INS_MemoryOperandIsRead(ins,op)) {
+			INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleRead, IARG_INST_PTR, IARG_MEMORYOP_EA, op, IARG_MEMORYREAD_SIZE, IARG_RETURN_REGS, REG_INST_G0+op, IARG_END);
+			INS_RewriteMemoryOperand(ins, op, REG(REG_INST_G0+op));
+		}
+    }
 
 	//Tracking violating WxorX instructions
 	//Filter instructions inside a known library

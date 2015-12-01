@@ -158,7 +158,7 @@ void imageLoadCallback(IMG img,void *){
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
 	if(Config::EVASION_MODE){
-		printf("dsa");
+		//printf("dsa");
 	}
 	if(Config::UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
