@@ -252,6 +252,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EvasionPatches.cpp" />
     <ClCompile Include="GdbDebugger.cpp" />
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="HookFunctions.cpp" />
@@ -275,6 +276,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="EvasionPatches.h" />
     <ClInclude Include="GdbDebugger.h" />
     <ClInclude Include="HookFunctions.h" />
     <ClInclude Include="ProcInfo.h" />

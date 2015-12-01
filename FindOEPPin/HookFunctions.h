@@ -1,13 +1,30 @@
 #pragma once
 
+#include <map>
 #include "pin.H"
+#include "ProcInfo.h"
 
+#define VIRTUALALLOC_INDEX 0
+#define RTLALLOCATEHEAP_INDEX 1
+#define ISDEBUGGERPRESENT_INDEX 2
 
 class HookFunctions
 {
 public:
 	HookFunctions(void);
 	~HookFunctions(void);
-	static void HookDispatcher();
+	void hookDispatcher(IMG img);
+
+private:
+	std::map<string, int> functionsMap;
+	std::map<unsigned long,string> syscallsMap;
+	void enumSyscalls();
+	
+	// DEBUG
+	void printSyscalls();
+	
+
+	
+
 };
 

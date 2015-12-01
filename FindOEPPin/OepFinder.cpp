@@ -21,10 +21,10 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 }
 
 ADDRINT handleRead (ADDRINT ip, ADDRINT read_addr, UINT32 size){
-	if(read_addr > 0x00400000 && read_addr < 0x00410000){
+	if(read_addr > ProcInfo::getInstance()->getPINVMStart() && read_addr < ProcInfo::getInstance()->getPINVMEnd()){
 		//printf ("HOOK\n");
 		string hook = "Cane";
-		//return (int)&hook;
+		return (int)&hook;
 	}
 	//printf("NON HOOK\n");
 	return read_addr;
@@ -121,7 +121,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	//Tracking violating WxorX instructions
 	//Filter instructions inside a known library
-	if(filterHandler->isLibraryInstruction(curEip)){
+	if(proc_info->isLibraryInstruction(curEip)){
 		return OEPFINDER_INS_FILTERED; 
 	}
 
@@ -173,7 +173,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 		// Check if we need to dump the heap too
 		// BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST 
-		//If we want to debug the program manually let's set the breakpoint after the triggered analysis
+		// If we want to debug the program manually let's set the breakpoint after the triggered analysis
 		if(Config::ATTACH_DEBUGGER){
 			INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
 		}
@@ -192,14 +192,14 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 	
 	WxorXHandler *wxorxH = WxorXHandler::getInstance();
 
-	FilterHandler *filterH = FilterHandler::getInstance();
+	ProcInfo *pInfo = ProcInfo::getInstance();
 
 	//long jump detected intra-writeset ---> trigger analysis and dump
 	UINT32 currJMPLength = std::abs( (int)curEip - (int)prev_ip);
 	if( currJMPLength > item.getThreshold()){
 		//Check if the current WriteSet has already dumped more than WRITEINTERVAL_MAX_NUMBER_JMP times
 		//and check if the previous instruction was in the library (Long jump because return from Library)
-		if(item.getCurrNumberJMP() < Config::WRITEINTERVAL_MAX_NUMBER_JMP  && !filterH->isLibraryInstruction(prev_ip)){
+		if(item.getCurrNumberJMP() < Config::WRITEINTERVAL_MAX_NUMBER_JMP  && !pInfo->isLibraryInstruction(prev_ip)){
 			//Try to dump and Fix the IAT if successful trigger the analysis
 			MYPRINT("\n\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYPRINT("- - - - - - - - - - - - - - JUMP NUMBER %d OF LENGHT %d  IN STUB FORM %08x TO %08x- - - - - - - - - - - - - -",item.getCurrNumberJMP(),currJMPLength, item.getAddrBegin(),item.getAddrEnd());
