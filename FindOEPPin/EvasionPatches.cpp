@@ -60,8 +60,8 @@ bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){
 	
 	//disasseble the instruction
 	std::string disass_instr = INS_Disassemble(ins);
-	//if we find an fsave instruction or simiolar we have to patch it immediately
-	std::regex rx("^f(.*)save(.*)");	
+	//if we find an fsave instruction or similar we have to patch it immediately
+	std::regex rx("^f(.*)[save|env](.*)");	
 	if (std::regex_match(disass_instr.cbegin(), disass_instr.cend(), rx)){
 		//all the register in the context can be modified
 		REGSET regsIn;
@@ -69,7 +69,7 @@ bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){
 		REGSET regsOut;
 		REGSET_AddAll(regsOut);
 		//add the analysis rtoutine (the patch)
-		INS_InsertCall(ins, IPOINT_BEFORE,  (AFUNPTR)patchFsave, IARG_INST_PTR, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_ADDRINT, curEip, IARG_END);
+		INS_InsertCall(ins, IPOINT_BEFORE,  this->patchesMap.at("fsave"), IARG_INST_PTR, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_ADDRINT, curEip, IARG_END);
 		return true;
 	}
 	
