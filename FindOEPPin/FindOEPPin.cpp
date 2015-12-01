@@ -151,6 +151,8 @@ int main(int argc, char * argv[]){
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
 	// Start the program, never returns
+
+
 	PIN_StartProgram();
 	
 	return 0;

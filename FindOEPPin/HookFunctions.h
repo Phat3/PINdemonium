@@ -17,5 +17,14 @@ public:
 
 private:
 	std::map<string, int> functionsMap;
+	std::map<unsigned long,string> syscallsMap;
+	void enumSyscalls();
+	
+	// DEBUG
+	void printSyscalls();
+	
+
+	
+
 };
 
