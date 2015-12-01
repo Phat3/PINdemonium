@@ -12,15 +12,10 @@ ToolHider::~ToolHider(void)
 
 
 
-
-VOID patchint2e(ADDRINT ip, CONTEXT *ctxt ){
-
-	printf("PATCHANDO\n");
-	printf("CURRENT ADDR : %08x\n", ip);
-	printf("EDX VAL BEFORE : %d\n", PIN_GetContextReg(ctxt,REG_EDX));
-	PIN_SetContextReg(ctxt, REG_EDX, 21);
-	printf("EDX VAL AFTER : %d\n", PIN_GetContextReg(ctxt,REG_EDX));
-	
+//avoid the leak of the modified ip by pin
+VOID patchint2e(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
+	//set the return value of the int2e (stored in edx) as the current ip
+	PIN_SetContextReg(ctxt, REG_EDX, cur_eip);	
 } 
 
 void ToolHider::avoidEvasion(INS ins){
@@ -29,11 +24,7 @@ void ToolHider::avoidEvasion(INS ins){
 	ADDRINT curEip = INS_Address(ins);
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 
-	if(INS_IsMemoryRead(ins)){
-		//analyze if this instruction reads a memory region that belong to pinvm.dll / pintool / 
-	}
-
-	//pattern match
+	// 1 - single instruction detection
 
 	string s = INS_Disassemble(ins);
 	//Tracking violating WxorX instructions
@@ -52,7 +43,7 @@ void ToolHider::avoidEvasion(INS ins){
 			REGSET_AddAll(regsIn);
 			REGSET regsOut;
 			REGSET_AddAll(regsOut);
-			INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)patchint2e, IARG_INST_PTR, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_END);
+			INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)patchint2e, IARG_INST_PTR, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_ADDRINT, curEip, IARG_END);
 			printf("NEXT INSTRUCTION: %s\n" , INS_Disassemble(ins));
 			detected_int2e = 0;
 
@@ -67,6 +58,14 @@ void ToolHider::avoidEvasion(INS ins){
 		printf("1) ISTRUZIONE : %s\n", s.c_str());
 		//INS_Delete(ins);
 	}
+
+	//2 - memory fingerprinting
+
+	if(INS_IsMemoryRead(ins)){
+		//analyze if this instruction reads a memory region that belong to pinvm.dll / pintool / 
+	}
+
+
 		
 	//timing countermeasures
 
