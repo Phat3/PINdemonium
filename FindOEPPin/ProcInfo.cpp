@@ -18,7 +18,7 @@ ProcInfo::ProcInfo()
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
 	this->start_timer = -1;
-	SearchPinVM();
+	
 }
 
 ProcInfo::~ProcInfo(void)
@@ -214,6 +214,79 @@ void ProcInfo::printHeapList(){
 	}
 }
 
+/**
+add library in a list sorted by address
+**/
+VOID ProcInfo::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
+
+	LibraryItem libItem;
+	libItem.StartAddress = startAddr;
+	libItem.EndAddress = endAddr;
+	libItem.name = name;
+	if (LibrarySet.empty()) {
+		LibrarySet.push_back(libItem);
+		MYINFO("Add  %s",libToString(libItem));
+		return;
+	}
+	for(auto lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
+		if (lib->StartAddress < startAddr) {
+			MYINFO("Add  %s",libToString(libItem));
+			LibrarySet.insert(lib, libItem);
+			return;
+		}
+	}
+	LibrarySet.push_back(libItem);
+	MYINFO("Add  %s",libToString(libItem));
+	return ;
+
+}
+
+/**
+Convert a LibraryItem object to string
+**/
+string ProcInfo::libToString(LibraryItem lib){
+	std::stringstream ss;
+	ss << "Library: " <<lib.name;
+	ss << "\t\tstart: " << std::hex << lib.StartAddress;
+	ss << "\tend: " << std::hex << lib.EndAddress;
+	const std::string s = ss.str();	
+	return s;
+	
+}
+
+/**
+Display on the log the currently filtered libs
+**/
+VOID  ProcInfo::showFilteredLibs(){
+	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
+		MYINFO("Filtered Lib %s",libToString(*lib));
+	}
+}
+
+/**
+Check the current name against a set of whitelisted library names
+(IDEA don't track kernel32.dll ... but track custom dll which may contain malicious payloads)
+**/
+BOOL ProcInfo::isKnownLibrary(const string name){
+	//TODO return true if this is a know windows dll
+	return TRUE;
+}
+
+/*check if the address belong to a Library */
+//TODO add a whiitelist of Windows libraries that will be loaded
+BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
+	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
+		if (lib->StartAddress <= address && address <= lib->EndAddress)
+		//	MYINFO("Instruction at %x filtered", address);
+			return TRUE;
+	}
+	
+	return FALSE;
+		
+	
+}
+
+
 
 // This code belongs to the TitanEngine framework http://www.reversinglabs.com/products/TitanEngine.php
 long long ProcInfo::FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard){
@@ -265,7 +338,7 @@ long long ProcInfo::FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD M
 	}
 }
 
-ADDRINT ProcInfo::SearchPinVM()
+VOID ProcInfo::SearchPinVMDll()
 {
 	W::MEMORY_BASIC_INFORMATION mbi;
 	W::SIZE_T numBytes;
@@ -284,14 +357,25 @@ ADDRINT ProcInfo::SearchPinVM()
 			MYINFO("Size: %x\n", mbi.RegionSize);
 
 			find = FindEx(W::GetCurrentProcess(),mbi.BaseAddress,mbi.RegionSize, "@CHARM", strlen("@CHARM"), NULL);
+			//Check if the string to identify the pinvm.dll is found
+			if(find){ 
 			
-			if(find) MYINFO("FOUND PINVMDLL in %x",mbi.BaseAddress);
+				PinVMDll.name = "pinvm.dll";
+				PinVMDll.StartAddress = (ADDRINT)mbi.AllocationBase;
+				PinVMDll.EndAddress = (ADDRINT)mbi.BaseAddress + (ADDRINT)mbi.RegionSize;
+				MYINFO("FOUND PINVMDLL in %x\n",mbi.BaseAddress);
+			}
+			//Enlarge the PinVMDll size
+			else if((ADDRINT)mbi.AllocationBase == PinVMDll.StartAddress){
+				PinVMDll.EndAddress = (ADDRINT)mbi.BaseAddress + (ADDRINT)mbi.RegionSize;
+			}
 		}
 
 		MyAddress += mbi.RegionSize;
 
 	}
 	while(numBytes);
+	MYINFO("PinVM DLL start: %x end: %x",PinVMDll.StartAddress,PinVMDll.EndAddress);
 
-	return 0;
+	return;
 }
