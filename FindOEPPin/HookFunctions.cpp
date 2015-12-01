@@ -1,6 +1,53 @@
 #include "HookFunctions.h"
 
 
+
+
+void syscall_entry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
+
+	printf("MANZELLA\n");
+	  unsigned long syscall_number = PIN_GetSyscallNumber(ctx, std);
+
+	
+	  printf("MANZ\n");
+	  std::pair< std::map<unsigned long,string>* ,  std::map<string,AFUNPTR>* > *syscall_pair = (std::pair< std::map<unsigned long,string>* ,  std::map<string,AFUNPTR>* > *) v;
+
+	   printf("MANZRRRRR\n");
+	  std::map<unsigned long,string> *syscall_map = (std::map<unsigned long,string> *) syscall_pair->first;
+
+	   printf("MANZTTTTT\n");
+	  std::map<string,AFUNPTR> *syscall_hooks = (std::map<string,AFUNPTR> *) syscall_pair->second;
+
+
+	   printf("MANZYYYYYYY\n");
+	std::map<unsigned long,string>::iterator item = syscall_map->find(syscall_number);
+
+	printf("MANXXXXXXXXXXXXXXXXXXXXX\n");
+
+	if(item != syscall_map->end()){
+		
+			std::map<string,AFUNPTR>::iterator item2 = syscall_hooks->find(item->second);
+				printf("MANZ\n");
+
+			if(item2 != syscall_hooks->end()){
+			   
+				printf("MANZ2\n");
+			
+			}
+	}
+
+
+
+}
+
+void syscall_exit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
+  
+}
+
+void prova(){
+	printf("BINDING OF ISAAC\n");
+}
+
 HookFunctions::HookFunctions(void)
 {
 	this->functionsMap.insert( std::pair<string,int>("VirtualAlloc",VIRTUALALLOC_INDEX) );
@@ -10,6 +57,13 @@ HookFunctions::HookFunctions(void)
 
 	this->enumSyscalls();
 	//this->printSyscalls();
+
+
+	this->syscallsHooks.insert(std::pair<string,AFUNPTR>("NtQuerySystemInformation",&prova));
+
+
+	PIN_AddSyscallEntryFunction(&syscall_entry, & (std::pair< std::map<unsigned long,string>* ,  std::map<string,AFUNPTR> * >( &this->syscallsMap, &this->syscallsHooks)));
+    PIN_AddSyscallExitFunction(&syscall_exit,NULL);
 }
 
 

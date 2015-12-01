@@ -18,6 +18,8 @@ public:
 private:
 	std::map<string, int> functionsMap;
 	std::map<unsigned long,string> syscallsMap;
+	std::map<string,AFUNPTR> syscallsHooks;
+
 	void enumSyscalls();
 	
 	// DEBUG
