@@ -5,6 +5,9 @@
 #include "Debug.h"
 #include <time.h>
 #include <unordered_set>
+namespace W{
+	#include "windows.h"
+}
 
 
 //memorize the PE section information
@@ -68,6 +71,8 @@ public:
 
 	
 private:
+	ADDRINT SearchPinVM();
+	long long FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard);
 	static ProcInfo* instance;
 	ProcInfo::ProcInfo();
 	ADDRINT first_instruction;
