@@ -1,16 +1,7 @@
 #include "HookFunctions.h"
 
-typedef struct _syscall_t {
-    ADDRINT syscall_number;
-    union {
-        ADDRINT args[16];
-        struct {
-            ADDRINT arg0, arg1, arg2, arg3;
-            ADDRINT arg4, arg5, arg6, arg7;
-        };
-    };
-} syscall_t;
 
+//get the pointer to the syscall arguments
 void syscall_get_arguments(CONTEXT *ctx, SYSCALL_STANDARD std, int count, ...)
 {
     va_list args;
@@ -23,32 +14,48 @@ void syscall_get_arguments(CONTEXT *ctx, SYSCALL_STANDARD std, int count, ...)
     va_end(args);
 }
 
-void syscall_entry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
+//----------------------------- SYSCALL HOOKS -----------------------------//
+
+void syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
+	//get the syscall number
 	unsigned long syscall_number = PIN_GetSyscallNumber(ctx, std);
-	//printf("%d\n", syscall_number);
-	 if(syscall_number == 261){
-		 syscall_t *sc = &((syscall_t *) v)[thread_id];
+	//fill the structure with the provided info
+	syscall_t *sc = &((syscall_t *) v)[thread_id];
+	sc->syscall_number = syscall_number;
+	if(syscall_number == 261){
+		 //get the arguments pointer
+		 // 8 = number of the argument to be passed
+		 // 0 .. 7 -> &sc->arg0 .. &sc->arg7 = correspondence between the index of the argument and the struct field to be loaded
 		 syscall_get_arguments(ctx, std, 8, 0, &sc->arg0, 1, &sc->arg1, 2, &sc->arg2, 3, &sc->arg3, 4, &sc->arg4, 5, &sc->arg5, 6, &sc->arg6, 7, &sc->arg7);
-		 printf("ARG %d : %08x\n", 0, sc->arg0);
-		 printf("ARG %d : %08x\n", 1, sc->arg1);
-		 printf("ARG %d : %08x\n", 2, sc->arg2);
-		 printf("ARG %d : %08x\n", 3, sc->arg3);
-		 printf("ARG %d : %08x\n", 4, sc->arg4);
-		 printf("ARG %d : %08x\n", 5, sc->arg5);
-		 printf("ARG %d : %08x\n", 6, sc->arg6);
-		 printf("ARG %d : %08x\n", 7, sc->arg7);
-	 }
+	}
 }
 
-void syscall_exit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
-  
-	 
-
+void syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
+	 //get the structure with the informations on the systemcall
+	 syscall_t *sc = &((syscall_t *) v)[thread_id];
+	 //NtSystemQueryInformation detected
+	 if(sc->syscall_number == 261){
+		 //cast to our structure in order to retrieve the information returned from the NtSystemQueryInformation function
+		 PSYSTEM_PROCESS_INFO spi;
+		 spi = (PSYSTEM_PROCESS_INFO)sc->arg1;
+		 //iterate through all processes 
+		 while(spi->NextEntryOffset){
+			//if the process is pin change it's name in cmd.exe in order to avoid evasion
+			if(spi->ImageName.Buffer && ( (wcscmp(spi->ImageName.Buffer, L"pin.exe") == 0))){
+				wcscpy(spi->ImageName.Buffer, L"cmd.exe");
+			}
+			spi=(PSYSTEM_PROCESS_INFO)((W::LPBYTE)spi+spi->NextEntryOffset); // Calculate the address of the next entry.
+		 } 
+	 }
 }
 
 void prova(){
 	printf("BINDING OF ISAAC\n");
 }
+
+//----------------------------- END HOOKS -----------------------------//
+
+
 
 HookFunctions::HookFunctions(void)
 {
@@ -64,8 +71,8 @@ HookFunctions::HookFunctions(void)
 	this->syscallsHooks.insert(std::pair<string,AFUNPTR>("NtQuerySystemInformation",&prova));
 
 	static syscall_t sc[256] = {0};
-	PIN_AddSyscallEntryFunction(&syscall_entry,&sc);
-    PIN_AddSyscallExitFunction(&syscall_exit,&sc);
+	PIN_AddSyscallEntryFunction(&syscallEntry,&sc);
+    PIN_AddSyscallExitFunction(&syscallExit,&sc);
 }
 
 
@@ -208,13 +215,3 @@ void HookFunctions::enumSyscalls()
     }
 }
 
-
-void HookFunctions::printSyscalls(){
-
-for(map<unsigned long, string >::const_iterator it = this->syscallsMap.begin(); it !=this->syscallsMap.end(); ++it)
-{
-    printf("SYSCALL NUMBER %d : %s\n" , it->first , it->second.c_str());
-
-}
-
-}
