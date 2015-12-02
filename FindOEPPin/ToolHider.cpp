@@ -37,6 +37,7 @@ void ToolHider::avoidEvasion(INS ins){
 	}
 	
 	// 2 - memory fingerprinting
+	// Checking if there is a read in the PINVMDll range of addresses. If it is, a pointer to a local string is returned
 	for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
 		if (INS_MemoryOperandIsRead(ins,op)) {
 			INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleRead, IARG_INST_PTR, IARG_MEMORYREAD_EA, IARG_RETURN_REGS, REG_INST_G0+op, IARG_END);
