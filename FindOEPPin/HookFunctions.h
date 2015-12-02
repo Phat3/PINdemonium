@@ -38,6 +38,12 @@ typedef struct _SYSTEM_PROCESS_INFO
 #define RTLALLOCATEHEAP_INDEX 1
 #define ISDEBUGGERPRESENT_INDEX 2
 
+
+
+
+typedef void (* syscall_hook)(syscall_t *sc);
+static std::map<string,syscall_hook> syscallsHooks;
+
 class HookFunctions
 {
 public:
@@ -48,7 +54,6 @@ public:
 private:
 	std::map<string, int> functionsMap;
 	std::map<unsigned long,string> syscallsMap;
-	std::map<string,AFUNPTR> syscallsHooks;
 	void enumSyscalls();
 
 };

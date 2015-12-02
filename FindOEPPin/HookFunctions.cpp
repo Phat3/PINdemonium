@@ -1,8 +1,11 @@
 #include "HookFunctions.h"
 
 
+//----------------------------- HELPERS -----------------------------//
+
 //get the pointer to the syscall arguments
-void syscall_get_arguments(CONTEXT *ctx, SYSCALL_STANDARD std, int count, ...)
+// stole this lovely source code from godware
+void syscallGetArguments(CONTEXT *ctx, SYSCALL_STANDARD std, int count, ...)
 {
     va_list args;
     va_start(args, count);
@@ -26,7 +29,7 @@ void syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *
 		 //get the arguments pointer
 		 // 8 = number of the argument to be passed
 		 // 0 .. 7 -> &sc->arg0 .. &sc->arg7 = correspondence between the index of the argument and the struct field to be loaded
-		 syscall_get_arguments(ctx, std, 8, 0, &sc->arg0, 1, &sc->arg1, 2, &sc->arg2, 3, &sc->arg3, 4, &sc->arg4, 5, &sc->arg5, 6, &sc->arg6, 7, &sc->arg7);
+		 syscallGetArguments(ctx, std, 8, 0, &sc->arg0, 1, &sc->arg1, 2, &sc->arg2, 3, &sc->arg3, 4, &sc->arg4, 5, &sc->arg5, 6, &sc->arg6, 7, &sc->arg7);
 	}
 }
 
@@ -35,22 +38,24 @@ void syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v
 	 syscall_t *sc = &((syscall_t *) v)[thread_id];
 	 //NtSystemQueryInformation detected
 	 if(sc->syscall_number == 261){
-		 //cast to our structure in order to retrieve the information returned from the NtSystemQueryInformation function
-		 PSYSTEM_PROCESS_INFO spi;
-		 spi = (PSYSTEM_PROCESS_INFO)sc->arg1;
-		 //iterate through all processes 
-		 while(spi->NextEntryOffset){
-			//if the process is pin change it's name in cmd.exe in order to avoid evasion
-			if(spi->ImageName.Buffer && ( (wcscmp(spi->ImageName.Buffer, L"pin.exe") == 0))){
-				wcscpy(spi->ImageName.Buffer, L"cmd.exe");
-			}
-			spi=(PSYSTEM_PROCESS_INFO)((W::LPBYTE)spi+spi->NextEntryOffset); // Calculate the address of the next entry.
-		 } 
+		 syscall_hook hook = syscallsHooks.at("NtQuerySystemInformation");
+		 hook(sc);
 	 }
 }
 
-void prova(){
-	printf("BINDING OF ISAAC\n");
+//NtSystemQueryInformation detected
+void NtQuerySystemInformationHook(syscall_t *sc){
+	//cast to our structure in order to retrieve the information returned from the NtSystemQueryInformation function
+	PSYSTEM_PROCESS_INFO spi;
+	spi = (PSYSTEM_PROCESS_INFO)sc->arg1;
+	//iterate through all processes 
+	while(spi->NextEntryOffset){
+		//if the process is pin change it's name in cmd.exe in order to avoid evasion
+		if(spi->ImageName.Buffer && ( (wcscmp(spi->ImageName.Buffer, L"pin.exe") == 0))){
+			wcscpy(spi->ImageName.Buffer, L"cmd.exe");
+		}
+		spi=(PSYSTEM_PROCESS_INFO)((W::LPBYTE)spi+spi->NextEntryOffset); // Calculate the address of the next entry.
+	} 
 }
 
 //----------------------------- END HOOKS -----------------------------//
@@ -65,10 +70,8 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("credere",3) );
 
 	this->enumSyscalls();
-	//this->printSyscalls();
 
-
-	this->syscallsHooks.insert(std::pair<string,AFUNPTR>("NtQuerySystemInformation",&prova));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation",&NtQuerySystemInformationHook));
 
 	static syscall_t sc[256] = {0};
 	PIN_AddSyscallEntryFunction(&syscallEntry,&sc);
