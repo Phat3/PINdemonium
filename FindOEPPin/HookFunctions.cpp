@@ -1,47 +1,49 @@
 #include "HookFunctions.h"
 
+typedef struct _syscall_t {
+    ADDRINT syscall_number;
+    union {
+        ADDRINT args[16];
+        struct {
+            ADDRINT arg0, arg1, arg2, arg3;
+            ADDRINT arg4, arg5, arg6, arg7;
+        };
+    };
+} syscall_t;
 
-
+void syscall_get_arguments(CONTEXT *ctx, SYSCALL_STANDARD std, int count, ...)
+{
+    va_list args;
+    va_start(args, count);
+    for (int i = 0; i < count; i++) {
+        int index = va_arg(args, int);
+        ADDRINT *ptr = va_arg(args, ADDRINT *);
+        *ptr = PIN_GetSyscallArgument(ctx, std, index);
+    }
+    va_end(args);
+}
 
 void syscall_entry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
-
-	printf("MANZELLA\n");
-	  unsigned long syscall_number = PIN_GetSyscallNumber(ctx, std);
-
-	
-	  printf("MANZ\n");
-	  std::pair< std::map<unsigned long,string>* ,  std::map<string,AFUNPTR>* > *syscall_pair = (std::pair< std::map<unsigned long,string>* ,  std::map<string,AFUNPTR>* > *) v;
-
-	   printf("MANZRRRRR\n");
-	  std::map<unsigned long,string> *syscall_map = (std::map<unsigned long,string> *) syscall_pair->first;
-
-	   printf("MANZTTTTT\n");
-	  std::map<string,AFUNPTR> *syscall_hooks = (std::map<string,AFUNPTR> *) syscall_pair->second;
-
-
-	   printf("MANZYYYYYYY\n");
-	std::map<unsigned long,string>::iterator item = syscall_map->find(syscall_number);
-
-	printf("MANXXXXXXXXXXXXXXXXXXXXX\n");
-
-	if(item != syscall_map->end()){
-		
-			std::map<string,AFUNPTR>::iterator item2 = syscall_hooks->find(item->second);
-				printf("MANZ\n");
-
-			if(item2 != syscall_hooks->end()){
-			   
-				printf("MANZ2\n");
-			
-			}
-	}
-
-
-
+	unsigned long syscall_number = PIN_GetSyscallNumber(ctx, std);
+	//printf("%d\n", syscall_number);
+	 if(syscall_number == 261){
+		 syscall_t *sc = &((syscall_t *) v)[thread_id];
+		 syscall_get_arguments(ctx, std, 8, 0, &sc->arg0, 1, &sc->arg1, 2, &sc->arg2, 3, &sc->arg3, 4, &sc->arg4, 5, &sc->arg5, 6, &sc->arg6, 7, &sc->arg7);
+		 printf("ARG %d : %08x\n", 0, sc->arg0);
+		 printf("ARG %d : %08x\n", 1, sc->arg1);
+		 printf("ARG %d : %08x\n", 2, sc->arg2);
+		 printf("ARG %d : %08x\n", 3, sc->arg3);
+		 printf("ARG %d : %08x\n", 4, sc->arg4);
+		 printf("ARG %d : %08x\n", 5, sc->arg5);
+		 printf("ARG %d : %08x\n", 6, sc->arg6);
+		 printf("ARG %d : %08x\n", 7, sc->arg7);
+	 }
 }
 
 void syscall_exit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
   
+	 
+
 }
 
 void prova(){
@@ -61,9 +63,9 @@ HookFunctions::HookFunctions(void)
 
 	this->syscallsHooks.insert(std::pair<string,AFUNPTR>("NtQuerySystemInformation",&prova));
 
-
-	PIN_AddSyscallEntryFunction(&syscall_entry, & (std::pair< std::map<unsigned long,string>* ,  std::map<string,AFUNPTR> * >( &this->syscallsMap, &this->syscallsHooks)));
-    PIN_AddSyscallExitFunction(&syscall_exit,NULL);
+	static syscall_t sc[256] = {0};
+	PIN_AddSyscallEntryFunction(&syscall_entry,&sc);
+    PIN_AddSyscallExitFunction(&syscall_exit,&sc);
 }
 
 
