@@ -342,12 +342,12 @@ long long ProcInfo::FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD M
 	}
 }
 
-VOID ProcInfo::SearchPinVMDll()
+VOID ProcInfo::LoadPinDlls()
 {
 	W::MEMORY_BASIC_INFORMATION mbi;
 	W::SIZE_T numBytes;
 	W::DWORD MyAddress = 0;
-	int find =0;
+	int match_string =0;
 
 	do
 	{
@@ -360,26 +360,59 @@ VOID ProcInfo::SearchPinVMDll()
 			MYINFO("BaseAddress: %x\n", mbi.BaseAddress);
 			MYINFO("Size: %x\n", mbi.RegionSize);
 
-			find = FindEx(W::GetCurrentProcess(),mbi.BaseAddress,mbi.RegionSize, "@CHARM", strlen("@CHARM"), NULL);
-			//Check if the string to identify the pinvm.dll is found
-			if(find){ 
-			
-				PinVMDll.name = "pinvm.dll";
-				PinVMDll.StartAddress = (ADDRINT)mbi.AllocationBase;
-				PinVMDll.EndAddress = (ADDRINT)mbi.BaseAddress + (ADDRINT)mbi.RegionSize;
+			match_string = FindEx(W::GetCurrentProcess(),mbi.BaseAddress,mbi.RegionSize, "@CHARM", strlen("@CHARM"), NULL);
+			//FOUND the pattern which identify the Pin dlls
+			if(match_string){ 
+				//Check if already added the dll and we need to update its size
+				bool dll_already_found = SearchUpdatePinDll((ADDRINT)mbi.AllocationBase,(ADDRINT)mbi.BaseAddress,mbi.AllocationProtect);
+				//The Dll has not already been inserted 
+				if(!dll_already_found){							
+					addPinDll((ADDRINT)mbi.AllocationBase,(ADDRINT)mbi.BaseAddress,mbi.AllocationProtect);
+				}
+				
 				MYINFO("FOUND PINVMDLL in %x\n",mbi.BaseAddress);
 			}
-			//Enlarge the PinVMDll size
-			else if((ADDRINT)mbi.AllocationBase == PinVMDll.StartAddress){
-				PinVMDll.EndAddress = (ADDRINT)mbi.BaseAddress + (ADDRINT)mbi.RegionSize;
-			}
+
 		}
 
 		MyAddress += mbi.RegionSize;
 
 	}
 	while(numBytes);
-	MYINFO("PinVM DLL start: %x end: %x",PinVMDll.StartAddress,PinVMDll.EndAddress);
+	for(std::vector<LibraryItem>::iterator lib = PinDlls.begin(); lib != PinDlls.end(); ++lib) {
+		
+		MYINFO("PinVM DLL start: %x end: %x\n",lib->StartAddress,lib->EndAddress);
+	}
+	
 
 	return;
+}
+
+BOOL ProcInfo::SearchUpdatePinDll(ADDRINT allocationBase,ADDRINT baseAddr,ADDRINT regionSize){
+	//Iterate through the already existing pin dll and update the end address
+	for(std::vector<LibraryItem>::iterator lib = PinDlls.begin(); lib != PinDlls.end(); ++lib) {
+		if(lib->StartAddress == allocationBase){
+			lib->EndAddress = baseAddr + regionSize;
+			return TRUE;
+		}						
+	}
+	return FALSE;
+}
+
+VOID ProcInfo::addPinDll(ADDRINT allocationBase,ADDRINT baseAddr,ADDRINT regionSize){
+	LibraryItem libItem;
+	libItem.StartAddress = allocationBase;
+	libItem.EndAddress = baseAddr + regionSize;
+	PinDlls.push_back(libItem);
+
+}
+
+BOOL ProcInfo::isAddrInPinDll(ADDRINT address){
+	//Iterate through the already existing pin dll and update the end address
+	for(std::vector<LibraryItem>::iterator lib = PinDlls.begin(); lib != PinDlls.end(); ++lib) {
+		if(lib->StartAddress <= address && address <= lib->EndAddress){
+			return TRUE;
+		}						
+	}
+	return FALSE;
 }

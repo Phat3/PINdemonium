@@ -150,7 +150,7 @@ int main(int argc, char * argv[]){
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageUnload to be called when an image is unloaded
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
-	pInfo->SearchPinVMDll();
+	pInfo->LoadPinDlls();
 	
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
