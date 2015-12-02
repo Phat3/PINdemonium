@@ -22,6 +22,7 @@ ToolHider thider;
 OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
+static int prova =0;
 
 
 
@@ -96,6 +97,11 @@ void imageLoadCallback(IMG img,void *){
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
+	if(prova == 0){
+		ProcInfo *pInfo = ProcInfo::getInstance();
+		pInfo->getWhiteListAddresses();
+		prova++;
+	}
 	if(Config::EVASION_MODE){
 		thider.avoidEvasion(ins);
 	}
@@ -150,7 +156,7 @@ int main(int argc, char * argv[]){
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageUnload to be called when an image is unloaded
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
-	pInfo->LoadPinDlls();
+
 	
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);

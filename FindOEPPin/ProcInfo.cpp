@@ -47,6 +47,7 @@ void ProcInfo::setPopadFlag(BOOL flag){
 
 
 void ProcInfo::setProcName(string name){
+	this->full_proc_name = name;
 	//get the starting position of the last element of the path (the exe name)
 	int pos_exe_name = name.find_last_of("\\");
 	string exe_name = name.substr(pos_exe_name + 1);
@@ -342,77 +343,91 @@ long long ProcInfo::FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD M
 	}
 }
 
-VOID ProcInfo::LoadPinDlls()
+VOID ProcInfo::getWhiteListAddresses()
 {
+
+	W::PROCESS_INFORMATION pi = {0};
+	W::STARTUPINFO si   = {0};
+	si.cb   = sizeof(si);
+
+ 
+	MYINFO("running exe suspended\n");
+	printf("%s",full_proc_name.c_str());
+	   // Create the process
+	 BOOL result = W::CreateProcess( full_proc_name.c_str(), NULL,
+								   NULL, NULL, FALSE, 
+								   CREATE_SUSPENDED, 
+								   NULL, NULL, &si, &pi);
+	 
+	 if (!result){
+		MYINFO("Error lauching the process\n");
+		return;
+	 }
+
+	 enumerateMemory(pi.hProcess);
+	 displayWhiteListedAddr();
+
+}
+
+VOID ProcInfo::enumerateMemory(W::HANDLE hProc){
 	W::MEMORY_BASIC_INFORMATION mbi;
 	W::SIZE_T numBytes;
 	W::DWORD MyAddress = 0;
 	int match_string =0;
-
 	do
 	{
-		numBytes = W::VirtualQuery((W::LPCVOID)MyAddress, &mbi, sizeof(mbi));
+		numBytes = W::VirtualQueryEx(hProc,(W::LPCVOID)MyAddress, &mbi, sizeof(mbi));
 		
-		if((mbi.State == MEM_COMMIT) && (mbi.Protect == PAGE_EXECUTE_READ | mbi.Protect == PAGE_READONLY))
+		if((mbi.State == MEM_COMMIT | mbi.State == MEM_MAPPED | mbi.State == MEM_IMAGE) )
 		{
-			MYINFO("\n\n---------\n");
-			MYINFO("Allocation Base: %x\n", mbi.AllocationBase);
-			MYINFO("BaseAddress: %x\n", mbi.BaseAddress);
-			MYINFO("Size: %x\n", mbi.RegionSize);
-
-			match_string = FindEx(W::GetCurrentProcess(),mbi.BaseAddress,mbi.RegionSize, "@CHARM", strlen("@CHARM"), NULL);
-			//FOUND the pattern which identify the Pin dlls
-			if(match_string){ 
-				//Check if already added the dll and we need to update its size
-				bool dll_already_found = SearchUpdatePinDll((ADDRINT)mbi.AllocationBase,(ADDRINT)mbi.BaseAddress,mbi.AllocationProtect);
-				//The Dll has not already been inserted 
-				if(!dll_already_found){							
-					addPinDll((ADDRINT)mbi.AllocationBase,(ADDRINT)mbi.BaseAddress,mbi.AllocationProtect);
-				}
-				
-				MYINFO("FOUND PINVMDLL in %x\n",mbi.BaseAddress);
-			}
+		/*	MYINFO("\n\n----Memory----\n");
+			MYINFO("BaseAddress: %08x\n", mbi.BaseAddress);
+			MYINFO("Size: %08x\n", mbi.RegionSize);*/
+			addWhitelistAddresses((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
 
 		}
-
 		MyAddress += mbi.RegionSize;
 
 	}
 	while(numBytes);
-	for(std::vector<LibraryItem>::iterator lib = PinDlls.begin(); lib != PinDlls.end(); ++lib) {
-		
-		MYINFO("PinVM DLL start: %x end: %x\n",lib->StartAddress,lib->EndAddress);
-	}
-	
 
 	return;
+
 }
 
-BOOL ProcInfo::SearchUpdatePinDll(ADDRINT allocationBase,ADDRINT baseAddr,ADDRINT regionSize){
-	//Iterate through the already existing pin dll and update the end address
-	for(std::vector<LibraryItem>::iterator lib = PinDlls.begin(); lib != PinDlls.end(); ++lib) {
-		if(lib->StartAddress == allocationBase){
-			lib->EndAddress = baseAddr + regionSize;
-			return TRUE;
-		}						
-	}
-	return FALSE;
-}
 
-VOID ProcInfo::addPinDll(ADDRINT allocationBase,ADDRINT baseAddr,ADDRINT regionSize){
-	LibraryItem libItem;
-	libItem.StartAddress = allocationBase;
+VOID ProcInfo::addWhitelistAddresses(ADDRINT baseAddr,ADDRINT regionSize){
+	MemoryRange libItem;
+	libItem.StartAddress = baseAddr;
 	libItem.EndAddress = baseAddr + regionSize;
-	PinDlls.push_back(libItem);
+	whiteListMemory.push_back(libItem);
 
 }
 
-BOOL ProcInfo::isAddrInPinDll(ADDRINT address){
-	//Iterate through the already existing pin dll and update the end address
-	for(std::vector<LibraryItem>::iterator lib = PinDlls.begin(); lib != PinDlls.end(); ++lib) {
-		if(lib->StartAddress <= address && address <= lib->EndAddress){
+BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
+	//Iterate through the already whitelisted memory addresses
+	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
+		if(item->StartAddress <= address && address <= item->EndAddress){
+			return TRUE;
+		}						
+	}
+	//iterate through the allocated memory addresses
+	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {
+		if(item->begin <= address && address <= item->end){
 			return TRUE;
 		}						
 	}
 	return FALSE;
+}
+
+VOID ProcInfo::displayWhiteListedAddr(){
+	//Iterate through the already whitelisted memory addresses
+	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
+		MYINFO("Whitelisted static %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+	}
+	//iterate through the allocated memory addresses
+	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {
+		MYINFO("Whitelisted dynamic %08x  ->  %08x",item->begin,item->end)		;						
+	}
+
 }

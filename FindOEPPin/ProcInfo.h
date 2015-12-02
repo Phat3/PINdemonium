@@ -9,6 +9,11 @@ namespace W{
 	#include "windows.h"
 }
 
+struct MemoryRange{
+	ADDRINT StartAddress;
+	ADDRINT EndAddress;
+};
+
 //This struct will track the library loaded
 //at program startup
 struct LibraryItem{
@@ -75,8 +80,8 @@ public:
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
 	
 	//Library
-	BOOL isAddrInPinDll(ADDRINT address);
-	VOID LoadPinDlls();
+	BOOL isAddrInWhiteList(ADDRINT address);
+	VOID getWhiteListAddresses();
 	BOOL isLibraryInstruction(ADDRINT address);
 	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
@@ -97,19 +102,23 @@ private:
 	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
 	std::vector<LibraryItem> LibrarySet;			//vector of know library loaded
-	std::vector<LibraryItem>  PinDlls;
+	std::vector<MemoryRange>  whiteListMemory;
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad
 	//this is a common technique to restore the initial register status after the unpacking routine
 	BOOL pushad_flag;
 	BOOL popad_flag;
+	string full_proc_name;
 	string proc_name;
 	clock_t start_timer;
 	
 	//Library Handling Functions
+	VOID enumerateMemory(W::HANDLE hProc);
+
 	string libToString(LibraryItem lib);
 	VOID showFilteredLibs();
-	BOOL SearchUpdatePinDll(ADDRINT allocationBase,ADDRINT baseAddr,ADDRINT regionSize);
+	VOID addWhitelistAddresses(ADDRINT baseAddr,ADDRINT regionSize);
+	VOID displayWhiteListedAddr();
 	
 	VOID addPinDll(ADDRINT allocationBase,ADDRINT baseAddr,ADDRINT regionSize);
 	long long FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard);
