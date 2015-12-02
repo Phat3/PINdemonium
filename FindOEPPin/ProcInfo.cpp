@@ -217,7 +217,7 @@ BOOL ProcInfo::isInsideJmpBlacklist(ADDRINT ip){
 
 void ProcInfo::printHeapList(){
 	for(unsigned index=0; index <  this->HeapMap.size(); index++) {
-		MYINFO("Heapzone number  %d  start %08x end %08x",index,this->HeapMap.at(index).begin,this->HeapMap.at(index).end);
+		MYINFO("Heapzone number  %u  start %08x end %08x",index,this->HeapMap.at(index).begin,this->HeapMap.at(index).end);
 	}
 }
 

@@ -81,7 +81,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	ProcInfo *proc_info = ProcInfo::getInstance();
 
 	int heap_index = -1;
-	unsigned char * Buffer; 
 
 	clock_t now = clock();
 	//check the timeout

@@ -24,7 +24,6 @@ HookFunctions hookFun;
 clock_t tStart;
 
 
-
 // This function is called when the application exits
 VOID Fini(INT32 code, VOID *v){
 	//DEBUG --- inspect the write set at the end of the execution
@@ -37,12 +36,12 @@ VOID Fini(INT32 code, VOID *v){
 
 }
 
+
 //cc
 INT32 Usage(){
 	PIN_ERROR("This Pintool unpacks common packers\n" + KNOB_BASE::StringKnobSummary() + "\n");
 	return -1;
 }
-
 
 
 // - Get initial entropy
@@ -89,8 +88,6 @@ void imageLoadCallback(IMG img,void *){
 
 	}
 }
-
-
 
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
