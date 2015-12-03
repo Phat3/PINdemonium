@@ -9,6 +9,7 @@
 #include "ToolHider.h"
 #include "FilterHandler.h"
 #include "HookFunctions.h"
+#include "HookSyscalls.h"
 namespace W {
 	#include <windows.h>
 }
@@ -152,6 +153,8 @@ int main(int argc, char * argv[]){
 	PIN_AddFiniFunction(Fini, 0);
 	// Start the program, never returns
 
+	HookSyscalls::enumSyscalls();
+	HookSyscalls::initHooks();
 
 
 	PIN_StartProgram();
