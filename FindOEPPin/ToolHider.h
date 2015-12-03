@@ -17,6 +17,6 @@ public:
 
 private:
 	EvasionPatches evasionPatcher;
-
+	
 };
 

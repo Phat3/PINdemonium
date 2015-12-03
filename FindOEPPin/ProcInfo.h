@@ -53,6 +53,8 @@ public:
 	string getProcName();
 	clock_t getStartTimer();
 	std::unordered_set<ADDRINT> getJmpBlacklist();
+	ADDRINT getPINVMStart();
+	ADDRINT getPINVMEnd();
 
 	/* setter */
 	void setFirstINSaddress(ADDRINT address);
