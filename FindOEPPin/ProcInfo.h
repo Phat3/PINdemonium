@@ -69,6 +69,7 @@ public:
 	void PrintStartContext();
 	void PrintCurrContext();
 	void PrintSections();
+	VOID PrintWhiteListedAddr();
 
 	/* helper */
 	void insertSection(Section section);
@@ -120,9 +121,9 @@ private:
 	string libToString(LibraryItem lib);
 	VOID showFilteredLibs();
 	VOID addWhitelistAddresses(ADDRINT baseAddr,ADDRINT regionSize);
-	VOID displayWhiteListedAddr();
+
 	
 	VOID addPinDll(ADDRINT allocationBase,ADDRINT baseAddr,ADDRINT regionSize);
-	long long FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard);
+	
 };
 

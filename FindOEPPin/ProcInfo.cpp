@@ -104,13 +104,6 @@ clock_t ProcInfo::getStartTimer(){
 	return this->start_timer;
 }
 
-ADDRINT ProcInfo::getPINVMStart(){
-	return this->PinVMDll.StartAddress;
-}
-
-ADDRINT ProcInfo::getPINVMEnd(){
-	return this->PinVMDll.EndAddress;
-}
 
 
 
@@ -299,59 +292,9 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 }
 
 
-
-// This code belongs to the TitanEngine framework http://www.reversinglabs.com/products/TitanEngine.php
-long long ProcInfo::FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard){
-
-	int i = NULL;
-	int j = NULL;
-	W::ULONG_PTR Return = NULL;
-	W::LPVOID ueReadBuffer = NULL;
-	W::PUCHAR SearchBuffer = NULL;
-	W::PUCHAR CompareBuffer = NULL;
-	W::ULONG_PTR ueNumberOfBytesRead = NULL;
-	W::LPVOID currentSearchPosition = NULL;
-	W::DWORD currentSizeOfSearch = NULL;
-	W::BYTE nWildCard = NULL;
-
-	if(WildCard == NULL){WildCard = &nWildCard;}
-	if(hProcess != NULL && MemoryStart != NULL && MemorySize != NULL){
-		if(hProcess != W::GetCurrentProcess()){
-			ueReadBuffer = W::VirtualAlloc(NULL, MemorySize, MEM_COMMIT, PAGE_READWRITE);
-			if(!W::ReadProcessMemory(hProcess, MemoryStart, ueReadBuffer, MemorySize, &ueNumberOfBytesRead)){
-				W::VirtualFree(ueReadBuffer, NULL, MEM_RELEASE);
-				return(NULL);
-			}else{
-				SearchBuffer = (W::PUCHAR)ueReadBuffer;
-			}
-		}else{
-			SearchBuffer = (W::PUCHAR)MemoryStart;
-		}
-		__try{
-			CompareBuffer = (W::PUCHAR)SearchPattern;
-			for(i = 0; i < (int)MemorySize && Return == NULL; i++){
-				for(j = 0; j < (int)PatternSize; j++){
-					if(CompareBuffer[j] != *(W::PUCHAR)WildCard && SearchBuffer[i + j] != CompareBuffer[j]){
-						break;
-					}
-				}
-				if(j == (int)PatternSize){
-					Return = (W::ULONG_PTR)MemoryStart + i;
-				}
-			}
-			W::VirtualFree(ueReadBuffer, NULL, MEM_RELEASE);
-			return(Return);
-		}__except(EXCEPTION_EXECUTE_HANDLER){
-			W::VirtualFree(ueReadBuffer, NULL, MEM_RELEASE);
-			return(NULL);
-		}
-	}else{
-		return(NULL);
-	}
-}
-
 VOID ProcInfo::getWhiteListAddresses()
 {
+	
 
 	W::PROCESS_INFORMATION pi = {0};
 	W::STARTUPINFO si   = {0};
@@ -372,7 +315,9 @@ VOID ProcInfo::getWhiteListAddresses()
 	 }
 
 	 enumerateMemory(pi.hProcess);
-	 displayWhiteListedAddr();
+	 W::TerminateProcess(pi.hProcess,0);
+	 PrintWhiteListedAddr();
+	 
 
 }
 
@@ -412,6 +357,7 @@ VOID ProcInfo::addWhitelistAddresses(ADDRINT baseAddr,ADDRINT regionSize){
 }
 
 BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
+	
 	//Iterate through the already whitelisted memory addresses
 	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
 		if(item->StartAddress <= address && address <= item->EndAddress){
@@ -427,7 +373,7 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 	return FALSE;
 }
 
-VOID ProcInfo::displayWhiteListedAddr(){
+VOID ProcInfo::PrintWhiteListedAddr(){
 	//Iterate through the already whitelisted memory addresses
 	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
 		MYINFO("Whitelisted static %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				

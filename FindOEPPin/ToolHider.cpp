@@ -11,8 +11,9 @@ ToolHider::~ToolHider(void)
 }
 
 ADDRINT handleRead (ADDRINT ip, ADDRINT read_addr){
-	if(read_addr > ProcInfo::getInstance()->getPINVMStart() && read_addr < ProcInfo::getInstance()->getPINVMEnd()){
-		//printf ("HOOK\n");
+//	MYINFO("Trying to  read %08x : res %d\n",read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
+	if(!ProcInfo::getInstance()->isAddrInWhiteList(read_addr)){
+	//	MYINFO("Found suspicious read %08x\n",read_addr);
 		string hook = "Cane";
 		return (int)&hook;
 	}
