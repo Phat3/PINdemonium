@@ -151,12 +151,10 @@ int main(int argc, char * argv[]){
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
-	// Start the program, never returns
-
+	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
-
-
+	// Start the program, never returns
 	PIN_StartProgram();
 	
 	return 0;

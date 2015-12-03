@@ -9,6 +9,8 @@ namespace W{
 
 //--------------- HELPER DATA STRUCTURES --------------//
 
+#define SYSTEM_PROCESS_INFORMATION 5
+
 //information on the syscall
 typedef struct _syscall_t {
     ADDRINT syscall_number;
@@ -38,12 +40,12 @@ typedef struct _SYSTEM_PROCESS_INFO
 
 //function signature of our hook function
 typedef void (* syscall_hook)(syscall_t *sc);
-
 //binding betweeb syscall name and the hook to be executed
 static std::map<string,syscall_hook> syscallsHooks;
 //binding between the ordinal of the syscall and the name of the syscall
 //(we have to fill this map at runtime because ordinals numbers are not consisten between different OS version or SP)
 static std::map<unsigned long,string> syscallsMap;
+
 
 //--------------- END HELPER DATA STRUCTURES --------------//
 
@@ -52,14 +54,15 @@ class HookSyscalls
 public:
 	static void enumSyscalls();
 	static void initHooks();
-
+	
 private:
 	//Hooks
 	static void NtQuerySystemInformationHook(syscall_t *sc);
-	//heplers
+	//Heplers
 	static void syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v);
 	static void syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v);
 	static void syscallGetArguments(CONTEXT *ctx, SYSCALL_STANDARD std, int count, ...);
+	static void printArgs(syscall_t * sc);
 
 };
 
