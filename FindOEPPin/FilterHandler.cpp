@@ -59,19 +59,6 @@ VOID FilterHandler::setFilters(const string filters){
 	
 }
 
-/**
-Initializing the base stack address
-**/
-VOID FilterHandler::setStackBase(ADDRINT addr){
-	//hasn't been already initialized
-	if(stackBase == 0) {	
-		stackBase = addr;
-		MYINFO("Init FilterHandler Stack from %x to %x",stackBase+STACK_BASE_PADDING,stackBase -MAX_STACK_SIZE);
-	}	
-}
-
-
-
 
 
 
@@ -96,7 +83,7 @@ BOOL FilterHandler::isLibTEBWrite(ADDRINT addr,ADDRINT eip){
 BOOL FilterHandler::isLibStackWrite(ADDRINT addr,ADDRINT eip){	
 	
 	//MYINFO("Calling isStackWrite");
-	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase +STACK_BASE_PADDING) && 
+	return (ProcInfo::getInstance()->getStackBase() - MAX_STACK_SIZE < addr && addr < ProcInfo::getInstance()->getStackBase() +STACK_BASE_PADDING) && 
 		pInfo->isLibraryInstruction(eip);
 }
 

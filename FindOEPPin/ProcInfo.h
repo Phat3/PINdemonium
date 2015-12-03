@@ -9,6 +9,9 @@ namespace W{
 	#include "windows.h"
 }
 
+#define MAX_STACK_SIZE 0x5000    //Used to define the memory range of the stack
+#define STACK_BASE_PADDING 0x5000 //needed because the stack pointer given by pin is not the highest one
+
 struct MemoryRange{
 	ADDRINT StartAddress;
 	ADDRINT EndAddress;
@@ -81,6 +84,11 @@ public:
 	float GetEntropy();
 	void insertInJmpBlacklist(ADDRINT ip);
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
+
+	//Stack
+	ADDRINT getStackBase();
+	VOID setStackBase(ADDRINT addr);
+	BOOL isStackAddress(ADDRINT addr);
 	
 	//Library
 	BOOL isAddrInWhiteList(ADDRINT address);
@@ -88,6 +96,7 @@ public:
 	BOOL isLibraryInstruction(ADDRINT address);
 	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
+	VOID addWhitelistAddresses(ADDRINT baseAddr,ADDRINT regionSize);
 
 	//Debug
 	void printHeapList();
@@ -101,6 +110,7 @@ private:
 	ProcInfo::ProcInfo();
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
+	ADDRINT stackBase;								//Stack base address
 	std::vector<Section> Sections;
 	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
@@ -120,7 +130,6 @@ private:
 
 	string libToString(LibraryItem lib);
 	VOID showFilteredLibs();
-	VOID addWhitelistAddresses(ADDRINT baseAddr,ADDRINT regionSize);
 
 	
 	VOID addPinDll(ADDRINT allocationBase,ADDRINT baseAddr,ADDRINT regionSize);

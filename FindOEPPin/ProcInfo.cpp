@@ -63,6 +63,17 @@ void ProcInfo::setStartTimer(clock_t t){
 	this->start_timer = t;
 }
 
+/**
+Initializing the base stack address
+**/
+VOID ProcInfo::setStackBase(ADDRINT addr){
+	//hasn't been already initialized
+	if(stackBase == 0) {	
+		stackBase = addr;
+		MYINFO("Init FilterHandler Stack from %x to %x",stackBase+STACK_BASE_PADDING,stackBase -MAX_STACK_SIZE);
+	}	
+}
+
 
 
 /* ----------------------------- GETTER -----------------------------*/
@@ -102,6 +113,10 @@ std::unordered_set<ADDRINT> ProcInfo::getJmpBlacklist(){
 
 clock_t ProcInfo::getStartTimer(){
 	return this->start_timer;
+}
+
+ADDRINT ProcInfo::getStackBase(){
+	return this->stackBase;
 }
 
 
@@ -286,9 +301,14 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 			return TRUE;
 	}
 	
-	return FALSE;
-		
-	
+	return FALSE;	
+}
+
+/**
+Check if an address in on the stack
+**/
+BOOL ProcInfo::isStackAddress(ADDRINT addr) {
+	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase +STACK_BASE_PADDING);
 }
 
 
@@ -370,7 +390,10 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 			return TRUE;
 		}						
 	}
-	return FALSE;
+	if (isLibraryInstruction(address)){
+		return TRUE;
+	}
+	return isStackAddress(address); //FilterHandler::getInstance()->isStackAddress(address);
 }
 
 VOID ProcInfo::PrintWhiteListedAddr(){

@@ -58,7 +58,9 @@ void imageLoadCallback(IMG img,void *){
 	//we have to consder only the main executable and avìvoid the libraries
 	if(IMG_IsMainExecutable(img)){
 		
-		
+		ADDRINT startAddr = IMG_LowAddress(img);
+		ADDRINT endAddr = IMG_HighAddress(img);
+		proc_info->addWhitelistAddresses(startAddr, endAddr - startAddr);
 		//get the  address of the first instruction
 		proc_info->setFirstINSaddress(IMG_Entry(img));
 		//get the program name
@@ -112,8 +114,8 @@ void Instruction(INS ins,void *v){
 // - retrive the stack base address
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
-	FilterHandler *filterH = FilterHandler::getInstance();
-	filterH->setStackBase(stackBase);
+	ProcInfo *pInfo = ProcInfo::getInstance();
+	pInfo->setStackBase(stackBase);
 }
 
 void initDebug(){

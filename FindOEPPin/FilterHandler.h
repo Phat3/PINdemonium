@@ -9,8 +9,6 @@
 #include "Config.h"
 #include "ProcInfo.h"
 
-#define MAX_STACK_SIZE 0x5000    //Used to define the memory range of the stack
-#define STACK_BASE_PADDING 0x500 //needed because the stack pointer given by pin is not the highest one
 #define TEB_SIZE 0xf28			
 
 
@@ -26,15 +24,13 @@ public:
 	~FilterHandler(void);
 	//setter
 	VOID setFilters(const string spaceSeparedFilters);
-	VOID setStackBase(ADDRINT addr);
 	//utils
 	BOOL isFilteredWrite(ADDRINT addr, ADDRINT eip);
 
 private:
-static FilterHandler* instance;
+	static FilterHandler* instance;
 	ProcInfo *pInfo;
 	ADDRINT tebAddr;								//TEB base address
-	ADDRINT stackBase;								//Stack base address
 	std::map<std::string,int> filterMap;			//Hashmap containing the association between the 
 	int filterExecutionFlag;						//flag which keeps track of the enabled filters
 	FilterHandler();
