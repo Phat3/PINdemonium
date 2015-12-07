@@ -58,6 +58,7 @@ public:
 private:
 	//Hooks
 	static void NtQuerySystemInformationHook(syscall_t *sc);
+	static void NtOpenProcess(syscall_t *sc);
 	//Heplers
 	static void syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v);
 	static void syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v);

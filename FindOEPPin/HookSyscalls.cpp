@@ -49,6 +49,12 @@ void HookSyscalls::NtQuerySystemInformationHook(syscall_t *sc){
 	}
 }
 
+//NtSystemQueryInformation detected
+void HookSyscalls::NtOpenProcess(syscall_t *sc){
+	printf("hooked openprocess!!");
+}
+
+
 //----------------------------- END HOOKS -----------------------------//
 
 
@@ -102,6 +108,7 @@ void HookSyscalls::enumSyscalls()
 void HookSyscalls::initHooks(){
 
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation",&HookSyscalls::NtQuerySystemInformationHook));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtOpenProcess",&HookSyscalls::NtOpenProcess));
 
 	static syscall_t sc[256] = {0};
 	PIN_AddSyscallEntryFunction(&HookSyscalls::syscallEntry,&sc);
