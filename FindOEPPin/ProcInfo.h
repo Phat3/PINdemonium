@@ -11,6 +11,13 @@ namespace W{
 	#include <tlhelp32.h>
 }
 
+//This struct will track the library loaded
+//at program startup
+struct LibraryItem{
+	ADDRINT StartAddress;
+	ADDRINT EndAddress;
+	string name;
+};
 
 //memorize the PE section information
 struct Section {
@@ -69,11 +76,21 @@ public:
 	void insertInJmpBlacklist(ADDRINT ip);
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
 	BOOL isInterestingProcess(unsigned int pid);
+	
+	//Library
+	VOID SearchPinVMDll();
+	BOOL isLibraryInstruction(ADDRINT address);
+	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
+	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
+
 	//Debug
 	void printHeapList();
 
+
+
 	
 private:
+	
 	static ProcInfo* instance;
 	ProcInfo::ProcInfo();
 	ADDRINT first_instruction;
@@ -81,6 +98,8 @@ private:
 	std::vector<Section> Sections;
 	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
+	std::vector<LibraryItem> LibrarySet;			//vector of know library loaded
+	LibraryItem PinVMDll;
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad
 	//this is a common technique to restore the initial register status after the unpacking routine
@@ -93,6 +112,11 @@ private:
 	std::unordered_set<unsigned int> interresting_processes_pid;  
 
 	void retrieveInterestingPidFromNames();
-
+	
+	//Library Handling Functions
+	string libToString(LibraryItem lib);
+	VOID showFilteredLibs();
+	
+	long long FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard);
 };
 

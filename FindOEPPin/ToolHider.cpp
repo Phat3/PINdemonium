@@ -14,11 +14,11 @@ ToolHider::~ToolHider(void)
 void ToolHider::avoidEvasion(INS ins){
 
 	ADDRINT curEip = INS_Address(ins);
-	FilterHandler *filterHandler = FilterHandler::getInstance();
+	ProcInfo *pInfo = ProcInfo::getInstance();
 
 	//Tracking violating WxorX instructions
 	//Filter instructions inside a known library
-	if(filterHandler->isLibraryInstruction(curEip)){
+	if(pInfo->isLibraryInstruction(curEip)){
 		return;
 
 	}

@@ -15,9 +15,6 @@ namespace W {
 }
 
 
-#define VIRTUALALLOC_INDEX 0
-#define RTLALLOCATEHEAP_INDEX 1
-
 
 ToolHider thider;
 OepFinder oepf;
@@ -54,6 +51,7 @@ void imageLoadCallback(IMG img,void *){
 
 	Section item;
 	static int va_hooked = 0;
+	ProcInfo *proc_info = ProcInfo::getInstance();
 
 	//get the initial entropy of the PE
 	//we have to consder only the main executable and avìvoid the libraries
@@ -80,14 +78,14 @@ void imageLoadCallback(IMG img,void *){
 		proc_info->PrintSections();
 	}
 	//build the filtered libtrary list
-	FilterHandler *filterH = FilterHandler::getInstance();
 	ADDRINT startAddr = IMG_LowAddress(img);
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
 
-	if(!IMG_IsMainExecutable(img) && filterH->isKnownLibrary(name,startAddr,endAddr)){	
+	if(!IMG_IsMainExecutable(img) && proc_info->isKnownLibrary(name,startAddr,endAddr)){	
 		hookFun.hookDispatcher(img);		
-		filterH->addLibrary(name,startAddr,endAddr);
+		proc_info->addLibrary(name,startAddr,endAddr);
+
 	}
 }
 
@@ -150,6 +148,8 @@ int main(int argc, char * argv[]){
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageUnload to be called when an image is unloaded
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
+	proc_info->SearchPinVMDll();
+	
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
 	//init the hooking system
