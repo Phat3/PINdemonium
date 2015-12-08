@@ -6,6 +6,8 @@ namespace W{
 	#include "windows.h"
 	#include "Winternl.h"
 }
+#include "ProcInfo.h"
+
 
 //--------------- HELPER DATA STRUCTURES --------------//
 
@@ -61,6 +63,7 @@ class HookSyscalls
 public:
 	static void enumSyscalls();
 	static void initHooks();
+
 	
 private:
 	//Hooks
@@ -70,6 +73,7 @@ private:
 	static void syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v);
 	static void syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v);
 	static void syscallGetArguments(CONTEXT *ctx, SYSCALL_STANDARD std, int count, ...);
+	//DEBUG
 	static void printArgs(syscall_t * sc);
 	static void printRegs(CONTEXT * ctx);
 

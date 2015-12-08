@@ -1,5 +1,6 @@
 #include "ProcInfo.h"
 
+
 ProcInfo* ProcInfo::instance = 0;
 
 ProcInfo* ProcInfo::getInstance()
@@ -17,6 +18,9 @@ ProcInfo::ProcInfo()
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
 	this->start_timer = -1;
+	this->interresting_processes_name.insert("pin.exe");
+	this->interresting_processes_name.insert("csrss.exe");
+	this->retrieveInterestingPidFromNames();
 }
 
 ProcInfo::~ProcInfo(void)
@@ -206,8 +210,47 @@ BOOL ProcInfo::isInsideJmpBlacklist(ADDRINT ip){
 	return this->addr_jmp_blacklist.find(ip) != this->addr_jmp_blacklist.end();
 }
 
+BOOL ProcInfo::isInterestingProcess(unsigned int pid){
+	return this->interresting_processes_pid.find(pid) != this->interresting_processes_pid.end();
+}
+
+
 void ProcInfo::printHeapList(){
 	for(unsigned index=0; index <  this->HeapMap.size(); index++) {
 		MYINFO("Heapzone number  %d  start %08x end %08x",index,this->HeapMap.at(index).begin,this->HeapMap.at(index).end);
 	}
+}
+
+//retrieve the PID of the processes marked as interesting
+//for example : csrss.exe is interesting because we have to block Aall the openProcess to its PID
+void ProcInfo::retrieveInterestingPidFromNames(){
+  W::HANDLE hProcessSnap;
+  W::HANDLE hProcess;
+  W::PROCESSENTRY32 pe32;
+  W::DWORD dwPriorityClass;
+
+  // Take a snapshot of all processes in the system.
+  hProcessSnap = W::CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+
+  // Set the size of the structure before using it.
+  pe32.dwSize = sizeof( W::PROCESSENTRY32 );
+
+  if( !Process32First( hProcessSnap, &pe32 ) )
+  {
+    printf("Process32First failed"); // show cause of failure
+    CloseHandle( hProcessSnap );     // clean the snapshot object
+	return;
+  }
+  // Now walk the snapshot of processes, and
+  // display information about each process in turn
+  do
+  {
+	  //if the name of the process is one of interest
+	if( this->interresting_processes_name.find(pe32.szExeFile) != this->interresting_processes_name.end()){
+		//add its pid to the set of the interesting PID
+	  	this->interresting_processes_pid.insert(pe32.th32ProcessID);
+	}
+  } while( Process32Next( hProcessSnap, &pe32 ) );
+
+  CloseHandle( hProcessSnap );
 }

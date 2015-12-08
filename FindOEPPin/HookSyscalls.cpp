@@ -1,6 +1,5 @@
 #include "HookSyscalls.h"
 
-
 //----------------------------- SYSCALL HOOKS -----------------------------//
 
 void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
@@ -15,6 +14,7 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 	HookSyscalls::syscallGetArguments(ctx, std, 8, 0, &sc->arg0, 1, &sc->arg1, 2, &sc->arg2, 3, &sc->arg3, 4, &sc->arg4, 5, &sc->arg5, 6, &sc->arg6, 7, &sc->arg7);
 	//HookSyscalls::printArgs(sc);
 	std::map<unsigned long, string>::iterator syscallMapItem = syscallsMap.find(sc->syscall_number);
+	//search for an hook on entry
 	if(syscallMapItem !=  syscallsMap.end()){
 		//serch if we have an hook for the syscall
 		std::map<string, syscall_hook>::iterator syscallHookItem = syscallsHooks.find(syscallMapItem->second + "_entry");
@@ -28,7 +28,7 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 void HookSyscalls::syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
 	 //get the structure with the informations on the systemcall
 	 syscall_t *sc = &((syscall_t *) v)[thread_id];
-	//search the name of the syscall
+	//search forn an hook on exit
 	std::map<unsigned long, string>::iterator syscallMapItem = syscallsMap.find(sc->syscall_number);
 	if(syscallMapItem !=  syscallsMap.end()){
 		//serch if we have an hook for the syscall
@@ -63,7 +63,10 @@ void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx,
 //we have to use this trick because we aren't able to change the return value of the syscall yet... (the value in EAX)
 void HookSyscalls::NtOpenProcessEntry(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
 	PCLIENT_ID cid = (PCLIENT_ID)sc->arg3;
-	cid->UniqueProcess = (W::HANDLE)66666;	
+	//if the id of the process is one of interest return an error
+	if(ProcInfo::getInstance()->isInterestingProcess((unsigned int)cid->UniqueProcess)){
+		cid->UniqueProcess = (W::HANDLE)66666;
+	}
 }
 
 
@@ -158,5 +161,5 @@ void HookSyscalls::printRegs(CONTEXT *ctx){
 	printf("EBX : %08x\n", PIN_GetContextReg(ctx, REG_EBX));
 	printf("ECX : %08x\n", PIN_GetContextReg(ctx, REG_ECX));
 	printf("EDX : %08x\n", PIN_GetContextReg(ctx, REG_EDX));
-
 }
+

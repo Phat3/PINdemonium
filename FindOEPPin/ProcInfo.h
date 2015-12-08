@@ -5,6 +5,11 @@
 #include "Debug.h"
 #include <time.h>
 #include <unordered_set>
+namespace W{
+	#include "windows.h"
+	#include "Winternl.h"
+	#include <tlhelp32.h>
+}
 
 
 //memorize the PE section information
@@ -63,6 +68,7 @@ public:
 	float GetEntropy();
 	void insertInJmpBlacklist(ADDRINT ip);
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
+	BOOL isInterestingProcess(unsigned int pid);
 	//Debug
 	void printHeapList();
 
@@ -82,5 +88,11 @@ private:
 	BOOL popad_flag;
 	string proc_name;
 	clock_t start_timer;
+	//processes to be monitored set 
+	std::unordered_set<string> interresting_processes_name; 
+	std::unordered_set<unsigned int> interresting_processes_pid;  
+
+	void retrieveInterestingPidFromNames();
+
 };
 

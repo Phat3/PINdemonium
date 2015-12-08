@@ -23,6 +23,7 @@ ToolHider thider;
 OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
+ProcInfo *proc_info = ProcInfo::getInstance();
 
 
 
@@ -58,7 +59,7 @@ void imageLoadCallback(IMG img,void *){
 	//we have to consder only the main executable and avìvoid the libraries
 	if(IMG_IsMainExecutable(img)){
 		
-		ProcInfo *proc_info = ProcInfo::getInstance();
+		
 		//get the  address of the first instruction
 		proc_info->setFirstINSaddress(IMG_Entry(img));
 		//get the program name
@@ -154,6 +155,7 @@ int main(int argc, char * argv[]){
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
+
 	// Start the program, never returns
 	PIN_StartProgram();
 	
