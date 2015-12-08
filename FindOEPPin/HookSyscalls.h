@@ -38,8 +38,15 @@ typedef struct _SYSTEM_PROCESS_INFO
 	W::HANDLE                  InheritedFromProcessId;
 } SYSTEM_PROCESS_INFO, *PSYSTEM_PROCESS_INFO;
 
+//information about the process that the malware wants to open
+typedef struct _CLIENT_ID
+{
+     W::PVOID UniqueProcess;
+     W::PVOID UniqueThread;
+} CLIENT_ID, *PCLIENT_ID;
+
 //function signature of our hook function
-typedef void (* syscall_hook)(syscall_t *sc);
+typedef void (* syscall_hook)(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
 //binding betweeb syscall name and the hook to be executed
 static std::map<string,syscall_hook> syscallsHooks;
 //binding between the ordinal of the syscall and the name of the syscall
@@ -57,13 +64,14 @@ public:
 	
 private:
 	//Hooks
-	static void NtQuerySystemInformationHook(syscall_t *sc);
-	static void NtOpenProcess(syscall_t *sc);
+	static void NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
+	static void NtOpenProcessEntry(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
 	//Heplers
 	static void syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v);
 	static void syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v);
 	static void syscallGetArguments(CONTEXT *ctx, SYSCALL_STANDARD std, int count, ...);
 	static void printArgs(syscall_t * sc);
+	static void printRegs(CONTEXT * ctx);
 
 };
 
