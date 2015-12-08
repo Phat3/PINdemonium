@@ -10,7 +10,8 @@ namespace W{
 }
 
 #define MAX_STACK_SIZE 0x5000    //Used to define the memory range of the stack
-#define STACK_BASE_PADDING 0x5000 //needed because the stack pointer given by pin is not the highest one
+#define STACK_BASE_PADDING 0x200 //needed because the stack pointer given by pin is not the highest one
+#define TEB_SIZE 0xf28	
 
 struct MemoryRange{
 	ADDRINT StartAddress;
@@ -85,6 +86,11 @@ public:
 	void insertInJmpBlacklist(ADDRINT ip);
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
 
+	//TEB
+	ADDRINT getTebBase();
+	VOID initTebAddress();
+	BOOL isTebAddress(ADDRINT addr);
+
 	//Stack
 	ADDRINT getStackBase();
 	VOID setStackBase(ADDRINT addr);
@@ -111,6 +117,7 @@ private:
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
 	ADDRINT stackBase;								//Stack base address
+	ADDRINT tebAddr;                                //Teb Base Address
 	std::vector<Section> Sections;
 	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;

@@ -1,6 +1,6 @@
 #include "ToolHider.h"
 
-
+static string s;
 ToolHider::ToolHider(void)
 {
 }
@@ -11,7 +11,7 @@ ToolHider::~ToolHider(void)
 }
 
 ADDRINT handleRead (ADDRINT ip, ADDRINT read_addr){
-//	MYINFO("Trying to  read %08x : res %d\n",read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
+	MYINFO("%0x8 %s Trying to  read %08x : res %d\n",ip,s.c_str(), read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
 	if(!ProcInfo::getInstance()->isAddrInWhiteList(read_addr)){
 		MYINFO("Found suspicious read %08x\n",read_addr);
 		string hook = "Cane";
@@ -41,6 +41,9 @@ void ToolHider::avoidEvasion(INS ins){
 	// Checking if there is a read in the PINVMDll range of addresses. If it is, a pointer to a local string is returned
 	for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
 		if (INS_MemoryOperandIsRead(ins,op)) {
+			
+			s = INS_Disassemble(ins);
+
 			INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleRead, IARG_INST_PTR, IARG_MEMORYREAD_EA, IARG_RETURN_REGS, REG_INST_G0+op, IARG_END);
 			INS_RewriteMemoryOperand(ins, op, REG(REG_INST_G0+op));
 		}

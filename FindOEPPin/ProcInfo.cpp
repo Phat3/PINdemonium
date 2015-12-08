@@ -115,10 +115,6 @@ clock_t ProcInfo::getStartTimer(){
 	return this->start_timer;
 }
 
-ADDRINT ProcInfo::getStackBase(){
-	return this->stackBase;
-}
-
 
 
 
@@ -230,6 +226,8 @@ void ProcInfo::printHeapList(){
 	}
 }
 
+//--------------------------------------------------Library--------------------------------------------------------------
+
 /**
 add library in a list sorted by address
 **/
@@ -304,6 +302,27 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 	return FALSE;	
 }
 
+//------------------------------------------------------------TEB------------------------------------------------------------
+
+
+/**
+Check if an address in on the Teb
+**/
+BOOL ProcInfo::isTebAddress(ADDRINT addr) {
+	return (tebAddr <= addr && addr <= tebAddr + TEB_SIZE ) ;
+}
+
+VOID ProcInfo::initTebAddress(){
+
+	W::_TEB *teb = W::NtCurrentTeb();
+	//sprintf(tebStr,"%x",teb);
+	tebAddr = (ADDRINT)teb;
+	MYINFO("Init Teb base address %x",tebAddr);
+
+}
+
+//------------------------------------------------------------ Stack ------------------------------------------------------------
+
 /**
 Check if an address in on the stack
 **/
@@ -326,7 +345,7 @@ VOID ProcInfo::getWhiteListAddresses()
 	   // Create the process
 	 BOOL result = W::CreateProcess( full_proc_name.c_str(), NULL,
 								   NULL, NULL, FALSE, 
-								   CREATE_SUSPENDED, 
+								   NULL, 
 								   NULL, NULL, &si, &pi);
 	 
 	 if (!result){
@@ -393,6 +412,10 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 	if (isLibraryInstruction(address)){
 		return TRUE;
 	}
+	if(isTebAddress(address)){
+		return TRUE;
+	}
+
 	return isStackAddress(address); //FilterHandler::getInstance()->isStackAddress(address);
 }
 
