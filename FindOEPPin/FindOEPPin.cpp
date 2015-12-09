@@ -99,6 +99,7 @@ void Instruction(INS ins,void *v){
 	if(prova == 0){
 		ProcInfo *pInfo = ProcInfo::getInstance();
 		pInfo->getWhiteListAddresses();
+		pInfo->PrintWhiteListedAddr();
 		prova++;
 	}
 	if(Config::EVASION_MODE){
@@ -169,4 +170,5 @@ int main(int argc, char * argv[]){
 	PIN_StartProgram();
 	
 	return 0;
+	
 }

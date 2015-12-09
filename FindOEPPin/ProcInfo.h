@@ -9,9 +9,10 @@ namespace W{
 	#include "windows.h"
 	#include <tlhelp32.h>
 	#include "Winternl.h"
+	#include "winnt.h"
 }
 
-#define MAX_STACK_SIZE 0x5000    //Used to define the memory range of the stack
+#define MAX_STACK_SIZE 0x100000    //Used to define the memory range of the stack
 #define TEB_SIZE 0xf28	
 
 struct MemoryRange{
@@ -150,6 +151,8 @@ private:
 	
 	//Library Handling Functions
 	VOID enumerateMemory(W::HANDLE hProc);
+	VOID enumerateMyMemory();
+
 	string libToString(LibraryItem lib);
 	VOID showFilteredLibs();
 	
