@@ -10,8 +10,6 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("credere",3) );
 
-	this->enumSyscalls();
-	//this->printSyscalls();
 }
 
 
@@ -110,66 +108,3 @@ void HookFunctions::hookDispatcher(IMG img){
 }
 
 
-//----------------------------- HOOKING OF SYSCALLS -----------------------------//
-
-// stole this lovely source code from godware from the rreat library.
-void HookFunctions::enumSyscalls()
-{
-    // no boundary checking at all, I assume ntdll is not malicious..
-    // besides that, we are in our own process, _should_ be fine..
-    unsigned char *image = (unsigned char *) W::GetModuleHandle("ntdll");
-
-    W::IMAGE_DOS_HEADER *dos_header = (W::IMAGE_DOS_HEADER *) image;
-
-    W::IMAGE_NT_HEADERS *nt_headers = (W::IMAGE_NT_HEADERS *)(image +
-        dos_header->e_lfanew);
-
-    W::IMAGE_DATA_DIRECTORY *data_directory = &nt_headers->
-        OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
-
-    W::IMAGE_EXPORT_DIRECTORY *export_directory =
-        (W::IMAGE_EXPORT_DIRECTORY *)(image + data_directory->VirtualAddress);
-
-    unsigned long *address_of_names = (unsigned long *)(image +
-        export_directory->AddressOfNames);
-
-    unsigned long *address_of_functions = (unsigned long *)(image +
-        export_directory->AddressOfFunctions);
-
-    unsigned short *address_of_name_ordinals = (unsigned short *)(image +
-        export_directory->AddressOfNameOrdinals);
-
-    unsigned long number_of_names = MIN(export_directory->NumberOfFunctions,
-        export_directory->NumberOfNames);
-
-    for (unsigned long i = 0; i < number_of_names; i++) {
-
-        const char *name = (const char *)(image + address_of_names[i]);
-
-        unsigned char *addr = image + address_of_functions[address_of_name_ordinals[i]];
-
-        if(!memcmp(name, "Zw", 2) || !memcmp(name, "Nt", 2)) {
-            // does the signature match?
-            // either:   mov eax, syscall_number ; mov ecx, some_value
-            // or:       mov eax, syscall_number ; xor ecx, ecx
-            // or:       mov eax, syscall_number ; mov edx, 0x7ffe0300
-            if(*addr == 0xb8 && (addr[5] == 0xb9 || addr[5] == 0x33 || addr[5] == 0xba)) {
-                unsigned long syscall_number = *(unsigned long *)(addr + 1);
-				string syscall_name = string(name);
-				this->syscallsMap.insert(std::pair<unsigned long,string>(syscall_number,syscall_name));
-				
-            }
-        }
-    }
-}
-
-
-void HookFunctions::printSyscalls(){
-
-for(map<unsigned long, string >::const_iterator it = this->syscallsMap.begin(); it !=this->syscallsMap.end(); ++it)
-{
-    printf("SYSCALL NUMBER %d : %s\n" , it->first , it->second.c_str());
-
-}
-
-}

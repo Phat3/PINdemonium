@@ -18,7 +18,10 @@ ProcInfo::ProcInfo()
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
 	this->start_timer = -1;
-	
+	this->interresting_processes_name.insert("pin.exe");
+	this->interresting_processes_name.insert("csrss.exe");
+	this->retrieveInterestingPidFromNames();
+
 }
 
 ProcInfo::~ProcInfo(void)
@@ -214,11 +217,17 @@ BOOL ProcInfo::isInsideJmpBlacklist(ADDRINT ip){
 	return this->addr_jmp_blacklist.find(ip) != this->addr_jmp_blacklist.end();
 }
 
+BOOL ProcInfo::isInterestingProcess(unsigned int pid){
+	return this->interresting_processes_pid.find(pid) != this->interresting_processes_pid.end();
+}
+
+
 void ProcInfo::printHeapList(){
 	for(unsigned index=0; index <  this->HeapMap.size(); index++) {
 		MYINFO("Heapzone number  %u  start %08x end %08x",index,this->HeapMap.at(index).begin,this->HeapMap.at(index).end);
 	}
 }
+
 
 BOOL ProcInfo::isInsideMainIMG(ADDRINT address){
 	return mainImg.StartAddress <= address && address <= mainImg.EndAddress;
@@ -232,6 +241,42 @@ VOID ProcInfo::setMainIMGAddress(ADDRINT startAddr,ADDRINT endAddr){
 }
 
 //--------------------------------------------------Library--------------------------------------------------------------
+
+
+//retrieve the PID of the processes marked as interesting
+//for example : csrss.exe is interesting because we have to block Aall the openProcess to its PID
+void ProcInfo::retrieveInterestingPidFromNames(){
+  W::HANDLE hProcessSnap;
+  W::HANDLE hProcess;
+  W::PROCESSENTRY32 pe32;
+  W::DWORD dwPriorityClass;
+
+  // Take a snapshot of all processes in the system.
+  hProcessSnap = W::CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+
+  // Set the size of the structure before using it.
+  pe32.dwSize = sizeof( W::PROCESSENTRY32 );
+
+  if( !Process32First( hProcessSnap, &pe32 ) )
+  {
+    printf("Process32First failed"); // show cause of failure
+    CloseHandle( hProcessSnap );     // clean the snapshot object
+	return;
+  }
+  // Now walk the snapshot of processes, and
+  // display information about each process in turn
+  do
+  {
+	  //if the name of the process is one of interest
+	if( this->interresting_processes_name.find(pe32.szExeFile) != this->interresting_processes_name.end()){
+		//add its pid to the set of the interesting PID
+	  	this->interresting_processes_pid.insert(pe32.th32ProcessID);
+	}
+  } while( Process32Next( hProcessSnap, &pe32 ) );
+
+  CloseHandle( hProcessSnap );
+}
+
 
 /**
 add library in a list sorted by address
@@ -346,7 +391,7 @@ VOID ProcInfo::setStackBase(ADDRINT addr){
 		W::MEMORY_BASIC_INFORMATION mbi;
 		int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
-		if(mbi.State == MEM_COMMIT | mbi.State == MEM_MAPPED | mbi.State == MEM_IMAGE ){
+		if((mbi.State == MEM_COMMIT | mbi.State == MEM_MAPPED) | mbi.State == MEM_IMAGE ){
 			MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
 			stackBase = (int)mbi.BaseAddress+ mbi.RegionSize;
 		}
@@ -399,7 +444,7 @@ VOID ProcInfo::enumerateMemory(W::HANDLE hProc){
 	{
 		numBytes = W::VirtualQueryEx(hProc,(W::LPCVOID)MyAddress, &mbi, sizeof(mbi));
 		
-		if((mbi.State == MEM_COMMIT | mbi.State == MEM_MAPPED | mbi.State == MEM_IMAGE) )
+		if((mbi.State == MEM_COMMIT | mbi.State == MEM_MAPPED) | mbi.State == MEM_IMAGE )
 		{
 		/*	MYINFO("\n\n----Memory----\n");
 			MYINFO("BaseAddress: %08x\n", mbi.BaseAddress);

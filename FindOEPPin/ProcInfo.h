@@ -6,8 +6,9 @@
 #include <time.h>
 #include <unordered_set>
 namespace W{
-	#include "winternl.h"
 	#include "windows.h"
+	#include <tlhelp32.h>
+	#include "Winternl.h"
 }
 
 #define MAX_STACK_SIZE 0x5000    //Used to define the memory range of the stack
@@ -89,6 +90,7 @@ public:
 	void insertInJmpBlacklist(ADDRINT ip);
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
 	BOOL isInsideMainIMG(ADDRINT address);
+	BOOL isInterestingProcess(unsigned int pid);
 
 	
 
@@ -101,7 +103,9 @@ public:
 	ADDRINT getStackBase();
 	VOID setStackBase(ADDRINT addr);
 	BOOL isStackAddress(ADDRINT addr);
+
 	
+
 	//Library
 	BOOL isAddrInWhiteList(ADDRINT address);
 	VOID getWhiteListAddresses();
@@ -138,15 +142,16 @@ private:
 	string full_proc_name;
 	string proc_name;
 	clock_t start_timer;
+	//processes to be monitored set 
+	std::unordered_set<string> interresting_processes_name; 
+	std::unordered_set<unsigned int> interresting_processes_pid;  
+
+	void retrieveInterestingPidFromNames();
 	
 	//Library Handling Functions
 	VOID enumerateMemory(W::HANDLE hProc);
-
 	string libToString(LibraryItem lib);
 	VOID showFilteredLibs();
-
-	
-	VOID addPinDll(ADDRINT allocationBase,ADDRINT baseAddr,ADDRINT regionSize);
 	
 };
 

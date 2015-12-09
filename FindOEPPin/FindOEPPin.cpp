@@ -9,13 +9,11 @@
 #include "ToolHider.h"
 #include "FilterHandler.h"
 #include "HookFunctions.h"
+#include "HookSyscalls.h"
 namespace W {
 	#include <windows.h>
 }
 
-
-#define VIRTUALALLOC_INDEX 0
-#define RTLALLOCATEHEAP_INDEX 1
 
 
 ToolHider thider;
@@ -23,6 +21,8 @@ OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
 static int prova =0;
+ProcInfo *proc_info = ProcInfo::getInstance();
+
 
 
 // This function is called when the application exits
@@ -139,7 +139,6 @@ int main(int argc, char * argv[]){
 	MYINFO("Strating prototype ins");
 		//W::DebugBreak();
 	FilterHandler *filterH = FilterHandler::getInstance();
-	ProcInfo *pInfo = ProcInfo::getInstance();
 	//set the filters for the libraries
 	MYINFO("%s",Config::FILTER_WRITES_ENABLES.c_str());
 	filterH->setFilters(Config::FILTER_WRITES_ENABLES);
@@ -155,14 +154,18 @@ int main(int argc, char * argv[]){
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageUnload to be called when an image is unloaded
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
-	pInfo->initTebAddress();
+
+	proc_info->initTebAddress();
+
 
 	
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
+	//init the hooking system
+	HookSyscalls::enumSyscalls();
+	HookSyscalls::initHooks();
+
 	// Start the program, never returns
-
-
 	PIN_StartProgram();
 	
 	return 0;
