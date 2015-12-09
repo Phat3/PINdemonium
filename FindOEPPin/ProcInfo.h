@@ -8,6 +8,7 @@
 namespace W{
 	#include "winternl.h"
 	#include "windows.h"
+	#include "winnt.h"
 }
 
 #define MAX_STACK_SIZE 0x5000    //Used to define the memory range of the stack
@@ -134,6 +135,8 @@ private:
 	
 	//Library Handling Functions
 	VOID enumerateMemory(W::HANDLE hProc);
+
+	VOID enumerateMyMemory();
 
 	string libToString(LibraryItem lib);
 	VOID showFilteredLibs();

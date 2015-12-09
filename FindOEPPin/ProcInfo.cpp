@@ -329,7 +329,7 @@ VOID ProcInfo::setStackBase(ADDRINT addr){
 	if(stackBase == 0) {	
 	
 		W::MEMORY_BASIC_INFORMATION mbi;
-		int numBytes = W::VirtualQuery((W::LPCVOID)stackBase, &mbi, sizeof(mbi));
+		int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
 		if(mbi.State == MEM_COMMIT | mbi.State == MEM_MAPPED | mbi.State == MEM_IMAGE ){
 			MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
@@ -349,30 +349,100 @@ VOID ProcInfo::setStackBase(ADDRINT addr){
 VOID ProcInfo::getWhiteListAddresses()
 {
 	
-
+	//enumerateMyMemory();
+	//PrintWhiteListedAddr();
+	
 	W::PROCESS_INFORMATION pi = {0};
 	W::STARTUPINFO si   = {0};
 	si.cb   = sizeof(si);
 
- 
+
 	MYINFO("running exe suspended\n");
 	printf("%s",full_proc_name.c_str());
-	   // Create the process
-	 int result = W::CreateProcess( full_proc_name.c_str(), NULL,
-								   NULL, NULL, FALSE, 
-								   NULL, 
-								   NULL, NULL, &si, &pi);
+	 // Create the process
+	 int result = W::CreateProcess( full_proc_name.c_str(), NULL, NULL, NULL, TRUE, DEBUG_ONLY_THIS_PROCESS, NULL, NULL, &si, &pi);
 	 
 	 if (!result){
 		MYINFO("Error lauching the process\n");
 		return;
 	 }
 
-	 enumerateMemory(pi.hProcess);
-	 W::TerminateProcess(pi.hProcess,0);
-	 PrintWhiteListedAddr();
-	 
+	 bool completed = false; 
 
+	 while ( !completed )
+	  {
+		W::DEBUG_EVENT DebugEvent;
+		W::EXCEPTION_DEBUG_INFO& exception =  DebugEvent.u.Exception;
+		if ( !W::WaitForDebugEvent(&DebugEvent, INFINITE) ){
+		  printf("Errore debugger!\n");
+		  return;
+		}
+		
+		switch (DebugEvent.dwDebugEventCode)
+		{
+		case CREATE_PROCESS_DEBUG_EVENT:
+			MYPRINT("\nCREATE PROCESS\n");
+		  //enumerateMemory(pi.hProcess);
+		  break;
+
+		case EXIT_PROCESS_DEBUG_EVENT:
+			MYPRINT("\nEXIT PROCESS\n");
+		   //enumerateMemory(pi.hProcess);
+		  completed = true;
+		  break;
+ 
+		case CREATE_THREAD_DEBUG_EVENT:
+			MYPRINT("\nCREATE THREAD\n");
+		  //enumerateMemory(pi.hProcess);
+		  break;
+
+		case EXIT_THREAD_DEBUG_EVENT:
+			 MYPRINT("\nEXCEPTION\n");
+		 // enumerateMemory(pi.hProcess);
+		  break;
+ 
+		case LOAD_DLL_DEBUG_EVENT:
+			 MYPRINT("\nLOAD DLL\n");
+		  //enumerateMemory(pi.hProcess);
+		  break;
+
+		case UNLOAD_DLL_DEBUG_EVENT:
+			 MYPRINT("\nUNLOAD DLL\n");
+		  //enumerateMemory(pi.hProcess);
+		  break;
+ 
+		case OUTPUT_DEBUG_STRING_EVENT:
+			 MYPRINT("\nSTRING EVENT\n");
+		  //enumerateMemory(pi.hProcess);
+		  break;
+
+		case EXCEPTION_DEBUG_EVENT:
+		   MYPRINT("\nEXCEPTION\n");
+		   exception = DebugEvent.u.Exception;
+		   if( exception.ExceptionRecord.ExceptionCode == 0x80000003L)
+		   {
+				  MYPRINT("\nEXCEPTION BREAK at %08x\n",  exception.ExceptionRecord.ExceptionAddress);
+				 
+				  enumerateMemory(pi.hProcess);
+		   }
+		   break;
+
+		default:
+		  MYPRINT("\nIN DEFAULT\n");
+
+		}
+		if ( !W::ContinueDebugEvent(DebugEvent.dwProcessId, DebugEvent.dwThreadId, 0x00010002L) ){
+		   printf("Errore debugger 2!\n");
+		   return;
+		}
+	 }
+	
+	 printf("lanciato");
+	 //W::Sleep(200000);
+	 //enumerateMemory(pi.hProcess);
+	 W::TerminateProcess(pi.hProcess,0);
+	 //PrintWhiteListedAddr();
+	 		
 }
 
 VOID ProcInfo::enumerateMemory(W::HANDLE hProc){
@@ -380,15 +450,39 @@ VOID ProcInfo::enumerateMemory(W::HANDLE hProc){
 	W::SIZE_T numBytes;
 	W::DWORD MyAddress = 0;
 	int match_string =0;
+	MYINFO("\n\n----Memory----\n");
 	do
 	{
 		numBytes = W::VirtualQueryEx(hProc,(W::LPCVOID)MyAddress, &mbi, sizeof(mbi));
 		
+		if((mbi.State == MEM_COMMIT | mbi.Type == MEM_MAPPED | mbi.Type == MEM_IMAGE) )
+		{
+			//ADDRINT end = (ADDRINT)mbi.BaseAddress + mbi.RegionSize;
+			MYPRINT("Whitelisted static %08x  ->  %08x\t STATE : %08x \t TYPE : %08x", (ADDRINT)mbi.BaseAddress, mbi.RegionSize, mbi.State, mbi.Type);
+			//addWhitelistAddresses((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
+
+		}
+		MyAddress += mbi.RegionSize;
+
+	}
+	while(numBytes);
+
+	return;
+
+}
+
+VOID ProcInfo::enumerateMyMemory(){
+	W::MEMORY_BASIC_INFORMATION mbi;
+	W::SIZE_T numBytes;
+	W::DWORD MyAddress = 0;
+	int match_string =0;
+	do
+	{
+		numBytes = W::VirtualQuery((W::LPCVOID)MyAddress, &mbi, sizeof(mbi));
+		
 		if((mbi.State == MEM_COMMIT | mbi.State == MEM_MAPPED | mbi.State == MEM_IMAGE) )
 		{
-		/*	MYINFO("\n\n----Memory----\n");
-			MYINFO("BaseAddress: %08x\n", mbi.BaseAddress);
-			MYINFO("Size: %08x\n", mbi.RegionSize);*/
+		
 			addWhitelistAddresses((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
 
 		}
@@ -400,6 +494,7 @@ VOID ProcInfo::enumerateMemory(W::HANDLE hProc){
 	return;
 
 }
+
 
 
 VOID ProcInfo::addWhitelistAddresses(ADDRINT baseAddr,ADDRINT regionSize){
