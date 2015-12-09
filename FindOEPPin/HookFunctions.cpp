@@ -1,6 +1,8 @@
 #include "HookFunctions.h"
 
 
+
+
 HookFunctions::HookFunctions(void)
 {
 	this->functionsMap.insert( std::pair<string,int>("VirtualAlloc",VIRTUALALLOC_INDEX) );
@@ -15,6 +17,7 @@ HookFunctions::HookFunctions(void)
 
 HookFunctions::~HookFunctions(void)
 {
+	
 }
 
 
@@ -36,18 +39,26 @@ VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
 }
 
 //hook the  HeapAllocHook() in order to retrieve the memory range allocated and build ours data structures
-VOID HeapAllocHook(UINT32 heap_alloc_size , UINT32 ret_heap_address ){
-	
-	if (heap_alloc_size == 0){
+static HeapZone prev_heap_alloc;
+VOID HeapAllocHook(int heap_alloc_size , UINT32 ret_heap_address ){
+	 
+	if (heap_alloc_size == 0 ){
 		return;
 	}
+	
 
 	ProcInfo *proc_info = ProcInfo::getInstance();
+	//need this code because sometimes RTLAllocHeap is invoked twice and the second time is the correct one
+	if (prev_heap_alloc.begin == ret_heap_address){
+		proc_info->removeLastHeapZone();
+	}
 
 	HeapZone hz;
 	hz.begin = ret_heap_address;
 	hz.size = heap_alloc_size;
 	hz.end = ret_heap_address + heap_alloc_size;
+	prev_heap_alloc =hz;
+	
 
 	//saving this heap zone in the map inside ProcInfo
 	proc_info->insertHeapZone(hz); 

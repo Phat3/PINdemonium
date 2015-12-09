@@ -59,6 +59,7 @@ public:
 	std::unordered_set<ADDRINT> getJmpBlacklist();
 	ADDRINT getPINVMStart();
 	ADDRINT getPINVMEnd();
+	
 
 	/* setter */
 	void setFirstINSaddress(ADDRINT address);
@@ -68,23 +69,28 @@ public:
 	void setPopadFlag(BOOL flag);
 	void setProcName(string name);
 	void setStartTimer(clock_t t);
+	void setMainIMGAddress(ADDRINT startAddress,ADDRINT endAddr);
 	
 	/* debug */
 	void PrintStartContext();
 	void PrintCurrContext();
 	void PrintSections();
-	VOID PrintWhiteListedAddr();
+	void PrintWhiteListedAddr();
 
 	/* helper */
 	void insertSection(Section section);
 	string getSectionNameByIp(ADDRINT ip);
 	void insertHeapZone(HeapZone heap_zone);
 	void deleteHeapZone(UINT32 index);
+	void removeLastHeapZone();
 	UINT32 searchHeapMap(ADDRINT ip);
 	HeapZone *getHeapZoneByIndex(UINT32 index);
 	float GetEntropy();
 	void insertInJmpBlacklist(ADDRINT ip);
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
+	BOOL isInsideMainIMG(ADDRINT address);
+
+	
 
 	//TEB
 	ADDRINT getTebBase();
@@ -118,6 +124,7 @@ private:
 	ADDRINT prev_ip;
 	ADDRINT stackBase;								//Stack base address
 	ADDRINT tebAddr;                                //Teb Base Address
+	MemoryRange mainImg;
 	std::vector<Section> Sections;
 	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;

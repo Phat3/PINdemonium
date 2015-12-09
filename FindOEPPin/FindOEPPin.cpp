@@ -60,7 +60,7 @@ void imageLoadCallback(IMG img,void *){
 		
 		ADDRINT startAddr = IMG_LowAddress(img);
 		ADDRINT endAddr = IMG_HighAddress(img);
-		proc_info->addWhitelistAddresses(startAddr, endAddr - startAddr);
+		proc_info->setMainIMGAddress(startAddr, endAddr);
 		//get the  address of the first instruction
 		proc_info->setFirstINSaddress(IMG_Entry(img));
 		//get the program name

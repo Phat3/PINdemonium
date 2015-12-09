@@ -143,6 +143,10 @@ void ProcInfo::insertHeapZone(HeapZone heap_zone){
 	this->HeapMap.push_back(heap_zone);
 }
 
+void ProcInfo::removeLastHeapZone(){
+	this->HeapMap.pop_back();
+}
+
 void ProcInfo::deleteHeapZone(UINT32 index){
      
 	this->HeapMap.erase(this->HeapMap.begin()+index);
@@ -214,6 +218,17 @@ void ProcInfo::printHeapList(){
 	for(unsigned index=0; index <  this->HeapMap.size(); index++) {
 		MYINFO("Heapzone number  %u  start %08x end %08x",index,this->HeapMap.at(index).begin,this->HeapMap.at(index).end);
 	}
+}
+
+BOOL ProcInfo::isInsideMainIMG(ADDRINT address){
+	return mainImg.StartAddress <= address && address <= mainImg.EndAddress;
+
+}
+
+VOID ProcInfo::setMainIMGAddress(ADDRINT startAddr,ADDRINT endAddr){
+	mainImg.StartAddress = startAddr;
+	mainImg.EndAddress = endAddr;
+
 }
 
 //--------------------------------------------------Library--------------------------------------------------------------
@@ -329,7 +344,7 @@ VOID ProcInfo::setStackBase(ADDRINT addr){
 	if(stackBase == 0) {	
 	
 		W::MEMORY_BASIC_INFORMATION mbi;
-		int numBytes = W::VirtualQuery((W::LPCVOID)stackBase, &mbi, sizeof(mbi));
+		int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
 		if(mbi.State == MEM_COMMIT | mbi.State == MEM_MAPPED | mbi.State == MEM_IMAGE ){
 			MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
@@ -418,8 +433,12 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 			return TRUE;
 		}						
 	}
+	if(isInsideMainIMG(address)){
+		return TRUE;
+	}
 	//iterate through the allocated memory addresses
 	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {
+		
 		if(item->begin <= address && address <= item->end){
 			return TRUE;
 		}						
@@ -434,12 +453,15 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 	return isStackAddress(address); //FilterHandler::getInstance()->isStackAddress(address);
 }
 
-VOID ProcInfo::PrintWhiteListedAddr(){
+void ProcInfo::PrintWhiteListedAddr(){
 	//Iterate through the already whitelisted memory addresses
+
+	MYINFO("Whitelisted main image %08x  ->  %08x",mainImg.StartAddress,mainImg.EndAddress);
 
 	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
 		MYINFO("Whitelisted static %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
 	}
+	
 	//iterate through the allocated memory addresses
 	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {
 		MYINFO("Whitelisted dynamic %08x  ->  %08x",item->begin,item->end)		;						
