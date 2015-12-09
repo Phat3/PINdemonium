@@ -63,16 +63,6 @@ void ProcInfo::setStartTimer(clock_t t){
 	this->start_timer = t;
 }
 
-/**
-Initializing the base stack address
-**/
-VOID ProcInfo::setStackBase(ADDRINT addr){
-	//hasn't been already initialized
-	if(stackBase == 0) {	
-		stackBase = addr;
-		MYINFO("Init FilterHandler Stack from %x to %x",stackBase+STACK_BASE_PADDING,stackBase -MAX_STACK_SIZE);
-	}	
-}
 
 
 
@@ -312,6 +302,7 @@ BOOL ProcInfo::isTebAddress(ADDRINT addr) {
 	return (tebAddr <= addr && addr <= tebAddr + TEB_SIZE ) ;
 }
 
+
 VOID ProcInfo::initTebAddress(){
 
 	W::_TEB *teb = W::NtCurrentTeb();
@@ -327,9 +318,33 @@ VOID ProcInfo::initTebAddress(){
 Check if an address in on the stack
 **/
 BOOL ProcInfo::isStackAddress(ADDRINT addr) {
-	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase +STACK_BASE_PADDING);
+	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase );
 }
 
+/**
+Initializing the base stack address by getting a value in the stack and searching the highest allocated address in the same memory region
+**/
+VOID ProcInfo::setStackBase(ADDRINT addr){
+	//hasn't been already initialized
+	if(stackBase == 0) {	
+	
+		W::MEMORY_BASIC_INFORMATION mbi;
+		int numBytes = W::VirtualQuery((W::LPCVOID)stackBase, &mbi, sizeof(mbi));
+		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
+		if(mbi.State == MEM_COMMIT | mbi.State == MEM_MAPPED | mbi.State == MEM_IMAGE ){
+			MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
+			stackBase = (int)mbi.BaseAddress+ mbi.RegionSize;
+		}
+
+		else{
+			stackBase = addr;
+		}
+			MYINFO("Init FilterHandler Stack from %x to %x",stackBase,stackBase -MAX_STACK_SIZE);
+
+	}	
+
+}
+//------------------------------------------------------------ Whitelist Addresses ------------------------------------------------------------
 
 VOID ProcInfo::getWhiteListAddresses()
 {
@@ -343,7 +358,7 @@ VOID ProcInfo::getWhiteListAddresses()
 	MYINFO("running exe suspended\n");
 	printf("%s",full_proc_name.c_str());
 	   // Create the process
-	 BOOL result = W::CreateProcess( full_proc_name.c_str(), NULL,
+	 int result = W::CreateProcess( full_proc_name.c_str(), NULL,
 								   NULL, NULL, FALSE, 
 								   NULL, 
 								   NULL, NULL, &si, &pi);
@@ -421,6 +436,7 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 
 VOID ProcInfo::PrintWhiteListedAddr(){
 	//Iterate through the already whitelisted memory addresses
+
 	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
 		MYINFO("Whitelisted static %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
 	}
@@ -428,5 +444,14 @@ VOID ProcInfo::PrintWhiteListedAddr(){
 	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {
 		MYINFO("Whitelisted dynamic %08x  ->  %08x",item->begin,item->end)		;						
 	}
+
+	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
+		MYINFO("Whitelisted library %08x  ->  %08x",lib->StartAddress,lib->StartAddress)		;	
+	}
+
+	MYINFO("Whitelisted Teb %08x  ->  %08x",tebAddr,  tebAddr + TEB_SIZE );
+
+	MYINFO("Whitelisted Stack %08x  ->  %08x",stackBase - MAX_STACK_SIZE, stackBase);
+	
 
 }

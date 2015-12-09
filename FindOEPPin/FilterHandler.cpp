@@ -14,17 +14,8 @@ FilterHandler* FilterHandler::getInstance()
 
 FilterHandler::FilterHandler(){
 	pInfo = ProcInfo::getInstance();
-	//Initializing the TEB 
-/*	MOVED TO PROCINFO
-	W::_TEB *teb = W::NtCurrentTeb();
-	//sprintf(tebStr,"%x",teb);
-	tebAddr = (ADDRINT)teb;
-	MYINFO("Init FilterHandler Teb %x",tebAddr);
-	W::_NT_TIB tib = *(W::_NT_TIB *) teb;
-	MYINFO("TIB address %x",tib);
-	MYINFO("Stack base %x",tib.StackBase);
-	MYINFO("StackLimit %x" ,tib.StackLimit);
-*/
+
+
 	//Initializing the Filter map:   "stack" => adding FILTER_STACK to filterExecutionFlag
 	initFilterMap();
 }

@@ -6,11 +6,11 @@
 #include <time.h>
 #include <unordered_set>
 namespace W{
+	#include "winternl.h"
 	#include "windows.h"
 }
 
 #define MAX_STACK_SIZE 0x5000    //Used to define the memory range of the stack
-#define STACK_BASE_PADDING 0x200 //needed because the stack pointer given by pin is not the highest one
 #define TEB_SIZE 0xf28	
 
 struct MemoryRange{
