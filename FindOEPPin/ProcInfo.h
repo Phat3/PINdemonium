@@ -118,6 +118,7 @@ public:
 	VOID enumerateCurrentMemory();
 	VOID PrintCurrentMemorydAddr();
 	VOID PrintWhiteListedAddr();
+	VOID PrintDebugProcessAddr();
 	VOID enumerateDebugProcessMemory();
 
 	
@@ -161,6 +162,7 @@ private:
 	
 	//Enumerate Whitelisted Memory Helpers	
 	VOID addWhitelistAddress(ADDRINT baseAddr,ADDRINT regionSize);
+	VOID mergeMemoryAddresses();
 	
 	//Enumerate current  Memory Helpers
 	VOID addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize);

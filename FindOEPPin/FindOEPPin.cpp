@@ -158,8 +158,6 @@ int main(int argc, char * argv[]){
 
 	proc_info->initTebAddress();
 
-
-	
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
 	//init the hooking system
