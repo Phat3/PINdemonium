@@ -240,7 +240,7 @@ VOID ProcInfo::setMainIMGAddress(ADDRINT startAddr,ADDRINT endAddr){
 
 }
 
-//--------------------------------------------------Library--------------------------------------------------------------
+
 
 
 //retrieve the PID of the processes marked as interesting
@@ -277,6 +277,7 @@ void ProcInfo::retrieveInterestingPidFromNames(){
   CloseHandle( hProcessSnap );
 }
 
+//--------------------------------------------------Library--------------------------------------------------------------
 
 /**
 add library in a list sorted by address
@@ -359,16 +360,17 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 Check if an address in on the Teb
 **/
 BOOL ProcInfo::isTebAddress(ADDRINT addr) {
-	return (tebAddr <= addr && addr <= tebAddr + TEB_SIZE ) ;
+	return (teb.StartAddress <= addr && addr <= teb.EndAddress ) ;
 }
 
 
 VOID ProcInfo::initTebAddress(){
 
-	W::_TEB *teb = W::NtCurrentTeb();
+	W::_TEB *tebAddr = W::NtCurrentTeb();
 	//sprintf(tebStr,"%x",teb);
-	tebAddr = (ADDRINT)teb;
-	MYINFO("Init Teb base address %x",tebAddr);
+	teb.StartAddress = (ADDRINT)tebAddr;
+	teb.EndAddress = (ADDRINT)tebAddr +TEB_SIZE;
+	MYINFO("Init Teb base address %x   ->  %x",teb.StartAddress,teb.EndAddress);
 
 }
 
@@ -378,7 +380,7 @@ VOID ProcInfo::initTebAddress(){
 Check if an address in on the stack
 **/
 BOOL ProcInfo::isStackAddress(ADDRINT addr) {
-	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase );
+	return (stack.StartAddress < addr && addr < stack.EndAddress );
 }
 
 /**
@@ -386,27 +388,34 @@ Initializing the base stack address by getting a value in the stack and searchin
 **/
 VOID ProcInfo::setStackBase(ADDRINT addr){
 	//hasn't been already initialized
-	if(stackBase == 0) {	
+	if(stack.EndAddress == 0) {	
 	
 		W::MEMORY_BASIC_INFORMATION mbi;
 		int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
 		if((mbi.State == MEM_COMMIT || mbi.State == MEM_MAPPED) || mbi.State == MEM_IMAGE ){
 			MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
-			stackBase = (int)mbi.BaseAddress+ mbi.RegionSize;
+			stack.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
 		}
 
 		else{
-			stackBase = addr;
+			stack.EndAddress = addr;
 		}
-			MYINFO("Init FilterHandler Stack from %x to %x",stackBase,stackBase -MAX_STACK_SIZE);
+		//check integer underflow ADDRINT
+		if(stack.EndAddress <= MAX_STACK_SIZE ){
+			stack.StartAddress =0;
+		}
+		else{
+			stack.StartAddress = stack.EndAddress - MAX_STACK_SIZE;
+		}
+		MYINFO("Init FilterHandler Stack from %x to %x",stack.StartAddress,stack.EndAddress);
 
 	}	
 
 }
-//------------------------------------------------------------ Whitelist Addresses ------------------------------------------------------------
+//------------------------------------------------------------ Debug Process Addresses Test ------------------------------------------------------------
 
-VOID ProcInfo::getWhiteListAddresses()
+VOID ProcInfo::enumerateDebugProcessMemory()
 {
 	
 	//enumerateMyMemory();
@@ -483,7 +492,7 @@ VOID ProcInfo::getWhiteListAddresses()
 		   {
 				  MYPRINT("\nEXCEPTION BREAK at %08x\n",  exception.ExceptionRecord.ExceptionAddress);
 				 
-				  enumerateMemory(pi.hProcess);
+				  enumerateProcessMemory(pi.hProcess);
 		   }
 		   break;
 
@@ -505,7 +514,7 @@ VOID ProcInfo::getWhiteListAddresses()
 	 		
 }
 
-VOID ProcInfo::enumerateMemory(W::HANDLE hProc){
+VOID ProcInfo::enumerateProcessMemory(W::HANDLE hProc){
 	W::MEMORY_BASIC_INFORMATION mbi;
 	W::SIZE_T numBytes;
 	W::DWORD MyAddress = 0;
@@ -519,7 +528,7 @@ VOID ProcInfo::enumerateMemory(W::HANDLE hProc){
 		{
 			//ADDRINT end = (ADDRINT)mbi.BaseAddress + mbi.RegionSize;
 			MYPRINT("Whitelisted static %08x  ->  %08x\t STATE : %08x \t TYPE : %08x", (ADDRINT)mbi.BaseAddress, mbi.RegionSize, mbi.State, mbi.Type);
-			//addWhitelistAddresses((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
+			addDebugProcessAddresses((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
 
 		}
 		MyAddress += mbi.RegionSize;
@@ -531,7 +540,19 @@ VOID ProcInfo::enumerateMemory(W::HANDLE hProc){
 
 }
 
-VOID ProcInfo::enumerateMyMemory(){
+VOID ProcInfo::addDebugProcessAddresses(ADDRINT baseAddr,ADDRINT regionSize){
+	
+	MemoryRange item;
+	item.StartAddress = baseAddr;
+	item.EndAddress = baseAddr + regionSize;
+	debuggedProcMemory.push_back(item);
+
+}
+
+
+//------------------------------------------------------------ Current Memory Functions ------------------------------------------------------------
+
+VOID ProcInfo::enumerateCurrentMemory(){
 	W::MEMORY_BASIC_INFORMATION mbi;
 	W::SIZE_T numBytes;
 	W::DWORD MyAddress = 0;
@@ -543,7 +564,7 @@ VOID ProcInfo::enumerateMyMemory(){
 		if((mbi.State == MEM_COMMIT || mbi.State == MEM_MAPPED || mbi.State == MEM_IMAGE) )
 		{
 		
-			addWhitelistAddresses((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
+			addCurrentMemoryAddress((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
 
 		}
 		MyAddress += mbi.RegionSize;
@@ -556,8 +577,47 @@ VOID ProcInfo::enumerateMyMemory(){
 }
 
 
+VOID ProcInfo::addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize){
+	MemoryRange libItem;
+	libItem.StartAddress = baseAddr;
+	libItem.EndAddress = baseAddr + regionSize;
+	currentMemory.push_back(libItem);
 
-VOID ProcInfo::addWhitelistAddresses(ADDRINT baseAddr,ADDRINT regionSize){
+}
+
+void ProcInfo::PrintCurrentMemorydAddr(){
+	//Iterate through the already whitelisted memory addresses
+
+	for(std::vector<MemoryRange>::iterator item = currentMemory.begin(); item != currentMemory.end(); ++item) {
+		MYINFO("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+	}	
+
+}
+
+
+//----------------------------------------------- Whitelist Memory Functions -----------------------------------------------
+
+
+VOID ProcInfo::enumerateWhiteListMemory(){
+	
+	//add mainIMG address to the whitelist
+	whiteListMemory.push_back(mainImg);
+
+	//add stack
+	whiteListMemory.push_back(stack);
+
+	//add teb
+	whiteListMemory.push_back(teb);
+	
+	//add Libraries address to the whitelist
+	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
+		addWhitelistAddress(lib->StartAddress,lib->EndAddress);
+	}
+	
+}
+
+
+VOID ProcInfo::addWhitelistAddress(ADDRINT baseAddr,ADDRINT regionSize){
 	MemoryRange libItem;
 	libItem.StartAddress = baseAddr;
 	libItem.EndAddress = baseAddr + regionSize;
@@ -566,13 +626,15 @@ VOID ProcInfo::addWhitelistAddresses(ADDRINT baseAddr,ADDRINT regionSize){
 }
 
 BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
-	
-	//Iterate through the already whitelisted memory addresses
+
 	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
 		if(item->StartAddress <= address && address <= item->EndAddress){
-			return TRUE;
-		}						
+			return true;
+		}			
 	}
+	return false;
+
+	/* old version
 	if(isInsideMainIMG(address)){
 		return TRUE;
 	}
@@ -591,29 +653,14 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 	}
 
 	return isStackAddress(address); //FilterHandler::getInstance()->isStackAddress(address);
+	*/
 }
 
 void ProcInfo::PrintWhiteListedAddr(){
 	//Iterate through the already whitelisted memory addresses
 
-	MYINFO("Whitelisted main image %08x  ->  %08x",mainImg.StartAddress,mainImg.EndAddress);
-
 	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
-		MYINFO("Whitelisted static %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
-	}
-	
-	//iterate through the allocated memory addresses
-	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {
-		MYINFO("Whitelisted dynamic %08x  ->  %08x",item->begin,item->end)		;						
-	}
-
-	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
-		MYINFO("Whitelisted library %08x  ->  %08x",lib->StartAddress,lib->StartAddress)		;	
-	}
-
-	MYINFO("Whitelisted Teb %08x  ->  %08x",tebAddr,  tebAddr + TEB_SIZE );
-
-	MYINFO("Whitelisted Stack %08x  ->  %08x",stackBase - MAX_STACK_SIZE, stackBase);
-	
+		MYINFO("Whitelisted  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+	}	
 
 }

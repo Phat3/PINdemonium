@@ -15,7 +15,7 @@ ADDRINT handleRead (ADDRINT ip, ADDRINT read_addr){
 	if(!ProcInfo::getInstance()->isAddrInWhiteList(read_addr)){
 		MYINFO("%0x8 %s Trying to  read %08x : res %d\n",ip,s.c_str(), read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
 		MYINFO("Found suspicious read %08x\n",read_addr);
-		string hook = "Cane";
+		string hook = "Topo";
 		return (int)&hook;
 	}
 	//printf("NON HOOK\n");

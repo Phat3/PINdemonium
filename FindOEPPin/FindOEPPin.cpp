@@ -98,7 +98,7 @@ void imageLoadCallback(IMG img,void *){
 void Instruction(INS ins,void *v){
 	if(prova == 0){
 		ProcInfo *pInfo = ProcInfo::getInstance();
-		pInfo->getWhiteListAddresses();
+	//	pInfo->getDebugProcessAddresses();
 		pInfo->PrintWhiteListedAddr();
 		prova++;
 	}

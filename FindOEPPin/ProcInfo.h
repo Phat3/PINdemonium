@@ -77,7 +77,7 @@ public:
 	void PrintStartContext();
 	void PrintCurrContext();
 	void PrintSections();
-	void PrintWhiteListedAddr();
+
 
 	/* helper */
 	void insertSection(Section section);
@@ -108,13 +108,19 @@ public:
 	
 
 	//Library
-	BOOL isAddrInWhiteList(ADDRINT address);
-	VOID getWhiteListAddresses();
 	BOOL isLibraryInstruction(ADDRINT address);
 	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
-	VOID addWhitelistAddresses(ADDRINT baseAddr,ADDRINT regionSize);
+	
+	//Whitelist Memory
+	BOOL isAddrInWhiteList(ADDRINT address);
+	VOID enumerateWhiteListMemory();
+	VOID enumerateCurrentMemory();
+	VOID PrintCurrentMemorydAddr();
+	VOID PrintWhiteListedAddr();
+	VOID enumerateDebugProcessMemory();
 
+	
 	//Debug
 	void printHeapList();
 
@@ -127,14 +133,18 @@ private:
 	ProcInfo::ProcInfo();
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
-	ADDRINT stackBase;								//Stack base address
-	ADDRINT tebAddr;                                //Teb Base Address
+	
+	MemoryRange stack;								//Stack base address
+	MemoryRange teb;                                //Teb Base Address
 	MemoryRange mainImg;
+	std::vector<MemoryRange>  debuggedProcMemory;
+	std::vector<MemoryRange>  whiteListMemory;
+	std::vector<MemoryRange>  currentMemory;
+	
 	std::vector<Section> Sections;
 	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
 	std::vector<LibraryItem> LibrarySet;			//vector of know library loaded
-	std::vector<MemoryRange>  whiteListMemory;
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad
 	//this is a common technique to restore the initial register status after the unpacking routine
@@ -149,10 +159,21 @@ private:
 
 	void retrieveInterestingPidFromNames();
 	
-	//Library Handling Functions
-	VOID enumerateMemory(W::HANDLE hProc);
-	VOID enumerateMyMemory();
+	//Enumerate Whitelisted Memory Helpers	
+	VOID addWhitelistAddress(ADDRINT baseAddr,ADDRINT regionSize);
+	
+	//Enumerate current  Memory Helpers
+	VOID addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize);
 
+	//Enumerate Debug process Memory Helpers
+	VOID addDebugProcessAddresses(ADDRINT baseAddr,ADDRINT regionSize);
+	VOID enumerateProcessMemory(W::HANDLE hProc);
+
+
+		
+
+	
+	//Library Helpers
 	string libToString(LibraryItem lib);
 	VOID showFilteredLibs();
 	
