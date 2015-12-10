@@ -428,6 +428,7 @@ VOID ProcInfo::getWhiteListAddresses()
 	 }
 
 	 bool completed = false; 
+	 bool prova = false;
 
 	 while ( !completed )
 	  {
@@ -441,49 +442,56 @@ VOID ProcInfo::getWhiteListAddresses()
 		switch (DebugEvent.dwDebugEventCode)
 		{
 		case CREATE_PROCESS_DEBUG_EVENT:
-			MYPRINT("\nCREATE PROCESS\n");
+		  //MYPRINT("\nCREATE PROCESS\n");
 		  //enumerateMemory(pi.hProcess);
 		  break;
 
 		case EXIT_PROCESS_DEBUG_EVENT:
-			MYPRINT("\nEXIT PROCESS\n");
+		   //MYPRINT("\nEXIT PROCESS\n");
 		   //enumerateMemory(pi.hProcess);
 		  completed = true;
 		  break;
  
 		case CREATE_THREAD_DEBUG_EVENT:
-			MYPRINT("\nCREATE THREAD\n");
+			//MYPRINT("\nCREATE THREAD\n");
 		  //enumerateMemory(pi.hProcess);
 		  break;
 
 		case EXIT_THREAD_DEBUG_EVENT:
-			 MYPRINT("\nEXCEPTION\n");
+			 //MYPRINT("\nEXCEPTION\n");
 		 // enumerateMemory(pi.hProcess);
 		  break;
  
 		case LOAD_DLL_DEBUG_EVENT:
-			 MYPRINT("\nLOAD DLL\n");
+			 //MYPRINT("\nLOAD DLL\n");
 		  //enumerateMemory(pi.hProcess);
 		  break;
 
 		case UNLOAD_DLL_DEBUG_EVENT:
-			 MYPRINT("\nUNLOAD DLL\n");
+			 //MYPRINT("\nUNLOAD DLL\n");
 		  //enumerateMemory(pi.hProcess);
 		  break;
  
 		case OUTPUT_DEBUG_STRING_EVENT:
-			 MYPRINT("\nSTRING EVENT\n");
+			 //MYPRINT("\nSTRING EVENT\n");
 		  //enumerateMemory(pi.hProcess);
 		  break;
 
 		case EXCEPTION_DEBUG_EVENT:
-		   MYPRINT("\nEXCEPTION\n");
+		   //MYPRINT("\nEXCEPTION\n");
 		   exception = DebugEvent.u.Exception;
 		   if( exception.ExceptionRecord.ExceptionCode == 0x80000003L)
 		   {
+			   if(!prova){
+				prova = true;
+			   }
+			   else{
 				  MYPRINT("\nEXCEPTION BREAK at %08x\n",  exception.ExceptionRecord.ExceptionAddress);
-				 
 				  enumerateMemory(pi.hProcess);
+				  W::TerminateProcess(pi.hProcess,0);
+				  completed = true;
+			   }
+				 
 		   }
 		   break;
 
@@ -500,7 +508,6 @@ VOID ProcInfo::getWhiteListAddresses()
 	 printf("Mulanciato");
 	 //W::Sleep(200000);
 	 //enumerateMemory(pi.hProcess);
-	 W::TerminateProcess(pi.hProcess,0);
 	 //PrintWhiteListedAddr();
 	 		
 }
@@ -518,8 +525,8 @@ VOID ProcInfo::enumerateMemory(W::HANDLE hProc){
 		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_MAPPED || mbi.Type == MEM_IMAGE) )
 		{
 			//ADDRINT end = (ADDRINT)mbi.BaseAddress + mbi.RegionSize;
-			MYPRINT("Whitelisted static %08x  ->  %08x\t STATE : %08x \t TYPE : %08x", (ADDRINT)mbi.BaseAddress, mbi.RegionSize, mbi.State, mbi.Type);
-			//addWhitelistAddresses((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
+			//MYPRINT("Whitelisted static %08x  ->  %08x\t STATE : %08x \t TYPE : %08x", (ADDRINT)mbi.BaseAddress, mbi.RegionSize, mbi.State, mbi.Type);
+			addWhitelistAddresses((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
 
 		}
 		MyAddress += mbi.RegionSize;
@@ -596,12 +603,37 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 void ProcInfo::PrintWhiteListedAddr(){
 	//Iterate through the already whitelisted memory addresses
 
-	MYINFO("Whitelisted main image %08x  ->  %08x",mainImg.StartAddress,mainImg.EndAddress);
+	//MYINFO("Whitelisted main image %08x  ->  %08x",mainImg.StartAddress,mainImg.EndAddress);
+	MYINFO("BEFORE MERGE :");
 
 	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
-		MYINFO("Whitelisted static %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+		MYPRINT("Whitelisted static %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
 	}
+
+	//merge interval algorithm
+	//IP1 : the set of intervals is sorted in ascending order
+	//IP2 : the intervals never overlaps each other (at most the end of the previous is equals at the start of the current)
 	
+	//get the first element
+	std::vector<MemoryRange>::iterator prev_item = whiteListMemory.begin();
+	//start from the second till the end
+	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin() + 1; item != whiteListMemory.end(); item++) {
+		//if the end of the previous is equal to the start of the current we have tu merge the two interval and delete the previous
+		if(item->StartAddress == prev_item->EndAddress){
+			item->StartAddress = prev_item->StartAddress;
+			//get the new iterator because we have erased an elemment and the old one is broken
+			item = whiteListMemory.erase(prev_item);
+		}
+		prev_item = item;
+	}
+
+	MYPRINT("AFTER MERGE :");
+
+	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
+		MYPRINT("Whitelisted static %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+	}
+
+	/*
 	//iterate through the allocated memory addresses
 	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {
 		MYINFO("Whitelisted dynamic %08x  ->  %08x",item->begin,item->end)		;						
@@ -614,6 +646,7 @@ void ProcInfo::PrintWhiteListedAddr(){
 	MYINFO("Whitelisted Teb %08x  ->  %08x",tebAddr,  tebAddr + TEB_SIZE );
 
 	MYINFO("Whitelisted Stack %08x  ->  %08x",stackBase - MAX_STACK_SIZE, stackBase);
+	*/
 	
 
 }
