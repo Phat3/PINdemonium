@@ -99,7 +99,8 @@ void Instruction(INS ins,void *v){
 	if(prova == 0){
 		ProcInfo *pInfo = ProcInfo::getInstance();
 	//	pInfo->getDebugProcessAddresses();
-		pInfo->PrintWhiteListedAddr();
+		//pInfo->PrintWhiteListedAddr();
+		pInfo->PrintAllMemory();
 		prova++;
 	}
 	if(Config::EVASION_MODE){

@@ -418,7 +418,7 @@ VOID ProcInfo::setStackBase(ADDRINT addr){
 VOID ProcInfo::enumerateDebugProcessMemory()
 {
 	
-	//enumerateMyMemory();
+	//enumerateMemory();
 	//PrintWhiteListedAddr();
 	
 	W::PROCESS_INFORMATION pi = {0};
@@ -561,7 +561,7 @@ void ProcInfo::PrintDebugProcessAddr(){
 	//Iterate through the already whitelisted memory addresses
 
 	for(std::vector<MemoryRange>::iterator item = debuggedProcMemory.begin(); item != debuggedProcMemory.end(); ++item) {
-		MYINFO("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+		MYPRINT("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
 	}	
 
 }
@@ -569,6 +569,7 @@ void ProcInfo::PrintDebugProcessAddr(){
 
 //------------------------------------------------------------ Current Memory Functions ------------------------------------------------------------
 
+//all memory of the program with pin in its
 VOID ProcInfo::enumerateCurrentMemory(){
 	W::MEMORY_BASIC_INFORMATION mbi;
 	W::SIZE_T numBytes;
@@ -606,7 +607,7 @@ void ProcInfo::PrintCurrentMemorydAddr(){
 	//Iterate through the already whitelisted memory addresses
 
 	for(std::vector<MemoryRange>::iterator item = currentMemory.begin(); item != currentMemory.end(); ++item) {
-		MYINFO("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+		MYPRINT("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
 	}	
 
 }
@@ -616,12 +617,12 @@ void ProcInfo::PrintCurrentMemorydAddr(){
 
 
 VOID ProcInfo::enumerateWhiteListMemory(){
-	
-	//add mainIMG address to the whitelist
-	whiteListMemory.push_back(mainImg);
 
 	//add stack
 	whiteListMemory.push_back(stack);
+	
+	//add mainIMG address to the whitelist
+	whiteListMemory.push_back(mainImg);
 
 	//add teb
 	whiteListMemory.push_back(teb);
@@ -673,11 +674,10 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 	*/
 }
 
-VOID ProcInfo::mergeMemoryAddresses(){
-		//merge interval algorithm
-	//IP1 : the set of intervals is sorted in ascending order
-	//IP2 : the intervals never overlaps each other (at most the end of the previous is equals at the start of the current)
-	
+//merge interval algorithm
+//IP1 : the set of intervals is sorted in ascending order
+//IP2 : the intervals never overlaps each other (at most the end of the previous is equals at the start of the current)
+VOID ProcInfo::mergeMemoryAddresses(){	
 	//get the first element
 	std::vector<MemoryRange>::iterator prev_item = whiteListMemory.begin();
 	//start from the second till the end
@@ -692,11 +692,26 @@ VOID ProcInfo::mergeMemoryAddresses(){
 	}
 }
 
+VOID ProcInfo::mergeCurrentMemory(){	
+	//get the first element
+	std::vector<MemoryRange>::iterator prev_item = currentMemory.begin();
+	//start from the second till the end
+	for(std::vector<MemoryRange>::iterator item = currentMemory.begin() + 1; item != currentMemory.end(); item++) {
+		//if the end of the previous is equal to the start of the current we have tu merge the two interval and delete the previous
+		if(item->StartAddress == prev_item->EndAddress){
+			item->StartAddress = prev_item->StartAddress;
+			//get the new iterator because we have erased an elemment and the old one is broken
+			item = currentMemory.erase(prev_item);
+		}
+		prev_item = item;
+	}
+}
+
 void ProcInfo::PrintWhiteListedAddr(){
 	//Iterate through the already whitelisted memory addresses
 
 	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
-		MYINFO("Whitelisted  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+		MYPRINT("Whitelisted  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
 	}	
 
 
@@ -715,4 +730,17 @@ void ProcInfo::PrintWhiteListedAddr(){
 	MYINFO("Whitelisted Stack %08x  ->  %08x",stackBase - MAX_STACK_SIZE, stackBase);
 	*/
 
+}
+
+
+void ProcInfo::PrintAllMemory(){
+
+	MYPRINT("\nCurrent Memory:");
+	this->enumerateCurrentMemory();
+	this->mergeCurrentMemory();
+	this->PrintCurrentMemorydAddr();
+	MYPRINT("\nWhitelist:");
+	this->enumerateWhiteListMemory();
+	//this->mergeMemoryAddresses();
+	this->PrintWhiteListedAddr();
 }

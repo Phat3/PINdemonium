@@ -124,8 +124,7 @@ public:
 	
 	//Debug
 	void printHeapList();
-
-
+	void PrintAllMemory();
 
 	
 private:
@@ -163,6 +162,7 @@ private:
 	//Enumerate Whitelisted Memory Helpers	
 	VOID addWhitelistAddress(ADDRINT baseAddr,ADDRINT regionSize);
 	VOID mergeMemoryAddresses();
+	VOID mergeCurrentMemory();
 	
 	//Enumerate current  Memory Helpers
 	VOID addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize);
@@ -171,8 +171,6 @@ private:
 	VOID addDebugProcessAddresses(ADDRINT baseAddr,ADDRINT regionSize);
 	VOID enumerateProcessMemory(W::HANDLE hProc);
 
-
-		
 
 	
 	//Library Helpers
