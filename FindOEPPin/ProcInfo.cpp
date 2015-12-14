@@ -353,6 +353,37 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 	return FALSE;	
 }
 
+void ProcInfo::populateProcAddresses(){
+	populatePebAddress();
+	populateTebAddress();
+	populateContextDataAddress();
+
+}
+
+
+
+//------------------------------------------------------------PEB------------------------------------------------------------
+VOID ProcInfo::populatePebAddress(){
+
+	typedef int (WINAPI* ZwQueryInformationProcess)(W::HANDLE,W::DWORD,W::PROCESS_BASIC_INFORMATION*,W::DWORD,W::DWORD*);
+	ZwQueryInformationProcess MyZwQueryInformationProcess;
+ 
+	W::PROCESS_BASIC_INFORMATION tmppeb;
+	W::DWORD tmp;
+ 
+	W::HMODULE hMod = W::GetModuleHandle("ntdll.dll");
+	MyZwQueryInformationProcess = (ZwQueryInformationProcess)W::GetProcAddress(hMod,"ZwQueryInformationProcess");
+ 
+	MyZwQueryInformationProcess(W::GetCurrentProcess(),0,&tmppeb,sizeof(W::PROCESS_BASIC_INFORMATION),&tmp);
+	MYINFO("Peb ADDRESS %08x\n",tmppeb.PebBaseAddress);
+	peb = *(PEB *) tmppeb.PebBaseAddress;
+	MYINFO("is debugged %d",peb.BeingDebugged);
+	MYINFO("is ReadOnlySharedMemoryBase %08x",peb.ReadOnlySharedMemoryBase);
+	MYINFO("is AnsiCodePageData %08x",peb.AnsiCodePageData);
+	MYINFO("is GdiSharedHandleTable %08x",peb.GdiSharedHandleTable);
+
+}
+
 //------------------------------------------------------------TEB------------------------------------------------------------
 
 
@@ -364,7 +395,7 @@ BOOL ProcInfo::isTebAddress(ADDRINT addr) {
 }
 
 
-VOID ProcInfo::initTebAddress(){
+VOID ProcInfo::populateTebAddress(){
 
 	W::_TEB *tebAddr = W::NtCurrentTeb();
 	//sprintf(tebStr,"%x",teb);
@@ -373,7 +404,27 @@ VOID ProcInfo::initTebAddress(){
 	MYINFO("Init Teb base address %x   ->  %x",teb.StartAddress,teb.EndAddress);
 
 }
+//------------------------------------------------------------ Context Data ------------------------------------------------------------
+MemoryRange ProcInfo::getMemoryRange(ADDRINT address){
+		MemoryRange range;
+		W::MEMORY_BASIC_INFORMATION mbi;
+		int numBytes = W::VirtualQuery((W::LPCVOID)address, &mbi, sizeof(mbi));
+		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
+		if((mbi.State == MEM_COMMIT || mbi.State == MEM_MAPPED) || mbi.State == MEM_IMAGE ){
+			range.StartAddress = (int)mbi.BaseAddress;
+			range.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
+		}
+		return range;
+}
 
+VOID ProcInfo::populateContextDataAddress(){
+	activationContextData = getMemoryRange((ADDRINT)peb.ActivationContextData);
+	MYINFO("Init activationContextData base address  %08x -> %08x ",activationContextData.StartAddress,activationContextData.EndAddress);
+	systemDefaultActivationContextData = getMemoryRange((ADDRINT)peb.SystemDefaultActivationContextData);
+	MYINFO("Init systemDefaultActivationContextData base address  %08x -> %08x",systemDefaultActivationContextData.StartAddress,systemDefaultActivationContextData.EndAddress);
+	pContextData = getMemoryRange((ADDRINT)peb.pContextData);
+	MYINFO("Init pContextData base address  %08x -> %08x",pContextData.StartAddress,pContextData.EndAddress);
+}
 //------------------------------------------------------------ Stack ------------------------------------------------------------
 
 /**
@@ -386,7 +437,7 @@ BOOL ProcInfo::isStackAddress(ADDRINT addr) {
 /**
 Initializing the base stack address by getting a value in the stack and searching the highest allocated address in the same memory region
 **/
-VOID ProcInfo::setStackBase(ADDRINT addr){
+VOID ProcInfo::initStackAddress(ADDRINT addr){
 	//hasn't been already initialized
 	if(stack.EndAddress == 0) {	
 	
@@ -413,12 +464,16 @@ VOID ProcInfo::setStackBase(ADDRINT addr){
 	}	
 
 }
+
+
+
+//
 //------------------------------------------------------------ Debug Process Addresses Test ------------------------------------------------------------
 
 VOID ProcInfo::enumerateDebugProcessMemory()
 {
 	
-	//enumerateMyMemory();
+	//enumerateMemory();
 	//PrintWhiteListedAddr();
 	
 	W::PROCESS_INFORMATION pi = {0};
@@ -561,7 +616,7 @@ void ProcInfo::PrintDebugProcessAddr(){
 	//Iterate through the already whitelisted memory addresses
 
 	for(std::vector<MemoryRange>::iterator item = debuggedProcMemory.begin(); item != debuggedProcMemory.end(); ++item) {
-		MYINFO("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+		MYPRINT("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
 	}	
 
 }
@@ -569,6 +624,7 @@ void ProcInfo::PrintDebugProcessAddr(){
 
 //------------------------------------------------------------ Current Memory Functions ------------------------------------------------------------
 
+//all memory of the program with pin in its
 VOID ProcInfo::enumerateCurrentMemory(){
 	W::MEMORY_BASIC_INFORMATION mbi;
 	W::SIZE_T numBytes;
@@ -606,7 +662,7 @@ void ProcInfo::PrintCurrentMemorydAddr(){
 	//Iterate through the already whitelisted memory addresses
 
 	for(std::vector<MemoryRange>::iterator item = currentMemory.begin(); item != currentMemory.end(); ++item) {
-		MYINFO("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+		MYPRINT("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
 	}	
 
 }
@@ -615,13 +671,14 @@ void ProcInfo::PrintCurrentMemorydAddr(){
 //----------------------------------------------- Whitelist Memory Functions -----------------------------------------------
 
 
+
 VOID ProcInfo::enumerateWhiteListMemory(){
-	
-	//add mainIMG address to the whitelist
-	whiteListMemory.push_back(mainImg);
 
 	//add stack
 	whiteListMemory.push_back(stack);
+	
+	//add mainIMG address to the whitelist
+	whiteListMemory.push_back(mainImg);
 
 	//add teb
 	whiteListMemory.push_back(teb);
@@ -673,11 +730,10 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 	*/
 }
 
-VOID ProcInfo::mergeMemoryAddresses(){
-		//merge interval algorithm
-	//IP1 : the set of intervals is sorted in ascending order
-	//IP2 : the intervals never overlaps each other (at most the end of the previous is equals at the start of the current)
-	
+//merge interval algorithm
+//IP1 : the set of intervals is sorted in ascending order
+//IP2 : the intervals never overlaps each other (at most the end of the previous is equals at the start of the current)
+VOID ProcInfo::mergeMemoryAddresses(){	
 	//get the first element
 	std::vector<MemoryRange>::iterator prev_item = whiteListMemory.begin();
 	//start from the second till the end
@@ -692,11 +748,26 @@ VOID ProcInfo::mergeMemoryAddresses(){
 	}
 }
 
+VOID ProcInfo::mergeCurrentMemory(){	
+	//get the first element
+	std::vector<MemoryRange>::iterator prev_item = currentMemory.begin();
+	//start from the second till the end
+	for(std::vector<MemoryRange>::iterator item = currentMemory.begin() + 1; item != currentMemory.end(); item++) {
+		//if the end of the previous is equal to the start of the current we have tu merge the two interval and delete the previous
+		if(item->StartAddress == prev_item->EndAddress){
+			item->StartAddress = prev_item->StartAddress;
+			//get the new iterator because we have erased an elemment and the old one is broken
+			item = currentMemory.erase(prev_item);
+		}
+		prev_item = item;
+	}
+}
+
 void ProcInfo::PrintWhiteListedAddr(){
 	//Iterate through the already whitelisted memory addresses
 
 	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
-		MYINFO("Whitelisted  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+		MYPRINT("Whitelisted  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
 	}	
 
 
@@ -715,4 +786,17 @@ void ProcInfo::PrintWhiteListedAddr(){
 	MYINFO("Whitelisted Stack %08x  ->  %08x",stackBase - MAX_STACK_SIZE, stackBase);
 	*/
 
+}
+
+
+void ProcInfo::PrintAllMemory(){
+
+	MYPRINT("\nCurrent Memory:");
+	this->enumerateCurrentMemory();
+	this->mergeCurrentMemory();
+	this->PrintCurrentMemorydAddr();
+	MYPRINT("\nWhitelist:");
+	this->enumerateWhiteListMemory();
+	//this->mergeMemoryAddresses();
+	this->PrintWhiteListedAddr();
 }

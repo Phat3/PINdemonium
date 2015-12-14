@@ -15,6 +15,24 @@ namespace W{
 #define MAX_STACK_SIZE 0x100000    //Used to define the memory range of the stack
 #define TEB_SIZE 0xf28	
 
+typedef struct PEB {
+	W::BYTE padding1[2];
+	W::BYTE BeingDebugged ;
+	W::BYTE padding2[73];
+	W::PVOID ReadOnlySharedMemoryBase;
+	W::BYTE padding3[8];
+	W::PVOID AnsiCodePageData;
+	W::BYTE padding4[56];
+	W::PVOID GdiSharedHandleTable;
+	W::BYTE padding5[352];
+	W::PVOID ActivationContextData;
+	W::BYTE padding6[4];
+	W::PVOID SystemDefaultActivationContextData;
+	W::BYTE padding7[52];
+	W::PVOID pContextData;
+
+}PEB;
+
 struct MemoryRange{
 	ADDRINT StartAddress;
 	ADDRINT EndAddress;
@@ -64,6 +82,7 @@ public:
 	
 
 	/* setter */
+	void populateProcAddresses();
 	void setFirstINSaddress(ADDRINT address);
 	void setPrevIp(ADDRINT ip);
 	void setInitialEntropy(float Entropy);
@@ -92,17 +111,10 @@ public:
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
 	BOOL isInsideMainIMG(ADDRINT address);
 	BOOL isInterestingProcess(unsigned int pid);
-
-	
-
 	//TEB
-	ADDRINT getTebBase();
-	VOID initTebAddress();
 	BOOL isTebAddress(ADDRINT addr);
-
 	//Stack
-	ADDRINT getStackBase();
-	VOID setStackBase(ADDRINT addr);
+	VOID initStackAddress(ADDRINT addr);
 	BOOL isStackAddress(ADDRINT addr);
 
 	
@@ -124,8 +136,7 @@ public:
 	
 	//Debug
 	void printHeapList();
-
-
+	void PrintAllMemory();
 
 	
 private:
@@ -135,9 +146,16 @@ private:
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
 	
+	
 	MemoryRange stack;								//Stack base address
-	MemoryRange teb;                                //Teb Base Address
+	MemoryRange systemDefaultActivationContextData;
+	MemoryRange activationContextData;
+	MemoryRange pContextData;
 	MemoryRange mainImg;
+	MemoryRange readOnlySharedMemoryBase;
+	MemoryRange ansiCodePageData;
+	MemoryRange teb;                                //Teb Base Address
+	PEB peb;
 	std::vector<MemoryRange>  debuggedProcMemory;
 	std::vector<MemoryRange>  whiteListMemory;
 	std::vector<MemoryRange>  currentMemory;
@@ -161,9 +179,16 @@ private:
 	void retrieveInterestingPidFromNames();
 	
 	//Enumerate Whitelisted Memory Helpers	
+	//return the MemoryRange in which the address is mapped
+	MemoryRange getMemoryRange(ADDRINT address);
 	VOID addWhitelistAddress(ADDRINT baseAddr,ADDRINT regionSize);
 	VOID mergeMemoryAddresses();
+	VOID mergeCurrentMemory();
 	
+	VOID populateTebAddress();
+	VOID populatePebAddress();
+	VOID populateContextDataAddress();
+
 	//Enumerate current  Memory Helpers
 	VOID addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize);
 
@@ -171,8 +196,6 @@ private:
 	VOID addDebugProcessAddresses(ADDRINT baseAddr,ADDRINT regionSize);
 	VOID enumerateProcessMemory(W::HANDLE hProc);
 
-
-		
 
 	
 	//Library Helpers

@@ -99,7 +99,6 @@ void Instruction(INS ins,void *v){
 	
 	if(prova == 0){
 		ProcInfo *pInfo = ProcInfo::getInstance();
-	//	pInfo->getDebugProcessAddresses();
 		pInfo->enumerateWhiteListMemory();
 		pInfo->PrintWhiteListedAddr();
 		prova++;
@@ -118,7 +117,7 @@ void Instruction(INS ins,void *v){
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	ProcInfo *pInfo = ProcInfo::getInstance();
-	pInfo->setStackBase(stackBase);
+	pInfo->initStackAddress(stackBase);
 }
 
 void initDebug(){
@@ -158,7 +157,7 @@ int main(int argc, char * argv[]){
 	// Register ImageUnload to be called when an image is unloaded
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 
-	proc_info->initTebAddress();
+	proc_info->populateProcAddresses();
 
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
