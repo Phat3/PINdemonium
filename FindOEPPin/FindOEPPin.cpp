@@ -96,9 +96,11 @@ void imageLoadCallback(IMG img,void *){
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
+	
 	if(prova == 0){
 		ProcInfo *pInfo = ProcInfo::getInstance();
 	//	pInfo->getDebugProcessAddresses();
+		pInfo->enumerateWhiteListMemory();
 		pInfo->PrintWhiteListedAddr();
 		prova++;
 	}
