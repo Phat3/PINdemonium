@@ -99,8 +99,12 @@ void Instruction(INS ins,void *v){
 	
 	if(prova == 0){
 		ProcInfo *pInfo = ProcInfo::getInstance();
-		pInfo->enumerateWhiteListMemory();
-		pInfo->PrintWhiteListedAddr();
+		string s = INS_Disassemble(ins);
+		ADDRINT curEip = INS_Address(ins);
+		MYINFO("-> %08x   :    %s",curEip,s.c_str());
+	//	pInfo->enumerateWhiteListMemory();
+	//	pInfo->PrintWhiteListedAddr();
+		pInfo->PrintAllMemory();
 		prova++;
 	}
 	if(Config::EVASION_MODE){

@@ -357,6 +357,8 @@ void ProcInfo::populateProcAddresses(){
 	populatePebAddress();
 	populateTebAddress();
 	populateContextDataAddress();
+	populateCodePageData();
+	populateSharedMemory();
 
 }
 
@@ -377,10 +379,6 @@ VOID ProcInfo::populatePebAddress(){
 	MyZwQueryInformationProcess(W::GetCurrentProcess(),0,&tmppeb,sizeof(W::PROCESS_BASIC_INFORMATION),&tmp);
 	MYINFO("Peb ADDRESS %08x\n",tmppeb.PebBaseAddress);
 	peb = *(PEB *) tmppeb.PebBaseAddress;
-	MYINFO("is debugged %d",peb.BeingDebugged);
-	MYINFO("is ReadOnlySharedMemoryBase %08x",peb.ReadOnlySharedMemoryBase);
-	MYINFO("is AnsiCodePageData %08x",peb.AnsiCodePageData);
-	MYINFO("is GdiSharedHandleTable %08x",peb.GdiSharedHandleTable);
 
 }
 
@@ -404,27 +402,7 @@ VOID ProcInfo::populateTebAddress(){
 	MYINFO("Init Teb base address %x   ->  %x",teb.StartAddress,teb.EndAddress);
 
 }
-//------------------------------------------------------------ Context Data ------------------------------------------------------------
-MemoryRange ProcInfo::getMemoryRange(ADDRINT address){
-		MemoryRange range;
-		W::MEMORY_BASIC_INFORMATION mbi;
-		int numBytes = W::VirtualQuery((W::LPCVOID)address, &mbi, sizeof(mbi));
-		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
-		if((mbi.State == MEM_COMMIT || mbi.State == MEM_MAPPED) || mbi.State == MEM_IMAGE ){
-			range.StartAddress = (int)mbi.BaseAddress;
-			range.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
-		}
-		return range;
-}
 
-VOID ProcInfo::populateContextDataAddress(){
-	activationContextData = getMemoryRange((ADDRINT)peb.ActivationContextData);
-	MYINFO("Init activationContextData base address  %08x -> %08x ",activationContextData.StartAddress,activationContextData.EndAddress);
-	systemDefaultActivationContextData = getMemoryRange((ADDRINT)peb.SystemDefaultActivationContextData);
-	MYINFO("Init systemDefaultActivationContextData base address  %08x -> %08x",systemDefaultActivationContextData.StartAddress,systemDefaultActivationContextData.EndAddress);
-	pContextData = getMemoryRange((ADDRINT)peb.pContextData);
-	MYINFO("Init pContextData base address  %08x -> %08x",pContextData.StartAddress,pContextData.EndAddress);
-}
 //------------------------------------------------------------ Stack ------------------------------------------------------------
 
 /**
@@ -466,6 +444,41 @@ VOID ProcInfo::initStackAddress(ADDRINT addr){
 }
 
 
+//------------------------------------------------------------ Other Memory Location ------------------------------------------------------------
+BOOL isGenericMemoryAddress(ADDRINT address){
+
+}
+
+MemoryRange ProcInfo::getMemoryRange(ADDRINT address){
+		MemoryRange range;
+		W::MEMORY_BASIC_INFORMATION mbi;
+		int numBytes = W::VirtualQuery((W::LPCVOID)address, &mbi, sizeof(mbi));
+		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
+		if((mbi.State == MEM_COMMIT || mbi.State == MEM_MAPPED) || mbi.State == MEM_IMAGE ){
+			range.StartAddress = (int)mbi.BaseAddress;
+			range.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
+		}
+		return range;
+}
+
+VOID ProcInfo::populateContextDataAddress(){
+	activationContextData = getMemoryRange((ADDRINT)peb.ActivationContextData);
+	MYINFO("Init activationContextData base address  %08x -> %08x ",activationContextData.StartAddress,activationContextData.EndAddress);
+	systemDefaultActivationContextData = getMemoryRange((ADDRINT)peb.SystemDefaultActivationContextData);
+	MYINFO("Init systemDefaultActivationContextData base address  %08x -> %08x",systemDefaultActivationContextData.StartAddress,systemDefaultActivationContextData.EndAddress);
+	pContextData = getMemoryRange((ADDRINT)peb.pContextData);
+	MYINFO("Init pContextData base address  %08x -> %08x",pContextData.StartAddress,pContextData.EndAddress);
+}
+
+VOID ProcInfo::populateSharedMemory(){
+	readOnlySharedMemoryBase = getMemoryRange((ADDRINT) peb.ReadOnlySharedMemoryBase);
+	MYINFO("Init readOnlySharedMemoryBase base address  %08x -> %08x",readOnlySharedMemoryBase.StartAddress,readOnlySharedMemoryBase.EndAddress);
+}
+
+VOID ProcInfo::populateCodePageData(){
+	ansiCodePageData = getMemoryRange((ADDRINT) peb.AnsiCodePageData);
+	MYINFO("Init ansiCodePageData base address  %08x -> %08x",ansiCodePageData.StartAddress,ansiCodePageData.EndAddress);
+}
 
 //
 //------------------------------------------------------------ Debug Process Addresses Test ------------------------------------------------------------
@@ -671,23 +684,33 @@ void ProcInfo::PrintCurrentMemorydAddr(){
 //----------------------------------------------- Whitelist Memory Functions -----------------------------------------------
 
 
-
+//Add to the the Whitelist array the memory ranges which the process is authorized to read
+//NB need to be called AFTER populatePebAddress
 VOID ProcInfo::enumerateWhiteListMemory(){
 
 	//add stack
 	whiteListMemory.push_back(stack);
-	
+
+	//Add Context data
+	whiteListMemory.push_back(systemDefaultActivationContextData);
+	whiteListMemory.push_back(activationContextData);
+	whiteListMemory.push_back(pContextData);
+
 	//add mainIMG address to the whitelist
 	whiteListMemory.push_back(mainImg);
 
-	//add teb
-	whiteListMemory.push_back(teb);
+	
 	
 	//add Libraries address to the whitelist
 	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
 		addWhitelistAddress(lib->StartAddress,lib->EndAddress);
 	}
-	
+	//add Shared Memory pages
+	whiteListMemory.push_back(readOnlySharedMemoryBase);
+	whiteListMemory.push_back(ansiCodePageData);
+
+	//add teb
+	whiteListMemory.push_back(teb);
 }
 
 
@@ -700,15 +723,15 @@ VOID ProcInfo::addWhitelistAddress(ADDRINT baseAddr,ADDRINT regionSize){
 }
 
 BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
-
+	/*
 	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
 		if(item->StartAddress <= address && address <= item->EndAddress){
 			return true;
 		}			
 	}
 	return false;
-
-	/* old version
+	*/
+	// old version
 	if(isInsideMainIMG(address)){
 		return TRUE;
 	}
@@ -727,7 +750,7 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 	}
 
 	return isStackAddress(address); //FilterHandler::getInstance()->isStackAddress(address);
-	*/
+	
 }
 
 //merge interval algorithm

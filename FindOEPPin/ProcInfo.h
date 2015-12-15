@@ -188,6 +188,8 @@ private:
 	VOID populateTebAddress();
 	VOID populatePebAddress();
 	VOID populateContextDataAddress();
+	VOID populateSharedMemory();
+	VOID populateCodePageData();
 
 	//Enumerate current  Memory Helpers
 	VOID addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize);
