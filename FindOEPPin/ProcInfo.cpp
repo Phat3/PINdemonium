@@ -377,10 +377,17 @@ VOID ProcInfo::populatePebAddress(){
 	MyZwQueryInformationProcess = (ZwQueryInformationProcess)W::GetProcAddress(hMod,"ZwQueryInformationProcess");
  
 	MyZwQueryInformationProcess(W::GetCurrentProcess(),0,&tmppeb,sizeof(W::PROCESS_BASIC_INFORMATION),&tmp);
-	MYINFO("Peb ADDRESS %08x\n",tmppeb.PebBaseAddress);
-	peb = *(PEB *) tmppeb.PebBaseAddress;
+	peb = (PEB *) tmppeb.PebBaseAddress;
+	
+	MYINFO("Init Peb base address %08x  -> %08x\n",(ADDRINT)peb, (ADDRINT)peb + sizeof(PEB));
 
 }
+
+BOOL ProcInfo::isPebAddress(ADDRINT addr) {
+
+	return ((ADDRINT)peb <= addr && addr <= (ADDRINT)peb + sizeof(PEB) ) ;
+} 
+
 
 //------------------------------------------------------------TEB------------------------------------------------------------
 
@@ -445,8 +452,13 @@ VOID ProcInfo::initStackAddress(ADDRINT addr){
 
 
 //------------------------------------------------------------ Other Memory Location ------------------------------------------------------------
-BOOL isGenericMemoryAddress(ADDRINT address){
-
+BOOL ProcInfo::isGenericMemoryAddress(ADDRINT address){
+	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {
+		if(item->StartAddress <= address && address <= item->EndAddress){
+			return true;
+		}			
+	}
+	return false;
 }
 
 MemoryRange ProcInfo::getMemoryRange(ADDRINT address){
@@ -462,176 +474,29 @@ MemoryRange ProcInfo::getMemoryRange(ADDRINT address){
 }
 
 VOID ProcInfo::populateContextDataAddress(){
-	activationContextData = getMemoryRange((ADDRINT)peb.ActivationContextData);
+	MemoryRange activationContextData = getMemoryRange((ADDRINT)peb->ActivationContextData);
 	MYINFO("Init activationContextData base address  %08x -> %08x ",activationContextData.StartAddress,activationContextData.EndAddress);
-	systemDefaultActivationContextData = getMemoryRange((ADDRINT)peb.SystemDefaultActivationContextData);
+	MemoryRange systemDefaultActivationContextData = getMemoryRange((ADDRINT)peb->SystemDefaultActivationContextData);
 	MYINFO("Init systemDefaultActivationContextData base address  %08x -> %08x",systemDefaultActivationContextData.StartAddress,systemDefaultActivationContextData.EndAddress);
-	pContextData = getMemoryRange((ADDRINT)peb.pContextData);
+	MemoryRange pContextData = getMemoryRange((ADDRINT)peb->pContextData);
 	MYINFO("Init pContextData base address  %08x -> %08x",pContextData.StartAddress,pContextData.EndAddress);
+	
+	genericMemoryRanges.push_back(activationContextData);
+	genericMemoryRanges.push_back(systemDefaultActivationContextData);
+	genericMemoryRanges.push_back(pContextData);
 }
 
 VOID ProcInfo::populateSharedMemory(){
-	readOnlySharedMemoryBase = getMemoryRange((ADDRINT) peb.ReadOnlySharedMemoryBase);
+	MemoryRange readOnlySharedMemoryBase = getMemoryRange((ADDRINT) peb->ReadOnlySharedMemoryBase);
 	MYINFO("Init readOnlySharedMemoryBase base address  %08x -> %08x",readOnlySharedMemoryBase.StartAddress,readOnlySharedMemoryBase.EndAddress);
+	genericMemoryRanges.push_back(readOnlySharedMemoryBase);
+
 }
 
 VOID ProcInfo::populateCodePageData(){
-	ansiCodePageData = getMemoryRange((ADDRINT) peb.AnsiCodePageData);
+	MemoryRange ansiCodePageData = getMemoryRange((ADDRINT) peb->AnsiCodePageData);
 	MYINFO("Init ansiCodePageData base address  %08x -> %08x",ansiCodePageData.StartAddress,ansiCodePageData.EndAddress);
-}
-
-//
-//------------------------------------------------------------ Debug Process Addresses Test ------------------------------------------------------------
-
-VOID ProcInfo::enumerateDebugProcessMemory()
-{
-	
-	//enumerateMemory();
-	//PrintWhiteListedAddr();
-	
-	W::PROCESS_INFORMATION pi = {0};
-	W::STARTUPINFO si   = {0};
-	si.cb   = sizeof(si);
-
-
-	MYINFO("running exe suspended\n");
-	
-	 // Create the process
-	 int result = W::CreateProcess( full_proc_name.c_str(), NULL, NULL, NULL, TRUE, DEBUG_ONLY_THIS_PROCESS, NULL, NULL, &si, &pi);
-	 
-	 if (!result){
-		MYINFO("Error lauching the process\n");
-		return;
-	 }
-
-	 bool completed = false; 
-	 bool prova = false;
-
-	 while ( !completed )
-	  {
-		W::DEBUG_EVENT DebugEvent;
-		W::EXCEPTION_DEBUG_INFO& exception =  DebugEvent.u.Exception;
-		if ( !W::WaitForDebugEvent(&DebugEvent, INFINITE) ){
-		  printf("Errore debugger!\n");
-		  return;
-		}
-		
-		switch (DebugEvent.dwDebugEventCode)
-		{
-		case CREATE_PROCESS_DEBUG_EVENT:
-		  //MYPRINT("\nCREATE PROCESS\n");
-		  //enumerateMemory(pi.hProcess);
-		  break;
-
-		case EXIT_PROCESS_DEBUG_EVENT:
-		   //MYPRINT("\nEXIT PROCESS\n");
-		   //enumerateMemory(pi.hProcess);
-		  completed = true;
-		  break;
- 
-		case CREATE_THREAD_DEBUG_EVENT:
-			//MYPRINT("\nCREATE THREAD\n");
-		  //enumerateMemory(pi.hProcess);
-		  break;
-
-		case EXIT_THREAD_DEBUG_EVENT:
-			 //MYPRINT("\nEXCEPTION\n");
-		 // enumerateMemory(pi.hProcess);
-		  break;
- 
-		case LOAD_DLL_DEBUG_EVENT:
-			 //MYPRINT("\nLOAD DLL\n");
-		  //enumerateMemory(pi.hProcess);
-		  break;
-
-		case UNLOAD_DLL_DEBUG_EVENT:
-			 //MYPRINT("\nUNLOAD DLL\n");
-		  //enumerateMemory(pi.hProcess);
-		  break;
- 
-		case OUTPUT_DEBUG_STRING_EVENT:
-			 //MYPRINT("\nSTRING EVENT\n");
-		  //enumerateMemory(pi.hProcess);
-		  break;
-
-		case EXCEPTION_DEBUG_EVENT:
-		   //MYPRINT("\nEXCEPTION\n");
-		   exception = DebugEvent.u.Exception;
-		   if( exception.ExceptionRecord.ExceptionCode == 0x80000003L)
-		   {
-			   if(!prova){
-				prova = true;
-			   }
-			   else{
-				  MYPRINT("\nEXCEPTION BREAK at %08x\n",  exception.ExceptionRecord.ExceptionAddress); 
-				  enumerateProcessMemory(pi.hProcess);
-				  W::TerminateProcess(pi.hProcess,0);
-				  completed = true;
-			   }
-				 
-		   }
-		   break;
-
-		default:
-		  MYPRINT("\nIN DEFAULT\n");
-
-		}
-		if ( !W::ContinueDebugEvent(DebugEvent.dwProcessId, DebugEvent.dwThreadId, 0x00010002L) ){
-		   printf("Errore debugger 2!\n");
-		   return;
-		}
-	 }
-	
-	 printf("Mulanciato");
-	 //W::Sleep(200000);
-	 //enumerateMemory(pi.hProcess);
-	 //PrintWhiteListedAddr();
-	 		
-}
-
-VOID ProcInfo::enumerateProcessMemory(W::HANDLE hProc){
-	W::MEMORY_BASIC_INFORMATION mbi;
-	W::SIZE_T numBytes;
-	W::DWORD MyAddress = 0;
-	int match_string =0;
-	MYINFO("\n\n----Memory----\n");
-	do
-	{
-		numBytes = W::VirtualQueryEx(hProc,(W::LPCVOID)MyAddress, &mbi, sizeof(mbi));
-		
-		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_MAPPED || mbi.Type == MEM_IMAGE) )
-		{
-			//ADDRINT end = (ADDRINT)mbi.BaseAddress + mbi.RegionSize;
-			addDebugProcessAddresses((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
-
-		}
-		MyAddress += mbi.RegionSize;
-
-	}
-	while(numBytes);
-
-	return;
-
-}
-
-VOID ProcInfo::addDebugProcessAddresses(ADDRINT baseAddr,ADDRINT regionSize){
-	
-	MemoryRange item;
-	item.StartAddress = baseAddr;
-	item.EndAddress = baseAddr + regionSize;
-	debuggedProcMemory.push_back(item);
-
-}
-
-
-
-void ProcInfo::PrintDebugProcessAddr(){
-	//Iterate through the already whitelisted memory addresses
-
-	for(std::vector<MemoryRange>::iterator item = debuggedProcMemory.begin(); item != debuggedProcMemory.end(); ++item) {
-		MYPRINT("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
-	}	
-
+	genericMemoryRanges.push_back(ansiCodePageData);
 }
 
 
@@ -643,18 +508,12 @@ VOID ProcInfo::enumerateCurrentMemory(){
 	W::SIZE_T numBytes;
 	W::DWORD MyAddress = 0;
 	int match_string =0;
-	do
-	{
+	do{
 		numBytes = W::VirtualQuery((W::LPCVOID)MyAddress, &mbi, sizeof(mbi));
-		
-		if((mbi.State == MEM_COMMIT || mbi.State == MEM_MAPPED || mbi.State == MEM_IMAGE) )
-		{
-		
+		if((mbi.State == MEM_COMMIT || mbi.State == MEM_MAPPED || mbi.State == MEM_IMAGE) ){
 			addCurrentMemoryAddress((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
-
 		}
 		MyAddress += mbi.RegionSize;
-
 	}
 	while(numBytes);
 
@@ -691,10 +550,14 @@ VOID ProcInfo::enumerateWhiteListMemory(){
 	//add stack
 	whiteListMemory.push_back(stack);
 
-	//Add Context data
-	whiteListMemory.push_back(systemDefaultActivationContextData);
-	whiteListMemory.push_back(activationContextData);
-	whiteListMemory.push_back(pContextData);
+	//Add Generic Memory ranges(Shared Memory pages pContextData..)
+	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {
+		MemoryRange mem;
+		mem.StartAddress = item->StartAddress;
+		mem.EndAddress  = item->EndAddress;
+		whiteListMemory.push_back(mem);		
+	}
+
 
 	//add mainIMG address to the whitelist
 	whiteListMemory.push_back(mainImg);
@@ -705,39 +568,39 @@ VOID ProcInfo::enumerateWhiteListMemory(){
 	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
 		addWhitelistAddress(lib->StartAddress,lib->EndAddress);
 	}
-	//add Shared Memory pages
-	whiteListMemory.push_back(readOnlySharedMemoryBase);
-	whiteListMemory.push_back(ansiCodePageData);
 
 	//add teb
 	whiteListMemory.push_back(teb);
 }
 
 
-VOID ProcInfo::addWhitelistAddress(ADDRINT baseAddr,ADDRINT regionSize){
-	MemoryRange libItem;
-	libItem.StartAddress = baseAddr;
-	libItem.EndAddress = baseAddr + regionSize;
-	whiteListMemory.push_back(libItem);
+VOID ProcInfo::addWhitelistAddress(ADDRINT baseAddr,ADDRINT endAddress){
+	MemoryRange item;
+	item.StartAddress = baseAddr;
+	item.EndAddress = endAddress;
+	whiteListMemory.push_back(item);
 
 }
 
+/**
+Check if address is inside:
+	- Main executable
+	- Stack
+	- Dynamically allocated memory
+	- Teb
+	- Peb
+	- generic memory region (SharedMemory pContextData..)
+	**/
 BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
-	/*
-	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
-		if(item->StartAddress <= address && address <= item->EndAddress){
-			return true;
-		}			
-	}
-	return false;
-	*/
-	// old version
+
 	if(isInsideMainIMG(address)){
 		return TRUE;
 	}
+	if(isStackAddress(address)){
+		return TRUE;
+	}
 	//iterate through the allocated memory addresses
-	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {
-		
+	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {	
 		if(item->begin <= address && address <= item->end){
 			return TRUE;
 		}						
@@ -748,8 +611,17 @@ BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 	if(isTebAddress(address)){
 		return TRUE;
 	}
+	if(isPebAddress(address)){
+		return TRUE;
+	}
+	
+	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {
+		if(item->StartAddress <= address && address <= item->EndAddress){
+			return TRUE;
+		}			
+	}
 
-	return isStackAddress(address); //FilterHandler::getInstance()->isStackAddress(address);
+	return FALSE; //FilterHandler::getInstance()->isStackAddress(address);
 	
 }
 

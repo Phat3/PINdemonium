@@ -30,6 +30,7 @@ typedef struct PEB {
 	W::PVOID SystemDefaultActivationContextData;
 	W::BYTE padding7[52];
 	W::PVOID pContextData;
+	W::BYTE padding8[4];
 
 }PEB;
 
@@ -111,19 +112,19 @@ public:
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
 	BOOL isInsideMainIMG(ADDRINT address);
 	BOOL isInterestingProcess(unsigned int pid);
+	//PEB
+	BOOL isPebAddress(ADDRINT addr);
 	//TEB
 	BOOL isTebAddress(ADDRINT addr);
 	//Stack
 	VOID initStackAddress(ADDRINT addr);
 	BOOL isStackAddress(ADDRINT addr);
-
-	
-
 	//Library
 	BOOL isLibraryInstruction(ADDRINT address);
 	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
-	
+	//Generic Address (pContexData, SharedMemory..)
+	BOOL isGenericMemoryAddress(ADDRINT address);
 	//Whitelist Memory
 	BOOL isAddrInWhiteList(ADDRINT address);
 	VOID enumerateWhiteListMemory();
@@ -148,15 +149,11 @@ private:
 	
 	
 	MemoryRange stack;								//Stack base address
-	MemoryRange systemDefaultActivationContextData;
-	MemoryRange activationContextData;
-	MemoryRange pContextData;
 	MemoryRange mainImg;
-	MemoryRange readOnlySharedMemoryBase;
-	MemoryRange ansiCodePageData;
 	MemoryRange teb;                                //Teb Base Address
-	PEB peb;
-	std::vector<MemoryRange>  debuggedProcMemory;
+	PEB *peb;
+	std::vector<MemoryRange>  genericMemoryRanges;
+	
 	std::vector<MemoryRange>  whiteListMemory;
 	std::vector<MemoryRange>  currentMemory;
 	
@@ -181,7 +178,7 @@ private:
 	//Enumerate Whitelisted Memory Helpers	
 	//return the MemoryRange in which the address is mapped
 	MemoryRange getMemoryRange(ADDRINT address);
-	VOID addWhitelistAddress(ADDRINT baseAddr,ADDRINT regionSize);
+	VOID addWhitelistAddress(ADDRINT baseAddr,ADDRINT endAddress);
 	VOID mergeMemoryAddresses();
 	VOID mergeCurrentMemory();
 	
