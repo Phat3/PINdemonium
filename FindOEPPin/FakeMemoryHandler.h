@@ -4,6 +4,9 @@
 #include "ProcInfo.h"
 
 
+//string containing the current faked memory NB need to static because it need to survive and been accessible in the HandleRead callback inside ToolHider
+static string curFakeMemory;
+
 //ntdll map associate the name of the function to hook with the patch value
 //<"KiUserApcDispatcher","\x8b..">
 static std::map<string,string> ntdllHooksNamesPatch;
@@ -28,10 +31,15 @@ typedef struct FakeMemoryItem{
 }FakeMemoryItem;
 
 private:
-
+	//list containig the MemoryAddress which needs to me faked
 	std::vector<FakeMemoryItem> fakeMemory;
+	ProcInfo *pInfo;
 
+	// fakeMemoryFunction to handle ntdll inspection
 	static ADDRINT ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFuncAddr);
+	BOOL isAddrInWhiteList(ADDRINT address);
+
+	
 
 	
 	
@@ -40,5 +48,6 @@ public:
 	FakeMemoryHandler(void);
 	~FakeMemoryHandler(void);
 	VOID initFakeMemory();
+	//
 	ADDRINT getFakeMemory(ADDRINT address);
 };

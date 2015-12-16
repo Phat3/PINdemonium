@@ -15,55 +15,11 @@ ADDRINT handleRead (ADDRINT ip, ADDRINT read_addr,void *fakeMemH){
 	//MYINFO("%0x8 %s Trying to  read %08x : res %d\n",ip,s.c_str(), read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
 	FakeMemoryHandler fakeMem = *(FakeMemoryHandler *)fakeMemH;
 	ADDRINT fakeAddr = fakeMem.getFakeMemory(read_addr);
-	
-
-	if(fakeAddr != read_addr){
-		string  fakeContent= *(string *)fakeAddr;
-		MYINFO("Inside handleRead %08x fakeMemRes  containig %02x\n",read_addr,*fakeContent.c_str());
-	
-		//static 
-		
-		//const char * hook = fakeMemRes.c_str();
-	//	printf("Inside handleRead %08x cane with %08x  containig %02x\n",read_addr,fakeAddr,fakeContentt.c_str());
-		return (int)fakeAddr;
-		//return fakeMemRes;
-		
-	}/*
-	if(!ProcInfo::getInstance()->isAddrInWhiteList(read_addr)){
-		MYINFO("%0x8 %s Trying to  read %08x : res %d\n",ip,s.c_str(), read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
-		MYINFO("Found suspicious read %08x\n",read_addr);
-		string hook = "Topo";
-		return (int)&hook;
+	if(fakeAddr==NULL){
+		MYINFO("xxxxxxxxxxxxxx %08x  reading %08x",ip,read_addr);
 	}
-	//printf("NON HOOK\n");*/
-	return read_addr;
-	
-	
+	return fakeAddr;
 }
-/*
-
-ADDRINT handleRead (ADDRINT ip, ADDRINT read_addr){
-
-	//ADDRINT fakeMemRes = FakeMemoryHandler::getFakeMemory(read_addr);
-	
-	if( 0x77666f58 == read_addr){
-		
-		char * hook = "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa";
-		printf("Inside handleRead cane with %08x  containig %02x %02x \n",&hook,*(char *)hook,*((char *)hook + 1));
-		return (int)hook;
-		//return fakeMemRes;
-		
-	}
-	if(!ProcInfo::getInstance()->isAddrInWhiteList(read_addr)){
-		MYINFO("%0x8 %s Trying to  read %08x : res %d\n",ip,s.c_str(), read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
-		MYINFO("Found suspicious read %08x\n",read_addr);
-		string hook = "Topo";
-		return (int)&hook;
-	}
-	//printf("NON HOOK\n");
-	return read_addr;
-	
-}*/
 
 void ToolHider::avoidEvasion(INS ins){
 

@@ -582,48 +582,7 @@ VOID ProcInfo::addWhitelistAddress(ADDRINT baseAddr,ADDRINT endAddress){
 
 }
 
-/**
-Check if address is inside:
-	- Main executable
-	- Stack
-	- Dynamically allocated memory
-	- Teb
-	- Peb
-	- generic memory region (SharedMemory pContextData..)
-	**/
-BOOL ProcInfo::isAddrInWhiteList(ADDRINT address){
 
-	if(isInsideMainIMG(address)){
-		return TRUE;
-	}
-	if(isStackAddress(address)){
-		return TRUE;
-	}
-	//iterate through the allocated memory addresses
-	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {	
-		if(item->begin <= address && address <= item->end){
-			return TRUE;
-		}						
-	}
-	if (isLibraryInstruction(address)){
-		return TRUE;
-	}
-	if(isTebAddress(address)){
-		return TRUE;
-	}
-	if(isPebAddress(address)){
-		return TRUE;
-	}
-	
-	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {
-		if(item->StartAddress <= address && address <= item->EndAddress){
-			return TRUE;
-		}			
-	}
-
-	return FALSE; //FilterHandler::getInstance()->isStackAddress(address);
-	
-}
 
 //merge interval algorithm
 //IP1 : the set of intervals is sorted in ascending order
