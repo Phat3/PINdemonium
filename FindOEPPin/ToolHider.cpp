@@ -14,17 +14,18 @@ ToolHider::~ToolHider(void)
 ADDRINT handleRead (ADDRINT ip, ADDRINT read_addr,void *fakeMemH){
 	//MYINFO("%0x8 %s Trying to  read %08x : res %d\n",ip,s.c_str(), read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
 	FakeMemoryHandler fakeMem = *(FakeMemoryHandler *)fakeMemH;
-	string fakeMemRes = fakeMem.getFakeMemory(read_addr);
+	ADDRINT fakeAddr = fakeMem.getFakeMemory(read_addr);
+	
 
-
-	if(!fakeMemRes.empty()){
-		//printf("Inside handleRead %08x fakeMemRes  containig %02x\n",read_addr,fakeMemRes.c_str());
-		//static string ss = "\x11\x22\x33\x44";
-		static string test = fakeMemRes;
-		static const char * hook = fakeMemRes.c_str();
+	if(fakeAddr != read_addr){
+		string  fakeContent= *(string *)fakeAddr;
+		MYINFO("Inside handleRead %08x fakeMemRes  containig %02x\n",read_addr,*fakeContent.c_str());
+	
+		//static 
+		
 		//const char * hook = fakeMemRes.c_str();
-		printf("Inside handleRead %08x cane with %08x  containig %02x\n",read_addr,hook,*(char *)hook);
-		return (int)hook;
+	//	printf("Inside handleRead %08x cane with %08x  containig %02x\n",read_addr,fakeAddr,fakeContentt.c_str());
+		return (int)fakeAddr;
 		//return fakeMemRes;
 		
 	}/*
