@@ -21,6 +21,8 @@ ProcInfo::ProcInfo()
 	this->interresting_processes_name.insert("pin.exe");
 	this->interresting_processes_name.insert("csrss.exe");
 	this->retrieveInterestingPidFromNames();
+	stack.StartAddress = 0;
+	stack.EndAddress = 0;
 
 }
 
@@ -425,13 +427,14 @@ Initializing the base stack address by getting a value in the stack and searchin
 **/
 VOID ProcInfo::initStackAddress(ADDRINT addr){
 	//hasn't been already initialized
+	MYINFO("calling initStackAddr %08x stackEndaddress %08x aa",addr,stack.EndAddress );
 	if(stack.EndAddress == 0) {	
 	
 		W::MEMORY_BASIC_INFORMATION mbi;
 		int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
 		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_MAPPED) || mbi.Type == MEM_IMAGE ){
-			MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
+			//MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
 			stack.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
 		}
 
