@@ -359,6 +359,7 @@ void ProcInfo::populateProcAddresses(){
 	populateContextDataAddress();
 	populateCodePageData();
 	populateSharedMemory();
+	populateProcessHeaps();
 
 }
 
@@ -429,7 +430,7 @@ VOID ProcInfo::initStackAddress(ADDRINT addr){
 		W::MEMORY_BASIC_INFORMATION mbi;
 		int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
-		if((mbi.State == MEM_COMMIT || mbi.State == MEM_MAPPED) || mbi.State == MEM_IMAGE ){
+		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_MAPPED) || mbi.Type == MEM_IMAGE ){
 			MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
 			stack.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
 		}
@@ -466,7 +467,9 @@ MemoryRange ProcInfo::getMemoryRange(ADDRINT address){
 		W::MEMORY_BASIC_INFORMATION mbi;
 		int numBytes = W::VirtualQuery((W::LPCVOID)address, &mbi, sizeof(mbi));
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
-		if((mbi.State == MEM_COMMIT || mbi.State == MEM_MAPPED) || mbi.State == MEM_IMAGE ){
+		MYINFO("state %08x   %08x",mbi.State,mbi.Type);
+		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_MAPPED) || mbi.Type == MEM_IMAGE ||  mbi.Type == MEM_PRIVATE){
+			MYINFO("Adding start %08x ",(int)mbi.BaseAddress);
 			range.StartAddress = (int)mbi.BaseAddress;
 			range.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
 		}
@@ -497,6 +500,24 @@ VOID ProcInfo::populateCodePageData(){
 	MemoryRange ansiCodePageData = getMemoryRange((ADDRINT) peb->AnsiCodePageData);
 	MYINFO("Init ansiCodePageData base address  %08x -> %08x",ansiCodePageData.StartAddress,ansiCodePageData.EndAddress);
 	genericMemoryRanges.push_back(ansiCodePageData);
+}
+
+VOID ProcInfo::populateProcessHeaps(){
+
+
+	W::PHANDLE aHeaps;
+	W::DWORD NumberOfHeaps = W::GetProcessHeaps(0, NULL);
+    if (NumberOfHeaps == 0) {
+		MYINFO("Error number Process Heaps");
+	}
+
+	W::GetProcessHeaps(NumberOfHeaps,aHeaps);
+
+	 for (int i = 0; i < NumberOfHeaps; ++i) {
+		MemoryRange processHeap = getMemoryRange((ADDRINT) aHeaps[i]);
+		MYINFO("Init processHeaps2 base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
+		genericMemoryRanges.push_back(processHeap);
+    }
 }
 
 

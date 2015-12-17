@@ -22,7 +22,8 @@ typedef struct PEB {
 	W::PVOID ReadOnlySharedMemoryBase;
 	W::BYTE padding3[8];
 	W::PVOID AnsiCodePageData;
-	W::BYTE padding4[56];
+	W::BYTE padding4[52];
+	W::PVOID ProcessHeaps;
 	W::PVOID GdiSharedHandleTable;
 	W::BYTE padding5[352];
 	W::PVOID ActivationContextData;
@@ -187,6 +188,7 @@ private:
 	VOID populateContextDataAddress();
 	VOID populateSharedMemory();
 	VOID populateCodePageData();
+	VOID populateProcessHeaps();
 
 	//Enumerate current  Memory Helpers
 	VOID addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize);
