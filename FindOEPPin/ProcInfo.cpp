@@ -21,8 +21,8 @@ ProcInfo::ProcInfo()
 	this->interresting_processes_name.insert("pin.exe");
 	this->interresting_processes_name.insert("csrss.exe");
 	this->retrieveInterestingPidFromNames();
-	stack.StartAddress = 0;
-	stack.EndAddress = 0;
+	
+	this->isStackInitialized = false;
 
 }
 
@@ -427,9 +427,9 @@ Initializing the base stack address by getting a value in the stack and searchin
 **/
 VOID ProcInfo::initStackAddress(ADDRINT addr){
 	//hasn't been already initialized
-	MYINFO("calling initStackAddr %08x stackEndaddress %08x aa",addr,stack.EndAddress );
-	if(stack.EndAddress == 0) {	
-	
+	MYINFO("calling initStackAddr %08x isStackInitialized %d aa",addr,isStackInitialized );
+	if(!isStackInitialized) {	
+		MYINFO("Inside if" );
 		W::MEMORY_BASIC_INFORMATION mbi;
 		int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
@@ -449,6 +449,7 @@ VOID ProcInfo::initStackAddress(ADDRINT addr){
 			stack.StartAddress = stack.EndAddress - MAX_STACK_SIZE;
 		}
 		MYINFO("Init FilterHandler Stack from %x to %x",stack.StartAddress,stack.EndAddress);
+		isStackInitialized = true;
 
 	}	
 

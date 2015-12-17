@@ -148,13 +148,12 @@ private:
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
 	
-	
+	BOOL isStackInitialized;
 	MemoryRange stack;								//Stack base address
 	MemoryRange mainImg;
 	MemoryRange teb;                                //Teb Base Address
 	PEB *peb;
 	std::vector<MemoryRange>  genericMemoryRanges;
-	
 	std::vector<MemoryRange>  whiteListMemory;
 	std::vector<MemoryRange>  currentMemory;
 	
