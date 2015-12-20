@@ -429,7 +429,6 @@ VOID ProcInfo::initStackAddress(ADDRINT addr){
 	//hasn't been already initialized
 	MYINFO("calling initStackAddr %08x isStackInitialized %d aa",addr,isStackInitialized );
 	if(!isStackInitialized) {	
-		MYINFO("Inside if" );
 		W::MEMORY_BASIC_INFORMATION mbi;
 		int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
@@ -471,9 +470,9 @@ MemoryRange ProcInfo::getMemoryRange(ADDRINT address){
 		W::MEMORY_BASIC_INFORMATION mbi;
 		int numBytes = W::VirtualQuery((W::LPCVOID)address, &mbi, sizeof(mbi));
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
-		MYINFO("state %08x   %08x",mbi.State,mbi.Type);
+	//	MYINFO("state %08x   %08x",mbi.State,mbi.Type);
 		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_MAPPED) || mbi.Type == MEM_IMAGE ||  mbi.Type == MEM_PRIVATE){
-			MYINFO("Adding start %08x ",(int)mbi.BaseAddress);
+			//MYINFO("Adding start %08x ",(int)mbi.BaseAddress);
 			range.StartAddress = (int)mbi.BaseAddress;
 			range.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
 		}
@@ -507,17 +506,26 @@ VOID ProcInfo::populateCodePageData(){
 }
 
 VOID ProcInfo::populateProcessHeaps(){
-
-
+	W::SIZE_T BytesToAllocate;
 	W::PHANDLE aHeaps;
+	
 	W::DWORD NumberOfHeaps = W::GetProcessHeaps(0, NULL);
     if (NumberOfHeaps == 0) {
-		MYINFO("Error number Process Heaps");
+		MYERRORE("Error in retrieving number of Process Heaps");
+		return;
 	}
+
+	W::SIZETMult(NumberOfHeaps, sizeof(*aHeaps), &BytesToAllocate);
+	aHeaps = (W::PHANDLE)W::HeapAlloc(W::GetProcessHeap(), 0, BytesToAllocate);
+	 if ( aHeaps == NULL) {
+		MYERRORE("HeapAlloc failed to allocate space");
+		return;
+	} 
 
 	W::GetProcessHeaps(NumberOfHeaps,aHeaps);
 
 	 for (int i = 0; i < NumberOfHeaps; ++i) {
+		 MYINFO("Heap start %08x",(ADDRINT) aHeaps[i]);
 		MemoryRange processHeap = getMemoryRange((ADDRINT) aHeaps[i]);
 		MYINFO("Init processHeaps2 base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
 		genericMemoryRanges.push_back(processHeap);

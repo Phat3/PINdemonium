@@ -10,6 +10,7 @@ namespace W{
 	#include <tlhelp32.h>
 	#include "Winternl.h"
 	#include "winnt.h"
+	#include  "Intsafe.h"
 }
 
 #define MAX_STACK_SIZE 0x100000    //Used to define the memory range of the stack
