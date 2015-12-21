@@ -266,7 +266,6 @@
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="PushadPopadHeuristic.cpp" />
     <ClCompile Include="ScyllaWrapperInterface.cpp" />
-    <ClCompile Include="TimeTracker.cpp" />
     <ClCompile Include="ToolHider.cpp" />
     <ClCompile Include="WriteInterval.cpp" />
     <ClCompile Include="LongJumpHeuristic.cpp" />

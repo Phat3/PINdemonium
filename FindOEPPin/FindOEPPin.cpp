@@ -24,7 +24,8 @@ OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
 
-
+ unsigned __int64 overhead;
+ unsigned __int64 initial_cc;
 
 // This function is called when the application exits
 VOID Fini(INT32 code, VOID *v){
@@ -40,8 +41,8 @@ VOID Fini(INT32 code, VOID *v){
 
 VOID Init(VOID *v){
 
-	TimeTracker *ttracker = TimeTracker::getInstance();
-	ttracker->SetStartDbiCC(__rdtsc());
+	overhead = 0;
+	initial_cc = __rdtsc();
 }
 //cc
 INT32 Usage(){
@@ -105,7 +106,7 @@ void Instruction(INS ins,void *v){
 
 	//W::DWORD ts = W::GetTickCount();
 	
-	double cc_start_instrumentation = __rdtsc();
+	unsigned __int64 cc_start_instrumentation = __rdtsc();
 
 	if(Config::EVASION_MODE){
 		thider.avoidEvasion(ins);
@@ -114,10 +115,14 @@ void Instruction(INS ins,void *v){
 		oepf.IsCurrentInOEP(ins);
 	}
 
-	double cc_end_instrumentation = __rdtsc();
+	unsigned __int64 cc_end_instrumentation = __rdtsc();
 
-	TimeTracker *ttracker = TimeTracker::getInstance();
-	ttracker->SetDelay(cc_end_instrumentation - cc_start_instrumentation);
+	unsigned __int64 delta = cc_end_instrumentation - cc_start_instrumentation;
+
+	overhead = overhead + delta;
+
+
+	MYINFO("overhead is %I64d\n" , overhead);
 
 	//W::DWORD te = W::GetTickCount();
 

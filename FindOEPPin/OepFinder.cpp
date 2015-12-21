@@ -13,7 +13,7 @@ OepFinder::~OepFinder(void){
 //update the write set manager
 VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){	
 
-	double cc_analysis_rtn_start = __rdtsc();
+	unsigned __int64 cc_analysis_rtn_start = __rdtsc();
 
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	//check if the target address belongs to some filtered range		
@@ -23,9 +23,15 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 	//	MYINFO("Writing start %x   ->  %x",end_addr,end_addr + size);
 	}
 
-	double cc_analysis_rtn_end = __rdtsc();
-	TimeTracker *ttracker = TimeTracker::getInstance();
-	ttracker->SetDelay( cc_analysis_rtn_end - cc_analysis_rtn_start -170 );
+	unsigned __int64  cc_analysis_rtn_end = __rdtsc();
+
+	unsigned __int64 delta  = cc_analysis_rtn_end - cc_analysis_rtn_start;
+
+	overhead = overhead + delta;
+
+	MYINFO("Inside handleWrite, overhead is %I64d\n", overhead);
+
+
 }
 
 //check if the current instruction is a pushad or a popad

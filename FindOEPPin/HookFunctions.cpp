@@ -61,39 +61,30 @@ bool * IsDebuggerPresentHook(){
 	return false;
 }
 
-double GetTickCountHook(){
+
+VOID GetTickCountHook(UINT32 ticks){
 	
 
-	
-	double cc_now = __rdtsc();
+	MYINFO("Returning %d ticks from GetTickCounts\n" , ticks);
+	//unsigned __int64 test_cc = __rdtsc();
 
-	//printf("CC_NOW: %f\n" , cc_now);
+	unsigned __int64 freq = 2700000000;
+	unsigned __int64 ms = 1000;
+	unsigned __int64 dm = 1000;
+	unsigned __int64 calc_cc =  __rdtsc();
 
-	TimeTracker *ttracker = TimeTracker::getInstance();
-	
-	double dbi_delay = ttracker->GetDelay();
+	//MYINFO("Taken cc: %I64d , Calculated cc: %I64d\n" , test_cc , calc_cc);
 
-	MYINFO("dbi_delay is %f\n" , dbi_delay);
+	unsigned __int64 patch_calc_cc = calc_cc - overhead*dm;
 
-	//printf("CC_DELAY: %f\n" , dbi_delay);
-
-	double cc_dbi_start = ttracker->GetStartDbiCC();
-
-	//printf("CC_START: %f\n" ,  cc_dbi_start);
-
-	dbi_delay = (cc_now - cc_dbi_start  - dbi_delay) /1000.0;
-
-	double corrected_cc = cc_dbi_start + dbi_delay;
-
-	MYINFO("corrected cc is %f\n" , corrected_cc);
-
-	corrected_cc = corrected_cc * 0.00000037037f; // let's obtain the ms ( actually the ticks ) 
-
-	MYINFO("Returning from GetTickCount %f\n" , corrected_cc);
+	MYINFO("Original cc: %I64d , Overhead: %I64d , patched cc: %I64d\n" , calc_cc , overhead, patch_calc_cc);
 
 
-	return corrected_cc;
+	unsigned __int64 ticks_c =  (calc_cc * 1/freq * ms); //OK PERFECT 
+	unsigned __int64 ticks_c_p =  (patch_calc_cc * 1/freq * ms); //OK PERFECT 
 
+	//MYINFO("Returning %d fake ticks from GetTickCounts\n" , ticks_fake);
+	MYINFO("Original ticks: %I64d , patched ticks : %I64d\n" , ticks_c , ticks_c_p);
 }
 
 
@@ -129,7 +120,7 @@ void HookFunctions::hookDispatcher(IMG img){
 					break;
 				case 3:
 					   {
-						RTN_Replace(rtn, AFUNPTR(GetTickCountHook));
+						RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)GetTickCountHook, IARG_G_RESULT0, IARG_END);
 				       }
 					break;
 
