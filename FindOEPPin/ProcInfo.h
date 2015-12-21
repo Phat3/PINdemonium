@@ -3,6 +3,7 @@
 #include "pin.H"
 #include "Config.h"
 #include "Debug.h"
+#include "TimeTracker.h"
 #include <time.h>
 #include <unordered_set>
 namespace W{
@@ -109,7 +110,7 @@ private:
 	string libToString(LibraryItem lib);
 	VOID showFilteredLibs();
 	
-
+	
 	long long FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard);
 };
 

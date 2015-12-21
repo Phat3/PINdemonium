@@ -1,7 +1,7 @@
 #include "Config.h"
 
 //mode of operation
-const bool Config::UNPACKING_MODE = false;
+const bool Config::UNPACKING_MODE = true;
 const bool Config::EVASION_MODE = true;
 
 //constanth path and variable for our logging system

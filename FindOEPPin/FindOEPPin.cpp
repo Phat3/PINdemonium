@@ -9,6 +9,7 @@
 #include "ToolHider.h"
 #include "FilterHandler.h"
 #include "HookFunctions.h"
+#include "TimeTracker.h"
 namespace W {
 	#include <windows.h>
 }
@@ -37,6 +38,11 @@ VOID Fini(INT32 code, VOID *v){
 
 }
 
+VOID Init(VOID *v){
+
+	TimeTracker *ttracker = TimeTracker::getInstance();
+	ttracker->SetStartDbiCC(__rdtsc());
+}
 //cc
 INT32 Usage(){
 	PIN_ERROR("This Pintool unpacks common packers\n" + KNOB_BASE::StringKnobSummary() + "\n");
@@ -96,12 +102,26 @@ void imageLoadCallback(IMG img,void *){
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
+
+	//W::DWORD ts = W::GetTickCount();
+	
+	double cc_start_instrumentation = __rdtsc();
+
 	if(Config::EVASION_MODE){
 		thider.avoidEvasion(ins);
 	}
 	if(Config::UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
 	}
+
+	double cc_end_instrumentation = __rdtsc();
+
+	TimeTracker *ttracker = TimeTracker::getInstance();
+	ttracker->SetDelay(cc_end_instrumentation - cc_start_instrumentation);
+
+	//W::DWORD te = W::GetTickCount();
+
+	//MYINFO("Delta tick: %d\n" , te-ts);
 
 }
 
@@ -154,6 +174,9 @@ int main(int argc, char * argv[]){
 	
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
+
+	PIN_AddApplicationStartFunction(Init,0);
+
 	// Start the program, never returns
 
 

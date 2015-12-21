@@ -1,6 +1,7 @@
 #include "OepFinder.h"
 #include "GdbDebugger.h"
 #include "ScyllaWrapperInterface.h"
+#include "TimeTracker.h"
 
 OepFinder::OepFinder(void){
 	
@@ -11,6 +12,9 @@ OepFinder::~OepFinder(void){
 
 //update the write set manager
 VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){	
+
+	double cc_analysis_rtn_start = __rdtsc();
+
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	//check if the target address belongs to some filtered range		
 	if(!filterHandler->isFilteredWrite(end_addr,ip)){
@@ -18,6 +22,10 @@ VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){
 		WxorXHandler::getInstance()->writeSetManager(ip, end_addr, size);
 	//	MYINFO("Writing start %x   ->  %x",end_addr,end_addr + size);
 	}
+
+	double cc_analysis_rtn_end = __rdtsc();
+	TimeTracker *ttracker = TimeTracker::getInstance();
+	ttracker->SetDelay( cc_analysis_rtn_end - cc_analysis_rtn_start -170 );
 }
 
 //check if the current instruction is a pushad or a popad
@@ -78,6 +86,7 @@ static VOID DoBreakpoint(const CONTEXT *ctxt, THREADID tid, ADDRINT ip)
 // - Check if the current instruction broke the W xor X law  -----> trigger the heuristics and write the report
 // - Set the previous ip to the current ip ( useful for some heuristics like jumpOuterSection )
 UINT32 OepFinder::IsCurrentInOEP(INS ins){
+
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	ProcInfo *proc_info = ProcInfo::getInstance();
@@ -153,8 +162,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//wxorxHandler->deleteWriteItem(writeItemIndex);
 		//update the prevuious IP
 
-		// Check if we need to dump the heap too
-		// BEFORE ENTER HERE YOU HAVE TO BE SURE THAT THE DUMP FILE EXIST 
 		// If we want to debug the program manually let's set the breakpoint after the triggered analysis
 		if(Config::ATTACH_DEBUGGER){
 			INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);

@@ -6,7 +6,7 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualAlloc",VIRTUALALLOC_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );
-	this->functionsMap.insert( std::pair<string,int>("credere",3) );
+	this->functionsMap.insert( std::pair<string,int>("GetTickCount",3) );
 
 	this->enumSyscalls();
 	//this->printSyscalls();
@@ -61,6 +61,42 @@ bool * IsDebuggerPresentHook(){
 	return false;
 }
 
+double GetTickCountHook(){
+	
+
+	
+	double cc_now = __rdtsc();
+
+	//printf("CC_NOW: %f\n" , cc_now);
+
+	TimeTracker *ttracker = TimeTracker::getInstance();
+	
+	double dbi_delay = ttracker->GetDelay();
+
+	MYINFO("dbi_delay is %f\n" , dbi_delay);
+
+	//printf("CC_DELAY: %f\n" , dbi_delay);
+
+	double cc_dbi_start = ttracker->GetStartDbiCC();
+
+	//printf("CC_START: %f\n" ,  cc_dbi_start);
+
+	dbi_delay = (cc_now - cc_dbi_start  - dbi_delay) /1000.0;
+
+	double corrected_cc = cc_dbi_start + dbi_delay;
+
+	MYINFO("corrected cc is %f\n" , corrected_cc);
+
+	corrected_cc = corrected_cc * 0.00000037037f; // let's obtain the ms ( actually the ticks ) 
+
+	MYINFO("Returning from GetTickCount %f\n" , corrected_cc);
+
+
+	return corrected_cc;
+
+}
+
+
 //----------------------------- HOOKED DISPATCHER -----------------------------//
 
 //scan the image and try to hook all the function specified above
@@ -90,6 +126,11 @@ void HookFunctions::hookDispatcher(IMG img){
 					break;
 				case(ISDEBUGGERPRESENT_INDEX):
 					RTN_Replace(rtn, AFUNPTR(IsDebuggerPresentHook));
+					break;
+				case 3:
+					   {
+						RTN_Replace(rtn, AFUNPTR(GetTickCountHook));
+				       }
 					break;
 
 			}			
