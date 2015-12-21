@@ -62,29 +62,49 @@ bool * IsDebuggerPresentHook(){
 }
 
 
-VOID GetTickCountHook(UINT32 ticks){
+UINT32 GetTickCountHook(UINT32 ticks){
 	
+	if(flag_time==0){
+	
+		flag_time = 1;
+		first_cc = (ticks * frequency)/ms;
 
-	MYINFO("Returning %d ticks from GetTickCounts\n" , ticks);
-	//unsigned __int64 test_cc = __rdtsc();
+		MYINFO("Memorized %I64d\n" , first_cc);
 
-	unsigned __int64 freq = 2700000000;
-	unsigned __int64 ms = 1000;
-	unsigned __int64 dm = 1000;
-	unsigned __int64 calc_cc =  __rdtsc();
+		return ticks;
+	}
+	else{
+	
+		unsigned __int64 now_cc = (ticks * frequency)/ms; // get the current cc based on the ticks 
+		unsigned __int64 delta_cc = now_cc - first_cc;  // what is the delta of CCs passed from the starting of the program? 
+		unsigned __int64 divisor = 4;
 
-	//MYINFO("Taken cc: %I64d , Calculated cc: %I64d\n" , test_cc , calc_cc);
+		MYINFO("Delta CCs elapsed original would be %I64d\n" , delta_cc);
+		
+		unsigned __int64 ticks_original = delta_cc * 1/frequency * ms;
 
-	unsigned __int64 patch_calc_cc = calc_cc - overhead*dm;
+		MYINFO("Ticks original elapsed is %I64d\n" , ticks_original);
 
-	MYINFO("Original cc: %I64d , Overhead: %I64d , patched cc: %I64d\n" , calc_cc , overhead, patch_calc_cc);
+		delta_cc = delta_cc/divisor;  //let's lower that delta with a factor of 4 ( this can be tuned )
 
+		MYINFO("Delta CCs elapsed patched is  %I64d\n" , delta_cc);
+		
 
-	unsigned __int64 ticks_c =  (calc_cc * 1/freq * ms); //OK PERFECT 
-	unsigned __int64 ticks_c_p =  (patch_calc_cc * 1/freq * ms); //OK PERFECT 
+		unsigned __int64 x = delta_cc + first_cc; // calculate the new ticks returned in order to have the delta/4 
 
-	//MYINFO("Returning %d fake ticks from GetTickCounts\n" , ticks_fake);
-	MYINFO("Original ticks: %I64d , patched ticks : %I64d\n" , ticks_c , ticks_c_p);
+		MYINFO("Second value of CCs to obtain the delta required: %I64d\n" , x);
+
+		delta_cc = x - first_cc;
+
+		ticks_original = delta_cc * 1/frequency * ms;
+
+		MYINFO("Ticks pathced elapsed is %I64d\n" , ticks_original);
+
+		flag_time = 0;
+
+		return ticks;
+	}
+	
 }
 
 

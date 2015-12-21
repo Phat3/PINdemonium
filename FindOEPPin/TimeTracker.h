@@ -2,5 +2,7 @@
 
 
 
-extern unsigned __int64 overhead;
-extern unsigned __int64 initial_cc;
+extern int flag_time;
+extern unsigned __int64 first_cc;
+extern unsigned __int64 frequency;
+extern unsigned __int64 ms;

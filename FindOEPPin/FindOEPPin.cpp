@@ -24,8 +24,10 @@ OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
 
- unsigned __int64 overhead;
- unsigned __int64 initial_cc;
+int flag_time;
+unsigned __int64 frequency;
+unsigned __int64 ms;
+unsigned __int64 first_cc;
 
 // This function is called when the application exits
 VOID Fini(INT32 code, VOID *v){
@@ -41,8 +43,11 @@ VOID Fini(INT32 code, VOID *v){
 
 VOID Init(VOID *v){
 
-	overhead = 0;
-	initial_cc = __rdtsc();
+	flag_time = 0;
+	frequency = 2700000000;
+	ms = 1000;
+	first_cc = 0;
+
 }
 //cc
 INT32 Usage(){
@@ -104,30 +109,12 @@ void imageLoadCallback(IMG img,void *){
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
 
-	//W::DWORD ts = W::GetTickCount();
-	
-	unsigned __int64 cc_start_instrumentation = __rdtsc();
-
 	if(Config::EVASION_MODE){
 		thider.avoidEvasion(ins);
 	}
 	if(Config::UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
 	}
-
-	unsigned __int64 cc_end_instrumentation = __rdtsc();
-
-	unsigned __int64 delta = cc_end_instrumentation - cc_start_instrumentation;
-
-	overhead = overhead + delta;
-
-
-	MYINFO("overhead is %I64d\n" , overhead);
-
-	//W::DWORD te = W::GetTickCount();
-
-	//MYINFO("Delta tick: %d\n" , te-ts);
-
 }
 
 
