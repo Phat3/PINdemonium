@@ -425,14 +425,14 @@ BOOL ProcInfo::isStackAddress(ADDRINT addr) {
 /**
 Initializing the base stack address by getting a value in the stack and searching the highest allocated address in the same memory region
 **/
-VOID ProcInfo::initStackAddress(ADDRINT addr){
+VOID ProcInfo::initThreadStackAddress(ADDRINT addr){
 	//hasn't been already initialized
-	MYINFO("calling initStackAddr %08x isStackInitialized %d aa",addr,isStackInitialized );
+	MYINFO("calling initStackAddr %08x isStackInitialized %d ",addr,isStackInitialized );
 	if(!isStackInitialized) {	
 		W::MEMORY_BASIC_INFORMATION mbi;
 		int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
-		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_MAPPED) || mbi.Type == MEM_IMAGE ){
+		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_PRIVATE ){
 			//MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
 			stack.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
 		}

@@ -119,7 +119,7 @@ public:
 	//TEB
 	BOOL isTebAddress(ADDRINT addr);
 	//Stack
-	VOID initStackAddress(ADDRINT addr);
+	VOID initThreadStackAddress(ADDRINT addr);
 	BOOL isStackAddress(ADDRINT addr);
 	//Library
 	BOOL isLibraryInstruction(ADDRINT address);
