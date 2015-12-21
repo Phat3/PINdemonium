@@ -101,11 +101,11 @@ void imageLoadCallback(IMG img,void *){
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
 	
-
+	
 	if(prova == 0){
 		ProcInfo *pInfo = ProcInfo::getInstance();
 		string s = INS_Disassemble(ins);
-	ADDRINT curEip = INS_Address(ins);
+		ADDRINT curEip = INS_Address(ins);
 		
 		MYINFO("-> %08x   :    %s",curEip,s.c_str());
 	//	pInfo->enumerateWhiteListMemory();
@@ -113,6 +113,7 @@ void Instruction(INS ins,void *v){
 		pInfo->PrintAllMemory();
 		prova++;
 	}
+
 	if(Config::EVASION_MODE){
 		thider.avoidEvasion(ins);
 	}
@@ -127,7 +128,7 @@ void Instruction(INS ins,void *v){
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	ProcInfo *pInfo = ProcInfo::getInstance();
-	pInfo->initStackAddress(stackBase);
+	pInfo->initThreadStackAddress(stackBase);
 }
 
 void initDebug(){

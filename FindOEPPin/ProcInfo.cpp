@@ -22,7 +22,6 @@ ProcInfo::ProcInfo()
 	this->interresting_processes_name.insert("csrss.exe");
 	this->retrieveInterestingPidFromNames();
 	
-	this->isStackInitialized = false;
 
 }
 
@@ -419,7 +418,12 @@ VOID ProcInfo::populateTebAddress(){
 Check if an address in on the stack
 **/
 BOOL ProcInfo::isStackAddress(ADDRINT addr) {
-	return (stack.StartAddress < addr && addr < stack.EndAddress );
+	for(std::vector<MemoryRange>::iterator it = stacks.begin(); it != stacks.end(); ++it){
+		if(it->StartAddress <= addr && addr <= it->EndAddress){
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 /**
@@ -427,30 +431,31 @@ Initializing the base stack address by getting a value in the stack and searchin
 **/
 VOID ProcInfo::initThreadStackAddress(ADDRINT addr){
 	//hasn't been already initialized
-	MYINFO("calling initStackAddr %08x isStackInitialized %d ",addr,isStackInitialized );
-	if(!isStackInitialized) {	
-		W::MEMORY_BASIC_INFORMATION mbi;
-		int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
-		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
-		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_PRIVATE ){
-			//MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
-			stack.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
-		}
+	MYINFO("calling initStackAddr %08x  ",addr );
+	MemoryRange stack;
+	W::MEMORY_BASIC_INFORMATION mbi;
+	int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
+	//get the stack base address by searching the highest address in the allocated memory containing the stack Address
+	if(mbi.State == MEM_COMMIT || mbi.Type == MEM_PRIVATE ){
+		//MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
+		stack.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
+	}
 
-		else{
-			stack.EndAddress = addr;
-		}
-		//check integer underflow ADDRINT
-		if(stack.EndAddress <= MAX_STACK_SIZE ){
-			stack.StartAddress =0;
-		}
-		else{
-			stack.StartAddress = stack.EndAddress - MAX_STACK_SIZE;
-		}
-		MYINFO("Init FilterHandler Stack from %x to %x",stack.StartAddress,stack.EndAddress);
-		isStackInitialized = true;
+	else{
+		stack.EndAddress = addr;
+	}
+	//check integer underflow ADDRINT
+	if(stack.EndAddress <= MAX_STACK_SIZE ){
+		stack.StartAddress =0;
+	}
+	else{
+		stack.StartAddress = stack.EndAddress - MAX_STACK_SIZE;
+	}
+	MYINFO("Init Stacks by adding from %x to %x",stack.StartAddress,stack.EndAddress);
+	stacks.push_back(stack);
+	
 
-	}	
+
 
 }
 
@@ -579,8 +584,14 @@ void ProcInfo::PrintCurrentMemorydAddr(){
 //NB need to be called AFTER populatePebAddress
 VOID ProcInfo::enumerateWhiteListMemory(){
 
-	//add stack
-	whiteListMemory.push_back(stack);
+	//add stacks to the whitelist
+	for(std::vector<MemoryRange>::iterator it = stacks.begin(); it != stacks.end(); ++it){
+		MemoryRange mem;
+		mem.StartAddress = it->StartAddress;
+		mem.EndAddress  = it->EndAddress;
+		whiteListMemory.push_back(mem);
+	}
+
 
 	//Add Generic Memory ranges(Shared Memory pages pContextData..)
 	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {

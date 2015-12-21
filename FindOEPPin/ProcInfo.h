@@ -150,8 +150,8 @@ private:
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
 	
-	BOOL isStackInitialized;
-	MemoryRange stack;								//Stack base address
+
+	std::vector<MemoryRange>  stacks;				//Set of Stack one for each thread
 	MemoryRange mainImg;
 	MemoryRange teb;                                //Teb Base Address
 	PEB *peb;
