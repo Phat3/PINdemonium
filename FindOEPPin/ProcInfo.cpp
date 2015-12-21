@@ -382,7 +382,7 @@ VOID ProcInfo::populatePebAddress(){
 	MyZwQueryInformationProcess(W::GetCurrentProcess(),0,&tmppeb,sizeof(W::PROCESS_BASIC_INFORMATION),&tmp);
 	peb = (PEB *) tmppeb.PebBaseAddress;
 	
-	MYINFO("Init Peb base address %08x  -> %08x\n",(ADDRINT)peb, (ADDRINT)peb + sizeof(PEB));
+	MYINFO("Init Peb base address %08x  -> %08x",(ADDRINT)peb, (ADDRINT)peb + sizeof(PEB));
 
 }
 
@@ -525,7 +525,6 @@ VOID ProcInfo::populateProcessHeaps(){
 	W::GetProcessHeaps(NumberOfHeaps,aHeaps);
 
 	 for (int i = 0; i < NumberOfHeaps; ++i) {
-		 MYINFO("Heap start %08x",(ADDRINT) aHeaps[i]);
 		MemoryRange processHeap = getMemoryRange((ADDRINT) aHeaps[i]);
 		MYINFO("Init processHeaps2 base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
 		genericMemoryRanges.push_back(processHeap);

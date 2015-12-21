@@ -140,6 +140,7 @@ public:
 	//Debug
 	void printHeapList();
 	void PrintAllMemory();
+		VOID populateProcessHeaps();
 
 	
 private:
@@ -188,7 +189,7 @@ private:
 	VOID populateContextDataAddress();
 	VOID populateSharedMemory();
 	VOID populateCodePageData();
-	VOID populateProcessHeaps();
+
 
 	//Enumerate current  Memory Helpers
 	VOID addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize);

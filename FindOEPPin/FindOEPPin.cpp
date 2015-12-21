@@ -85,9 +85,12 @@ void imageLoadCallback(IMG img,void *){
 	ADDRINT startAddr = IMG_LowAddress(img);
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
+	  
 
 	if(!IMG_IsMainExecutable(img) && proc_info->isKnownLibrary(name,startAddr,endAddr)){	
+
 		hookFun.hookDispatcher(img);		
+		
 		proc_info->addLibrary(name,startAddr,endAddr);
 
 	}
@@ -98,10 +101,12 @@ void imageLoadCallback(IMG img,void *){
 // (Testing if batter than trace iteration)
 void Instruction(INS ins,void *v){
 	
+
 	if(prova == 0){
 		ProcInfo *pInfo = ProcInfo::getInstance();
 		string s = INS_Disassemble(ins);
-		ADDRINT curEip = INS_Address(ins);
+	ADDRINT curEip = INS_Address(ins);
+		
 		MYINFO("-> %08x   :    %s",curEip,s.c_str());
 	//	pInfo->enumerateWhiteListMemory();
 	//	pInfo->PrintWhiteListedAddr();

@@ -8,7 +8,7 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualAlloc",VIRTUALALLOC_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );
-	this->functionsMap.insert( std::pair<string,int>("credere",3) );
+	this->functionsMap.insert( std::pair<string,int>("RtlReAllocateHeap",RTLREALLOCATEHEAP_INDEX) );
 
 }
 
@@ -30,6 +30,7 @@ VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
   hz.begin = ret_heap_address;
   hz.size = virtual_alloc_size;
   hz.end = ret_heap_address + virtual_alloc_size;
+ // MYINFO("Virutalloc insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
 
   //saving this heap zone in the map inside ProcInfo
   proc_info->insertHeapZone(hz); 
@@ -38,7 +39,7 @@ VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
 
 //hook the  HeapAllocHook() in order to retrieve the memory range allocated and build ours data structures
 static HeapZone prev_heap_alloc;
-VOID HeapAllocHook(int heap_alloc_size , UINT32 ret_heap_address ){
+VOID RtlAllocateHeapHook(int heap_alloc_size , UINT32 ret_heap_address ){
 	 
 	if (heap_alloc_size == 0 ){
 		return;
@@ -46,9 +47,10 @@ VOID HeapAllocHook(int heap_alloc_size , UINT32 ret_heap_address ){
 	
 
 	ProcInfo *proc_info = ProcInfo::getInstance();
-	//need this code because sometimes RTLAllocHeap is invoked twice and the second time is the correct one
+	//need this code because sometimes RTLAllocHeap is invoked twice (because of the IPOINT_AFTER insert)and the second time is the correct one
 	if (prev_heap_alloc.begin == ret_heap_address){
 		proc_info->removeLastHeapZone();
+	
 	}
 
 	HeapZone hz;
@@ -57,6 +59,23 @@ VOID HeapAllocHook(int heap_alloc_size , UINT32 ret_heap_address ){
 	hz.end = ret_heap_address + heap_alloc_size;
 	prev_heap_alloc =hz;
 	
+	//MYINFO("AllocateHeap insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
+	//saving this heap zone in the map inside ProcInfo
+	proc_info->insertHeapZone(hz); 
+
+}
+
+
+VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){
+	
+	
+	ProcInfo *proc_info = ProcInfo::getInstance();
+
+	HeapZone hz;
+	hz.begin = heap_address;
+	hz.size = size;
+	hz.end = heap_address + size;
+	//MYINFO("ReAllocateHeap insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
 
 	//saving this heap zone in the map inside ProcInfo
 	proc_info->insertHeapZone(hz); 
@@ -83,7 +102,7 @@ void HookFunctions::hookDispatcher(IMG img){
 		if(rtn != RTN_Invalid()){
 			
 			ADDRINT va_address = RTN_Address(rtn);
-			MYINFO("Address of %s: %08x\n" ,func_name, va_address);
+			MYINFO("Inside %s Address of %s: %08x\n" ,IMG_Name(img).c_str(),func_name, va_address);
 
 			RTN_Open(rtn); 	
 			int index = item->second;
@@ -92,13 +111,18 @@ void HookFunctions::hookDispatcher(IMG img){
 			//Different arguments are passed to the hooking routine based on the function
 			switch(index){
 				case(VIRTUALALLOC_INDEX):
-					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualAllocHook , IARG_G_ARG1_CALLEE , IARG_G_RESULT0, IARG_END);
+					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualAllocHook , IARG_FUNCARG_ENTRYPOINT_VALUE,1 , IARG_FUNCRET_EXITPOINT_VALUE, IARG_END);
 					break;
 				case(RTLALLOCATEHEAP_INDEX):
-					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)HeapAllocHook , IARG_G_ARG2_CALLEE, IARG_G_RESULT0, IARG_END);
+					//need to be IPOINT_AFTER because the allocated address is returned as return value
+					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)RtlAllocateHeapHook , IARG_FUNCARG_ENTRYPOINT_VALUE,2, IARG_FUNCRET_EXITPOINT_VALUE, IARG_END);
 					break;
 				case(ISDEBUGGERPRESENT_INDEX):
 					RTN_Replace(rtn, AFUNPTR(IsDebuggerPresentHook));
+					break;
+				case(RTLREALLOCATEHEAP_INDEX):
+					//IPOINT_BEFORE because the address to be realloc is passed as an input paramenter
+					RTN_InsertCall(rtn,IPOINT_BEFORE,(AFUNPTR)RtlReAllocateHeapHook, IARG_FUNCARG_ENTRYPOINT_VALUE,2 , IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_END);
 					break;
 
 			}			
