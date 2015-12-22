@@ -101,13 +101,6 @@ UINT32 timeGetTimeHook(){
 	return ticks/tick_divisor;
 }
 
-VOID QueryPerfHook(){
-	
-	MYINFO("GET A LIFE\n");
-	
-} 
-
-
 //----------------------------- HOOKED DISPATCHER -----------------------------//
 
 //scan the image and try to hook all the function specified above
