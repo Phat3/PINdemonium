@@ -71,7 +71,7 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 	//Read address is outside of the Whitelist probably in the PIN address space (need to return some random garbage)
 	else{
 		MYINFO("Detected suspicious read at %08x ",address);
-		pInfo->populateProcessHeaps();
+	
 		curFakeMemory = "TopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMoto";
 		return NULL;
 	}

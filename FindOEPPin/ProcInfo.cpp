@@ -356,7 +356,6 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 
 void ProcInfo::populateProcAddresses(){
 	populatePebAddress();
-	populateTebAddress();
 	populateContextDataAddress();
 	populateCodePageData();
 	populateSharedMemory();
@@ -398,17 +397,24 @@ BOOL ProcInfo::isPebAddress(ADDRINT addr) {
 Check if an address in on the Teb
 **/
 BOOL ProcInfo::isTebAddress(ADDRINT addr) {
-	return (teb.StartAddress <= addr && addr <= teb.EndAddress ) ;
+	for(std::vector<MemoryRange>::iterator it = tebs.begin(); it != tebs.end(); ++it){
+		if(it->StartAddress <= addr && addr <= it->EndAddress){
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 
-VOID ProcInfo::populateTebAddress(){
+VOID ProcInfo::initThreadTebAddress(){
 
 	W::_TEB *tebAddr = W::NtCurrentTeb();
 	//sprintf(tebStr,"%x",teb);
-	teb.StartAddress = (ADDRINT)tebAddr;
-	teb.EndAddress = (ADDRINT)tebAddr +TEB_SIZE;
-	MYINFO("Init Teb base address %x   ->  %x",teb.StartAddress,teb.EndAddress);
+	MemoryRange cur_teb;
+	cur_teb.StartAddress = (ADDRINT)tebAddr;
+	cur_teb.EndAddress = (ADDRINT)tebAddr +TEB_SIZE;
+	MYINFO("Init Teb base address %x   ->  %x",cur_teb.StartAddress,cur_teb.EndAddress);
+	tebs.push_back(cur_teb);
 
 }
 
@@ -431,7 +437,6 @@ Initializing the base stack address by getting a value in the stack and searchin
 **/
 VOID ProcInfo::initThreadStackAddress(ADDRINT addr){
 	//hasn't been already initialized
-	MYINFO("calling initStackAddr %08x  ",addr );
 	MemoryRange stack;
 	W::MEMORY_BASIC_INFORMATION mbi;
 	int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
@@ -586,19 +591,13 @@ VOID ProcInfo::enumerateWhiteListMemory(){
 
 	//add stacks to the whitelist
 	for(std::vector<MemoryRange>::iterator it = stacks.begin(); it != stacks.end(); ++it){
-		MemoryRange mem;
-		mem.StartAddress = it->StartAddress;
-		mem.EndAddress  = it->EndAddress;
-		whiteListMemory.push_back(mem);
+		addWhitelistAddress(it->StartAddress,it->EndAddress);
 	}
 
 
 	//Add Generic Memory ranges(Shared Memory pages pContextData..)
 	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {
-		MemoryRange mem;
-		mem.StartAddress = item->StartAddress;
-		mem.EndAddress  = item->EndAddress;
-		whiteListMemory.push_back(mem);		
+		addWhitelistAddress(item->StartAddress,item->EndAddress);	
 	}
 
 
@@ -613,7 +612,10 @@ VOID ProcInfo::enumerateWhiteListMemory(){
 	}
 
 	//add teb
-	whiteListMemory.push_back(teb);
+	for(std::vector<MemoryRange>::iterator it = tebs.begin(); it != tebs.end(); ++it){
+		addWhitelistAddress(it->StartAddress,it->EndAddress);
+	}
+
 }
 
 

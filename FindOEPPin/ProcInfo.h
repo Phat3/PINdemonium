@@ -118,6 +118,7 @@ public:
 	BOOL isPebAddress(ADDRINT addr);
 	//TEB
 	BOOL isTebAddress(ADDRINT addr);
+	VOID initThreadTebAddress();
 	//Stack
 	VOID initThreadStackAddress(ADDRINT addr);
 	BOOL isStackAddress(ADDRINT addr);
@@ -140,7 +141,7 @@ public:
 	//Debug
 	void printHeapList();
 	void PrintAllMemory();
-		VOID populateProcessHeaps();
+	
 
 	
 private:
@@ -153,7 +154,7 @@ private:
 
 	std::vector<MemoryRange>  stacks;				//Set of Stack one for each thread
 	MemoryRange mainImg;
-	MemoryRange teb;                                //Teb Base Address
+	std::vector<MemoryRange> tebs;                                //Teb Base Address
 	PEB *peb;
 	std::vector<MemoryRange>  genericMemoryRanges;
 	std::vector<MemoryRange>  whiteListMemory;
@@ -184,7 +185,8 @@ private:
 	VOID mergeMemoryAddresses();
 	VOID mergeCurrentMemory();
 	
-	VOID populateTebAddress();
+	
+	VOID populateProcessHeaps();
 	VOID populatePebAddress();
 	VOID populateContextDataAddress();
 	VOID populateSharedMemory();

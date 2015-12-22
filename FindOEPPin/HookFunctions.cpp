@@ -102,11 +102,10 @@ void HookFunctions::hookDispatcher(IMG img){
 		if(rtn != RTN_Invalid()){
 			
 			ADDRINT va_address = RTN_Address(rtn);
-			MYINFO("Inside %s Address of %s: %08x\n" ,IMG_Name(img).c_str(),func_name, va_address);
+			MYINFO("Inside %s Address of %s: %08x" ,IMG_Name(img).c_str(),func_name, va_address);
 
 			RTN_Open(rtn); 	
 			int index = item->second;
-			MYINFO("index of %s is %d",func_name,index);
 			//decide what to do based on the function hooked
 			//Different arguments are passed to the hooking routine based on the function
 			switch(index){

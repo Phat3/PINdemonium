@@ -16,7 +16,12 @@ ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
 	FakeMemoryHandler fakeMem = *(FakeMemoryHandler *)fakeMemH;
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
 	ADDRINT fakeAddr = fakeMem.getFakeMemory(read_addr);
+
 	if(fakeAddr==NULL){
+		if( 0x0e600000 <= read_addr & read_addr <= 0x0ef00000  ){
+		MYINFO("Patch");
+		return read_addr;
+	}
 		MYINFO("xxxxxxxxxxxxxx %08x reading %08x",eip,read_addr);
 	
 	}
