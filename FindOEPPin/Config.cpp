@@ -129,6 +129,13 @@ void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 	fflush(this->report_file);
 }
 
+void Config::writeOnTimeLog(string s)
+{
+	fprintf(this->log_time,s.c_str());
+	fflush(this->log_time);
+}
+
+
 //Sets if the current dump works or not
 void Config::setWorking(int working)
 {

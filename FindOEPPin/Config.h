@@ -35,6 +35,7 @@ public:
 	void Config::closeLogFile();
 	void Config::closeReportFile();
 	void writeOnReport(ADDRINT ip, WriteInterval wi);
+	void Config::writeOnTimeLog(string s);
 	void setWorking (int working);
 
 	//mode of operation

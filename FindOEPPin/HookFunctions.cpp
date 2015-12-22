@@ -76,6 +76,10 @@ bool * IsDebuggerPresentHook(){
 
 VOID GetTickCountHook(UINT32 ticks , CONTEXT *ctx){
 	
+	char buff[1000];
+	sprintf (buff,"call GetTickCount() -> ticks %d\n" , ticks);
+	Config::getInstance()->writeOnTimeLog(buff);
+
 	int tick_divisor = Config::TICK_DIVISOR;
 	UINT32 ticks_fake = ticks / tick_divisor;
 
@@ -85,16 +89,22 @@ VOID GetTickCountHook(UINT32 ticks , CONTEXT *ctx){
 
 UINT32 timeGetTimeHook(){
 
-	UINT32 tick = W::GetTickCount();
+	char buff[1000];
+
+	UINT32 ticks = W::GetTickCount();
+
+	sprintf (buff,"call timeGetTime() -> ticks %d\n" , ticks);
+	Config::getInstance()->writeOnTimeLog(buff);
 
 	int tick_divisor = Config::TICK_DIVISOR;
 
-	return tick/tick_divisor;
+	return ticks/tick_divisor;
 }
 
 VOID QueryPerfHook(ADDRINT large_integer_struct){
 	
 	MYINFO("INSIDE QUERY PERF HOOK");
+	fflush(stdout);
 	//large_integer_struct.QuadPart = large_integer_struct.QuadPart/100000;
 } 
 
