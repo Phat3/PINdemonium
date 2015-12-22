@@ -256,6 +256,7 @@
     <ClCompile Include="GdbDebugger.cpp" />
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="HookFunctions.cpp" />
+    <ClCompile Include="HookSyscalls.cpp" />
     <ClCompile Include="InitFunctionCallHeuristic.cpp" />
     <ClCompile Include="ProcInfo.cpp" />
     <ClCompile Include="EntropyHeuristic.cpp" />
@@ -279,6 +280,7 @@
     <ClInclude Include="EvasionPatches.h" />
     <ClInclude Include="GdbDebugger.h" />
     <ClInclude Include="HookFunctions.h" />
+    <ClInclude Include="HookSyscalls.h" />
     <ClInclude Include="ProcInfo.h" />
     <ClInclude Include="InitFunctionCallHeuristic.h" />
     <ClInclude Include="Heuristics.h" />
