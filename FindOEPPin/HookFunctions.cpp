@@ -10,7 +10,7 @@ HookFunctions::HookFunctions(void)
 	//TIMING FUNCTIONS 
 	this->functionsMap.insert( std::pair<string,int>("GetTickCount",GETTICKCOUNT) );
 	this->functionsMap.insert( std::pair<string,int>("timeGetTime",TIMEGETTIME) );
-	this->functionsMap.insert(  std::pair<string,int>("QueryPerformanceCounter",QUERYPERFCOUNTER));
+	//QueryPerformanceCounter is hooked at syscall level with the NtQueryPerformanceCounter.
 
 	this->enumSyscalls();
 	//this->printSyscalls();
@@ -103,6 +103,7 @@ UINT32 timeGetTimeHook(){
 
 VOID QueryPerfHook(){
 	
+	MYINFO("GET A LIFE\n");
 	
 } 
 
@@ -157,18 +158,6 @@ void HookFunctions::hookDispatcher(IMG img){
 						REGSET_AddAll(regsOut);
 						RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)GetTickCountHook, IARG_G_RESULT0, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_END);
 						*/
-				       }
-					break;
-				case (QUERYPERFCOUNTER):
-					   {
-						//IARG_G_ARG0_CALLEE is the address of the struct that will receive the data from the performance counter 
-						//IPOINT AFTER FAILS WITH QUERYPERFORMANCECOUNTER... :-( 
-						
-						   for(INS ins = RTN_InsHead(rtn); ins != INS_Invalid() ; ins = INS_Next(ins)){
-						   
-								MYINFO("INS at address %08x inside QueryPerfCounter is %s\n" , INS_Address(ins) , INS_Disassemble(ins).c_str());
-						   }
-
 				       }
 					break;
 
