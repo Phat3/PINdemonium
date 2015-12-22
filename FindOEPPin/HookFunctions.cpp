@@ -62,47 +62,62 @@ bool * IsDebuggerPresentHook(){
 }
 
 
-UINT32 GetTickCountHook(UINT32 ticks){
+VOID GetTickCountHook(UINT32 ticks , CONTEXT *ctx){
 	
 	if(flag_time==0){
 	
 		flag_time = 1;
 		first_cc = (ticks * frequency)/ms;
+		first_ticks = first_cc * 1/frequency * ms;
 
-		MYINFO("Memorized %I64d\n" , first_cc);
+		MYINFO("Memorized %I64d CC\n" , first_cc);
+		MYINFO("Memorized %I64d Ticks\n" , first_ticks);
 
-		return ticks;
+		PIN_SetContextReg(ctx, REG_EAX, 1);	
 	}
 	else{
 	
 		unsigned __int64 now_cc = (ticks * frequency)/ms; // get the current cc based on the ticks 
+		unsigned __int64 cc_rdtsc = __rdtsc(); // test if the previous expression is ok against this value 
+
+		MYINFO("now_cc is %I64d | cc_rdtsc is %I64d\n" , now_cc , cc_rdtsc);
+
+		unsigned __int64 ticks_now = now_cc * 1/frequency * ms;
+
+		MYINFO("first_ticks is %I64d\n" , first_ticks);
+		MYINFO("ticks_now is %I64d\n" , ticks_now);
+
+
+		unsigned __int64 delta_ticks = ticks_now - first_ticks;
+
+		MYINFO("Original delta in ticks is %I64d\n" , delta_ticks);
+
 		unsigned __int64 delta_cc = now_cc - first_cc;  // what is the delta of CCs passed from the starting of the program? 
-		unsigned __int64 divisor = 4;
-
-		MYINFO("Delta CCs elapsed original would be %I64d\n" , delta_cc);
 		
-		unsigned __int64 ticks_original = delta_cc * 1/frequency * ms;
-
-		MYINFO("Ticks original elapsed is %I64d\n" , ticks_original);
-
-		delta_cc = delta_cc/divisor;  //let's lower that delta with a factor of 4 ( this can be tuned )
-
-		MYINFO("Delta CCs elapsed patched is  %I64d\n" , delta_cc);
 		
+		MYINFO("Original delta in CC is %I64d\n" , delta_cc);
 
-		unsigned __int64 x = delta_cc + first_cc; // calculate the new ticks returned in order to have the delta/4 
+		unsigned __int64 divisor = 2;
 
-		MYINFO("Second value of CCs to obtain the delta required: %I64d\n" , x);
+		unsigned __int64 fake_delta_cc = delta_cc / divisor;	
 
-		delta_cc = x - first_cc;
+		MYINFO("fake_delta in CC is %I64d\n" , fake_delta_cc);
 
-		ticks_original = delta_cc * 1/frequency * ms;
+		unsigned __int64 new_now_cc = first_cc + fake_delta_cc;
 
-		MYINFO("Ticks pathced elapsed is %I64d\n" , ticks_original);
+		MYINFO("new_now_cc is %I64d\n" , new_now_cc);
+
+		unsigned __int64 new_ticks_now = new_now_cc * 1/frequency * ms;
+
+		MYINFO("new_ticks_now is %I64d\n" ,new_ticks_now);
+
+		unsigned __int64 new_delta_ticks = new_ticks_now - first_ticks;
+
+		MYINFO("Delta ticks elapsed fake is  %I64d\n" , new_delta_ticks);
 
 		flag_time = 0;
 
-		return ticks;
+		PIN_SetContextReg(ctx, REG_EAX, 1);	
 	}
 	
 }
@@ -140,7 +155,11 @@ void HookFunctions::hookDispatcher(IMG img){
 					break;
 				case 3:
 					   {
-						RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)GetTickCountHook, IARG_G_RESULT0, IARG_END);
+						REGSET regsIn;
+						REGSET_AddAll(regsIn);
+						REGSET regsOut;
+						REGSET_AddAll(regsOut);
+						RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)GetTickCountHook, IARG_G_RESULT0, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_END);
 				       }
 					break;
 

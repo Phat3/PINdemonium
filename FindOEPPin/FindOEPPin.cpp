@@ -28,6 +28,7 @@ int flag_time;
 unsigned __int64 frequency;
 unsigned __int64 ms;
 unsigned __int64 first_cc;
+unsigned __int64 first_ticks;
 
 // This function is called when the application exits
 VOID Fini(INT32 code, VOID *v){
@@ -44,9 +45,10 @@ VOID Fini(INT32 code, VOID *v){
 VOID Init(VOID *v){
 
 	flag_time = 0;
-	frequency = 2700000000;
+	frequency = 2588000000;
 	ms = 1000;
 	first_cc = 0;
+	first_ticks= 0;
 
 }
 //cc
