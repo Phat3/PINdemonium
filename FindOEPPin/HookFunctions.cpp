@@ -92,7 +92,7 @@ UINT32 timeGetTimeHook(){
 	char buff[1000];
 
 	UINT32 ticks = W::GetTickCount();
-
+	
 	sprintf (buff,"call timeGetTime() -> ticks %d\n" , ticks);
 	Config::getInstance()->writeOnTimeLog(buff);
 
@@ -101,11 +101,9 @@ UINT32 timeGetTimeHook(){
 	return ticks/tick_divisor;
 }
 
-VOID QueryPerfHook(ADDRINT large_integer_struct){
+VOID QueryPerfHook(){
 	
-	MYINFO("INSIDE QUERY PERF HOOK");
-	fflush(stdout);
-	//large_integer_struct.QuadPart = large_integer_struct.QuadPart/100000;
+	
 } 
 
 
@@ -164,7 +162,13 @@ void HookFunctions::hookDispatcher(IMG img){
 				case (QUERYPERFCOUNTER):
 					   {
 						//IARG_G_ARG0_CALLEE is the address of the struct that will receive the data from the performance counter 
-						RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)QueryPerfHook, IARG_G_ARG0_CALLEE , IARG_END);
+						//IPOINT AFTER FAILS WITH QUERYPERFORMANCECOUNTER... :-( 
+						
+						   for(INS ins = RTN_InsHead(rtn); ins != INS_Invalid() ; ins = INS_Next(ins)){
+						   
+								MYINFO("INS at address %08x inside QueryPerfCounter is %s\n" , INS_Address(ins) , INS_Disassemble(ins).c_str());
+						   }
+
 				       }
 					break;
 
