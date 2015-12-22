@@ -6,7 +6,11 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualAlloc",VIRTUALALLOC_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );
-	this->functionsMap.insert( std::pair<string,int>("GetTickCount",3) );
+
+	//TIMING FUNCTIONS 
+	this->functionsMap.insert( std::pair<string,int>("GetTickCount",GETTICKCOUNT) );
+	this->functionsMap.insert( std::pair<string,int>("timeGetTime",TIMEGETTIME) );
+	this->functionsMap.insert(  std::pair<string,int>("QueryPerformanceCounter",QUERYPERFCOUNTER));
 
 	this->enumSyscalls();
 	//this->printSyscalls();
@@ -62,65 +66,37 @@ bool * IsDebuggerPresentHook(){
 }
 
 
+//-------------------------------------------------------------------------------------
+//	TIMING FUNCTION HOOKS
+//-------------------------------------------------------------------------------------
+//	 GetTickCount and timeGetTime are more or less the same thing, 
+//	 see hxxps://randomascii.wordpress.com/2013/05/09/timegettime-versus-gettickcount/
+//
+//-------------------------------------------------------------------------------------
+
 VOID GetTickCountHook(UINT32 ticks , CONTEXT *ctx){
 	
-	if(flag_time==0){
-	
-		flag_time = 1;
-		first_cc = (ticks * frequency)/ms;
-		first_ticks = first_cc * 1/frequency * ms;
+	int tick_divisor = Config::TICK_DIVISOR;
+	UINT32 ticks_fake = ticks / tick_divisor;
 
-		MYINFO("Memorized %I64d CC\n" , first_cc);
-		MYINFO("Memorized %I64d Ticks\n" , first_ticks);
+	PIN_SetContextReg(ctx, REG_EAX,ticks_fake);
 
-		PIN_SetContextReg(ctx, REG_EAX, 1);	
-	}
-	else{
-	
-		unsigned __int64 now_cc = (ticks * frequency)/ms; // get the current cc based on the ticks 
-		unsigned __int64 cc_rdtsc = __rdtsc(); // test if the previous expression is ok against this value 
-
-		MYINFO("now_cc is %I64d | cc_rdtsc is %I64d\n" , now_cc , cc_rdtsc);
-
-		unsigned __int64 ticks_now = now_cc * 1/frequency * ms;
-
-		MYINFO("first_ticks is %I64d\n" , first_ticks);
-		MYINFO("ticks_now is %I64d\n" , ticks_now);
-
-
-		unsigned __int64 delta_ticks = ticks_now - first_ticks;
-
-		MYINFO("Original delta in ticks is %I64d\n" , delta_ticks);
-
-		unsigned __int64 delta_cc = now_cc - first_cc;  // what is the delta of CCs passed from the starting of the program? 
-		
-		
-		MYINFO("Original delta in CC is %I64d\n" , delta_cc);
-
-		unsigned __int64 divisor = 2;
-
-		unsigned __int64 fake_delta_cc = delta_cc / divisor;	
-
-		MYINFO("fake_delta in CC is %I64d\n" , fake_delta_cc);
-
-		unsigned __int64 new_now_cc = first_cc + fake_delta_cc;
-
-		MYINFO("new_now_cc is %I64d\n" , new_now_cc);
-
-		unsigned __int64 new_ticks_now = new_now_cc * 1/frequency * ms;
-
-		MYINFO("new_ticks_now is %I64d\n" ,new_ticks_now);
-
-		unsigned __int64 new_delta_ticks = new_ticks_now - first_ticks;
-
-		MYINFO("Delta ticks elapsed fake is  %I64d\n" , new_delta_ticks);
-
-		flag_time = 0;
-
-		PIN_SetContextReg(ctx, REG_EAX, 1);	
-	}
-	
 }
+
+UINT32 timeGetTimeHook(){
+
+	UINT32 tick = W::GetTickCount();
+
+	int tick_divisor = Config::TICK_DIVISOR;
+
+	return tick/tick_divisor;
+}
+
+VOID QueryPerfHook(ADDRINT large_integer_struct){
+	
+	MYINFO("INSIDE QUERY PERF HOOK");
+	//large_integer_struct.QuadPart = large_integer_struct.QuadPart/100000;
+} 
 
 
 //----------------------------- HOOKED DISPATCHER -----------------------------//
@@ -153,13 +129,32 @@ void HookFunctions::hookDispatcher(IMG img){
 				case(ISDEBUGGERPRESENT_INDEX):
 					RTN_Replace(rtn, AFUNPTR(IsDebuggerPresentHook));
 					break;
-				case 3:
+				case (GETTICKCOUNT):
 					   {
 						REGSET regsIn;
 						REGSET_AddAll(regsIn);
 						REGSET regsOut;
 						REGSET_AddAll(regsOut);
 						RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)GetTickCountHook, IARG_G_RESULT0, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_END);
+				       }
+					break;
+				case (TIMEGETTIME):
+					   {
+						RTN_Replace(rtn, AFUNPTR(timeGetTimeHook));
+						//Using the following approach Exait can't call the GetPluginName function for reasons...
+						/*
+						REGSET regsIn;
+						REGSET_AddAll(regsIn);
+						REGSET regsOut;
+						REGSET_AddAll(regsOut);
+						RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)GetTickCountHook, IARG_G_RESULT0, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_END);
+						*/
+				       }
+					break;
+				case (QUERYPERFCOUNTER):
+					   {
+						//IARG_G_ARG0_CALLEE is the address of the struct that will receive the data from the performance counter 
+						RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)QueryPerfHook, IARG_G_ARG0_CALLEE , IARG_END);
 				       }
 					break;
 

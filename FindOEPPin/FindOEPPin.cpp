@@ -24,11 +24,6 @@ OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
 
-int flag_time;
-unsigned __int64 frequency;
-unsigned __int64 ms;
-unsigned __int64 first_cc;
-unsigned __int64 first_ticks;
 
 // This function is called when the application exits
 VOID Fini(INT32 code, VOID *v){
@@ -42,15 +37,7 @@ VOID Fini(INT32 code, VOID *v){
 
 }
 
-VOID Init(VOID *v){
 
-	flag_time = 0;
-	frequency = 2588000000;
-	ms = 1000;
-	first_cc = 0;
-	first_ticks= 0;
-
-}
 //cc
 INT32 Usage(){
 	PIN_ERROR("This Pintool unpacks common packers\n" + KNOB_BASE::StringKnobSummary() + "\n");
@@ -168,8 +155,6 @@ int main(int argc, char * argv[]){
 	
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
-
-	PIN_AddApplicationStartFunction(Init,0);
 
 	// Start the program, never returns
 

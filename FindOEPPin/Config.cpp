@@ -16,7 +16,7 @@ const string Config::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
 const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
 const string PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING = "NotWorking\\";
 const string DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "dumperSelector.py";
-
+const string Config::TIME_LOG = "time_log.txt";
 
 //Tuning Flags
 
@@ -25,6 +25,7 @@ const bool  Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
 const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 2;
 const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
+const UINT32 Config::TICK_DIVISOR = 500;
 
 Config* Config::instance = 0;
 
@@ -43,8 +44,12 @@ Config::Config(){
 	//create the log and report files
 	string log_file_path = this->base_path + LOG_FILENAME;
 	string report_file_path = this->base_path + REPORT_FILENAME;
+	string log_time_path = this->base_path+TIME_LOG;
+
 	this->log_file = fopen(log_file_path.c_str(),"w");
 	this->report_file = fopen(report_file_path.c_str(),"w");
+	this->log_time = fopen(log_time_path.c_str(),"w");
+
 	this->numberOfBadImports = calculateNumberOfBadImports();
 	//initialize the path of the ScyllaWrapperLog
 	this->working = -1;

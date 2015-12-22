@@ -51,6 +51,7 @@ public:
 	static const string BAD_IMPORTS_LIST;
 	static const string DETECTED_BAD_IMPORTS_LIST;
 	static const string SCYLLA_DUMPER_PATH;
+	static const string TIME_LOG;
 
 	//Tuning Flags
 	static const bool  ATTACH_DEBUGGER;
@@ -58,12 +59,14 @@ public:
 	static const string FILTER_WRITES_ENABLES;        //Which write instructions are filtered(possible values: 'stack teb')
 	static const UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
 	static const UINT32 TIMEOUT_TIMER_SECONDS;
+	static const UINT32 TICK_DIVISOR;
 
 private:
 	Config::Config();
 	static Config* instance;
 	FILE *log_file;
 	FILE *report_file;
+	FILE *log_time;
 	string base_path;
 	string not_working_path;
 	string cur_dump_path;        //Path of the final (IAT fixed) Dump
@@ -73,5 +76,6 @@ private:
 	int numberOfBadImports;
 	int calculateNumberOfBadImports();
 	int working;
+
 };
 
