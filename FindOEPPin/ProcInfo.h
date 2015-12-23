@@ -15,7 +15,9 @@ namespace W{
 }
 
 #define MAX_STACK_SIZE 0x100000    //Used to define the memory range of the stack
-#define TEB_SIZE 0xf28	
+#define TEB_SIZE 0xfe0 	
+#define KUSER_SHARED_DATA_ADDRESS 0x7ffe0000
+#define KUSER_SHARED_DATA_SIZE 0x3e0 
 
 typedef struct PEB {
 	W::BYTE padding1[2];
@@ -128,7 +130,7 @@ public:
 	VOID addMappedFilesAddress(ADDRINT startAddr);
 	//Library
 	BOOL isLibraryInstruction(ADDRINT address);
-	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
+	BOOL isKnownLibraryInstruction(ADDRINT address);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	//Generic Address (pContexData, SharedMemory..)
 	BOOL isGenericMemoryAddress(ADDRINT address);
@@ -168,7 +170,8 @@ private:
 	std::vector<Section> Sections;
 	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
-	std::vector<LibraryItem> LibrarySet;			//vector of know library loaded
+	std::vector<LibraryItem> knownLibraries;			//vector of know library loaded
+	std::vector<LibraryItem> unknownLibraries;			//vector of unknow library loaded
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad
 	//this is a common technique to restore the initial register status after the unpacking routine
@@ -190,12 +193,13 @@ private:
 	VOID mergeMemoryAddresses();
 	VOID mergeCurrentMemory();
 	
-	
+	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID addProcessHeapsAddress();
 	VOID addPebAddress();
 	VOID addContextDataAddress();
 	VOID addSharedMemoryAddress();
 	VOID addCodePageDataAddress();
+	VOID addKUserSharedDataAddress();
 
 
 	//Enumerate current  Memory Helpers
@@ -209,7 +213,7 @@ private:
 	
 	//Library Helpers
 	string libToString(LibraryItem lib);
-	VOID showFilteredLibs();
+
 	
 	long long FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard);
 

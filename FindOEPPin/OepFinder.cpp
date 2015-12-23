@@ -103,7 +103,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	
 	//Tracking violating WxorX instructions
 	//Filter instructions inside a known library
-	if(proc_info->isLibraryInstruction(curEip)){
+	if(proc_info->isKnownLibraryInstruction(curEip)){
 		return OEPFINDER_INS_FILTERED; 
 	}
 

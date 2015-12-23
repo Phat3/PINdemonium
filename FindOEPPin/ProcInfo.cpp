@@ -285,25 +285,23 @@ add library in a list sorted by address
 **/
 VOID ProcInfo::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
 
+
 	LibraryItem libItem;
 	libItem.StartAddress = startAddr;
 	libItem.EndAddress = endAddr;
 	libItem.name = name;
-	if (LibrarySet.empty()) {
-		LibrarySet.push_back(libItem);
-		MYINFO("Add  %s",libToString(libItem));
+
+	if(isKnownLibrary(name,startAddr,endAddr)){
+		knownLibraries.push_back(libItem);
+		MYINFO("Add to known Library %s",libToString(libItem));
+		return;
+	
+	}
+	else{
+		unknownLibraries.push_back(libItem);
+		MYINFO("Add to unknown Library %s",libToString(libItem));
 		return;
 	}
-	for(auto lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
-		if (lib->StartAddress < startAddr) {
-			MYINFO("Add  %s",libToString(libItem));
-			LibrarySet.insert(lib, libItem);
-			return;
-		}
-	}
-	LibrarySet.push_back(libItem);
-	MYINFO("Add  %s",libToString(libItem));
-	return ;
 
 }
 
@@ -320,14 +318,6 @@ string ProcInfo::libToString(LibraryItem lib){
 	
 }
 
-/**
-Display on the log the currently filtered libs
-**/
-VOID  ProcInfo::showFilteredLibs(){
-	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
-		MYINFO("Filtered Lib %s",libToString(*lib));
-	}
-}
 
 /**
 Check the current name against a set of whitelisted library names
@@ -345,7 +335,26 @@ BOOL ProcInfo::isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAdd
 /*check if the address belong to a Library */
 //TODO add a whiitelist of Windows libraries that will be loaded
 BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
-	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
+	
+	//check inside known libraries
+	for(std::vector<LibraryItem>::iterator lib = knownLibraries.begin(); lib != knownLibraries.end(); ++lib) {
+		if (lib->StartAddress <= address && address <= lib->EndAddress)
+		//	MYINFO("Instruction at %x filtered", address);
+			return TRUE;
+	}
+	//check inside unknown libraries
+	for(std::vector<LibraryItem>::iterator lib = unknownLibraries.begin(); lib != unknownLibraries.end(); ++lib) {
+		if (lib->StartAddress <= address && address <= lib->EndAddress)
+		//	MYINFO("Instruction at %x filtered", address);
+			return TRUE;
+	}
+	
+	return FALSE;	
+}
+
+BOOL ProcInfo::isKnownLibraryInstruction(ADDRINT address){
+	//check inside known libraries
+	for(std::vector<LibraryItem>::iterator lib = knownLibraries.begin(); lib != knownLibraries.end(); ++lib) {
 		if (lib->StartAddress <= address && address <= lib->EndAddress)
 		//	MYINFO("Instruction at %x filtered", address);
 			return TRUE;
@@ -360,6 +369,7 @@ void ProcInfo::addProcAddresses(){
 	addCodePageDataAddress();
 	addSharedMemoryAddress();
 	addProcessHeapsAddress();
+	addKUserSharedDataAddress();
 
 }
 
@@ -393,9 +403,8 @@ BOOL ProcInfo::isPebAddress(ADDRINT addr) {
 //------------------------------------------------------------TEB------------------------------------------------------------
 
 
-/**
-Check if an address in on the Teb
-**/
+
+//Check if an address in on the Teb
 BOOL ProcInfo::isTebAddress(ADDRINT addr) {
 	for(std::vector<MemoryRange>::iterator it = tebs.begin(); it != tebs.end(); ++it){
 		if(it->StartAddress <= addr && addr <= it->EndAddress){
@@ -491,7 +500,12 @@ BOOL ProcInfo::isGenericMemoryAddress(ADDRINT address){
 	}
 	return false;
 }
-
+/**
+Fill the MemoryRange passed as parameter with the startAddress and EndAddress of the memory location in which the address is contained
+ADDRINT address:  address of which we want to retrieve the memory region
+MemoryRange& range: MemoryRange which will be filled 
+return TRUE if the address belongs to a memory mapped area otherwise return FALSE
+**/
 BOOL ProcInfo::getMemoryRange(ADDRINT address, MemoryRange& range){
 		
 		W::MEMORY_BASIC_INFORMATION mbi;
@@ -519,6 +533,7 @@ BOOL ProcInfo::getMemoryRange(ADDRINT address, MemoryRange& range){
 		
 }
 
+//Adding the ContextData to the generic Memory Ranges
 VOID ProcInfo::addContextDataAddress(){
 	MemoryRange activationContextData;  
 	MemoryRange systemDefaultActivationContextData ;
@@ -538,6 +553,7 @@ VOID ProcInfo::addContextDataAddress(){
 	}
 }
 
+//Adding the SharedMemoryAddress to the generic Memory Ranges
 VOID ProcInfo::addSharedMemoryAddress(){
 	MemoryRange readOnlySharedMemoryBase;
 	if(getMemoryRange((ADDRINT) peb->ReadOnlySharedMemoryBase,readOnlySharedMemoryBase)){
@@ -547,6 +563,8 @@ VOID ProcInfo::addSharedMemoryAddress(){
 
 }
 
+
+//Adding the CodePageDataAddress to the generic Memory Ranges
 VOID ProcInfo::addCodePageDataAddress(){
 	MemoryRange ansiCodePageData;
 	if(getMemoryRange((ADDRINT) peb->AnsiCodePageData,ansiCodePageData)){
@@ -555,16 +573,28 @@ VOID ProcInfo::addCodePageDataAddress(){
 	}
 }
 
+
+//Add to the generic memory ranges the KUserShareData structure
+VOID ProcInfo::addKUserSharedDataAddress(){
+	MemoryRange KUserSharedData;
+	KUserSharedData.StartAddress = KUSER_SHARED_DATA_ADDRESS;
+	KUserSharedData.EndAddress =KUSER_SHARED_DATA_ADDRESS +KUSER_SHARED_DATA_SIZE;
+	genericMemoryRanges.push_back(KUserSharedData);
+	
+}
+
+
+//Adding the ProcessHeaps to the generic Memory Ranges
 VOID ProcInfo::addProcessHeapsAddress(){
 	W::SIZE_T BytesToAllocate;
 	W::PHANDLE aHeaps;
-	
+	//getting the number of ProcessHeaps
 	W::DWORD NumberOfHeaps = W::GetProcessHeaps(0, NULL);
     if (NumberOfHeaps == 0) {
 		MYERRORE("Error in retrieving number of Process Heaps");
 		return;
 	}
-
+	//Allocating space for the ProcessHeaps Addresses
 	W::SIZETMult(NumberOfHeaps, sizeof(*aHeaps), &BytesToAllocate);
 	aHeaps = (W::PHANDLE)W::HeapAlloc(W::GetProcessHeap(), 0, BytesToAllocate);
 	 if ( aHeaps == NULL) {
@@ -573,11 +603,11 @@ VOID ProcInfo::addProcessHeapsAddress(){
 	} 
 
 	W::GetProcessHeaps(NumberOfHeaps,aHeaps);
-
+	//Adding the memory range containing the ProcessHeaps to the  genericMemoryRanges
 	 for (int i = 0; i < NumberOfHeaps; ++i) {
 		MemoryRange processHeap;
 		if(getMemoryRange((ADDRINT) aHeaps[i],processHeap)){
-			MYINFO("Init processHeaps2 base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
+			MYINFO("Init processHeaps base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
 			genericMemoryRanges.push_back(processHeap);
 		}
     }
@@ -649,9 +679,13 @@ VOID ProcInfo::enumerateWhiteListMemory(){
 	
 	
 	//add Libraries address to the whitelist
-	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
+	for(std::vector<LibraryItem>::iterator lib = knownLibraries.begin(); lib != knownLibraries.end(); ++lib) {
 		addWhitelistAddress(lib->StartAddress,lib->EndAddress);
 	}
+	for(std::vector<LibraryItem>::iterator lib = unknownLibraries.begin(); lib != unknownLibraries.end(); ++lib) {
+		addWhitelistAddress(lib->StartAddress,lib->EndAddress);
+	}
+
 
 	//add teb
 	for(std::vector<MemoryRange>::iterator it = tebs.begin(); it != tebs.end(); ++it){
