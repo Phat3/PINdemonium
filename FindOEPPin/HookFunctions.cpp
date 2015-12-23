@@ -9,6 +9,7 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("RtlReAllocateHeap",RTLREALLOCATEHEAP_INDEX) );
+	this->functionsMap.insert( std::pair<string,int>("MapViewOfFile",MAPVIEWOFFILE_INDEX) );
 
 }
 
@@ -68,7 +69,6 @@ VOID RtlAllocateHeapHook(int heap_alloc_size , UINT32 ret_heap_address ){
 
 VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){
 	
-	
 	ProcInfo *proc_info = ProcInfo::getInstance();
 
 	HeapZone hz;
@@ -79,7 +79,12 @@ VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){
 
 	//saving this heap zone in the map inside ProcInfo
 	proc_info->insertHeapZone(hz); 
+}
 
+VOID MapViewOfFileHookAfter(W::DWORD dwDesiredAccess,W::DWORD dwFileOffsetHigh, W::DWORD dwFileOffsetLow, UINT32 size,ADDRINT file_view_addr ){
+	MYINFO("Found After mapViewOfFile Access %08x OffsetHigh %08x OffsetLow %08x  at %08x of size %08x ",dwDesiredAccess,dwFileOffsetHigh,dwFileOffsetLow,file_view_addr,size);
+	ProcInfo *proc_info = ProcInfo::getInstance();
+	proc_info->populateMappedFiles(file_view_addr);
 }
 
 //REMEMBER!!! : PIN wants a function pointer in the AFUNCPTR agument!!!
@@ -122,6 +127,10 @@ void HookFunctions::hookDispatcher(IMG img){
 				case(RTLREALLOCATEHEAP_INDEX):
 					//IPOINT_BEFORE because the address to be realloc is passed as an input paramenter
 					RTN_InsertCall(rtn,IPOINT_BEFORE,(AFUNPTR)RtlReAllocateHeapHook, IARG_FUNCARG_ENTRYPOINT_VALUE,2 , IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_END);
+					break;
+				case(MAPVIEWOFFILE_INDEX):
+					//need to be IPOINT_AFTER because the allocated address is returned as return value
+					RTN_InsertCall(rtn,IPOINT_AFTER,(AFUNPTR)MapViewOfFileHookAfter,IARG_FUNCARG_ENTRYPOINT_VALUE,1,IARG_FUNCARG_ENTRYPOINT_VALUE,2,IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_FUNCARG_ENTRYPOINT_VALUE,4,IARG_FUNCRET_EXITPOINT_VALUE,  IARG_END);
 					break;
 
 			}			

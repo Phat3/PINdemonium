@@ -406,7 +406,7 @@ BOOL ProcInfo::isTebAddress(ADDRINT addr) {
 }
 
 
-VOID ProcInfo::initThreadTebAddress(){
+VOID ProcInfo::populateThreadTebAddress(){
 
 	W::_TEB *tebAddr = W::NtCurrentTeb();
 	//sprintf(tebStr,"%x",teb);
@@ -435,7 +435,7 @@ BOOL ProcInfo::isStackAddress(ADDRINT addr) {
 /**
 Initializing the base stack address by getting a value in the stack and searching the highest allocated address in the same memory region
 **/
-VOID ProcInfo::initThreadStackAddress(ADDRINT addr){
+VOID ProcInfo::populateThreadStackAddress(ADDRINT addr){
 	//hasn't been already initialized
 	MemoryRange stack;
 	W::MEMORY_BASIC_INFORMATION mbi;
@@ -463,6 +463,23 @@ VOID ProcInfo::initThreadStackAddress(ADDRINT addr){
 
 
 }
+//------------------------------------------------------------ Memory Mapped Files------------------------------------------------------------
+BOOL ProcInfo::isMappedFileAddress(ADDRINT addr){
+	for(std::vector<MemoryRange>::iterator item = mappedFiles.begin(); item != mappedFiles.end(); ++item) {
+		if(item->StartAddress <= addr && addr <= item->EndAddress){
+			return true;
+		}			
+	}
+	return false;
+}
+
+VOID ProcInfo::populateMappedFiles(ADDRINT startAddr){
+	MemoryRange mappedFile;
+	if(getMemoryRange((ADDRINT)startAddr,mappedFile)){
+		MYINFO("Adding mappedFile base address  %08x -> %08x ",mappedFile.StartAddress,mappedFile.EndAddress);
+		mappedFiles.push_back(mappedFile);
+	}
+}
 
 
 //------------------------------------------------------------ Other Memory Location ------------------------------------------------------------
@@ -475,44 +492,67 @@ BOOL ProcInfo::isGenericMemoryAddress(ADDRINT address){
 	return false;
 }
 
-MemoryRange ProcInfo::getMemoryRange(ADDRINT address){
-		MemoryRange range;
+BOOL ProcInfo::getMemoryRange(ADDRINT address, MemoryRange& range){
+		
 		W::MEMORY_BASIC_INFORMATION mbi;
 		int numBytes = W::VirtualQuery((W::LPCVOID)address, &mbi, sizeof(mbi));
+		if(numBytes == 0){
+			MYERRORE("VirtualQuery failed");
+			return FALSE;
+		}
+	
+		int start =  (int)mbi.BaseAddress;
+		int end = (int)mbi.BaseAddress+ mbi.RegionSize;
 		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
 	//	MYINFO("state %08x   %08x",mbi.State,mbi.Type);
-		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_MAPPED) || mbi.Type == MEM_IMAGE ||  mbi.Type == MEM_PRIVATE){
+		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_MAPPED || mbi.Type == MEM_IMAGE ||  mbi.Type == MEM_PRIVATE) &&
+			start <=address && address <= end){
 			//MYINFO("Adding start %08x ",(int)mbi.BaseAddress);
-			range.StartAddress = (int)mbi.BaseAddress;
-			range.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
+			range.StartAddress = start;
+			range.EndAddress = end;
+			return TRUE;
 		}
-		return range;
+		else{
+			MYERRORE("Address not inside mapped memory");
+			return  FALSE;
+		}
+		
 }
 
 VOID ProcInfo::populateContextDataAddress(){
-	MemoryRange activationContextData = getMemoryRange((ADDRINT)peb->ActivationContextData);
-	MYINFO("Init activationContextData base address  %08x -> %08x ",activationContextData.StartAddress,activationContextData.EndAddress);
-	MemoryRange systemDefaultActivationContextData = getMemoryRange((ADDRINT)peb->SystemDefaultActivationContextData);
-	MYINFO("Init systemDefaultActivationContextData base address  %08x -> %08x",systemDefaultActivationContextData.StartAddress,systemDefaultActivationContextData.EndAddress);
-	MemoryRange pContextData = getMemoryRange((ADDRINT)peb->pContextData);
-	MYINFO("Init pContextData base address  %08x -> %08x",pContextData.StartAddress,pContextData.EndAddress);
-	
-	genericMemoryRanges.push_back(activationContextData);
-	genericMemoryRanges.push_back(systemDefaultActivationContextData);
-	genericMemoryRanges.push_back(pContextData);
+	MemoryRange activationContextData;  
+	MemoryRange systemDefaultActivationContextData ;
+	MemoryRange pContextData;
+	if(getMemoryRange((ADDRINT)peb->ActivationContextData,activationContextData)){
+		MYINFO("Init activationContextData base address  %08x -> %08x ",activationContextData.StartAddress,activationContextData.EndAddress);
+		genericMemoryRanges.push_back(activationContextData);
+
+	}
+	if (getMemoryRange((ADDRINT)peb->SystemDefaultActivationContextData,systemDefaultActivationContextData)){
+		MYINFO("Init systemDefaultActivationContextData base address  %08x -> %08x",systemDefaultActivationContextData.StartAddress,systemDefaultActivationContextData.EndAddress);
+		genericMemoryRanges.push_back(systemDefaultActivationContextData);
+	} 
+	if(getMemoryRange((ADDRINT)peb->pContextData,pContextData)){
+		MYINFO("Init pContextData base address  %08x -> %08x",pContextData.StartAddress,pContextData.EndAddress);
+		genericMemoryRanges.push_back(pContextData);
+	}
 }
 
 VOID ProcInfo::populateSharedMemory(){
-	MemoryRange readOnlySharedMemoryBase = getMemoryRange((ADDRINT) peb->ReadOnlySharedMemoryBase);
-	MYINFO("Init readOnlySharedMemoryBase base address  %08x -> %08x",readOnlySharedMemoryBase.StartAddress,readOnlySharedMemoryBase.EndAddress);
-	genericMemoryRanges.push_back(readOnlySharedMemoryBase);
+	MemoryRange readOnlySharedMemoryBase;
+	if(getMemoryRange((ADDRINT) peb->ReadOnlySharedMemoryBase,readOnlySharedMemoryBase)){
+		MYINFO("Init readOnlySharedMemoryBase base address  %08x -> %08x",readOnlySharedMemoryBase.StartAddress,readOnlySharedMemoryBase.EndAddress);
+		genericMemoryRanges.push_back(readOnlySharedMemoryBase);
+	}
 
 }
 
 VOID ProcInfo::populateCodePageData(){
-	MemoryRange ansiCodePageData = getMemoryRange((ADDRINT) peb->AnsiCodePageData);
-	MYINFO("Init ansiCodePageData base address  %08x -> %08x",ansiCodePageData.StartAddress,ansiCodePageData.EndAddress);
-	genericMemoryRanges.push_back(ansiCodePageData);
+	MemoryRange ansiCodePageData;
+	if(getMemoryRange((ADDRINT) peb->AnsiCodePageData,ansiCodePageData)){
+		MYINFO("Init ansiCodePageData base address  %08x -> %08x",ansiCodePageData.StartAddress,ansiCodePageData.EndAddress);
+		genericMemoryRanges.push_back(ansiCodePageData);
+	}
 }
 
 VOID ProcInfo::populateProcessHeaps(){
@@ -535,9 +575,11 @@ VOID ProcInfo::populateProcessHeaps(){
 	W::GetProcessHeaps(NumberOfHeaps,aHeaps);
 
 	 for (int i = 0; i < NumberOfHeaps; ++i) {
-		MemoryRange processHeap = getMemoryRange((ADDRINT) aHeaps[i]);
-		MYINFO("Init processHeaps2 base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
-		genericMemoryRanges.push_back(processHeap);
+		MemoryRange processHeap;
+		if(getMemoryRange((ADDRINT) aHeaps[i],processHeap)){
+			MYINFO("Init processHeaps2 base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
+			genericMemoryRanges.push_back(processHeap);
+		}
     }
 }
 

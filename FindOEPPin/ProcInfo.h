@@ -118,10 +118,13 @@ public:
 	BOOL isPebAddress(ADDRINT addr);
 	//TEB
 	BOOL isTebAddress(ADDRINT addr);
-	VOID initThreadTebAddress();
+	VOID populateThreadTebAddress();
 	//Stack
-	VOID initThreadStackAddress(ADDRINT addr);
 	BOOL isStackAddress(ADDRINT addr);
+	VOID populateThreadStackAddress(ADDRINT addr);
+	//Memory Mapped Files
+	BOOL isMappedFileAddress(ADDRINT addr);
+	VOID populateMappedFiles(ADDRINT startAddr);
 	//Library
 	BOOL isLibraryInstruction(ADDRINT address);
 	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
@@ -156,6 +159,7 @@ private:
 	MemoryRange mainImg;
 	std::vector<MemoryRange> tebs;                                //Teb Base Address
 	PEB *peb;
+	std::vector<MemoryRange>  mappedFiles;
 	std::vector<MemoryRange>  genericMemoryRanges;
 	std::vector<MemoryRange>  whiteListMemory;
 	std::vector<MemoryRange>  currentMemory;
@@ -180,7 +184,7 @@ private:
 	
 	//Enumerate Whitelisted Memory Helpers	
 	//return the MemoryRange in which the address is mapped
-	MemoryRange getMemoryRange(ADDRINT address);
+	BOOL getMemoryRange(ADDRINT address, MemoryRange& range);
 	VOID addWhitelistAddress(ADDRINT baseAddr,ADDRINT endAddress);
 	VOID mergeMemoryAddresses();
 	VOID mergeCurrentMemory();

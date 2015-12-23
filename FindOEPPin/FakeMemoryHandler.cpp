@@ -115,6 +115,10 @@ BOOL FakeMemoryHandler::isAddrInWhiteList(ADDRINT address){
 	if(pInfo->isPebAddress(address)){
 		return TRUE;
 	}
+	//Mapped file addresses
+	if(pInfo->isMappedFileAddress(address)){
+		return TRUE;
+	}
 	//Generic memory addresses (pContextData ..)
 	if(pInfo->isGenericMemoryAddress(address)){
 		return TRUE;

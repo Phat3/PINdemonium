@@ -50,6 +50,11 @@ INT32 Usage(){
 // - Get PE section data 
 // - Add filtered library
 void imageLoadCallback(IMG img,void *){
+	/*for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
+		for( RTN rtn= SEC_RtnHead(sec); RTN_Valid(rtn); rtn = RTN_Next(rtn) ){
+			MYINFO("Inside %s -> %s",IMG_Name(img).c_str(),RTN_Name(rtn).c_str());
+		}
+	}*/
 
 	Section item;
 	static int va_hooked = 0;
@@ -85,6 +90,8 @@ void imageLoadCallback(IMG img,void *){
 	ADDRINT startAddr = IMG_LowAddress(img);
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
+	
+
 	  
 
 	if(!IMG_IsMainExecutable(img) && proc_info->isKnownLibrary(name,startAddr,endAddr)){	
@@ -115,8 +122,8 @@ void Instruction(INS ins,void *v){
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	ProcInfo *pInfo = ProcInfo::getInstance();
-	pInfo->initThreadStackAddress(stackBase);
-	pInfo->initThreadTebAddress();
+	pInfo->populateThreadStackAddress(stackBase);
+	pInfo->populateThreadTebAddress();
 }
 
 void initDebug(){
