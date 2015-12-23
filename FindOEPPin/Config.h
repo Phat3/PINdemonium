@@ -60,7 +60,8 @@ public:
 	static const string FILTER_WRITES_ENABLES;        //Which write instructions are filtered(possible values: 'stack teb')
 	static const UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
 	static const UINT32 TIMEOUT_TIMER_SECONDS;
-	static const UINT32 TICK_DIVISOR;
+	static const UINT32 TICK_DIVISOR; //this is used in order to lowe the ticks returnedd from GetTickCount and timeGetTime 
+	static const UINT32 CC_DIVISOR; // this is used in order to lower the microseconds returned from the QueryPerformanceCounter 
 
 private:
 	Config::Config();

@@ -25,7 +25,9 @@ const bool  Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
 const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 2;
 const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
+
 const UINT32 Config::TICK_DIVISOR = 500;
+const UINT32 Config::CC_DIVISOR = 100000;
 
 Config* Config::instance = 0;
 
