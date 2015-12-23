@@ -51,14 +51,15 @@ void HookSyscalls::NtQuerySystemInformationHook(syscall_t *sc){
 
 void HookSyscalls::NtQueryPerformanceCounterHook(syscall_t *sc){
 
-	char buffer[2000];
+	char buffer[1000];
+
 
 	W::PLARGE_INTEGER p_li = (W::PLARGE_INTEGER)sc->arg0; //the first argument of the syscall is a pointer to the LARGE_INTEGER struct that will store the results ( hxxps://msdn.microsoft.com/en-us/library/bb432384(v=vs.85).aspx )
 
 	//printf("QuadPart is %lld\n" , p_li->QuadPart);
 
-	sprintf(buffer , "call QueryPerformanceTimer()\n*LowPart: %d\n*HighPart: %li\n*QuadPart: %lld\n", p_li->LowPart , p_li->HighPart , p_li->QuadPart);
-
+	sprintf(buffer , "\n\tcall QueryPerformanceTimer()\n\t*QuadPart: %lld\n", p_li->QuadPart);
+	
 	Config::getInstance()->writeOnTimeLog(buffer);
 
 	p_li->QuadPart = p_li->QuadPart/Config::CC_DIVISOR;  // cut the QuadPart, it is usually used to calculate the delta ( ex: ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart; ) 

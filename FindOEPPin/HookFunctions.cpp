@@ -10,7 +10,7 @@ HookFunctions::HookFunctions(void)
 	//TIMING FUNCTIONS 
 	this->functionsMap.insert( std::pair<string,int>("GetTickCount",GETTICKCOUNT) );
 	this->functionsMap.insert( std::pair<string,int>("timeGetTime",TIMEGETTIME) );
-	//QueryPerformanceCounter is hooked at syscall level with the NtQueryPerformanceCounter.
+	// QueryPerformanceCounter is hooked at syscall level with the NtQueryPerformanceCounter
 
 }
 
@@ -72,32 +72,37 @@ bool * IsDebuggerPresentHook(){
 //
 //-------------------------------------------------------------------------------------
 
+
 VOID GetTickCountHook(UINT32 ticks , CONTEXT *ctx){
 	
 	char buff[1000];
-	sprintf (buff,"call GetTickCount() -> ticks %d\n" , ticks);
+
+	sprintf (buff,"\n\tcall GetTickCount() -> ticks %d\n" , ticks);
 	Config::getInstance()->writeOnTimeLog(buff);
 
 	int tick_divisor = Config::TICK_DIVISOR;
 	UINT32 ticks_fake = ticks / tick_divisor;
 
 	PIN_SetContextReg(ctx, REG_EAX,ticks_fake);
-
 }
+
 
 UINT32 timeGetTimeHook(){
 
 	char buff[1000];
+	
 
 	UINT32 ticks = W::GetTickCount();
 	
-	sprintf (buff,"call timeGetTime() -> ticks %d\n" , ticks);
+	sprintf (buff,"\n\tcall timeGetTime() -> ticks %d\n" , ticks);
+
 	Config::getInstance()->writeOnTimeLog(buff);
 
 	int tick_divisor = Config::TICK_DIVISOR;
 
 	return ticks/tick_divisor;
 }
+
 
 //----------------------------- HOOKED DISPATCHER -----------------------------//
 
@@ -141,6 +146,7 @@ void HookFunctions::hookDispatcher(IMG img){
 				case (TIMEGETTIME):
 					   {
 						RTN_Replace(rtn, AFUNPTR(timeGetTimeHook));
+						
 						//Using the following approach Exait can't call the GetPluginName function for reasons...
 						/*
 						REGSET regsIn;
@@ -151,7 +157,6 @@ void HookFunctions::hookDispatcher(IMG img){
 						*/
 				       }
 					break;
-
 			}			
 			RTN_Close(rtn);
 		}

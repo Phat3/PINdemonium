@@ -7,6 +7,8 @@
 #include "EvasionPatches.h"
 
 
+
+
 class ToolHider
 {
 public:

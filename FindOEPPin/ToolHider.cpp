@@ -1,8 +1,8 @@
 #include "ToolHider.h"
 
-
 ToolHider::ToolHider(void)
 {
+
 }
 
 
@@ -20,7 +20,13 @@ void ToolHider::avoidEvasion(INS ins){
 	//Filter instructions inside a known library
 	if(pInfo->isLibraryInstruction(curEip)){
 		return;
-
+	}
+	else{
+			if(INS_IsProcedureCall(ins)){
+			char buffer[500];
+			sprintf(buffer, "\nA CALL FROM MAIN MODULE: %s\n" , INS_Disassemble(ins).c_str()); 
+			Config::getInstance()->writeOnTimeLog(buffer);	
+			}
 	}
 	// 1 - single instruction detection
 	if(this->evasionPatcher.patchDispatcher(ins, curEip)){
@@ -32,7 +38,6 @@ void ToolHider::avoidEvasion(INS ins){
 		//analyze if this instruction reads a memory region that belong to pinvm.dll / pintool / 
 	}
 		
-	//timing countermeasures
 
 	//JIT detection
 }

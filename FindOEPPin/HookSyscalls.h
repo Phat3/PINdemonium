@@ -3,6 +3,7 @@
 #include <map>
 #include "pin.H"
 #include "Config.h"
+
 namespace W{
 	#include "windows.h"
 	#include "Winternl.h"
