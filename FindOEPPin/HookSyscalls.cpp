@@ -13,27 +13,36 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 	// 0 .. 7 -> &sc->arg0 .. &sc->arg7 = correspondence between the index of the argument and the struct field to be loaded
 	HookSyscalls::syscallGetArguments(ctx, std, 8, 0, &sc->arg0, 1, &sc->arg1, 2, &sc->arg2, 3, &sc->arg3, 4, &sc->arg4, 5, &sc->arg5, 6, &sc->arg6, 7, &sc->arg7);
 	//HookSyscalls::printArgs(sc);
-	
+	std::map<unsigned long, string>::iterator syscallMapItem = syscallsMap.find(sc->syscall_number);
+	//search for an hook on entry
+	if(syscallMapItem !=  syscallsMap.end()){
+		//serch if we have an hook for the syscall
+		std::map<string, syscall_hook>::iterator syscallHookItem = syscallsHooks.find(syscallMapItem->second + "_entry");
+		if(syscallHookItem != syscallsHooks.end()){
+			//if so call the hook
+			syscallHookItem->second(sc, ctx, std);
+		}
+	}
 }
 
 void HookSyscalls::syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
 	 //get the structure with the informations on the systemcall
 	 syscall_t *sc = &((syscall_t *) v)[thread_id];
-	//search the name of the syscall
+	//search forn an hook on exit
 	std::map<unsigned long, string>::iterator syscallMapItem = syscallsMap.find(sc->syscall_number);
 	if(syscallMapItem !=  syscallsMap.end()){
 		//serch if we have an hook for the syscall
-		std::map<string, syscall_hook>::iterator syscallHookItem = syscallsHooks.find(syscallMapItem->second);
+		std::map<string, syscall_hook>::iterator syscallHookItem = syscallsHooks.find(syscallMapItem->second + "_exit");
 		if(syscallHookItem != syscallsHooks.end()){
 			//if so call the hook
-			syscallHookItem->second(sc);
+			syscallHookItem->second(sc, ctx, std);
 		}
 	}
 
 }
 
 //NtSystemQueryInformation detected
-void HookSyscalls::NtQuerySystemInformationHook(syscall_t *sc){
+void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
 	if(sc->arg0 == SYSTEM_PROCESS_INFORMATION){
 		//cast to our structure in order to retrieve the information returned from the NtSystemQueryInformation function
 		PSYSTEM_PROCESS_INFO spi;
@@ -48,6 +57,7 @@ void HookSyscalls::NtQuerySystemInformationHook(syscall_t *sc){
 		} 
 	}
 }
+
 
 void HookSyscalls::NtQueryPerformanceCounterHook(syscall_t *sc){
 
@@ -67,6 +77,20 @@ void HookSyscalls::NtQueryPerformanceCounterHook(syscall_t *sc){
 	
 
 }
+
+
+//NtOpenProcess detected
+//let's change the PID that the malware wants to open with a non exidsting one in order to trigger an error status
+//we have to use this trick because we aren't able to change the return value of the syscall yet... (the value in EAX)
+void HookSyscalls::NtOpenProcessEntry(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
+	PCLIENT_ID cid = (PCLIENT_ID)sc->arg3;
+	//if the id of the process is one of interest return an error
+	if(ProcInfo::getInstance()->isInterestingProcess((unsigned int)cid->UniqueProcess)){
+		cid->UniqueProcess = (W::HANDLE)66666;
+	}
+}
+
+
 
 //----------------------------- END HOOKS -----------------------------//
 
@@ -120,8 +144,11 @@ void HookSyscalls::enumSyscalls()
 
 void HookSyscalls::initHooks(){
 
+
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation",&HookSyscalls::NtQuerySystemInformationHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryPerformanceCounter",&HookSyscalls::NtQueryPerformanceCounterHook));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation_exit",&HookSyscalls::NtQuerySystemInformationHookExit));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtOpenProcess_entry",&HookSyscalls::NtOpenProcessEntry));
 
 	static syscall_t sc[256] = {0};
 	PIN_AddSyscallEntryFunction(&HookSyscalls::syscallEntry,&sc);
@@ -154,4 +181,10 @@ void HookSyscalls::printArgs(syscall_t * sc){
 	printf("arg7 : %08x\n", sc->arg7);
 }
 
+void HookSyscalls::printRegs(CONTEXT *ctx){
+	printf("EAX : %08x\n", PIN_GetContextReg(ctx, REG_EAX));
+	printf("EBX : %08x\n", PIN_GetContextReg(ctx, REG_EBX));
+	printf("ECX : %08x\n", PIN_GetContextReg(ctx, REG_ECX));
+	printf("EDX : %08x\n", PIN_GetContextReg(ctx, REG_EDX));
+}
 

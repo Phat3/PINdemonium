@@ -37,8 +37,6 @@ void OepFinder::handlePopadAndPushad(INS ins){
 	}
 }
 
-
-
 //connect debug
 static void ConnectDebugger()
 {
@@ -86,7 +84,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	ProcInfo *proc_info = ProcInfo::getInstance();
 
 	int heap_index = -1;
-	unsigned char * Buffer; 
 
 	clock_t now = clock();
 	//check the timeout
@@ -103,7 +100,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	if(wxorxHandler->isWriteINS(ins)){
 		INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);
 	}
-
+	
 	//Tracking violating WxorX instructions
 	//Filter instructions inside a known library
 	if(proc_info->isLibraryInstruction(curEip)){

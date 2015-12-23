@@ -14,12 +14,8 @@ FilterHandler* FilterHandler::getInstance()
 
 FilterHandler::FilterHandler(){
 	pInfo = ProcInfo::getInstance();
-	//Initializing the TEB
-	char *tebStr=(char *)malloc(16); 
-	W::_TEB *teb = W::NtCurrentTeb();
-	sprintf(tebStr,"%x",teb);
-	tebAddr = strtoul(tebStr,NULL,16);
-	MYINFO("Init FilterHandler Teb %x",tebAddr);
+
+
 	//Initializing the Filter map:   "stack" => adding FILTER_STACK to filterExecutionFlag
 	initFilterMap();
 }
@@ -59,19 +55,6 @@ VOID FilterHandler::setFilters(const string filters){
 	
 }
 
-/**
-Initializing the base stack address
-**/
-VOID FilterHandler::setStackBase(ADDRINT addr){
-	//hasn't been already initialized
-	if(stackBase == 0) {	
-		stackBase = addr;
-		MYINFO("Init FilterHandler Stack from %x to %x",stackBase+STACK_BASE_PADDING,stackBase -MAX_STACK_SIZE);
-	}	
-}
-
-
-
 
 
 
@@ -88,7 +71,7 @@ BOOL FilterHandler::isFilteredWrite(ADDRINT addr, ADDRINT eip){
 //Check if the addr belongs to the TEB
 BOOL FilterHandler::isLibTEBWrite(ADDRINT addr,ADDRINT eip){
 	//MYINFO("Calling isTEBWrite");
-	return (tebAddr <= addr && addr <= tebAddr + TEB_SIZE ) && pInfo->isLibraryInstruction(eip);
+	return (pInfo->isTebAddress(addr) && pInfo->isLibraryInstruction(eip));
 }
 
 
@@ -96,8 +79,8 @@ BOOL FilterHandler::isLibTEBWrite(ADDRINT addr,ADDRINT eip){
 BOOL FilterHandler::isLibStackWrite(ADDRINT addr,ADDRINT eip){	
 	
 	//MYINFO("Calling isStackWrite");
-	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase +STACK_BASE_PADDING) && 
-		pInfo->isLibraryInstruction(eip);
+	return (pInfo->isStackAddress(addr) && 
+		pInfo->isLibraryInstruction(eip));
 }
 
 

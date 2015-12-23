@@ -53,6 +53,9 @@ public:
 	static const string DETECTED_BAD_IMPORTS_LIST;
 	static const string SCYLLA_DUMPER_PATH;
 	static const string TIME_LOG;
+	static const string PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING;
+	static const string DUMPER_SELECTOR_PATH;
+
 
 	//Tuning Flags
 	static const bool  ATTACH_DEBUGGER;

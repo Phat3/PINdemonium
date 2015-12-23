@@ -15,14 +15,14 @@ namespace W {
 }
 
 
-#define VIRTUALALLOC_INDEX 0
-#define RTLALLOCATEHEAP_INDEX 1
-
 
 ToolHider thider;
 OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
+static int prova =0;
+ProcInfo *proc_info = ProcInfo::getInstance();
+
 
 
 // This function is called when the application exits
@@ -45,11 +45,15 @@ INT32 Usage(){
 }
 
 
-
 // - Get initial entropy
 // - Get PE section data 
 // - Add filtered library
 void imageLoadCallback(IMG img,void *){
+	/*for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
+		for( RTN rtn= SEC_RtnHead(sec); RTN_Valid(rtn); rtn = RTN_Next(rtn) ){
+			MYINFO("Inside %s -> %s",IMG_Name(img).c_str(),RTN_Name(rtn).c_str());
+		}
+	}*/
 
 	Section item;
 	static int va_hooked = 0;
@@ -59,7 +63,9 @@ void imageLoadCallback(IMG img,void *){
 	//we have to consder only the main executable and avìvoid the libraries
 	if(IMG_IsMainExecutable(img)){
 		
-		
+		ADDRINT startAddr = IMG_LowAddress(img);
+		ADDRINT endAddr = IMG_HighAddress(img);
+		proc_info->setMainIMGAddress(startAddr, endAddr);
 		//get the  address of the first instruction
 		proc_info->setFirstINSaddress(IMG_Entry(img));
 		//get the program name
@@ -83,15 +89,18 @@ void imageLoadCallback(IMG img,void *){
 	ADDRINT startAddr = IMG_LowAddress(img);
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
+	
+
+	  
 
 	if(!IMG_IsMainExecutable(img) && proc_info->isKnownLibrary(name,startAddr,endAddr)){	
+
 		hookFun.hookDispatcher(img);		
+		
 		proc_info->addLibrary(name,startAddr,endAddr);
 
 	}
 }
-
-
 
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
@@ -110,8 +119,9 @@ void Instruction(INS ins,void *v){
 // - retrive the stack base address
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
-	FilterHandler *filterH = FilterHandler::getInstance();
-	filterH->setStackBase(stackBase);
+	ProcInfo *pInfo = ProcInfo::getInstance();
+	pInfo->addThreadStackAddress(stackBase);
+	pInfo->addThreadTebAddress();
 }
 
 void initDebug(){
@@ -135,7 +145,6 @@ int main(int argc, char * argv[]){
 	MYINFO("Strating prototype ins");
 		//W::DebugBreak();
 	FilterHandler *filterH = FilterHandler::getInstance();
-	ProcInfo *pInfo = ProcInfo::getInstance();
 	//set the filters for the libraries
 	MYINFO("%s",Config::FILTER_WRITES_ENABLES.c_str());
 	filterH->setFilters(Config::FILTER_WRITES_ENABLES);
@@ -151,8 +160,9 @@ int main(int argc, char * argv[]){
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageUnload to be called when an image is unloaded
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
-	pInfo->SearchPinVMDll();
-	
+
+	proc_info->addProcAddresses();
+
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
 
@@ -164,4 +174,5 @@ int main(int argc, char * argv[]){
 	PIN_StartProgram();
 	
 	return 0;
+	
 }

@@ -18,7 +18,11 @@ ProcInfo::ProcInfo()
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
 	this->start_timer = -1;
+	this->interresting_processes_name.insert("pin.exe");
+	this->interresting_processes_name.insert("csrss.exe");
+	this->retrieveInterestingPidFromNames();
 	
+
 }
 
 ProcInfo::~ProcInfo(void)
@@ -47,6 +51,7 @@ void ProcInfo::setPopadFlag(BOOL flag){
 
 
 void ProcInfo::setProcName(string name){
+	this->full_proc_name = name;
 	//get the starting position of the last element of the path (the exe name)
 	int pos_exe_name = name.find_last_of("\\");
 	string exe_name = name.substr(pos_exe_name + 1);
@@ -61,6 +66,7 @@ void ProcInfo::setInitialEntropy(float Entropy){
 void ProcInfo::setStartTimer(clock_t t){
 	this->start_timer = t;
 }
+
 
 
 
@@ -141,6 +147,10 @@ void ProcInfo::insertHeapZone(HeapZone heap_zone){
 	this->HeapMap.push_back(heap_zone);
 }
 
+void ProcInfo::removeLastHeapZone(){
+	this->HeapMap.pop_back();
+}
+
 void ProcInfo::deleteHeapZone(UINT32 index){
      
 	this->HeapMap.erase(this->HeapMap.begin()+index);
@@ -208,11 +218,67 @@ BOOL ProcInfo::isInsideJmpBlacklist(ADDRINT ip){
 	return this->addr_jmp_blacklist.find(ip) != this->addr_jmp_blacklist.end();
 }
 
+BOOL ProcInfo::isInterestingProcess(unsigned int pid){
+	return this->interresting_processes_pid.find(pid) != this->interresting_processes_pid.end();
+}
+
+
 void ProcInfo::printHeapList(){
 	for(unsigned index=0; index <  this->HeapMap.size(); index++) {
-		MYINFO("Heapzone number  %d  start %08x end %08x",index,this->HeapMap.at(index).begin,this->HeapMap.at(index).end);
+		MYINFO("Heapzone number  %u  start %08x end %08x",index,this->HeapMap.at(index).begin,this->HeapMap.at(index).end);
 	}
 }
+
+
+BOOL ProcInfo::isInsideMainIMG(ADDRINT address){
+	return mainImg.StartAddress <= address && address <= mainImg.EndAddress;
+
+}
+
+VOID ProcInfo::setMainIMGAddress(ADDRINT startAddr,ADDRINT endAddr){
+	mainImg.StartAddress = startAddr;
+	mainImg.EndAddress = endAddr;
+
+}
+
+
+
+
+//retrieve the PID of the processes marked as interesting
+//for example : csrss.exe is interesting because we have to block Aall the openProcess to its PID
+void ProcInfo::retrieveInterestingPidFromNames(){
+  W::HANDLE hProcessSnap;
+  W::HANDLE hProcess;
+  W::PROCESSENTRY32 pe32;
+  W::DWORD dwPriorityClass;
+
+  // Take a snapshot of all processes in the system.
+  hProcessSnap = W::CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+
+  // Set the size of the structure before using it.
+  pe32.dwSize = sizeof( W::PROCESSENTRY32 );
+
+  if( !Process32First( hProcessSnap, &pe32 ) )
+  {
+    printf("Process32First failed"); // show cause of failure
+    CloseHandle( hProcessSnap );     // clean the snapshot object
+	return;
+  }
+  // Now walk the snapshot of processes, and
+  // display information about each process in turn
+  do
+  {
+	  //if the name of the process is one of interest
+	if( this->interresting_processes_name.find(pe32.szExeFile) != this->interresting_processes_name.end()){
+		//add its pid to the set of the interesting PID
+	  	this->interresting_processes_pid.insert(pe32.th32ProcessID);
+	}
+  } while( Process32Next( hProcessSnap, &pe32 ) );
+
+  CloseHandle( hProcessSnap );
+}
+
+//--------------------------------------------------Library--------------------------------------------------------------
 
 /**
 add library in a list sorted by address
@@ -285,101 +351,393 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 			return TRUE;
 	}
 	
-	return FALSE;
-		
-	
+	return FALSE;	
+}
+
+void ProcInfo::addProcAddresses(){
+	addPebAddress();
+	addContextDataAddress();
+	addCodePageDataAddress();
+	addSharedMemoryAddress();
+	addProcessHeapsAddress();
+
 }
 
 
 
-// This code belongs to the TitanEngine framework http://www.reversinglabs.com/products/TitanEngine.php
-long long ProcInfo::FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard){
+//------------------------------------------------------------PEB------------------------------------------------------------
+VOID ProcInfo::addPebAddress(){
 
-	int i = NULL;
-	int j = NULL;
-	W::ULONG_PTR Return = NULL;
-	W::LPVOID ueReadBuffer = NULL;
-	W::PUCHAR SearchBuffer = NULL;
-	W::PUCHAR CompareBuffer = NULL;
-	W::ULONG_PTR ueNumberOfBytesRead = NULL;
-	W::LPVOID currentSearchPosition = NULL;
-	W::DWORD currentSizeOfSearch = NULL;
-	W::BYTE nWildCard = NULL;
+	typedef int (WINAPI* ZwQueryInformationProcess)(W::HANDLE,W::DWORD,W::PROCESS_BASIC_INFORMATION*,W::DWORD,W::DWORD*);
+	ZwQueryInformationProcess MyZwQueryInformationProcess;
+ 
+	W::PROCESS_BASIC_INFORMATION tmppeb;
+	W::DWORD tmp;
+ 
+	W::HMODULE hMod = W::GetModuleHandle("ntdll.dll");
+	MyZwQueryInformationProcess = (ZwQueryInformationProcess)W::GetProcAddress(hMod,"ZwQueryInformationProcess");
+ 
+	MyZwQueryInformationProcess(W::GetCurrentProcess(),0,&tmppeb,sizeof(W::PROCESS_BASIC_INFORMATION),&tmp);
+	peb = (PEB *) tmppeb.PebBaseAddress;
+	
+	MYINFO("Init Peb base address %08x  -> %08x",(ADDRINT)peb, (ADDRINT)peb + sizeof(PEB));
 
-	if(WildCard == NULL){WildCard = &nWildCard;}
-	if(hProcess != NULL && MemoryStart != NULL && MemorySize != NULL){
-		if(hProcess != W::GetCurrentProcess()){
-			ueReadBuffer = W::VirtualAlloc(NULL, MemorySize, MEM_COMMIT, PAGE_READWRITE);
-			if(!W::ReadProcessMemory(hProcess, MemoryStart, ueReadBuffer, MemorySize, &ueNumberOfBytesRead)){
-				W::VirtualFree(ueReadBuffer, NULL, MEM_RELEASE);
-				return(NULL);
-			}else{
-				SearchBuffer = (W::PUCHAR)ueReadBuffer;
-			}
-		}else{
-			SearchBuffer = (W::PUCHAR)MemoryStart;
+}
+
+BOOL ProcInfo::isPebAddress(ADDRINT addr) {
+
+	return ((ADDRINT)peb <= addr && addr <= (ADDRINT)peb + sizeof(PEB) ) ;
+} 
+
+
+//------------------------------------------------------------TEB------------------------------------------------------------
+
+
+/**
+Check if an address in on the Teb
+**/
+BOOL ProcInfo::isTebAddress(ADDRINT addr) {
+	for(std::vector<MemoryRange>::iterator it = tebs.begin(); it != tebs.end(); ++it){
+		if(it->StartAddress <= addr && addr <= it->EndAddress){
+			return TRUE;
 		}
-		__try{
-			CompareBuffer = (W::PUCHAR)SearchPattern;
-			for(i = 0; i < (int)MemorySize && Return == NULL; i++){
-				for(j = 0; j < (int)PatternSize; j++){
-					if(CompareBuffer[j] != *(W::PUCHAR)WildCard && SearchBuffer[i + j] != CompareBuffer[j]){
-						break;
-					}
-				}
-				if(j == (int)PatternSize){
-					Return = (W::ULONG_PTR)MemoryStart + i;
-				}
-			}
-			W::VirtualFree(ueReadBuffer, NULL, MEM_RELEASE);
-			return(Return);
-		}__except(EXCEPTION_EXECUTE_HANDLER){
-			W::VirtualFree(ueReadBuffer, NULL, MEM_RELEASE);
-			return(NULL);
+	}
+	return FALSE;
+}
+
+
+VOID ProcInfo::addThreadTebAddress(){
+
+	W::_TEB *tebAddr = W::NtCurrentTeb();
+	//sprintf(tebStr,"%x",teb);
+	MemoryRange cur_teb;
+	cur_teb.StartAddress = (ADDRINT)tebAddr;
+	cur_teb.EndAddress = (ADDRINT)tebAddr +TEB_SIZE;
+	MYINFO("Init Teb base address %x   ->  %x",cur_teb.StartAddress,cur_teb.EndAddress);
+	tebs.push_back(cur_teb);
+
+}
+
+//------------------------------------------------------------ Stack ------------------------------------------------------------
+
+/**
+Check if an address in on the stack
+**/
+BOOL ProcInfo::isStackAddress(ADDRINT addr) {
+	for(std::vector<MemoryRange>::iterator it = stacks.begin(); it != stacks.end(); ++it){
+		if(it->StartAddress <= addr && addr <= it->EndAddress){
+			return TRUE;
 		}
-	}else{
-		return(NULL);
+	}
+	return FALSE;
+}
+
+/**
+Initializing the base stack address by getting a value in the stack and searching the highest allocated address in the same memory region
+**/
+VOID ProcInfo::addThreadStackAddress(ADDRINT addr){
+	//hasn't been already initialized
+	MemoryRange stack;
+	W::MEMORY_BASIC_INFORMATION mbi;
+	int numBytes = W::VirtualQuery((W::LPCVOID)addr, &mbi, sizeof(mbi));
+	//get the stack base address by searching the highest address in the allocated memory containing the stack Address
+	if(mbi.State == MEM_COMMIT || mbi.Type == MEM_PRIVATE ){
+		//MYINFO("stack base addr:   -> %08x\n",  (int)mbi.BaseAddress+ mbi.RegionSize);
+		stack.EndAddress = (int)mbi.BaseAddress+ mbi.RegionSize;
+	}
+
+	else{
+		stack.EndAddress = addr;
+	}
+	//check integer underflow ADDRINT
+	if(stack.EndAddress <= MAX_STACK_SIZE ){
+		stack.StartAddress =0;
+	}
+	else{
+		stack.StartAddress = stack.EndAddress - MAX_STACK_SIZE;
+	}
+	MYINFO("Init Stacks by adding from %x to %x",stack.StartAddress,stack.EndAddress);
+	stacks.push_back(stack);
+	
+
+
+
+}
+//------------------------------------------------------------ Memory Mapped Files------------------------------------------------------------
+BOOL ProcInfo::isMappedFileAddress(ADDRINT addr){
+	for(std::vector<MemoryRange>::iterator item = mappedFiles.begin(); item != mappedFiles.end(); ++item) {
+		if(item->StartAddress <= addr && addr <= item->EndAddress){
+			return true;
+		}			
+	}
+	return false;
+}
+
+VOID ProcInfo::addMappedFilesAddress(ADDRINT startAddr){
+	MemoryRange mappedFile;
+	if(getMemoryRange((ADDRINT)startAddr,mappedFile)){
+		MYINFO("Adding mappedFile base address  %08x -> %08x ",mappedFile.StartAddress,mappedFile.EndAddress);
+		mappedFiles.push_back(mappedFile);
 	}
 }
 
-VOID ProcInfo::SearchPinVMDll()
-{
+
+//------------------------------------------------------------ Other Memory Location ------------------------------------------------------------
+BOOL ProcInfo::isGenericMemoryAddress(ADDRINT address){
+	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {
+		if(item->StartAddress <= address && address <= item->EndAddress){
+			return true;
+		}			
+	}
+	return false;
+}
+
+BOOL ProcInfo::getMemoryRange(ADDRINT address, MemoryRange& range){
+		
+		W::MEMORY_BASIC_INFORMATION mbi;
+		int numBytes = W::VirtualQuery((W::LPCVOID)address, &mbi, sizeof(mbi));
+		if(numBytes == 0){
+			MYERRORE("VirtualQuery failed");
+			return FALSE;
+		}
+	
+		int start =  (int)mbi.BaseAddress;
+		int end = (int)mbi.BaseAddress+ mbi.RegionSize;
+		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
+	//	MYINFO("state %08x   %08x",mbi.State,mbi.Type);
+		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_MAPPED || mbi.Type == MEM_IMAGE ||  mbi.Type == MEM_PRIVATE) &&
+			start <=address && address <= end){
+			//MYINFO("Adding start %08x ",(int)mbi.BaseAddress);
+			range.StartAddress = start;
+			range.EndAddress = end;
+			return TRUE;
+		}
+		else{
+			MYERRORE("Address not inside mapped memory");
+			return  FALSE;
+		}
+		
+}
+
+VOID ProcInfo::addContextDataAddress(){
+	MemoryRange activationContextData;  
+	MemoryRange systemDefaultActivationContextData ;
+	MemoryRange pContextData;
+	if(getMemoryRange((ADDRINT)peb->ActivationContextData,activationContextData)){
+		MYINFO("Init activationContextData base address  %08x -> %08x ",activationContextData.StartAddress,activationContextData.EndAddress);
+		genericMemoryRanges.push_back(activationContextData);
+
+	}
+	if (getMemoryRange((ADDRINT)peb->SystemDefaultActivationContextData,systemDefaultActivationContextData)){
+		MYINFO("Init systemDefaultActivationContextData base address  %08x -> %08x",systemDefaultActivationContextData.StartAddress,systemDefaultActivationContextData.EndAddress);
+		genericMemoryRanges.push_back(systemDefaultActivationContextData);
+	} 
+	if(getMemoryRange((ADDRINT)peb->pContextData,pContextData)){
+		MYINFO("Init pContextData base address  %08x -> %08x",pContextData.StartAddress,pContextData.EndAddress);
+		genericMemoryRanges.push_back(pContextData);
+	}
+}
+
+VOID ProcInfo::addSharedMemoryAddress(){
+	MemoryRange readOnlySharedMemoryBase;
+	if(getMemoryRange((ADDRINT) peb->ReadOnlySharedMemoryBase,readOnlySharedMemoryBase)){
+		MYINFO("Init readOnlySharedMemoryBase base address  %08x -> %08x",readOnlySharedMemoryBase.StartAddress,readOnlySharedMemoryBase.EndAddress);
+		genericMemoryRanges.push_back(readOnlySharedMemoryBase);
+	}
+
+}
+
+VOID ProcInfo::addCodePageDataAddress(){
+	MemoryRange ansiCodePageData;
+	if(getMemoryRange((ADDRINT) peb->AnsiCodePageData,ansiCodePageData)){
+		MYINFO("Init ansiCodePageData base address  %08x -> %08x",ansiCodePageData.StartAddress,ansiCodePageData.EndAddress);
+		genericMemoryRanges.push_back(ansiCodePageData);
+	}
+}
+
+VOID ProcInfo::addProcessHeapsAddress(){
+	W::SIZE_T BytesToAllocate;
+	W::PHANDLE aHeaps;
+	
+	W::DWORD NumberOfHeaps = W::GetProcessHeaps(0, NULL);
+    if (NumberOfHeaps == 0) {
+		MYERRORE("Error in retrieving number of Process Heaps");
+		return;
+	}
+
+	W::SIZETMult(NumberOfHeaps, sizeof(*aHeaps), &BytesToAllocate);
+	aHeaps = (W::PHANDLE)W::HeapAlloc(W::GetProcessHeap(), 0, BytesToAllocate);
+	 if ( aHeaps == NULL) {
+		MYERRORE("HeapAlloc failed to allocate space");
+		return;
+	} 
+
+	W::GetProcessHeaps(NumberOfHeaps,aHeaps);
+
+	 for (int i = 0; i < NumberOfHeaps; ++i) {
+		MemoryRange processHeap;
+		if(getMemoryRange((ADDRINT) aHeaps[i],processHeap)){
+			MYINFO("Init processHeaps2 base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
+			genericMemoryRanges.push_back(processHeap);
+		}
+    }
+}
+
+
+//------------------------------------------------------------ Current Memory Functions ------------------------------------------------------------
+
+//all memory of the program with pin in its
+VOID ProcInfo::enumerateCurrentMemory(){
 	W::MEMORY_BASIC_INFORMATION mbi;
 	W::SIZE_T numBytes;
 	W::DWORD MyAddress = 0;
-	int find =0;
-
-	do
-	{
+	int match_string =0;
+	do{
 		numBytes = W::VirtualQuery((W::LPCVOID)MyAddress, &mbi, sizeof(mbi));
-		
-		if((mbi.State == MEM_COMMIT) && (mbi.Protect == PAGE_EXECUTE_READ | mbi.Protect == PAGE_READONLY))
-		{
-			MYINFO("\n\n---------\n");
-			MYINFO("Allocation Base: %x\n", mbi.AllocationBase);
-			MYINFO("BaseAddress: %x\n", mbi.BaseAddress);
-			MYINFO("Size: %x\n", mbi.RegionSize);
-
-			find = FindEx(W::GetCurrentProcess(),mbi.BaseAddress,mbi.RegionSize, "@CHARM", strlen("@CHARM"), NULL);
-			//Check if the string to identify the pinvm.dll is found
-			if(find){ 
-			
-				PinVMDll.name = "pinvm.dll";
-				PinVMDll.StartAddress = (ADDRINT)mbi.AllocationBase;
-				PinVMDll.EndAddress = (ADDRINT)mbi.BaseAddress + (ADDRINT)mbi.RegionSize;
-				MYINFO("FOUND PINVMDLL in %x\n",mbi.BaseAddress);
-			}
-			//Enlarge the PinVMDll size
-			else if((ADDRINT)mbi.AllocationBase == PinVMDll.StartAddress){
-				PinVMDll.EndAddress = (ADDRINT)mbi.BaseAddress + (ADDRINT)mbi.RegionSize;
-			}
+		if((mbi.State == MEM_COMMIT || mbi.State == MEM_MAPPED || mbi.State == MEM_IMAGE) ){
+			addCurrentMemoryAddress((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
 		}
-
 		MyAddress += mbi.RegionSize;
-
 	}
 	while(numBytes);
-	MYINFO("PinVM DLL start: %x end: %x",PinVMDll.StartAddress,PinVMDll.EndAddress);
 
 	return;
+
+}
+
+
+VOID ProcInfo::addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize){
+	MemoryRange libItem;
+	libItem.StartAddress = baseAddr;
+	libItem.EndAddress = baseAddr + regionSize;
+	currentMemory.push_back(libItem);
+
+}
+
+void ProcInfo::PrintCurrentMemorydAddr(){
+	//Iterate through the already whitelisted memory addresses
+
+	for(std::vector<MemoryRange>::iterator item = currentMemory.begin(); item != currentMemory.end(); ++item) {
+		MYPRINT("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+	}	
+
+}
+
+
+//----------------------------------------------- Whitelist Memory Functions -----------------------------------------------
+
+
+//Add to the the Whitelist array the memory ranges which the process is authorized to read
+//NB need to be called AFTER addPebAddress
+VOID ProcInfo::enumerateWhiteListMemory(){
+
+	//add stacks to the whitelist
+	for(std::vector<MemoryRange>::iterator it = stacks.begin(); it != stacks.end(); ++it){
+		addWhitelistAddress(it->StartAddress,it->EndAddress);
+	}
+
+
+	//Add Generic Memory ranges(Shared Memory pages pContextData..)
+	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {
+		addWhitelistAddress(item->StartAddress,item->EndAddress);	
+	}
+
+
+	//add mainIMG address to the whitelist
+	whiteListMemory.push_back(mainImg);
+
+	
+	
+	//add Libraries address to the whitelist
+	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
+		addWhitelistAddress(lib->StartAddress,lib->EndAddress);
+	}
+
+	//add teb
+	for(std::vector<MemoryRange>::iterator it = tebs.begin(); it != tebs.end(); ++it){
+		addWhitelistAddress(it->StartAddress,it->EndAddress);
+	}
+
+}
+
+
+VOID ProcInfo::addWhitelistAddress(ADDRINT baseAddr,ADDRINT endAddress){
+	MemoryRange item;
+	item.StartAddress = baseAddr;
+	item.EndAddress = endAddress;
+	whiteListMemory.push_back(item);
+
+}
+
+
+
+//merge interval algorithm
+//IP1 : the set of intervals is sorted in ascending order
+//IP2 : the intervals never overlaps each other (at most the end of the previous is equals at the start of the current)
+VOID ProcInfo::mergeMemoryAddresses(){	
+	//get the first element
+	std::vector<MemoryRange>::iterator prev_item = whiteListMemory.begin();
+	//start from the second till the end
+	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin() + 1; item != whiteListMemory.end(); item++) {
+		//if the end of the previous is equal to the start of the current we have tu merge the two interval and delete the previous
+		if(item->StartAddress == prev_item->EndAddress){
+			item->StartAddress = prev_item->StartAddress;
+			//get the new iterator because we have erased an elemment and the old one is broken
+			item = whiteListMemory.erase(prev_item);
+		}
+		prev_item = item;
+	}
+}
+
+VOID ProcInfo::mergeCurrentMemory(){	
+	//get the first element
+	std::vector<MemoryRange>::iterator prev_item = currentMemory.begin();
+	//start from the second till the end
+	for(std::vector<MemoryRange>::iterator item = currentMemory.begin() + 1; item != currentMemory.end(); item++) {
+		//if the end of the previous is equal to the start of the current we have tu merge the two interval and delete the previous
+		if(item->StartAddress == prev_item->EndAddress){
+			item->StartAddress = prev_item->StartAddress;
+			//get the new iterator because we have erased an elemment and the old one is broken
+			item = currentMemory.erase(prev_item);
+		}
+		prev_item = item;
+	}
+}
+
+void ProcInfo::PrintWhiteListedAddr(){
+	//Iterate through the already whitelisted memory addresses
+
+	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
+		MYPRINT("Whitelisted  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
+	}	
+
+
+	/*
+	//iterate through the allocated memory addresses
+	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {
+		MYINFO("Whitelisted dynamic %08x  ->  %08x",item->begin,item->end)		;						
+	}
+
+	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
+		MYINFO("Whitelisted library %08x  ->  %08x",lib->StartAddress,lib->StartAddress)		;	
+	}
+
+	MYINFO("Whitelisted Teb %08x  ->  %08x",tebAddr,  tebAddr + TEB_SIZE );
+
+	MYINFO("Whitelisted Stack %08x  ->  %08x",stackBase - MAX_STACK_SIZE, stackBase);
+	*/
+
+}
+
+
+void ProcInfo::PrintAllMemory(){
+
+	MYPRINT("\nCurrent Memory:");
+	this->enumerateCurrentMemory();
+	this->mergeCurrentMemory();
+	this->PrintCurrentMemorydAddr();
+	MYPRINT("\nWhitelist:");
+	this->enumerateWhiteListMemory();
+	//this->mergeMemoryAddresses();
+	this->PrintWhiteListedAddr();
 }

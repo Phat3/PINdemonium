@@ -5,6 +5,7 @@
 #include "Log.h"
 #include "FilterHandler.h"
 #include "EvasionPatches.h"
+#include "FakeMemoryHandler.h"
 
 
 
@@ -18,6 +19,8 @@ public:
 
 private:
 	EvasionPatches evasionPatcher;
-
+	FakeMemoryHandler fakeMemH;
+	BOOL firstRead;
+	
 };
 

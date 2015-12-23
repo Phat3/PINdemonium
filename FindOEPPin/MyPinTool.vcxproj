@@ -125,6 +125,8 @@
       <BaseAddress>0x55000000</BaseAddress>
       <TargetMachine>MachineX86</TargetMachine>
       <AllowIsolation>true</AllowIsolation>
+      <StackReserveSize>
+      </StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -253,6 +255,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="EvasionPatches.cpp" />
+    <ClCompile Include="FakeMemoryHandler.cpp" />
     <ClCompile Include="GdbDebugger.cpp" />
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="HookFunctions.cpp" />
@@ -278,6 +281,7 @@
   <ItemGroup>
     <ClInclude Include="Debug.h" />
     <ClInclude Include="EvasionPatches.h" />
+    <ClInclude Include="FakeMemoryHandler.h" />
     <ClInclude Include="GdbDebugger.h" />
     <ClInclude Include="HookFunctions.h" />
     <ClInclude Include="HookSyscalls.h" />
