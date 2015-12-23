@@ -51,6 +51,7 @@ typedef struct _CLIENT_ID
 
 //function signature of our hook function
 typedef void (* syscall_hook)(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
+
 //binding betweeb syscall name and the hook to be executed
 static std::map<string,syscall_hook> syscallsHooks;
 //binding between the ordinal of the syscall and the name of the syscall
@@ -69,8 +70,8 @@ public:
 	
 private:
 	//Hooks
-	static void NtQuerySystemInformationHook(syscall_t *sc);
-	static void NtQueryPerformanceCounterHook(syscall_t *sc);
+	//static void NtQuerySystemInformationHook(syscall_t *sc,CONTEXT *ctx, SYSCALL_STANDARD std);
+	static void NtQueryPerformanceCounterHook(syscall_t *sc,CONTEXT *ctx, SYSCALL_STANDARD std);
 	static void NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
 	static void NtOpenProcessEntry(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
 

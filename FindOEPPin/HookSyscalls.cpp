@@ -59,7 +59,7 @@ void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx,
 }
 
 
-void HookSyscalls::NtQueryPerformanceCounterHook(syscall_t *sc){
+void HookSyscalls::NtQueryPerformanceCounterHook(syscall_t *sc , CONTEXT *ctx, SYSCALL_STANDARD std){
 
 	char buffer[1000];
 
@@ -145,7 +145,7 @@ void HookSyscalls::enumSyscalls()
 void HookSyscalls::initHooks(){
 
 
-	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation",&HookSyscalls::NtQuerySystemInformationHook));
+	//syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation",&HookSyscalls::NtQuerySystemInformationHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryPerformanceCounter",&HookSyscalls::NtQueryPerformanceCounterHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation_exit",&HookSyscalls::NtQuerySystemInformationHookExit));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtOpenProcess_entry",&HookSyscalls::NtOpenProcessEntry));
