@@ -122,8 +122,8 @@ void Instruction(INS ins,void *v){
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	ProcInfo *pInfo = ProcInfo::getInstance();
-	pInfo->populateThreadStackAddress(stackBase);
-	pInfo->populateThreadTebAddress();
+	pInfo->addThreadStackAddress(stackBase);
+	pInfo->addThreadTebAddress();
 }
 
 void initDebug(){
@@ -163,7 +163,7 @@ int main(int argc, char * argv[]){
 	// Register ImageUnload to be called when an image is unloaded
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 
-	proc_info->populateProcAddresses();
+	proc_info->addProcAddresses();
 
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);

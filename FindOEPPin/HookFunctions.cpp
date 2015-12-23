@@ -84,7 +84,7 @@ VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){
 VOID MapViewOfFileHookAfter(W::DWORD dwDesiredAccess,W::DWORD dwFileOffsetHigh, W::DWORD dwFileOffsetLow, UINT32 size,ADDRINT file_view_addr ){
 	MYINFO("Found After mapViewOfFile Access %08x OffsetHigh %08x OffsetLow %08x  at %08x of size %08x ",dwDesiredAccess,dwFileOffsetHigh,dwFileOffsetLow,file_view_addr,size);
 	ProcInfo *proc_info = ProcInfo::getInstance();
-	proc_info->populateMappedFiles(file_view_addr);
+	proc_info->addMappedFilesAddress(file_view_addr);
 }
 
 //REMEMBER!!! : PIN wants a function pointer in the AFUNCPTR agument!!!

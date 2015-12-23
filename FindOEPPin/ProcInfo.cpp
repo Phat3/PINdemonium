@@ -354,19 +354,19 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 	return FALSE;	
 }
 
-void ProcInfo::populateProcAddresses(){
-	populatePebAddress();
-	populateContextDataAddress();
-	populateCodePageData();
-	populateSharedMemory();
-	populateProcessHeaps();
+void ProcInfo::addProcAddresses(){
+	addPebAddress();
+	addContextDataAddress();
+	addCodePageDataAddress();
+	addSharedMemoryAddress();
+	addProcessHeapsAddress();
 
 }
 
 
 
 //------------------------------------------------------------PEB------------------------------------------------------------
-VOID ProcInfo::populatePebAddress(){
+VOID ProcInfo::addPebAddress(){
 
 	typedef int (WINAPI* ZwQueryInformationProcess)(W::HANDLE,W::DWORD,W::PROCESS_BASIC_INFORMATION*,W::DWORD,W::DWORD*);
 	ZwQueryInformationProcess MyZwQueryInformationProcess;
@@ -406,7 +406,7 @@ BOOL ProcInfo::isTebAddress(ADDRINT addr) {
 }
 
 
-VOID ProcInfo::populateThreadTebAddress(){
+VOID ProcInfo::addThreadTebAddress(){
 
 	W::_TEB *tebAddr = W::NtCurrentTeb();
 	//sprintf(tebStr,"%x",teb);
@@ -435,7 +435,7 @@ BOOL ProcInfo::isStackAddress(ADDRINT addr) {
 /**
 Initializing the base stack address by getting a value in the stack and searching the highest allocated address in the same memory region
 **/
-VOID ProcInfo::populateThreadStackAddress(ADDRINT addr){
+VOID ProcInfo::addThreadStackAddress(ADDRINT addr){
 	//hasn't been already initialized
 	MemoryRange stack;
 	W::MEMORY_BASIC_INFORMATION mbi;
@@ -473,7 +473,7 @@ BOOL ProcInfo::isMappedFileAddress(ADDRINT addr){
 	return false;
 }
 
-VOID ProcInfo::populateMappedFiles(ADDRINT startAddr){
+VOID ProcInfo::addMappedFilesAddress(ADDRINT startAddr){
 	MemoryRange mappedFile;
 	if(getMemoryRange((ADDRINT)startAddr,mappedFile)){
 		MYINFO("Adding mappedFile base address  %08x -> %08x ",mappedFile.StartAddress,mappedFile.EndAddress);
@@ -519,7 +519,7 @@ BOOL ProcInfo::getMemoryRange(ADDRINT address, MemoryRange& range){
 		
 }
 
-VOID ProcInfo::populateContextDataAddress(){
+VOID ProcInfo::addContextDataAddress(){
 	MemoryRange activationContextData;  
 	MemoryRange systemDefaultActivationContextData ;
 	MemoryRange pContextData;
@@ -538,7 +538,7 @@ VOID ProcInfo::populateContextDataAddress(){
 	}
 }
 
-VOID ProcInfo::populateSharedMemory(){
+VOID ProcInfo::addSharedMemoryAddress(){
 	MemoryRange readOnlySharedMemoryBase;
 	if(getMemoryRange((ADDRINT) peb->ReadOnlySharedMemoryBase,readOnlySharedMemoryBase)){
 		MYINFO("Init readOnlySharedMemoryBase base address  %08x -> %08x",readOnlySharedMemoryBase.StartAddress,readOnlySharedMemoryBase.EndAddress);
@@ -547,7 +547,7 @@ VOID ProcInfo::populateSharedMemory(){
 
 }
 
-VOID ProcInfo::populateCodePageData(){
+VOID ProcInfo::addCodePageDataAddress(){
 	MemoryRange ansiCodePageData;
 	if(getMemoryRange((ADDRINT) peb->AnsiCodePageData,ansiCodePageData)){
 		MYINFO("Init ansiCodePageData base address  %08x -> %08x",ansiCodePageData.StartAddress,ansiCodePageData.EndAddress);
@@ -555,7 +555,7 @@ VOID ProcInfo::populateCodePageData(){
 	}
 }
 
-VOID ProcInfo::populateProcessHeaps(){
+VOID ProcInfo::addProcessHeapsAddress(){
 	W::SIZE_T BytesToAllocate;
 	W::PHANDLE aHeaps;
 	
@@ -628,7 +628,7 @@ void ProcInfo::PrintCurrentMemorydAddr(){
 
 
 //Add to the the Whitelist array the memory ranges which the process is authorized to read
-//NB need to be called AFTER populatePebAddress
+//NB need to be called AFTER addPebAddress
 VOID ProcInfo::enumerateWhiteListMemory(){
 
 	//add stacks to the whitelist

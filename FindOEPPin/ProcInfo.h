@@ -85,7 +85,7 @@ public:
 	
 
 	/* setter */
-	void populateProcAddresses();
+	void addProcAddresses();
 	void setFirstINSaddress(ADDRINT address);
 	void setPrevIp(ADDRINT ip);
 	void setInitialEntropy(float Entropy);
@@ -118,13 +118,13 @@ public:
 	BOOL isPebAddress(ADDRINT addr);
 	//TEB
 	BOOL isTebAddress(ADDRINT addr);
-	VOID populateThreadTebAddress();
+	VOID addThreadTebAddress();
 	//Stack
 	BOOL isStackAddress(ADDRINT addr);
-	VOID populateThreadStackAddress(ADDRINT addr);
+	VOID addThreadStackAddress(ADDRINT addr);
 	//Memory Mapped Files
 	BOOL isMappedFileAddress(ADDRINT addr);
-	VOID populateMappedFiles(ADDRINT startAddr);
+	VOID addMappedFilesAddress(ADDRINT startAddr);
 	//Library
 	BOOL isLibraryInstruction(ADDRINT address);
 	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
@@ -190,11 +190,11 @@ private:
 	VOID mergeCurrentMemory();
 	
 	
-	VOID populateProcessHeaps();
-	VOID populatePebAddress();
-	VOID populateContextDataAddress();
-	VOID populateSharedMemory();
-	VOID populateCodePageData();
+	VOID addProcessHeapsAddress();
+	VOID addPebAddress();
+	VOID addContextDataAddress();
+	VOID addSharedMemoryAddress();
+	VOID addCodePageDataAddress();
 
 
 	//Enumerate current  Memory Helpers
