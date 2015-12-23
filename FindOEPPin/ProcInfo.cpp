@@ -335,6 +335,7 @@ BOOL ProcInfo::isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAdd
 /*check if the address belong to a Library */
 //TODO add a whiitelist of Windows libraries that will be loaded
 BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
+	
 	//check inside known libraries
 	for(std::vector<LibraryItem>::iterator lib = knownLibraries.begin(); lib != knownLibraries.end(); ++lib) {
 		if (lib->StartAddress <= address && address <= lib->EndAddress)
@@ -368,6 +369,7 @@ void ProcInfo::addProcAddresses(){
 	addCodePageDataAddress();
 	addSharedMemoryAddress();
 	addProcessHeapsAddress();
+	addKUserSharedDataAddress();
 
 }
 
@@ -401,9 +403,8 @@ BOOL ProcInfo::isPebAddress(ADDRINT addr) {
 //------------------------------------------------------------TEB------------------------------------------------------------
 
 
-/**
-Check if an address in on the Teb
-**/
+
+//Check if an address in on the Teb
 BOOL ProcInfo::isTebAddress(ADDRINT addr) {
 	for(std::vector<MemoryRange>::iterator it = tebs.begin(); it != tebs.end(); ++it){
 		if(it->StartAddress <= addr && addr <= it->EndAddress){
@@ -499,7 +500,12 @@ BOOL ProcInfo::isGenericMemoryAddress(ADDRINT address){
 	}
 	return false;
 }
-
+/**
+Fill the MemoryRange passed as parameter with the startAddress and EndAddress of the memory location in which the address is contained
+ADDRINT address:  address of which we want to retrieve the memory region
+MemoryRange& range: MemoryRange which will be filled 
+return TRUE if the address belongs to a memory mapped area otherwise return FALSE
+**/
 BOOL ProcInfo::getMemoryRange(ADDRINT address, MemoryRange& range){
 		
 		W::MEMORY_BASIC_INFORMATION mbi;
@@ -527,6 +533,7 @@ BOOL ProcInfo::getMemoryRange(ADDRINT address, MemoryRange& range){
 		
 }
 
+//Adding the ContextData to the generic Memory Ranges
 VOID ProcInfo::addContextDataAddress(){
 	MemoryRange activationContextData;  
 	MemoryRange systemDefaultActivationContextData ;
@@ -546,6 +553,7 @@ VOID ProcInfo::addContextDataAddress(){
 	}
 }
 
+//Adding the SharedMemoryAddress to the generic Memory Ranges
 VOID ProcInfo::addSharedMemoryAddress(){
 	MemoryRange readOnlySharedMemoryBase;
 	if(getMemoryRange((ADDRINT) peb->ReadOnlySharedMemoryBase,readOnlySharedMemoryBase)){
@@ -555,6 +563,8 @@ VOID ProcInfo::addSharedMemoryAddress(){
 
 }
 
+
+//Adding the CodePageDataAddress to the generic Memory Ranges
 VOID ProcInfo::addCodePageDataAddress(){
 	MemoryRange ansiCodePageData;
 	if(getMemoryRange((ADDRINT) peb->AnsiCodePageData,ansiCodePageData)){
@@ -563,16 +573,28 @@ VOID ProcInfo::addCodePageDataAddress(){
 	}
 }
 
+
+//Add to the generic memory ranges the KUserShareData structure
+VOID ProcInfo::addKUserSharedDataAddress(){
+	MemoryRange KUserSharedData;
+	KUserSharedData.StartAddress = KUSER_SHARED_DATA_ADDRESS;
+	KUserSharedData.EndAddress =KUSER_SHARED_DATA_ADDRESS +KUSER_SHARED_DATA_SIZE;
+	genericMemoryRanges.push_back(KUserSharedData);
+	
+}
+
+
+//Adding the ProcessHeaps to the generic Memory Ranges
 VOID ProcInfo::addProcessHeapsAddress(){
 	W::SIZE_T BytesToAllocate;
 	W::PHANDLE aHeaps;
-	
+	//getting the number of ProcessHeaps
 	W::DWORD NumberOfHeaps = W::GetProcessHeaps(0, NULL);
     if (NumberOfHeaps == 0) {
 		MYERRORE("Error in retrieving number of Process Heaps");
 		return;
 	}
-
+	//Allocating space for the ProcessHeaps Addresses
 	W::SIZETMult(NumberOfHeaps, sizeof(*aHeaps), &BytesToAllocate);
 	aHeaps = (W::PHANDLE)W::HeapAlloc(W::GetProcessHeap(), 0, BytesToAllocate);
 	 if ( aHeaps == NULL) {
@@ -581,11 +603,11 @@ VOID ProcInfo::addProcessHeapsAddress(){
 	} 
 
 	W::GetProcessHeaps(NumberOfHeaps,aHeaps);
-
+	//Adding the memory range containing the ProcessHeaps to the  genericMemoryRanges
 	 for (int i = 0; i < NumberOfHeaps; ++i) {
 		MemoryRange processHeap;
 		if(getMemoryRange((ADDRINT) aHeaps[i],processHeap)){
-			MYINFO("Init processHeaps2 base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
+			MYINFO("Init processHeaps base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
 			genericMemoryRanges.push_back(processHeap);
 		}
     }

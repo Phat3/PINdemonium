@@ -14,7 +14,9 @@ namespace W{
 }
 
 #define MAX_STACK_SIZE 0x100000    //Used to define the memory range of the stack
-#define TEB_SIZE 0xf28	
+#define TEB_SIZE 0xfe0 	
+#define KUSER_SHARED_DATA_ADDRESS 0x7ffe0000
+#define KUSER_SHARED_DATA_SIZE 0x3e0 
 
 typedef struct PEB {
 	W::BYTE padding1[2];
@@ -196,6 +198,7 @@ private:
 	VOID addContextDataAddress();
 	VOID addSharedMemoryAddress();
 	VOID addCodePageDataAddress();
+	VOID addKUserSharedDataAddress();
 
 
 	//Enumerate current  Memory Helpers
