@@ -35,7 +35,7 @@ void ToolHider::avoidEvasion(INS ins){
 
 
 	//Filter instructions inside a known library
-	if(pInfo->isLibraryInstruction(curEip)){
+	if(pInfo->isKnownLibraryInstruction(curEip)){
 		return;
 
 	}

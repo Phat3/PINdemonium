@@ -127,7 +127,7 @@ public:
 	VOID addMappedFilesAddress(ADDRINT startAddr);
 	//Library
 	BOOL isLibraryInstruction(ADDRINT address);
-	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
+	BOOL isKnownLibraryInstruction(ADDRINT address);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	//Generic Address (pContexData, SharedMemory..)
 	BOOL isGenericMemoryAddress(ADDRINT address);
@@ -167,7 +167,8 @@ private:
 	std::vector<Section> Sections;
 	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
-	std::vector<LibraryItem> LibrarySet;			//vector of know library loaded
+	std::vector<LibraryItem> knownLibraries;			//vector of know library loaded
+	std::vector<LibraryItem> unknownLibraries;			//vector of unknow library loaded
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad
 	//this is a common technique to restore the initial register status after the unpacking routine
@@ -189,7 +190,7 @@ private:
 	VOID mergeMemoryAddresses();
 	VOID mergeCurrentMemory();
 	
-	
+	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID addProcessHeapsAddress();
 	VOID addPebAddress();
 	VOID addContextDataAddress();
@@ -208,7 +209,7 @@ private:
 	
 	//Library Helpers
 	string libToString(LibraryItem lib);
-	VOID showFilteredLibs();
+
 	
 };
 

@@ -94,7 +94,7 @@ void imageLoadCallback(IMG img,void *){
 
 	  
 
-	if(!IMG_IsMainExecutable(img) && proc_info->isKnownLibrary(name,startAddr,endAddr)){	
+	if(!IMG_IsMainExecutable(img)){	
 
 		hookFun.hookDispatcher(img);		
 		
