@@ -305,6 +305,16 @@ VOID ProcInfo::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
 
 }
 
+VOID ProcInfo::addRtn(const string name,ADDRINT startAddr,ADDRINT endAddr){
+
+	LibraryItem rtn_item;
+	rtn_item.StartAddress = startAddr;
+	rtn_item.EndAddress = endAddr;
+	rtn_item.name = name;
+	rtn_not_filtered.push_back(rtn_item);
+
+}
+
 /**
 Convert a LibraryItem object to string
 **/
@@ -338,8 +348,12 @@ BOOL ProcInfo::isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAdd
 /*check if the address belong to a Library */
 //TODO add a whiitelist of Windows libraries that will be loaded
 BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
-	
-	//ADD HERE THE CHECK ON THE RTN THAT AREN'T AFFECTED WITH THE WHITELIST APPROACH AND RETURN FALSE 
+	 
+	for(std::vector<LibraryItem>::iterator rtn = rtn_not_filtered.begin(); rtn != rtn_not_filtered.end(); ++rtn) {
+		if (rtn->StartAddress <= address && address <= rtn->EndAddress)
+		//	MYINFO("Instruction at %x filtered", address);
+			return FALSE;
+	}
 
 	//check inside known libraries
 	for(std::vector<LibraryItem>::iterator lib = knownLibraries.begin(); lib != knownLibraries.end(); ++lib) {

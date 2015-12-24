@@ -37,6 +37,7 @@ private:
 
 	// fakeMemoryFunction to handle ntdll inspection
 	static ADDRINT ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFuncAddr);
+	static ADDRINT TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr);
 	BOOL isAddrInWhiteList(ADDRINT address);
 
 	

@@ -175,16 +175,16 @@ void HookFunctions::hookDispatcher(IMG img){
 
 				case (GETTICKCOUNT):
 					   {
-						REGSET regsIn;
-						REGSET_AddAll(regsIn);
-						REGSET regsOut;
-						REGSET_AddAll(regsOut);
-						RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)GetTickCountHook, IARG_G_RESULT0, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_END);
-				       }
+
+						ProcInfo *pInfo = ProcInfo::getInstance();
+						pInfo->addRtn("GetTickCount",va_address,va_address+RTN_Size(rtn)); // add the GetTickCount in the list of not filtered rtn
+						// the handling of the GetTickCount is done by changing the value of the TickMultiplier in the kuser_shared_data when the process tries to read it
+					   }
 					break;
 				case (TIMEGETTIME):
 					   {
-						RTN_Replace(rtn, AFUNPTR(timeGetTimeHook));
+						ProcInfo *pInfo = ProcInfo::getInstance();
+						pInfo->addRtn("timeGetTime",va_address,va_address+RTN_Size(rtn)); // add the timeGetTime in the list of not filtered rtn
 				       }
 					break;
 

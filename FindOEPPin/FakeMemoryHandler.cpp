@@ -29,7 +29,29 @@ ADDRINT FakeMemoryHandler::ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFunc
 	return patchAddr;
 }
 
+ADDRINT FakeMemoryHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr){
 
+	int tick_multiplier;
+	ostringstream convert; 
+
+	ADDRINT kuser = 0x7ffe0004;
+	memcpy(&tick_multiplier,(const void *)kuser,sizeof(int));
+
+	MYINFO("Tick multiplier is %08x\n",tick_multiplier);
+
+	tick_multiplier = tick_multiplier / Config::TICK_DIVISOR;
+
+	convert << tick_multiplier;
+
+	curFakeMemory = convert.str(); 
+
+	ADDRINT patchAddr = (ADDRINT)&curFakeMemory;
+
+	MYINFO("Tick multiplier fake is %08x\n",curFakeMemory);
+
+	return patchAddr;
+
+}
 
 VOID FakeMemoryHandler::initFakeMemory(){
 	//Hide the ntdll hooks
@@ -47,7 +69,13 @@ VOID FakeMemoryHandler::initFakeMemory(){
 		MYINFO("Add FakeMemory ntdll %s addr  %08x -> %08x",funcName,fakeMem.StartAddress,fakeMem.EndAddress);
 	}
 	//add other FakeMemoryItem to the fakeMemory array for handling other cases
-	
+
+	FakeMemoryItem fakeMem2;
+	fakeMem2.StartAddress = 0x7ffe0004;
+	fakeMem2.EndAddress = 0x7ffe0008;
+	fakeMem2.func = &FakeMemoryHandler::TickMultiplierPatch;
+	fakeMemory.push_back(fakeMem2);
+
 }
 
 ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
@@ -59,7 +87,7 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 			//Executing the PatchFunction associated to this memory range which contains the address
 			ADDRINT patchedAddr = it->func(address,it->StartAddress);
 			//MYINFO("Found address in FakeMemory %08x ",address);
-			MYINFO("Found FakeMemory read at %08x containig %02x  Patched at %08x with %02x\n",address, *(unsigned char *)address,patchedAddr, *(unsigned char *)(*(string *)patchedAddr).c_str());
+			MYINFO("Found FakeMemory read at %08x containig %08x  Patched at %08x with %08x\n",address, *(unsigned int *)address,patchedAddr, *(unsigned int *)(*(string *)patchedAddr).c_str());
 			return patchedAddr;
 		}
 	}

@@ -132,6 +132,7 @@ public:
 	BOOL isLibraryInstruction(ADDRINT address);
 	BOOL isKnownLibraryInstruction(ADDRINT address);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
+	VOID addRtn(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	//Generic Address (pContexData, SharedMemory..)
 	BOOL isGenericMemoryAddress(ADDRINT address);
 	//Whitelist Memory
@@ -171,7 +172,8 @@ private:
 	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
 	std::vector<LibraryItem> knownLibraries;			//vector of know library loaded
-	std::vector<LibraryItem> unknownLibraries;			//vector of unknow library loaded
+	std::vector<LibraryItem> unknownLibraries;			//vector of unknow library loaded	
+	std::vector<LibraryItem> rtn_not_filtered;			//vector of routine not filtered ( as for example GetTickCount )
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad
 	//this is a common technique to restore the initial register status after the unpacking routine
