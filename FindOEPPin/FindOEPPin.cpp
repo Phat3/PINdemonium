@@ -168,6 +168,9 @@ int main(int argc, char * argv[]){
 	
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
+
+
+
 	HookSyscalls::initHooks();
 
 	// Start the program, never returns

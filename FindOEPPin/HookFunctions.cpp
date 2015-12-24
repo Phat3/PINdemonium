@@ -102,46 +102,6 @@ bool * IsDebuggerPresentHook(){
 }
 
 
-//-------------------------------------------------------------------------------------
-//	TIMING FUNCTION HOOKS
-//-------------------------------------------------------------------------------------
-//	 GetTickCount and timeGetTime are more or less the same thing, 
-//	 see hxxps://randomascii.wordpress.com/2013/05/09/timegettime-versus-gettickcount/
-//
-//-------------------------------------------------------------------------------------
-
-
-VOID GetTickCountHook(UINT32 ticks , CONTEXT *ctx){
-	
-	char buff[1000];
-
-	sprintf (buff,"\n\tcall GetTickCount() -> ticks %d\n" , ticks);
-	Config::getInstance()->writeOnTimeLog(buff);
-
-	int tick_divisor = Config::TICK_DIVISOR;
-	UINT32 ticks_fake = ticks / tick_divisor;
-
-	PIN_SetContextReg(ctx, REG_EAX,ticks_fake);
-}
-
-
-UINT32 timeGetTimeHook(){
-
-	char buff[1000];
-	
-
-	UINT32 ticks = W::GetTickCount();
-	
-	sprintf (buff,"\n\tcall timeGetTime() -> ticks %d\n" , ticks);
-
-	Config::getInstance()->writeOnTimeLog(buff);
-
-	int tick_divisor = Config::TICK_DIVISOR;
-
-	return ticks/tick_divisor;
-}
-
-
 //----------------------------- HOOKED DISPATCHER -----------------------------//
 
 //scan the image and try to hook all the function specified above
@@ -175,7 +135,6 @@ void HookFunctions::hookDispatcher(IMG img){
 
 				case (GETTICKCOUNT):
 					   {
-
 						ProcInfo *pInfo = ProcInfo::getInstance();
 						pInfo->addRtn("GetTickCount",va_address,va_address+RTN_Size(rtn)); // add the GetTickCount in the list of not filtered rtn
 						// the handling of the GetTickCount is done by changing the value of the TickMultiplier in the kuser_shared_data when the process tries to read it
@@ -184,7 +143,10 @@ void HookFunctions::hookDispatcher(IMG img){
 				case (TIMEGETTIME):
 					   {
 						ProcInfo *pInfo = ProcInfo::getInstance();
-						pInfo->addRtn("timeGetTime",va_address,va_address+RTN_Size(rtn)); // add the timeGetTime in the list of not filtered rtn
+						va_address = 0x70e626c0; // Stupid pin doesn't recognize correctly the address range of timeGetTime... -.-" 
+						ADDRINT end_address = 0x70e62712;
+						pInfo->addRtn("timeGetTime",va_address,end_address); // add the timeGetTime in the list of not filtered rtn
+						MYINFO("timeGetTime from %08x to %08x\n" , va_address,end_address);
 				       }
 					break;
 

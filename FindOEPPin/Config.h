@@ -52,7 +52,6 @@ public:
 	static const string BAD_IMPORTS_LIST;
 	static const string DETECTED_BAD_IMPORTS_LIST;
 	static const string SCYLLA_DUMPER_PATH;
-	static const string TIME_LOG;
 	static const string PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING;
 	static const string DUMPER_SELECTOR_PATH;
 
@@ -65,13 +64,13 @@ public:
 	static const UINT32 TIMEOUT_TIMER_SECONDS;
 	static const UINT32 TICK_DIVISOR; //this is used in order to lowe the ticks returnedd from GetTickCount and timeGetTime 
 	static const UINT32 CC_DIVISOR; // this is used in order to lower the microseconds returned from the QueryPerformanceCounter 
+	static const UINT32 LONG_DIVISOR; // this is used to lower the LONG returned from the timeGetTime in the struct _KSYSTEM_TIME inside kuser_shared_data
 
 private:
 	Config::Config();
 	static Config* instance;
 	FILE *log_file;
 	FILE *report_file;
-	FILE *log_time;
 	string base_path;
 	string not_working_path;
 	string cur_dump_path;        //Path of the final (IAT fixed) Dump

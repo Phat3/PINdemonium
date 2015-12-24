@@ -3,11 +3,14 @@
 //----------------------------- SYSCALL HOOKS -----------------------------//
 
 void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
+
+	
 	//get the syscall number
 	unsigned long syscall_number = PIN_GetSyscallNumber(ctx, std);
 	//fill the structure with the provided info
 	syscall_t *sc = &((syscall_t *) v)[thread_id];
 	sc->syscall_number = syscall_number;
+
 	//get the arguments pointer
 	// 8 = number of the argument to be passed
 	// 0 .. 7 -> &sc->arg0 .. &sc->arg7 = correspondence between the index of the argument and the struct field to be loaded
@@ -43,6 +46,7 @@ void HookSyscalls::syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDAR
 
 //NtSystemQueryInformation detected
 void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
+
 	if(sc->arg0 == SYSTEM_PROCESS_INFORMATION){
 		//cast to our structure in order to retrieve the information returned from the NtSystemQueryInformation function
 		PSYSTEM_PROCESS_INFO spi;
@@ -61,20 +65,11 @@ void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx,
 
 void HookSyscalls::NtQueryPerformanceCounterHook(syscall_t *sc , CONTEXT *ctx, SYSCALL_STANDARD std){
 
-	char buffer[1000];
-
-
 	W::PLARGE_INTEGER p_li = (W::PLARGE_INTEGER)sc->arg0; //the first argument of the syscall is a pointer to the LARGE_INTEGER struct that will store the results ( hxxps://msdn.microsoft.com/en-us/library/bb432384(v=vs.85).aspx )
 
 	//printf("QuadPart is %lld\n" , p_li->QuadPart);
 
-	sprintf(buffer , "\n\tcall QueryPerformanceTimer()\n\t*QuadPart: %lld\n", p_li->QuadPart);
-	
-	Config::getInstance()->writeOnTimeLog(buffer);
-
 	p_li->QuadPart = p_li->QuadPart/Config::CC_DIVISOR;  // cut the QuadPart, it is usually used to calculate the delta ( ex: ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart; ) 
-
-	
 
 }
 
@@ -135,6 +130,7 @@ void HookSyscalls::enumSyscalls()
             if(*addr == 0xb8 && (addr[5] == 0xb9 || addr[5] == 0x33 || addr[5] == 0xba)) {
                 unsigned long syscall_number = *(unsigned long *)(addr + 1);
 				string syscall_name = string(name);
+				//MYINFO("Number %d Syscall %s\n", syscall_number, syscall_name.c_str());
 				syscallsMap.insert(std::pair<unsigned long,string>(syscall_number,syscall_name));
 				
             }
@@ -146,7 +142,7 @@ void HookSyscalls::initHooks(){
 
 
 	//syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation",&HookSyscalls::NtQuerySystemInformationHook));
-	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryPerformanceCounter",&HookSyscalls::NtQueryPerformanceCounterHook));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryPerformanceCounter_exit",&HookSyscalls::NtQueryPerformanceCounterHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation_exit",&HookSyscalls::NtQuerySystemInformationHookExit));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtOpenProcess_entry",&HookSyscalls::NtOpenProcessEntry));
 

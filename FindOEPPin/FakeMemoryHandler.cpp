@@ -53,6 +53,73 @@ ADDRINT FakeMemoryHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr
 
 }
 
+ADDRINT FakeMemoryHandler::KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
+
+	ostringstream convert;
+
+	if(curReadAddr == 0x7ffe0008){
+	
+		W::ULONG32 LowPart;
+		memcpy(&LowPart,(const void*)curReadAddr,sizeof(W::DWORD));
+		MYINFO("Low part is %08x\n", LowPart);
+
+		LowPart = LowPart / Config::LONG_DIVISOR;
+
+		convert << LowPart;
+		
+		curFakeMemory = convert.str(); 
+
+		ADDRINT patchAddr = (ADDRINT)&curFakeMemory;
+
+		MYINFO("Low Part fake is %08x\n",curFakeMemory);
+
+		return patchAddr;
+	}
+
+	
+	if(curReadAddr == 0x7ffe000c){
+	
+		W::LONG32 High1Time;
+		memcpy(&High1Time,(const void*)curReadAddr,sizeof(W::DWORD));
+		MYINFO("High1Time part is %08x\n", High1Time);
+
+		High1Time = High1Time / Config::LONG_DIVISOR;
+
+		convert << High1Time;
+		
+		curFakeMemory = convert.str(); 
+
+		ADDRINT patchAddr = (ADDRINT)&curFakeMemory;
+
+		MYINFO("High1Time fake is %08x\n",curFakeMemory);
+
+		return patchAddr;
+	}
+
+	
+	if(curReadAddr == 0x7ffe0010){
+	
+		W::LONG32 High2Time;
+		memcpy(&High2Time,(const void*)curReadAddr,sizeof(W::DWORD));
+		MYINFO("High2Time part is %08x\n", High2Time);
+
+		High2Time = High2Time / Config::LONG_DIVISOR;
+
+		convert << High2Time;
+		
+		curFakeMemory = convert.str(); 
+
+		ADDRINT patchAddr = (ADDRINT)&curFakeMemory;
+
+		MYINFO("High2Time fake is %08x\n",curFakeMemory);
+
+		return patchAddr;
+	}
+
+
+
+}
+
 VOID FakeMemoryHandler::initFakeMemory(){
 	//Hide the ntdll hooks
 	for(map<string,string>::iterator it = ntdllHooksNamesPatch.begin(); it != ntdllHooksNamesPatch.end();++it){
@@ -72,10 +139,16 @@ VOID FakeMemoryHandler::initFakeMemory(){
 
 	FakeMemoryItem fakeMem2;
 	fakeMem2.StartAddress = 0x7ffe0004;
-	fakeMem2.EndAddress = 0x7ffe0008;
+	fakeMem2.EndAddress = 0x7ffe0007;
 	fakeMem2.func = &FakeMemoryHandler::TickMultiplierPatch;
 	fakeMemory.push_back(fakeMem2);
 
+
+	FakeMemoryItem fakeMem3;
+	fakeMem3.StartAddress = 0x7ffe0008;
+	fakeMem3.EndAddress = 0x7ffe0010;
+	fakeMem3.func = &FakeMemoryHandler::KSystemTimePatch;
+	fakeMemory.push_back(fakeMem3);
 }
 
 ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){

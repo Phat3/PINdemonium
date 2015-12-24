@@ -27,12 +27,13 @@ ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
 
 void ToolHider::avoidEvasion(INS ins){
 
+
 	ADDRINT curEip = INS_Address(ins);
 	ProcInfo *pInfo = ProcInfo::getInstance();
 
+	//MYINFO("ADDR %08x - INS %s\n" , INS_Address(ins), INS_Disassemble(ins).c_str());
 
 	//Filter instructions inside a known library
-
 	if(pInfo->isLibraryInstruction(curEip)){
 		return;
 	}

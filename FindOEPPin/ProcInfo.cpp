@@ -351,7 +351,7 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 	 
 	for(std::vector<LibraryItem>::iterator rtn = rtn_not_filtered.begin(); rtn != rtn_not_filtered.end(); ++rtn) {
 		if (rtn->StartAddress <= address && address <= rtn->EndAddress)
-		//	MYINFO("Instruction at %x filtered", address);
+			//MYINFO("Instruction at %x not filtered", address);
 			return FALSE;
 	}
 

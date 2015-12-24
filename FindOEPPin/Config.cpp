@@ -14,7 +14,6 @@ const string Config::IDAP_BAD_IMPORTS_CHECKER = PIN_DIRECTORY_PATH_DEP + "badImp
 const string Config::BAD_IMPORTS_LIST = PIN_DIRECTORY_PATH_DEP + "badImportsList.txt";
 const string Config::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
 const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
-const string Config::TIME_LOG = "time_log.txt";
 const string Config::PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING = "NotWorking\\";
 const string Config::DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "dumperSelector.py";
 
@@ -27,8 +26,10 @@ const string Config::FILTER_WRITES_ENABLES = "teb stack";
 const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 2;
 const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
 
-const UINT32 Config::TICK_DIVISOR = 500000;
-const UINT32 Config::CC_DIVISOR = 100000;
+// Divisor of the timing 
+const UINT32 Config::TICK_DIVISOR = 800000;
+const UINT32 Config::CC_DIVISOR = 1000000000;
+const UINT32 Config::LONG_DIVISOR = 800000000;
 
 Config* Config::instance = 0;
 
@@ -47,11 +48,9 @@ Config::Config(){
 	//create the log and report files
 	string log_file_path = this->base_path + LOG_FILENAME;
 	string report_file_path = this->base_path + REPORT_FILENAME;
-	string log_time_path = this->base_path+TIME_LOG;
 
 	this->log_file = fopen(log_file_path.c_str(),"w");
 	this->report_file = fopen(report_file_path.c_str(),"w");
-	this->log_time = fopen(log_time_path.c_str(),"w");
 
 	this->numberOfBadImports = calculateNumberOfBadImports();
 	//initialize the path of the ScyllaWrapperLog
@@ -130,12 +129,6 @@ void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 	else
 		fprintf(this->report_file,"{\"dump number\" : \"%d\", \"runnable?\" : \"NO\", \"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_outer_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n", (int)this->getDumpNumber(), ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
 	fflush(this->report_file);
-}
-
-void Config::writeOnTimeLog(string s)
-{
-	fprintf(this->log_time,s.c_str());
-	fflush(this->log_time);
 }
 
 
