@@ -340,8 +340,7 @@ BOOL ProcInfo::isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAdd
 		MYINFO("FOUND EXAIT DLL %s from %08x  to   %08x\n",name.c_str(),startAddr,endAddr);
 		return FALSE;
 	}
-
-
+	
 	return TRUE;
 }
 
@@ -350,24 +349,29 @@ BOOL ProcInfo::isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAdd
 BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 	 
 	for(std::vector<LibraryItem>::iterator rtn = rtn_not_filtered.begin(); rtn != rtn_not_filtered.end(); ++rtn) {
-		if (rtn->StartAddress <= address && address <= rtn->EndAddress)
+		if (rtn->StartAddress <= address && address <= rtn->EndAddress){
 			//MYINFO("Instruction at %x not filtered", address);
-			return FALSE;
+			MYINFO("RTN ALLOWED\n");
+			return FALSE;}
 	}
 
 	//check inside known libraries
 	for(std::vector<LibraryItem>::iterator lib = knownLibraries.begin(); lib != knownLibraries.end(); ++lib) {
-		if (lib->StartAddress <= address && address <= lib->EndAddress)
+		if (lib->StartAddress <= address && address <= lib->EndAddress){
 		//	MYINFO("Instruction at %x filtered", address);
-			return TRUE;
+		MYINFO("KNOWN LIBRARIES\n");
+		return TRUE;}
 	}
 	//check inside unknown libraries
 	for(std::vector<LibraryItem>::iterator lib = unknownLibraries.begin(); lib != unknownLibraries.end(); ++lib) {
-		if (lib->StartAddress <= address && address <= lib->EndAddress)
+		if (lib->StartAddress <= address && address <= lib->EndAddress){
 		//	MYINFO("Instruction at %x filtered", address);
-			return TRUE; // Isn't it FALSE? [ TODO ] 
+		MYINFO("UNKKNOWN LIBRARIES\n");
+			return TRUE;  // WARNING, WITH TRUE HERE WE ARE GOING TO MISS ALL THE INSTRUCTION IN THE 'SINGLE INSTRUCTION DETECTION' 
+		}
 	}
 	
+	MYINFO("FALSE\n");
 	return FALSE;	
 }
 
