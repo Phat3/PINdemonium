@@ -324,11 +324,14 @@ Check the current name against a set of whitelisted library names
 (IDEA don't track kernel32.dll ... but track custom dll which may contain malicious payloads)
 **/
 BOOL ProcInfo::isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
+
 	BOOL isExaitDll = name.find("detect") != std::string::npos;
 	if(isExaitDll){
 		MYINFO("FOUND EXAIT DLL %s from %08x  to   %08x\n",name.c_str(),startAddr,endAddr);
 		return FALSE;
 	}
+
+
 	return TRUE;
 }
 
@@ -336,6 +339,8 @@ BOOL ProcInfo::isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAdd
 //TODO add a whiitelist of Windows libraries that will be loaded
 BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 	
+	//ADD HERE THE CHECK ON THE RTN THAT AREN'T AFFECTED WITH THE WHITELIST APPROACH AND RETURN FALSE 
+
 	//check inside known libraries
 	for(std::vector<LibraryItem>::iterator lib = knownLibraries.begin(); lib != knownLibraries.end(); ++lib) {
 		if (lib->StartAddress <= address && address <= lib->EndAddress)
@@ -346,7 +351,7 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 	for(std::vector<LibraryItem>::iterator lib = unknownLibraries.begin(); lib != unknownLibraries.end(); ++lib) {
 		if (lib->StartAddress <= address && address <= lib->EndAddress)
 		//	MYINFO("Instruction at %x filtered", address);
-			return TRUE;
+			return TRUE; // Isn't it FALSE? [ TODO ] 
 	}
 	
 	return FALSE;	
@@ -362,6 +367,7 @@ BOOL ProcInfo::isKnownLibraryInstruction(ADDRINT address){
 	
 	return FALSE;	
 }
+
 
 void ProcInfo::addProcAddresses(){
 	addPebAddress();

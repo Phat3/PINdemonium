@@ -185,15 +185,6 @@ void HookFunctions::hookDispatcher(IMG img){
 				case (TIMEGETTIME):
 					   {
 						RTN_Replace(rtn, AFUNPTR(timeGetTimeHook));
-						
-						//Using the following approach Exait can't call the GetPluginName function for reasons...
-						/*
-						REGSET regsIn;
-						REGSET_AddAll(regsIn);
-						REGSET regsOut;
-						REGSET_AddAll(regsOut);
-						RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)GetTickCountHook, IARG_G_RESULT0, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_END);
-						*/
 				       }
 					break;
 
