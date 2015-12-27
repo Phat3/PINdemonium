@@ -77,6 +77,7 @@ public:
 	ADDRINT getFirstINSaddress();
 	ADDRINT getPrevIp();
 	std::vector<Section> getSections();
+	std::vector<Section> getProtectedSections();
 	float getInitialEntropy();
 	BOOL getPushadFlag();
 	BOOL getPopadFlag();
@@ -131,7 +132,9 @@ public:
 	//Library
 	BOOL isLibraryInstruction(ADDRINT address);
 	BOOL isKnownLibraryInstruction(ADDRINT address);
+	BOOL isInsideProtectedSection(ADDRINT address);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
+	VOID addProtectedSection(ADDRINT startAddr,ADDRINT endAddr);
 	VOID addRtn(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	//Generic Address (pContexData, SharedMemory..)
 	BOOL isGenericMemoryAddress(ADDRINT address);
@@ -174,6 +177,8 @@ private:
 	std::vector<LibraryItem> knownLibraries;			//vector of know library loaded
 	std::vector<LibraryItem> unknownLibraries;			//vector of unknow library loaded	
 	std::vector<LibraryItem> rtn_not_filtered;			//vector of routine not filtered ( as for example GetTickCount )
+	std::vector<Section> protected_section;			//vector of protected section ( for example the .text of ntdll is protected ( write on these memory range are redirected to other heap's zone ) )
+
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad
 	//this is a common technique to restore the initial register status after the unpacking routine

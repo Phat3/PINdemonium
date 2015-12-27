@@ -86,6 +86,23 @@ void HookSyscalls::NtOpenProcessEntry(syscall_t *sc, CONTEXT *ctx, SYSCALL_STAND
 }
 
 
+void HookSyscalls::NtWriteVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx, SYSCALL_STANDARD std){
+
+	W::PVOID address_to_write = (W::PVOID)sc->arg1; // get the address where the syscall is writing 
+	W::ULONG number_of_bytes_to_write = (W::ULONG)sc->arg3; // get how many bytes it is trying to write 
+
+	//MYINFO("Intercept a write into %08x of %d bytes\n" , address_to_write , number_of_bytes_to_write);
+
+	if(ProcInfo::getInstance()->isInsideProtectedSection((ADDRINT)address_to_write)){
+		//MYINFO("That was a write into NTDLL!");
+		ADDRINT new_address = (ADDRINT)malloc(5);
+		//MYINFO("The write will be  redirected here: %08x\n" , new_address); 
+		
+		PIN_SetSyscallArgument(ctx,SYSCALL_STANDARD_IA32_WINDOWS_FAST,1,new_address);
+	} 
+
+}
+
 
 //----------------------------- END HOOKS -----------------------------//
 
@@ -145,6 +162,9 @@ void HookSyscalls::initHooks(){
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryPerformanceCounter_exit",&HookSyscalls::NtQueryPerformanceCounterHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation_exit",&HookSyscalls::NtQuerySystemInformationHookExit));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtOpenProcess_entry",&HookSyscalls::NtOpenProcessEntry));
+
+	//hxxp://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FMemory%20Management%2FVirtual%20Memory%2FNtWriteVirtualMemory.html
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtWriteVirtualMemory_entry",&HookSyscalls::NtWriteVirtualMemoryHook));
 
 	static syscall_t sc[256] = {0};
 	PIN_AddSyscallEntryFunction(&HookSyscalls::syscallEntry,&sc);

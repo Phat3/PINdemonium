@@ -85,6 +85,10 @@ std::vector<Section> ProcInfo::getSections(){
 	return this->Sections;
 }
 
+std::vector<Section> ProcInfo::getProtectedSections(){
+	return this->protected_section;
+}
+
 BOOL ProcInfo::getPushadFlag(){
 	return this->pushad_flag ;
 }
@@ -351,7 +355,7 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 	for(std::vector<LibraryItem>::iterator rtn = rtn_not_filtered.begin(); rtn != rtn_not_filtered.end(); ++rtn) {
 		if (rtn->StartAddress <= address && address <= rtn->EndAddress){
 			//MYINFO("Instruction at %x not filtered", address);
-			MYINFO("RTN ALLOWED\n");
+			//MYINFO("RTN ALLOWED\n");
 			return FALSE;}
 	}
 
@@ -359,19 +363,19 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 	for(std::vector<LibraryItem>::iterator lib = knownLibraries.begin(); lib != knownLibraries.end(); ++lib) {
 		if (lib->StartAddress <= address && address <= lib->EndAddress){
 		//	MYINFO("Instruction at %x filtered", address);
-		MYINFO("KNOWN LIBRARIES\n");
+		//MYINFO("KNOWN LIBRARIES\n");
 		return TRUE;}
 	}
 	//check inside unknown libraries
 	for(std::vector<LibraryItem>::iterator lib = unknownLibraries.begin(); lib != unknownLibraries.end(); ++lib) {
 		if (lib->StartAddress <= address && address <= lib->EndAddress){
 		//	MYINFO("Instruction at %x filtered", address);
-		MYINFO("UNKKNOWN LIBRARIES\n");
+		//MYINFO("UNKKNOWN LIBRARIES\n");
 			return TRUE;  // WARNING, WITH TRUE HERE WE ARE GOING TO MISS ALL THE INSTRUCTION IN THE 'SINGLE INSTRUCTION DETECTION' 
 		}
 	}
 	
-	MYINFO("FALSE\n");
+	//MYINFO("FALSE\n");
 	return FALSE;	
 }
 
@@ -638,6 +642,25 @@ VOID ProcInfo::addProcessHeapsAddress(){
 }
 
 
+VOID ProcInfo::addProtectedSection(ADDRINT startAddr,ADDRINT endAddr){
+
+	Section s;
+	s.begin = startAddr;
+	s.end = endAddr;
+	
+	protected_section.push_back(s);
+}
+
+BOOL ProcInfo::isInsideProtectedSection(ADDRINT address){
+
+	for(std::vector<Section>::iterator it = protected_section.begin(); it != protected_section.end(); ++it){
+		if(it->begin <= address && address <= it->end){
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
 //------------------------------------------------------------ Current Memory Functions ------------------------------------------------------------
 
 //all memory of the program with pin in its

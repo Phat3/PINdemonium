@@ -94,6 +94,18 @@ void imageLoadCallback(IMG img,void *){
 	  
 
 	if(!IMG_IsMainExecutable(img)){	
+		
+		if(IMG_Name(img).find("ntdll")!= std::string::npos){
+		
+		  for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
+
+			if(strcmp(SEC_Name(sec).c_str(),".text")==0){
+			proc_info->addProtectedSection(SEC_Address(sec),SEC_Address(sec)+SEC_Size(sec));
+			}
+	      }
+		}
+
+		//*** If you need to protect other sections of other dll put them here ***
 
 		hookFun.hookDispatcher(img);		
 		
