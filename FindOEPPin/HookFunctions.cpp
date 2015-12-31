@@ -16,7 +16,7 @@ HookFunctions::HookFunctions(void)
 
 	this->functionsMap.insert( std::pair<string,int>("RtlReAllocateHeap",RTLREALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("MapViewOfFile",MAPVIEWOFFILE_INDEX) );
-
+	this->functionsMap.insert( std::pair<string,int>("VirtualQuery",VIRTUALQUERY_INDEX) );
 
 }
 
@@ -101,6 +101,14 @@ bool * IsDebuggerPresentHook(){
 	return false;
 }
 
+VOID VirtualQueryHook ( W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi, W::SIZE_T *numBytes) {
+	ProcInfo *proc_info = ProcInfo::getInstance();
+
+	if (!proc_info->isAddrInWhiteList((ADDRINT)baseAddress)) {
+		*numBytes = 0;
+		mbi->State = MEM_FREE;
+	}
+}
 
 //----------------------------- HOOKED DISPATCHER -----------------------------//
 
@@ -158,8 +166,9 @@ void HookFunctions::hookDispatcher(IMG img){
 					//need to be IPOINT_AFTER because the allocated address is returned as return value
 					RTN_InsertCall(rtn,IPOINT_AFTER,(AFUNPTR)MapViewOfFileHookAfter,IARG_FUNCARG_ENTRYPOINT_VALUE,1,IARG_FUNCARG_ENTRYPOINT_VALUE,2,IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_FUNCARG_ENTRYPOINT_VALUE,4,IARG_FUNCRET_EXITPOINT_VALUE,  IARG_END);
 					break;
-
-
+				case(VIRTUALQUERY_INDEX):
+					//IPOINT_AFTER because we have to check if the query is on a whitelist address
+					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualQueryHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0, IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
 			}			
 			RTN_Close(rtn);
 		}
