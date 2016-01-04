@@ -663,6 +663,10 @@ VOID ProcInfo::addProcessHeapsAddress(){
 }
 
 
+/*
+	Add a section of a module ( for example the .text of the NTDLL ) in order to catch
+	writes/reads inside this area
+*/
 VOID ProcInfo::addProtectedSection(ADDRINT startAddr,ADDRINT endAddr){
 
 	Section s;
@@ -672,6 +676,9 @@ VOID ProcInfo::addProtectedSection(ADDRINT startAddr,ADDRINT endAddr){
 	protected_section.push_back(s);
 }
 
+/*
+	Check if an address is inside a protected section 
+*/
 BOOL ProcInfo::isInsideProtectedSection(ADDRINT address){
 
 	for(std::vector<Section>::iterator it = protected_section.begin(); it != protected_section.end(); ++it){
