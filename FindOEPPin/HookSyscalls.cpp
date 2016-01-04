@@ -95,7 +95,7 @@ void HookSyscalls::NtWriteVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx, SYSCAL
 
 	if(ProcInfo::getInstance()->isInsideProtectedSection((ADDRINT)address_to_write)){
 		//MYINFO("That was a write into NTDLL!");
-		ADDRINT new_address = (ADDRINT)malloc(5);
+		ADDRINT new_address = (ADDRINT)malloc(number_of_bytes_to_write);
 		//MYINFO("The write will be  redirected here: %08x\n" , new_address); 
 		
 		PIN_SetSyscallArgument(ctx,SYSCALL_STANDARD_IA32_WINDOWS_FAST,1,new_address);

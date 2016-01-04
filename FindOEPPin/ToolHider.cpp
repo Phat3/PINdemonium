@@ -60,5 +60,5 @@ void ToolHider::avoidEvasion(INS ins){
     }
 		
 
-	//JIT detection
+	
 }
