@@ -397,6 +397,8 @@ void ProcInfo::addProcAddresses(){
 	addCodePageDataAddress();
 	addSharedMemoryAddress();
 	addProcessHeapsAddress();
+	addpShimDataAddress();
+	addpApiSetMapAddress();
 	addKUserSharedDataAddress();
 
 }
@@ -555,7 +557,7 @@ BOOL ProcInfo::getMemoryRange(ADDRINT address, MemoryRange& range){
 			return TRUE;
 		}
 		else{
-			MYERRORE("Address not inside mapped memory");
+			MYERRORE("Address %08x  not inside mapped memory from %08x -> %08x or Type/State not correct ",address,start,end);
 			return  FALSE;
 		}
 		
@@ -598,6 +600,25 @@ VOID ProcInfo::addCodePageDataAddress(){
 	if(getMemoryRange((ADDRINT) peb->AnsiCodePageData,ansiCodePageData)){
 		MYINFO("Init ansiCodePageData base address  %08x -> %08x",ansiCodePageData.StartAddress,ansiCodePageData.EndAddress);
 		genericMemoryRanges.push_back(ansiCodePageData);
+	}
+}
+
+
+//Adding the pShimDataAddress to the generic Memory Ranges
+VOID ProcInfo::addpShimDataAddress(){
+	MemoryRange pShimData;
+	if(getMemoryRange((ADDRINT) peb->pShimData,pShimData)){
+		MYINFO("Init pShimData base address  %08x -> %08x",pShimData.StartAddress,pShimData.EndAddress);
+		genericMemoryRanges.push_back(pShimData);
+	}
+}
+
+//Adding the pShimDataAddress to the generic Memory Ranges
+VOID ProcInfo::addpApiSetMapAddress(){
+	MemoryRange ApiSetMap;
+	if(getMemoryRange((ADDRINT) peb->ApiSetMap,ApiSetMap)){
+		MYINFO("Init ApiSetMap base address  %08x -> %08x",ApiSetMap.StartAddress,ApiSetMap.EndAddress);
+		genericMemoryRanges.push_back(ApiSetMap);
 	}
 }
 

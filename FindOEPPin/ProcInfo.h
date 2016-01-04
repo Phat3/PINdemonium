@@ -22,20 +22,24 @@ namespace W{
 typedef struct PEB {
 	W::BYTE padding1[2];
 	W::BYTE BeingDebugged ;
-	W::BYTE padding2[73];
+	W::BYTE padding2[53];
+	W::PVOID ApiSetMap;
+	W::BYTE padding3[16];
 	W::PVOID ReadOnlySharedMemoryBase;
-	W::BYTE padding3[8];
+	W::BYTE padding4[8];
 	W::PVOID AnsiCodePageData;
-	W::BYTE padding4[52];
+	W::BYTE padding5[52];
 	W::PVOID ProcessHeaps;
 	W::PVOID GdiSharedHandleTable;
-	W::BYTE padding5[352];
+	W::BYTE padding6[336];
+	W::PVOID pShimData;
+	W::BYTE padding7[12];
 	W::PVOID ActivationContextData;
-	W::BYTE padding6[4];
-	W::PVOID SystemDefaultActivationContextData;
-	W::BYTE padding7[52];
-	W::PVOID pContextData;
 	W::BYTE padding8[4];
+	W::PVOID SystemDefaultActivationContextData;
+	W::BYTE padding9[52];
+	W::PVOID pContextData;
+	W::BYTE padding10[4];
 
 }PEB;
 
@@ -206,6 +210,8 @@ private:
 	VOID addContextDataAddress();
 	VOID addSharedMemoryAddress();
 	VOID addCodePageDataAddress();
+	VOID addpShimDataAddress();
+	VOID addpApiSetMapAddress();
 	VOID addKUserSharedDataAddress();
 
 

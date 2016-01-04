@@ -34,7 +34,7 @@ void ToolHider::avoidEvasion(INS ins){
 	//MYINFO("ADDR %08x - INS %s\n" , INS_Address(ins), INS_Disassemble(ins).c_str());
 	//MYINFO("ADDR %08x - INS %s\n" , INS_Address(ins), INS_Disassemble(ins).c_str());
 	//Filter instructions inside a known library
-	if(pInfo->isLibraryInstruction(curEip)){
+	if(pInfo->isKnownLibraryInstruction(curEip)){
 		return;
 	}
 
