@@ -116,16 +116,17 @@ void imageLoadCallback(IMG img,void *){
 // (Testing if better than trace iteration)
 void Instruction(INS ins,void *v){
 
+	//printf("ADDR %08x - INS %s\n" , INS_Address(ins), INS_Disassemble(ins).c_str());
 	
-
 	if(Config::EVASION_MODE){
-		MYINFO("ADDR %08x - INS %s\n" , INS_Address(ins), INS_Disassemble(ins).c_str());
+		
 		thider.avoidEvasion(ins);
 	}
 
 	if(Config::UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
 	}
+	
 }
 
 
@@ -160,7 +161,7 @@ int main(int argc, char * argv[]){
 	FilterHandler *filterH = FilterHandler::getInstance();
 	//set the filters for the libraries
 	MYINFO("%s",Config::FILTER_WRITES_ENABLES.c_str());
-	filterH->setFilters(Config::FILTER_WRITES_ENABLES);
+	//filterH->setFilters(Config::FILTER_WRITES_ENABLES);
 	//get the start time of the execution (benchmark)
 	tStart = clock();
 	// Initialize pin

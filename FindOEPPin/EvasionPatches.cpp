@@ -45,7 +45,7 @@ EvasionPatches::~EvasionPatches(void)
 //search if we have a patch for the current instruction and if yes insert the patch in the next round
 bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){
 	
-	//if we have found an instruction that has to be patchet in the previous round then we have a correct function pointer end we can instrument the code
+	//if we have found an instruction that has to be patched in the previous round then we have a correct function pointer end we can instrument the code
 	//
 	//we have to use this trick because some instructions, such as int 2e, don't have a fall throug and is not possible to insert an analysis routine with the IPOINT_AFTER attribute
 	if(this->curPatchPointer){

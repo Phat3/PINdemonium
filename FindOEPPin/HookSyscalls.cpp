@@ -7,7 +7,12 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 	//get the syscall number
 	unsigned long syscall_number = PIN_GetSyscallNumber(ctx, std);
 
-	if(syscall_number == 0){ // int 0x2e leaves ctx in a corrupted state and we have an undefined behavior here, the syscall_number will result in a 0 .... O.O, this is a BAD temporary patch...
+	// int 0x2e probably leaves ctx in a corrupted state and we have an undefined behavior here, 
+	// the syscall_number will result in a 0 and this isn't correct, the crashes is inside the function PIN_GetSyscallArguments.
+	// According to PIN documentation: Applying PIN_GetSyscallArguments() to an inappropriate context results in undefined behavior and even may cause 
+	// crash on systems in which system call arguments are located in memory.
+	// The incriminated syscall is executed after the int 0x2e, before the next instruction
+	if(syscall_number == 0){
 		MYINFO("Number of syscall is %d\n", syscall_number);
 		goto FINE;
 	}
@@ -16,12 +21,15 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 
 	syscall_t *sc = &((syscall_t *) v)[thread_id];	
 	
+
+
 	sc->syscall_number = syscall_number;
 
 	//get the arguments pointer
 	// 8 = number of the argument to be passed
 	// 0 .. 7 -> &sc->arg0 .. &sc->arg7 = correspondence between the index of the argument and the struct field to be loaded
 	HookSyscalls::syscallGetArguments(ctx, std, 8, 0, &sc->arg0, 1, &sc->arg1, 2, &sc->arg2, 3, &sc->arg3, 4, &sc->arg4, 5, &sc->arg5, 6, &sc->arg6, 7, &sc->arg7);
+
 	//HookSyscalls::printArgs(sc);
 	std::map<unsigned long, string>::iterator syscallMapItem = syscallsMap.find(sc->syscall_number);
 	//search for an hook on entry
