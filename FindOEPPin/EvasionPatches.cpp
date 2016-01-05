@@ -6,6 +6,7 @@
 
 //avoid the leak of the modified ip by pin
 VOID patchInt2e(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
+
 	//set the return value of the int2e (stored in edx) as the current ip
 	PIN_SetContextReg(ctxt, REG_EDX, cur_eip);	
 } 
@@ -54,6 +55,7 @@ bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){
 		REGSET regsOut;
 		REGSET_AddAll(regsOut);
 		//add the analysis rtoutine (the patch)
+
 		INS_InsertCall(ins, IPOINT_BEFORE, this->curPatchPointer, IARG_INST_PTR, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_ADDRINT, curEip, IARG_END);
 		//invalidate the function pointer for the next round
 		this->curPatchPointer = 0x0;
@@ -78,7 +80,6 @@ bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){
 	//search if we have a patch foir this instruction
 	std::map<string, AFUNPTR>::iterator item = this->patchesMap.find(disass_instr);
 	if(item != this->patchesMap.end()){
-		
 		//if so retrieve the correct function pointer for the analysis routine at the next round
 		this->curPatchPointer = this->patchesMap.at(disass_instr);
 		return true;

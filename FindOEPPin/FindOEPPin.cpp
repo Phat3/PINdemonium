@@ -90,9 +90,6 @@ void imageLoadCallback(IMG img,void *){
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
 	
-
-	  
-
 	if(!IMG_IsMainExecutable(img)){	
 		
 		if(IMG_Name(img).find("ntdll")!= std::string::npos){
@@ -116,12 +113,16 @@ void imageLoadCallback(IMG img,void *){
 
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
-// (Testing if batter than trace iteration)
+// (Testing if better than trace iteration)
 void Instruction(INS ins,void *v){
 
+	
+
 	if(Config::EVASION_MODE){
+		MYINFO("ADDR %08x - INS %s\n" , INS_Address(ins), INS_Disassemble(ins).c_str());
 		thider.avoidEvasion(ins);
 	}
+
 	if(Config::UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
 	}
@@ -180,9 +181,6 @@ int main(int argc, char * argv[]){
 	
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
-
-
-
 	HookSyscalls::initHooks();
 
 	// Start the program, never returns

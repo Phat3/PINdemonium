@@ -4,11 +4,18 @@
 
 void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
 
-	
 	//get the syscall number
 	unsigned long syscall_number = PIN_GetSyscallNumber(ctx, std);
+
+	if(syscall_number == 0){
+		MYINFO("Number of syscall is %d\n", syscall_number);
+		goto FINE;
+	}
+
 	//fill the structure with the provided info
-	syscall_t *sc = &((syscall_t *) v)[thread_id];
+
+	syscall_t *sc = &((syscall_t *) v)[thread_id];	
+	
 	sc->syscall_number = syscall_number;
 
 	//get the arguments pointer
@@ -26,9 +33,15 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 			syscallHookItem->second(sc, ctx, std);
 		}
 	}
+
+FINE:
+	return;
+
 }
 
 void HookSyscalls::syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
+
+	
 	 //get the structure with the informations on the systemcall
 	 syscall_t *sc = &((syscall_t *) v)[thread_id];
 	//search forn an hook on exit
@@ -41,7 +54,7 @@ void HookSyscalls::syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDAR
 			syscallHookItem->second(sc, ctx, std);
 		}
 	}
-
+	
 }
 
 //NtSystemQueryInformation detected
