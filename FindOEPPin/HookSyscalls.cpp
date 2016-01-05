@@ -7,7 +7,7 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 	//get the syscall number
 	unsigned long syscall_number = PIN_GetSyscallNumber(ctx, std);
 
-	if(syscall_number == 0){
+	if(syscall_number == 0){ // int 0x2e leaves ctx in a corrupted state and we have an undefined behavior here, the syscall_number will result in a 0 .... O.O, this is a BAD temporary patch...
 		MYINFO("Number of syscall is %d\n", syscall_number);
 		goto FINE;
 	}
