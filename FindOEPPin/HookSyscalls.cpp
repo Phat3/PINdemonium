@@ -121,6 +121,27 @@ void HookSyscalls::NtWriteVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx, SYSCAL
 		
 		PIN_SetSyscallArgument(ctx,SYSCALL_STANDARD_IA32_WINDOWS_FAST,1,new_address);
 	} 
+}
+
+void HookSyscalls::NtAllocateVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
+
+	W::PVOID base_address_pointer = (W::PVOID) sc->arg1;
+	W::PSIZE_T region_size_address = (W::PSIZE_T) sc->arg3;
+
+	ADDRINT heap_address = *(ADDRINT *)base_address_pointer;
+	W::SIZE_T region_size = *(W::SIZE_T *)region_size_address;
+
+    ProcInfo *proc_info = ProcInfo::getInstance();
+
+	HeapZone hz;
+	hz.begin = heap_address;
+	hz.size = region_size;
+    hz.end = region_size+heap_address;
+  
+	//MYINFO("NtAllocateVirtualMemoryHook insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
+
+	//saving this heap zone in the map inside ProcInfo
+	proc_info->insertHeapZone(hz); 
 
 }
 
@@ -183,6 +204,7 @@ void HookSyscalls::initHooks(){
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryPerformanceCounter_exit",&HookSyscalls::NtQueryPerformanceCounterHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation_exit",&HookSyscalls::NtQuerySystemInformationHookExit));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtOpenProcess_entry",&HookSyscalls::NtOpenProcessEntry));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtAllocateVirtualMemory_exit",&HookSyscalls::NtAllocateVirtualMemoryHook));
 
 	//hxxp://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FMemory%20Management%2FVirtual%20Memory%2FNtWriteVirtualMemory.html
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtWriteVirtualMemory_entry",&HookSyscalls::NtWriteVirtualMemoryHook));

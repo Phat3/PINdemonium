@@ -5,7 +5,7 @@
 
 HookFunctions::HookFunctions(void)
 {
-	this->functionsMap.insert( std::pair<string,int>("VirtualAlloc",VIRTUALALLOC_INDEX) );
+	//this->functionsMap.insert( std::pair<string,int>("VirtualAlloc",VIRTUALALLOC_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );
 
@@ -29,7 +29,8 @@ HookFunctions::~HookFunctions(void)
 
 //----------------------------- HOOKED FUNCTIONS -----------------------------//
 
-//hook the VirtualAlloc() in order to retrieve the memory range allocated and build ours data structures
+// hook the VirtualAlloc() in order to retrieve the memory range allocated and build ours data structures
+// NOT USED ANYMORE, WE HOOKED THE NtAllocateVirtualMemory syscall in order to be more generic ( see HookSyscalls.cpp row 126 )
 VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
   
   ProcInfo *proc_info = ProcInfo::getInstance();
@@ -38,7 +39,8 @@ VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
   hz.begin = ret_heap_address;
   hz.size = virtual_alloc_size;
   hz.end = ret_heap_address + virtual_alloc_size;
- // MYINFO("Virutalloc insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
+  
+   MYINFO("Virtualloc insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
 
   //saving this heap zone in the map inside ProcInfo
   proc_info->insertHeapZone(hz); 
