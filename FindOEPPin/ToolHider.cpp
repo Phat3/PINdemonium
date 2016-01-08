@@ -32,9 +32,9 @@ void ToolHider::avoidEvasion(INS ins){
 	ProcInfo *pInfo = ProcInfo::getInstance();
 
 	//Filter instructions inside a known library
-	if(pInfo->isKnownLibraryInstruction(curEip)){
-		return;
-	}
+//	if(pInfo->isKnownLibraryInstruction(curEip)){
+//		return;
+//	}
 
 	// 1 - single instruction detection
 	if(this->evasionPatcher.patchDispatcher(ins, curEip)){

@@ -133,6 +133,7 @@ public:
 	//Memory Mapped Files
 	BOOL isMappedFileAddress(ADDRINT addr);
 	VOID addMappedFilesAddress(ADDRINT startAddr);
+	VOID addInitialMappedFiles();
 	//Library
 	BOOL isLibraryInstruction(ADDRINT address);
 	BOOL isKnownLibraryInstruction(ADDRINT address);
