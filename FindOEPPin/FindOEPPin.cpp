@@ -12,9 +12,8 @@
 #include "HookSyscalls.h"
 namespace W {
 	#include <windows.h>
+
 }
-
-
 
 ToolHider thider;
 OepFinder oepf;
@@ -128,6 +127,7 @@ void Instruction(INS ins,void *v){
 	}
 	
 }
+
 
 
 // - retrive the stack base address

@@ -6,6 +6,8 @@
 HookFunctions::HookFunctions(void)
 {
 	//this->functionsMap.insert( std::pair<string,int>("VirtualAlloc",VIRTUALALLOC_INDEX) );
+	this->functionsMap.insert( std::pair<string,int>("VirtualFree",VIRTUALFREE_INDEX) );
+
 	this->functionsMap.insert( std::pair<string,int>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );
 
@@ -90,10 +92,38 @@ VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){
 	proc_info->insertHeapZone(hz); 
 }
 
+
 VOID MapViewOfFileHookAfter(W::DWORD dwDesiredAccess,W::DWORD dwFileOffsetHigh, W::DWORD dwFileOffsetLow, UINT32 size,ADDRINT file_view_addr ){
 	MYINFO("Found After mapViewOfFile Access %08x OffsetHigh %08x OffsetLow %08x  at %08x of size %08x ",dwDesiredAccess,dwFileOffsetHigh,dwFileOffsetLow,file_view_addr,size);
 	ProcInfo *proc_info = ProcInfo::getInstance();
 	proc_info->addMappedFilesAddress(file_view_addr);
+}
+
+VOID VirtualFreeHook(UINT32 address_to_free){
+
+	MYINFO("Have to free the address %08x\n" , address_to_free);
+
+	ProcInfo *pInfo = ProcInfo::getInstance();
+	std::vector<HeapZone> HeapMap = pInfo->getHeapMap();
+
+	int index_to_remove = -1;
+
+	MYINFO("HeapZone before free");
+	pInfo->printHeapList();
+
+	for(unsigned index=0; index <  HeapMap.size(); index++) {
+		if(address_to_free == pInfo->getHeapZoneByIndex(index)->begin){
+			index_to_remove = index;
+		}
+	}
+
+	if(index_to_remove != -1){
+		pInfo->deleteHeapZone(index_to_remove);
+	}
+
+	MYINFO("HeapZone after free");
+	pInfo->printHeapList();
+
 }
 
 //REMEMBER!!! : PIN wants a function pointer in the AFUNCPTR agument!!!
@@ -160,8 +190,8 @@ void HookFunctions::hookDispatcher(IMG img){
 					//need to be IPOINT_AFTER because the allocated address is returned as return value
 					RTN_InsertCall(rtn,IPOINT_AFTER,(AFUNPTR)MapViewOfFileHookAfter,IARG_FUNCARG_ENTRYPOINT_VALUE,1,IARG_FUNCARG_ENTRYPOINT_VALUE,2,IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_FUNCARG_ENTRYPOINT_VALUE,4,IARG_FUNCRET_EXITPOINT_VALUE,  IARG_END);
 					break;
-
-
+				case(VIRTUALFREE_INDEX):
+					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)VirtualFreeHook , IARG_FUNCARG_ENTRYPOINT_VALUE,0, IARG_END);
 			}			
 			RTN_Close(rtn);
 		}

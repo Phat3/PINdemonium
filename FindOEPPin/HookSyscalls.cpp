@@ -138,7 +138,7 @@ void HookSyscalls::NtAllocateVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx , SY
 	hz.size = region_size;
     hz.end = region_size+heap_address;
   
-	//MYINFO("NtAllocateVirtualMemoryHook insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
+	MYINFO("NtAllocateVirtualMemoryHook insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
 
 	//saving this heap zone in the map inside ProcInfo
 	proc_info->insertHeapZone(hz); 
