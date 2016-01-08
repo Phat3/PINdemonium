@@ -14,7 +14,7 @@
 #define QUERYPERFCOUNTER 5
 #define RTLREALLOCATEHEAP_INDEX 6
 #define MAPVIEWOFFILE_INDEX 7
-
+#define VIRTUALFREE_INDEX 8
 
 
 class HookFunctions

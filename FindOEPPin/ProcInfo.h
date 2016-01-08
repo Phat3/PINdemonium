@@ -90,6 +90,7 @@ public:
 	std::unordered_set<ADDRINT> getJmpBlacklist();
 	ADDRINT getPINVMStart();
 	ADDRINT getPINVMEnd();
+	std::vector<HeapZone> getHeapMap();
 	
 
 	/* setter */

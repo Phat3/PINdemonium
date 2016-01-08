@@ -113,6 +113,10 @@ clock_t ProcInfo::getStartTimer(){
 	return this->start_timer;
 }
 
+std::vector<HeapZone> ProcInfo::getHeapMap(){
+	return this->HeapMap;
+}
+
 
 
 
