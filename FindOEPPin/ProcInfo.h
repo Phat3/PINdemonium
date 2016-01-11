@@ -157,6 +157,8 @@ public:
 	//Debug
 	void printHeapList();
 	void PrintAllMemory();
+	VOID addProcessHeapsAddress();
+
 	
 
 	
@@ -207,7 +209,6 @@ private:
 	VOID mergeCurrentMemory();
 	
 	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
-	VOID addProcessHeapsAddress();
 	VOID addPebAddress();
 	VOID addContextDataAddress();
 	VOID addSharedMemoryAddress();

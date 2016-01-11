@@ -671,6 +671,11 @@ VOID ProcInfo::addKUserSharedDataAddress(){
 
 //Adding the ProcessHeaps to the generic Memory Ranges
 VOID ProcInfo::addProcessHeapsAddress(){
+	/*
+	if(!genericMemoryRanges.empty()) {
+		genericMemoryRanges.clear();
+	}
+	*/
 	W::SIZE_T BytesToAllocate;
 	W::PHANDLE aHeaps;
 	//getting the number of ProcessHeaps

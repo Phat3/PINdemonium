@@ -151,6 +151,63 @@ VOID FakeMemoryHandler::initFakeMemory(){
 	fakeMemory.push_back(fakeMem3);
 }
 
+BOOL getMemoryRange(ADDRINT address, MemoryRange& range){
+		
+		W::MEMORY_BASIC_INFORMATION mbi;
+		int numBytes = W::VirtualQuery((W::LPCVOID)address, &mbi, sizeof(mbi));
+		if(numBytes == 0){
+			MYERRORE("VirtualQuery failed");
+			return FALSE;
+		}
+	
+		int start =  (int)mbi.BaseAddress;
+		int end = (int)mbi.BaseAddress+ mbi.RegionSize;
+		//get the stack base address by searching the highest address in the allocated memory containing the stack Address
+	//	MYINFO("state %08x   %08x",mbi.State,mbi.Type);
+		if((mbi.State == MEM_COMMIT || mbi.Type == MEM_MAPPED || mbi.Type == MEM_IMAGE ||  mbi.Type == MEM_PRIVATE) &&
+			start <=address && address <= end){
+			//MYINFO("Adding start %08x ",(int)mbi.BaseAddress);
+			range.StartAddress = start;
+			range.EndAddress = end;
+			return TRUE;
+		}
+		else{
+			MYERRORE("Address %08x  not inside mapped memory from %08x -> %08x or Type/State not correct ",address,start,end);
+			return  FALSE;
+		}
+		
+}
+
+VOID printProcessHeap(){
+	MYINFO("-------- BEGIN ----------");
+	W::SIZE_T BytesToAllocate;
+	W::PHANDLE aHeaps;
+	//getting the number of ProcessHeaps
+	W::DWORD NumberOfHeaps = W::GetProcessHeaps(0, NULL);
+    if (NumberOfHeaps == 0) {
+		MYERRORE("Error in retrieving number of Process Heaps");
+		return;
+	}
+	//Allocating space for the ProcessHeaps Addresses
+	W::SIZETMult(NumberOfHeaps, sizeof(*aHeaps), &BytesToAllocate);
+	aHeaps = (W::PHANDLE)W::HeapAlloc(W::GetProcessHeap(), 0, BytesToAllocate);
+	if ( aHeaps == NULL) {
+		MYERRORE("HeapAlloc failed to allocate space");
+		return;
+	} 
+
+	W::GetProcessHeaps(NumberOfHeaps,aHeaps);
+	//Adding the memory range containing the ProcessHeaps to the  genericMemoryRanges
+	 for (int i = 0; i < NumberOfHeaps; ++i) {
+		MemoryRange processHeap;
+		if(getMemoryRange((ADDRINT) aHeaps[i],processHeap)){
+			MYINFO("Init processHeaps base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
+		}
+    }
+	MYINFO("-------- END ----------");
+}
+
+
 ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 
 	//Check if address is inside the FakeMemory array (need to modify the result of the read)
@@ -172,7 +229,15 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 	//Read address is outside of the Whitelist probably in the PIN address space (need to return some random garbage)
 	else{
 		MYINFO("Detected suspicious read at %08x ",address);
-	
+		ProcInfo *p = ProcInfo::getInstance();
+		p->addProcessHeapsAddress();
+		if(isAddrInWhiteList(address)){
+			printProcessHeap();
+			p->printHeapList();
+			return address;
+		}
+		printProcessHeap();
+		p->printHeapList();
 		curFakeMemory = "TopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMoto";
 		return NULL;
 	}
