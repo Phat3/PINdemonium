@@ -26,37 +26,10 @@ ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
 }
 
 
-/* This function adds to the whitelist the memory region mapped as MAP in 
-   order to insert mapped file as local.nls in the whitelist and avoid SEGFAULT 
-*/
-void ToolHider::ScanForMappedFiles(){
-
-	ADDRINT addr = 0x00010000;
-	W::MEMORY_BASIC_INFORMATION mbi;
-	
-
-	W::VirtualQuery((W::LPVOID)addr,&mbi,sizeof(mbi));
-
-	MYINFO("First allocation from %08x\n and size is %d", mbi.AllocationBase , mbi.RegionSize);
-
-
-}
-
 void ToolHider::avoidEvasion(INS ins){
 
-	/*
-	static int mapped_file_scan = 1;
-
-	if(mapped_file_scan == 1){
-	
-		ScanForMappedFiles();
-		mapped_file_scan = 0;
-	
-	}
-	*/
-
-	ADDRINT curEip = INS_Address(ins);
-	ProcInfo *pInfo = ProcInfo::getInstance();
+   ADDRINT curEip = INS_Address(ins);
+   ProcInfo *pInfo = ProcInfo::getInstance();
 
 	//Filter instructions inside a known library
 //	if(pInfo->isKnownLibraryInstruction(curEip)){

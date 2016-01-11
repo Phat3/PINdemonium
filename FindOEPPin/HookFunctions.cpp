@@ -17,7 +17,8 @@ HookFunctions::HookFunctions(void)
 	// QueryPerformanceCounter is hooked at syscall level with the NtQueryPerformanceCounter
 
 	this->functionsMap.insert( std::pair<string,int>("RtlReAllocateHeap",RTLREALLOCATEHEAP_INDEX) );
-	this->functionsMap.insert( std::pair<string,int>("MapViewOfFile",MAPVIEWOFFILE_INDEX) );
+
+	//this->functionsMap.insert( std::pair<string,int>("MapViewOfFile",MAPVIEWOFFILE_INDEX) );   //hookata la syscall NtMapViewOfSection 
 
 
 }

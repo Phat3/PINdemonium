@@ -17,6 +17,7 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 		goto FINE;
 	}
 
+
 	//fill the structure with the provided info
 
 	syscall_t *sc = &((syscall_t *) v)[thread_id];	
@@ -145,6 +146,16 @@ void HookSyscalls::NtAllocateVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx , SY
 
 }
 
+void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
+
+	W::PVOID base_address_pointer = (W::PVOID) sc->arg2;
+
+	ADDRINT base_address =  *(ADDRINT *) base_address_pointer;
+
+	ProcInfo *proc_info = ProcInfo::getInstance();
+	proc_info->addMappedFilesAddress(base_address);
+}
+
 
 //----------------------------- END HOOKS -----------------------------//
 
@@ -208,6 +219,9 @@ void HookSyscalls::initHooks(){
 
 	//hxxp://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FMemory%20Management%2FVirtual%20Memory%2FNtWriteVirtualMemory.html
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtWriteVirtualMemory_entry",&HookSyscalls::NtWriteVirtualMemoryHook));
+
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));  
+
 
 	static syscall_t sc[256] = {0};
 	PIN_AddSyscallEntryFunction(&HookSyscalls::syscallEntry,&sc);
