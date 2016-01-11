@@ -17,6 +17,7 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("RtlReAllocateHeap",RTLREALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("MapViewOfFile",MAPVIEWOFFILE_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualQuery",VIRTUALQUERY_INDEX) );
+	this->functionsMap.insert( std::pair<string,int>("VirtualProtect",VIRTUALPROTECT_INDEX) );
 
 }
 
@@ -101,15 +102,24 @@ bool * IsDebuggerPresentHook(){
 	return false;
 }
 
-VOID VirtualQueryHook ( W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi, W::SIZE_T *numBytes) {
+VOID VirtualQueryHook (W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi, W::SIZE_T *numBytes) {
 	//ProcInfo *proc_info = ProcInfo::getInstance();
-	FakeMemoryHandler* fake_memory = new FakeMemoryHandler();
-	if (fake_memory->isAddrInWhiteList((ADDRINT)baseAddress)) {
+	FakeMemoryHandler* fake_memory_handler = new FakeMemoryHandler();
+	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress)) {
 		*numBytes = 0;
 		mbi->State = MEM_FREE;
 	}
 }
 
+VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProtection, BOOL *success) {
+	FakeMemoryHandler* fake_memory_handler = new FakeMemoryHandler();
+	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress)) {
+		*success = 0;
+		//W::PDWORD oldOld;
+		//W::VirtualProtect(baseAddress, size, *oldProtection, oldOld);
+		//*oldProtection = PAGE_EXECUTE_READWRITE;
+	}
+}
 //----------------------------- HOOKED DISPATCHER -----------------------------//
 
 //scan the image and try to hook all the function specified above
@@ -118,7 +128,7 @@ void HookFunctions::hookDispatcher(IMG img){
 	for (std::map<string,int>::iterator item = this->functionsMap.begin(); item != this->functionsMap.end(); ++item){
 		//get the pointer to the specified function
 		const char * func_name = item->first.c_str();
-		RTN rtn = RTN_FindByName( img, func_name);
+		RTN rtn = RTN_FindByName(img, func_name);
 		//if we found a valid routine
 		if(rtn != RTN_Invalid()){
 			
@@ -167,8 +177,11 @@ void HookFunctions::hookDispatcher(IMG img){
 					RTN_InsertCall(rtn,IPOINT_AFTER,(AFUNPTR)MapViewOfFileHookAfter,IARG_FUNCARG_ENTRYPOINT_VALUE,1,IARG_FUNCARG_ENTRYPOINT_VALUE,2,IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_FUNCARG_ENTRYPOINT_VALUE,4,IARG_FUNCRET_EXITPOINT_VALUE,  IARG_END);
 					break;
 				case(VIRTUALQUERY_INDEX):
-					//IPOINT_AFTER because we have to check if the query is on a whitelist address
+					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualQueryHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0, IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
+				case(VIRTUALPROTECT_INDEX):
+					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
+					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualProtectHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCARG_ENTRYPOINT_VALUE, 3, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
 			}			
 			RTN_Close(rtn);
 		}
