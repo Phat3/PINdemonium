@@ -396,6 +396,7 @@ BOOL ProcInfo::isKnownLibraryInstruction(ADDRINT address){
 
 
 void ProcInfo::addProcAddresses(){
+	addInitialMappedFiles();
 	addPebAddress();
 	addContextDataAddress();
 	addCodePageDataAddress();
@@ -507,6 +508,36 @@ VOID ProcInfo::addThreadStackAddress(ADDRINT addr){
 
 }
 //------------------------------------------------------------ Memory Mapped Files------------------------------------------------------------
+//Add to the mapped files list the region marked as mapped when the application starts
+VOID ProcInfo::addInitialMappedFiles(){
+	W::MEMORY_BASIC_INFORMATION mbi;
+	W::SIZE_T numBytes;
+	W::DWORD MyAddress = 0;
+	
+	//Code to display the name of the mapped file has been commented out
+//	typedef W::DWORD (WINAPI *LPFN_GetMappedFileNameW)(W::HANDLE hProcess, W::LPVOID lpv, W::LPWSTR lpFilename, W::DWORD nSize);
+//	W::HINSTANCE hPsapi = NULL;
+//	LPFN_GetMappedFileNameW lpGetMappedFileNameW = NULL;
+//	hPsapi = W::LoadLibraryW(L"psapi.dll");
+//	lpGetMappedFileNameW = (LPFN_GetMappedFileNameW) W::GetProcAddress(hPsapi, "GetMappedFileNameW");
+	
+	do{
+		numBytes = W::VirtualQuery((W::LPCVOID)MyAddress, &mbi, sizeof(mbi));
+		if(mbi.Type == MEM_MAPPED){
+			//wchar_t name[MAX_PATH];
+			//lpGetMappedFileNameW(W::GetCurrentProcess(), mbi.BaseAddress,name,MAX_PATH);
+			
+			MemoryRange range;
+			range.StartAddress = (ADDRINT)mbi.BaseAddress;
+			range.EndAddress = (ADDRINT)mbi.BaseAddress+mbi.RegionSize;
+			mappedFiles.push_back(range);
+			MYINFO("Init Mapped File base address %08x -> %08x",range.StartAddress ,range.EndAddress);
+		}
+		MyAddress += mbi.RegionSize;
+	}
+	while(numBytes);
+}
+
 BOOL ProcInfo::isMappedFileAddress(ADDRINT addr){
 	for(std::vector<MemoryRange>::iterator item = mappedFiles.begin(); item != mappedFiles.end(); ++item) {
 		if(item->StartAddress <= addr && addr <= item->EndAddress){
@@ -516,6 +547,7 @@ BOOL ProcInfo::isMappedFileAddress(ADDRINT addr){
 	return false;
 }
 
+//Add dynamically created mapped files to the mapped files list
 VOID ProcInfo::addMappedFilesAddress(ADDRINT startAddr){
 	MemoryRange mappedFile;
 	if(getMemoryRange((ADDRINT)startAddr,mappedFile)){
