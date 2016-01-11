@@ -3,6 +3,7 @@
 #include <map>
 #include "pin.H"
 #include "ProcInfo.h"
+#include "FakeMemoryHandler.h"
 
 
 

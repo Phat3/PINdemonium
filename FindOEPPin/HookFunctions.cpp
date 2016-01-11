@@ -102,9 +102,9 @@ bool * IsDebuggerPresentHook(){
 }
 
 VOID VirtualQueryHook ( W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi, W::SIZE_T *numBytes) {
-	ProcInfo *proc_info = ProcInfo::getInstance();
-
-	if (!proc_info->isAddrInWhiteList((ADDRINT)baseAddress)) {
+	//ProcInfo *proc_info = ProcInfo::getInstance();
+	FakeMemoryHandler* fake_memory = new FakeMemoryHandler();
+	if (fake_memory->isAddrInWhiteList((ADDRINT)baseAddress)) {
 		*numBytes = 0;
 		mbi->State = MEM_FREE;
 	}
