@@ -8,10 +8,10 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 	unsigned long syscall_number = PIN_GetSyscallNumber(ctx, std);
 
 	// int 0x2e probably leaves ctx in a corrupted state and we have an undefined behavior here, 
-	// the syscall_number will result in a 0 and this isn't correct, the crashes is inside the function PIN_GetSyscallArguments.
+	// the syscall_number will result in a 0 and this isn't correct, the crash is inside the function PIN_GetSyscallArguments.
 	// According to PIN documentation: Applying PIN_GetSyscallArguments() to an inappropriate context results in undefined behavior and even may cause 
 	// crash on systems in which system call arguments are located in memory.
-	// The incriminated syscall is executed after the int 0x2e, before the next instruction
+	// The incriminated syscall is executed after the int 0x2e, before the next instruction, just for now filter out the 0 syscall since we don't use it at all...
 	if(syscall_number == 0){
 		MYINFO("Number of syscall is %d\n", syscall_number);
 		goto FINE;
@@ -96,7 +96,7 @@ void HookSyscalls::NtQueryPerformanceCounterHook(syscall_t *sc , CONTEXT *ctx, S
 
 
 //NtOpenProcess detected
-//let's change the PID that the malware wants to open with a non exidsting one in order to trigger an error status
+//let's change the PID that the malware wants to open with a non existing one in order to trigger an error status
 //we have to use this trick because we aren't able to change the return value of the syscall yet... (the value in EAX)
 void HookSyscalls::NtOpenProcessEntry(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
 	PCLIENT_ID cid = (PCLIENT_ID)sc->arg3;
