@@ -1,8 +1,6 @@
 #include "HookFunctions.h"
 
 
-
-
 HookFunctions::HookFunctions(void)
 {
 	//this->functionsMap.insert( std::pair<string,int>("VirtualAlloc",VIRTUALALLOC_INDEX) );
@@ -30,23 +28,24 @@ HookFunctions::~HookFunctions(void)
 }
 
 
+
 //----------------------------- HOOKED FUNCTIONS -----------------------------//
 
 // hook the VirtualAlloc() in order to retrieve the memory range allocated and build ours data structures
 // NOT USED ANYMORE, WE HOOKED THE NtAllocateVirtualMemory syscall in order to be more generic ( see HookSyscalls.cpp row 126 )
 VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
   
-  ProcInfo *proc_info = ProcInfo::getInstance();
+	ProcInfo *proc_info = ProcInfo::getInstance();
 
-  HeapZone hz;
-  hz.begin = ret_heap_address;
-  hz.size = virtual_alloc_size;
-  hz.end = ret_heap_address + virtual_alloc_size;
+	HeapZone hz;
+	hz.begin = ret_heap_address;
+	hz.size = virtual_alloc_size;
+	hz.end = ret_heap_address + virtual_alloc_size;
   
-   MYINFO("Virtualloc insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
+	MYINFO("Virtualloc insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
 
-  //saving this heap zone in the map inside ProcInfo
-  proc_info->insertHeapZone(hz); 
+	//saving this heap zone in the map inside ProcInfo
+	proc_info->insertHeapZone(hz); 
 
 }
 
@@ -58,7 +57,6 @@ VOID RtlAllocateHeapHook(int heap_alloc_size , UINT32 ret_heap_address ){
 		return;
 	}
 	
-
 	ProcInfo *proc_info = ProcInfo::getInstance();
 	//need this code because sometimes RTLAllocHeap is invoked twice (because of the IPOINT_AFTER insert)and the second time is the correct one
 	if (prev_heap_alloc.begin == ret_heap_address){
@@ -77,6 +75,7 @@ VOID RtlAllocateHeapHook(int heap_alloc_size , UINT32 ret_heap_address ){
 	proc_info->insertHeapZone(hz); 
 
 }
+
 
 
 VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){
@@ -152,6 +151,9 @@ void HookFunctions::hookDispatcher(IMG img){
 
 			RTN_Open(rtn); 	
 			int index = item->second;
+			va_address = 0x70e626c0; // Stupid pin doesn't recognize correctly the address range of timeGetTime... -.-" 
+			ADDRINT end_address = 0x70e62712;
+			ProcInfo *pInfo = ProcInfo::getInstance();
 			//decide what to do based on the function hooked
 			//Different arguments are passed to the hooking routine based on the function
 			switch(index){
@@ -165,24 +167,14 @@ void HookFunctions::hookDispatcher(IMG img){
 				case(ISDEBUGGERPRESENT_INDEX):
 					RTN_Replace(rtn, AFUNPTR(IsDebuggerPresentHook));
 					break;
-
 				case (GETTICKCOUNT):
-					   {
-						ProcInfo *pInfo = ProcInfo::getInstance();
-						pInfo->addRtn("GetTickCount",va_address,va_address+RTN_Size(rtn)); // add the GetTickCount in the list of not filtered rtn
-						// the handling of the GetTickCount is done by changing the value of the TickMultiplier in the kuser_shared_data when the process tries to read it
-					   }
+					pInfo->addRtn("GetTickCount",va_address,va_address+RTN_Size(rtn)); // add the GetTickCount in the list of not filtered rtn
+					// the handling of the GetTickCount is done by changing the value of the TickMultiplier in the kuser_shared_data when the process tries to read it
 					break;
-				case (TIMEGETTIME):
-					   {
-						ProcInfo *pInfo = ProcInfo::getInstance();
-						va_address = 0x70e626c0; // Stupid pin doesn't recognize correctly the address range of timeGetTime... -.-" 
-						ADDRINT end_address = 0x70e62712;
-						pInfo->addRtn("timeGetTime",va_address,end_address); // add the timeGetTime in the list of not filtered rtn
-						MYINFO("timeGetTime from %08x to %08x\n" , va_address,end_address);
-				       }
+				case(TIMEGETTIME):					
+					pInfo->addRtn("timeGetTime",va_address,end_address); // add the timeGetTime in the list of not filtered rtn
+					MYINFO("timeGetTime from %08x to %08x\n" , va_address,end_address);
 					break;
-
 				case(RTLREALLOCATEHEAP_INDEX):
 					//IPOINT_BEFORE because the address to be realloc is passed as an input paramenter
 					RTN_InsertCall(rtn,IPOINT_BEFORE,(AFUNPTR)RtlReAllocateHeapHook, IARG_FUNCARG_ENTRYPOINT_VALUE,2 , IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_END);

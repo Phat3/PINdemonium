@@ -19,11 +19,7 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 
 
 	//fill the structure with the provided info
-
 	syscall_t *sc = &((syscall_t *) v)[thread_id];	
-	
-
-
 	sc->syscall_number = syscall_number;
 
 	//get the arguments pointer
@@ -49,10 +45,9 @@ FINE:
 }
 
 void HookSyscalls::syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
-
 	
-	 //get the structure with the informations on the systemcall
-	 syscall_t *sc = &((syscall_t *) v)[thread_id];
+	//get the structure with the informations on the systemcall
+	syscall_t *sc = &((syscall_t *) v)[thread_id];
 	//search forn an hook on exit
 	std::map<unsigned long, string>::iterator syscallMapItem = syscallsMap.find(sc->syscall_number);
 	if(syscallMapItem !=  syscallsMap.end()){
