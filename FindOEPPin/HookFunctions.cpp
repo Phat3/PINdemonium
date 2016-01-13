@@ -111,13 +111,14 @@ VOID VirtualQueryHook (W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi,
 	}
 }
 
-VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProtection, BOOL *success) {
+VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::DWORD oldProtection, BOOL* success) {
 	FakeMemoryHandler* fake_memory_handler = new FakeMemoryHandler();
-	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress)) {
-		*success = 0;
-		//W::PDWORD oldOld;
-		//W::VirtualProtect(baseAddress, size, *oldProtection, oldOld);
-		//*oldProtection = PAGE_EXECUTE_READWRITE;
+	printf ("PINUnpacker success = %d\n", *success);
+	//printf ("PIN oldProtection = %d\n", *oldProtection);
+	if (/*!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress) &&*/ *success == 0) {
+		*success = 1;
+		printf("Inside If\n");
+		*(W::PDWORD)oldProtection = 101;
 	}
 }
 //----------------------------- HOOKED DISPATCHER -----------------------------//
