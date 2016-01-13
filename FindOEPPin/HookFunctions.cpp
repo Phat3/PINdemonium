@@ -114,7 +114,7 @@ VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProt
 	FakeMemoryHandler* fake_memory_handler = new FakeMemoryHandler();
 	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress) && success && *success && oldProtection) {
 		*success = 0;
-		*oldProtection = 101;
+		*oldProtection = NULL;
 	}
 }
 //----------------------------- HOOKED DISPATCHER -----------------------------//
