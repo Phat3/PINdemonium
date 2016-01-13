@@ -112,7 +112,7 @@ VOID VirtualQueryHook (W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi,
 
 VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProtection, BOOL* success) {
 	FakeMemoryHandler* fake_memory_handler = new FakeMemoryHandler();
-	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress) && *success == 1 && oldProtection) {
+	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress) && success && *success && oldProtection) {
 		*success = 0;
 		*oldProtection = 101;
 	}
