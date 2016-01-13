@@ -103,22 +103,18 @@ bool * IsDebuggerPresentHook(){
 }
 
 VOID VirtualQueryHook (W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi, W::SIZE_T *numBytes) {
-	//ProcInfo *proc_info = ProcInfo::getInstance();
 	FakeMemoryHandler* fake_memory_handler = new FakeMemoryHandler();
-	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress)) {
+	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress) && numBytes && mbi) {
 		*numBytes = 0;
 		mbi->State = MEM_FREE;
 	}
 }
 
-VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::DWORD oldProtection, BOOL* success) {
+VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProtection, BOOL* success) {
 	FakeMemoryHandler* fake_memory_handler = new FakeMemoryHandler();
-	printf ("PINUnpacker success = %d\n", *success);
-	//printf ("PIN oldProtection = %d\n", *oldProtection);
-	if (/*!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress) &&*/ *success == 0) {
-		*success = 1;
-		printf("Inside If\n");
-		*(W::PDWORD)oldProtection = 101;
+	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress) && *success == 1 && oldProtection) {
+		*success = 0;
+		*oldProtection = 101;
 	}
 }
 //----------------------------- HOOKED DISPATCHER -----------------------------//
