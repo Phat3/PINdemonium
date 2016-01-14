@@ -1,7 +1,7 @@
 #include "HookSyscalls.h"
 
 //----------------------------- SYSCALL HOOKS -----------------------------//
-
+static int testing = 0;
 void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
 
 	//get the syscall number
@@ -16,6 +16,13 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 		MYINFO("Number of syscall is %d\n", syscall_number);
 		goto FINE;
 	}
+
+
+	if(syscall_number == 0x12b){
+		MYINFO("Invoked WaitReply of syscall is %08x %d\n",PIN_GetContextReg(ctx,REG_EIP), syscall_number);
+		
+	}
+	
 
 
 	//fill the structure with the provided info
@@ -46,10 +53,17 @@ FINE:
 
 void HookSyscalls::syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v){
 	
+	
+
 	//get the structure with the informations on the systemcall
 	syscall_t *sc = &((syscall_t *) v)[thread_id];
 	//search forn an hook on exit
 	std::map<unsigned long, string>::iterator syscallMapItem = syscallsMap.find(sc->syscall_number);
+	if(sc->syscall_number == 0x12b){
+		MYINFO("Exit WaitReply of syscall is %d\n", sc->syscall_number);
+		testing=0;
+	}
+
 	if(syscallMapItem !=  syscallsMap.end()){
 		//serch if we have an hook for the syscall
 		std::map<string, syscall_hook>::iterator syscallHookItem = syscallsHooks.find(syscallMapItem->second + "_exit");
@@ -151,6 +165,16 @@ void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL
 	proc_info->addMappedFilesAddress(base_address);
 }
 
+//The NtRequestWaitReplyPortHook allocates 4 memory pages of type MEM_MAPPED so we need to rescan the memory after it has been performed
+void HookSyscalls::NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
+	MYINFO("Found a NtRequestWaitReplyPort");
+	ProcInfo *proc_info = ProcInfo::getInstance();
+	proc_info->printMappedFileAddress();
+	proc_info->setCurrentMappedFiles();
+	proc_info->printMappedFileAddress();
+}
+
+
 
 //----------------------------- END HOOKS -----------------------------//
 
@@ -214,6 +238,7 @@ void HookSyscalls::initHooks(){
 
 	//hxxp://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FMemory%20Management%2FVirtual%20Memory%2FNtWriteVirtualMemory.html
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtWriteVirtualMemory_entry",&HookSyscalls::NtWriteVirtualMemoryHook));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtRequestWaitReplyPort_exit",&HookSyscalls::NtRequestWaitReplyPortHook));
 
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));  
 
