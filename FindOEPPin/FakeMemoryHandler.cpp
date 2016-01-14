@@ -233,9 +233,9 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 
 		//********************** POC **********************
 		p->addProcessHeapsAddress();
-		p->addInitialMappedFiles();
+		//p->setCurrentMappedFiles();
 		if(isAddrInWhiteList(address)){
-			printProcessHeap();
+			//printProcessHeap();
 			//p->printHeapList();
 			return address;
 		}

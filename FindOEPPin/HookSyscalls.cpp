@@ -14,7 +14,7 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 	// The incriminated syscall is executed after the int 0x2e, before the next instruction, just for now filter out the 0 syscall since we don't use it at all...
 	if(syscall_number == 0){
 		MYINFO("Number of syscall is %d\n", syscall_number);
-		goto FINE;
+		return;
 	}
 
 
@@ -45,9 +45,6 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 			syscallHookItem->second(sc, ctx, std);
 		}
 	}
-
-FINE:
-	return;
 
 }
 
