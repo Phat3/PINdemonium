@@ -134,7 +134,8 @@ public:
 	//Memory Mapped Files
 	BOOL isMappedFileAddress(ADDRINT addr);
 	VOID addMappedFilesAddress(ADDRINT startAddr);
-	VOID addInitialMappedFiles();
+	VOID setCurrentMappedFiles();
+	VOID printMappedFileAddress();
 	//Library
 	BOOL isLibraryInstruction(ADDRINT address);
 	BOOL isKnownLibraryInstruction(ADDRINT address);
@@ -152,6 +153,7 @@ public:
 	VOID PrintWhiteListedAddr();
 	VOID PrintDebugProcessAddr();
 	VOID enumerateDebugProcessMemory();
+	BOOL getMemoryRange(ADDRINT address, MemoryRange& range);
 
 	
 	//Debug
@@ -203,7 +205,7 @@ private:
 	
 	//Enumerate Whitelisted Memory Helpers	
 	//return the MemoryRange in which the address is mapped
-	BOOL getMemoryRange(ADDRINT address, MemoryRange& range);
+
 	VOID addWhitelistAddress(ADDRINT baseAddr,ADDRINT endAddress);
 	VOID mergeMemoryAddresses();
 	VOID mergeCurrentMemory();

@@ -116,7 +116,17 @@ void imageLoadCallback(IMG img,void *){
 void Instruction(INS ins,void *v){
 
 	//printf("ADDR %08x - INS %s\n" , INS_Address(ins), INS_Disassemble(ins).c_str());
-	
+	/*
+	MemoryRange mem;
+	ProcInfo::getInstance()->getMemoryRange(0x027c0578 ,mem);
+	if(mem.StartAddress <= 0x027c0578  &&  0x027c0578  <= mem.EndAddress){
+		MYINFO("yyyyyyyyyyyyyyyyyNow the address has been mapped EIP:%08x  mapped from %08x -> %08x name %s",INS_Address(ins),mem.StartAddress,mem.EndAddress,RTN_FindNameByAddress(INS_Address(ins)).c_str());
+	}
+	else{
+		MYINFO("zzzzzzCur EIP:%08x name %s ",INS_Address(ins),RTN_FindNameByAddress(INS_Address(ins)).c_str());
+	}
+	*/
+
 	if(Config::EVASION_MODE){
 		
 		thider.avoidEvasion(ins);

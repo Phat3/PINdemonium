@@ -403,7 +403,7 @@ BOOL ProcInfo::isKnownLibraryInstruction(ADDRINT address){
 
 
 void ProcInfo::addProcAddresses(){
-	addInitialMappedFiles();
+	setCurrentMappedFiles();
 	addPebAddress();
 	addContextDataAddress();
 	addCodePageDataAddress();
@@ -516,11 +516,14 @@ VOID ProcInfo::addThreadStackAddress(ADDRINT addr){
 }
 //------------------------------------------------------------ Memory Mapped Files------------------------------------------------------------
 //Add to the mapped files list the region marked as mapped when the application starts
-VOID ProcInfo::addInitialMappedFiles(){
+VOID ProcInfo::setCurrentMappedFiles(){
 	W::MEMORY_BASIC_INFORMATION mbi;
 	W::SIZE_T numBytes;
 	W::DWORD MyAddress = 0;
 	
+	//delete old elements
+	mappedFiles.clear();
+
 	//Code to display the name of the mapped file has been commented out
 //	typedef W::DWORD (WINAPI *LPFN_GetMappedFileNameW)(W::HANDLE hProcess, W::LPVOID lpv, W::LPWSTR lpFilename, W::DWORD nSize);
 //	W::HINSTANCE hPsapi = NULL;
@@ -552,6 +555,12 @@ BOOL ProcInfo::isMappedFileAddress(ADDRINT addr){
 		}			
 	}
 	return false;
+}
+
+VOID  ProcInfo::printMappedFileAddress(){
+	for(std::vector<MemoryRange>::iterator item = mappedFiles.begin(); item != mappedFiles.end(); ++item) {
+		MYINFO("Mapped file %08x -> %08x ",item->StartAddress , item->EndAddress);
+	}
 }
 
 //Add dynamically created mapped files to the mapped files list
@@ -601,6 +610,7 @@ BOOL ProcInfo::getMemoryRange(ADDRINT address, MemoryRange& range){
 		}
 		else{
 			MYERRORE("Address %08x  not inside mapped memory from %08x -> %08x or Type/State not correct ",address,start,end);
+			MYINFO("state %08x   %08x",mbi.State,mbi.Type);
 			return  FALSE;
 		}
 		
