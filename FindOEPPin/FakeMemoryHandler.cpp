@@ -218,12 +218,15 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 			ADDRINT patchedAddr = it->func(address,it->StartAddress);
 			//MYINFO("Found address in FakeMemory %08x ",address);
 			MYINFO("Found FakeMemory read at %08x containig %08x  Patched at %08x with %08x\n",address, *(unsigned int *)address,patchedAddr, *(unsigned int *)(*(string *)patchedAddr).c_str());
+			//MYINFO("[DEBUG] Address violated the FakeMemory\n");
 			return patchedAddr;
 		}
 	}
 
 	//Check if the address is inside the WhiteListed addresses( need to return the correct value)
 	if(isAddrInWhiteList(address)){
+		
+		//MYINFO("[DEBUG] Address is in WhiteList\n");
 		return address;
 	}
 	//Read address is outside of the Whitelist probably in the PIN address space (need to return some random garbage)
@@ -243,6 +246,7 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 		//printProcessHeap();
 		//p->printHeapList();
 		curFakeMemory = "TopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMoto";
+		
 		return NULL;
 	}
 	

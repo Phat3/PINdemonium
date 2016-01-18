@@ -118,24 +118,25 @@ void Instruction(INS ins,void *v){
 	//printf("ADDR %08x - INS %s\n" , INS_Address(ins), INS_Disassemble(ins).c_str());
 	/*
 	MemoryRange mem;
-	ProcInfo::getInstance()->getMemoryRange(0x027c0578 ,mem);
-	if(mem.StartAddress <= 0x027c0578  &&  0x027c0578  <= mem.EndAddress){
+	
+	ProcInfo::getInstance()->getMemoryRange(0x75e714a4 ,mem);
+
+	if(mem.StartAddress <= 0x75e714a4  &&  0x75e714a4  <= mem.EndAddress){
 		MYINFO("yyyyyyyyyyyyyyyyyNow the address has been mapped EIP:%08x  mapped from %08x -> %08x name %s",INS_Address(ins),mem.StartAddress,mem.EndAddress,RTN_FindNameByAddress(INS_Address(ins)).c_str());
 	}
-	else{
+	else{ 
 		MYINFO("zzzzzzCur EIP:%08x name %s ",INS_Address(ins),RTN_FindNameByAddress(INS_Address(ins)).c_str());
 	}
 	*/
 
+
 	if(Config::EVASION_MODE){
-		
 		thider.avoidEvasion(ins);
 	}
 
 	if(Config::UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
-	}
-	
+	}	
 }
 
 
@@ -154,6 +155,7 @@ void initDebug(){
 	mode._options = DEBUG_MODE_OPTION_STOP_AT_ENTRY;
 	PIN_SetDebugMode(&mode);
 }
+
 
 
 /* ===================================================================== */

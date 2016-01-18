@@ -8,6 +8,7 @@ ScyllaWrapperInterface* ScyllaWrapperInterface::instance = 0;
 //singleton
 ScyllaWrapperInterface* ScyllaWrapperInterface::getInstance()
 {
+	
 	if (instance == 0)
 		instance = new ScyllaWrapperInterface();
 	return instance;
@@ -16,16 +17,6 @@ ScyllaWrapperInterface* ScyllaWrapperInterface::getInstance()
 //we have to use loadLibrary and GetProcAddress because PIN doesn't support external libraries
 ScyllaWrapperInterface::ScyllaWrapperInterface(void)
 {
-	//init
-	this->hScyllaWrapper = 0;
-	//load library
-	this->hScyllaWrapper = W::LoadLibraryW(L"C:\\pin\\PinUnpackerDependencies\\Scylla\\ScyllaWrapper.dll");
-	//get proc address
-	if (this->hScyllaWrapper)
-	{
-		this->ScyllaDumpAndFix = (def_ScyllaDumpAndFix)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaDumpAndFix");
-		this->ScyllaWrapAddSection = (def_ScyllaWrapAddSection)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaWrapAddSection");
-	}
 }
 
 //----------------------------------------------------
@@ -89,4 +80,30 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(std::string scylla,int pid
 	return exitCode;
 }
 
+void ScyllaWrapperInterface::loadScyllaLibary(){
 
+	//init
+	this->hScyllaWrapper = 0;
+	//load library
+
+	this->hScyllaWrapper = W::LoadLibraryEx("C:\\pin\\PinUnpackerDependencies\\Scylla\\ScyllaWrapper.dll", NULL, NULL);
+
+	W::HANDLE scyh = W::GetModuleHandle("C:\\pin\\PinUnpackerDependencies\\Scylla\\ScyllaWrapper.dll");
+
+	//MYINFO("Address in which scylla is mapped: %08x\n" , scyh);
+
+	//get proc address
+	if (this->hScyllaWrapper)
+	{
+		this->ScyllaDumpAndFix = (def_ScyllaDumpAndFix)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaDumpAndFix");
+		this->ScyllaWrapAddSection = (def_ScyllaWrapAddSection)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaWrapAddSection");
+	}
+
+}
+
+
+void ScyllaWrapperInterface::unloadScyllaLibrary(){
+
+	W::FreeLibrary((W::HINSTANCE)this->hScyllaWrapper);
+
+}

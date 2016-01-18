@@ -342,20 +342,23 @@ Check the current name against a set of whitelisted library names
 (IDEA don't track kernel32.dll ... but track custom dll which may contain malicious payloads)
 **/
 BOOL ProcInfo::isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
-	/*
+	
 	BOOL isExaitDll = name.find("detect") != std::string::npos;
 	if(isExaitDll){
 		//MYINFO("FOUND EXAIT DLL %s from %08x  to   %08x\n",name.c_str(),startAddr,endAddr);
 		return FALSE;
 	}
-	*/
+	else
+		return TRUE;
+	/*
 	//POC - filter out the GDI32.dll
-	if(name.find("GDI")){
+	if(name.find("GDI") != std::string::npos){
 		return TRUE;
 	}
 	else{
 		return FALSE;
 	}
+	*/
 
 }
 
@@ -382,7 +385,7 @@ BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 		if (lib->StartAddress <= address && address <= lib->EndAddress){
 		//	MYINFO("Instruction at %x filtered", address);
 		//MYINFO("UNKKNOWN LIBRARIES\n");
-			return TRUE;  // WARNING, WITH TRUE HERE WE ARE GOING TO MISS ALL THE INSTRUCTION IN THE 'SINGLE INSTRUCTION DETECTION' 
+			return TRUE;   
 		}
 	}
 	

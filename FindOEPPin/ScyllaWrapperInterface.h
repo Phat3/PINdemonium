@@ -30,6 +30,8 @@ public:
 	//interface to the ScyllaWrapper.dll
 	def_ScyllaDumpAndFix	ScyllaDumpAndFix;
 	def_ScyllaWrapAddSection ScyllaWrapAddSection;
+	void loadScyllaLibary();
+	void unloadScyllaLibrary();
 
 private:
 	ScyllaWrapperInterface::ScyllaWrapperInterface();

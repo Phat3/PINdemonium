@@ -86,6 +86,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	int heap_index = -1;
 
 	clock_t now = clock();
+
 	//check the timeout
 	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > Config::TIMEOUT_TIMER_SECONDS  ){
 		MYINFO("TIMER SCADUTO");
@@ -113,6 +114,9 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//If the instruction violate WxorX return the index of the WriteItem in which the EIP is
 	//If the instruction doesn't violate WxorX return -1
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
+
+	
+
 	//W xor X broken
 	if(writeItemIndex != -1 ){
 
@@ -142,9 +146,11 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			MYINFO("Current EIP %08x",curEip);
 			//W::DebugBreak();
 			int result = this->DumpAndFixIAT(curEip);
-			Config::getInstance()->setWorking(result);
+			//Config::getInstance()->setWorking(result);
+			
 			//W::DebugBreak();
 			this->analysis(item, ins, prev_ip, curEip);
+			
 			wxorxHandler->setBrokenFlag(writeItemIndex);
 			Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 				
@@ -161,6 +167,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	}
 	
+
 	//update the previous IP
 	proc_info->setPrevIp(INS_Address(ins));
 
@@ -261,18 +268,28 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 
 	string tmpDump = Config::getInstance()->getNotWorkingPath();
 	std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
-	
+
 	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s",pid, Config::getInstance()->getCurrentDumpFilePath().c_str());
 
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();
+
+	sc->loadScyllaLibary();
+
 	UINT32 result = sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)outputFile_w.c_str(),(W::WCHAR *)base_path_w.c_str(), (W::WCHAR *)tmpDump_w.c_str());
 	//Check if Scylla ha Succeded
+	
+	sc->unloadScyllaLibrary();
+
+	
 	if(result != SCYLLA_SUCCESS_FIX){
 		MYERRORE("Scylla execution Failed error %d",result);
 		return result;
 	};
 	
 	MYINFO("Scylla execution Success");
-	return result;
+
+	
+
+	return 1;
 }
 

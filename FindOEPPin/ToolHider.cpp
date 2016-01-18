@@ -20,10 +20,12 @@ ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
 
 	if(fakeAddr==NULL){
 
-		MYINFO("xxxxxxxxxxxxxx %08x reading %08x",eip,read_addr);
+		MYINFO("xxxxxxxxxxxxxx %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr);
 	
 	}
 
+	//MYINFO("read_addr was %08x\n",read_addr);
+	//MYINFO("fakeAddr is %08x\n",fakeAddr);
 	return fakeAddr;
 }
 
@@ -49,8 +51,12 @@ void ToolHider::avoidEvasion(INS ins){
    ADDRINT curEip = INS_Address(ins);
    ProcInfo *pInfo = ProcInfo::getInstance();
 
+   //MYINFO("[DEBUG] EIP: %08x INS: %s\n", curEip , INS_Disassemble(ins).c_str());
+
 	//Filter instructions inside a known library (only graphic dll)
 	if(pInfo->isKnownLibraryInstruction(curEip)){
+		//MYINFO("That's a GDI\n\n");
+		//MYINFO("Name of RTN is %s\n" , RTN_FindNameByAddress(curEip).c_str());
 		return;
 	}
 
