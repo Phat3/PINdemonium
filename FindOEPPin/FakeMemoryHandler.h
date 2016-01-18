@@ -39,17 +39,13 @@ private:
 	static ADDRINT ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFuncAddr);
 	static ADDRINT TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr);
 	static ADDRINT KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr);
-	BOOL isAddrInWhiteList(ADDRINT address);
-
-	
-
-	
-	
+		
 
 public:
 	FakeMemoryHandler(void);
 	~FakeMemoryHandler(void);
 	VOID initFakeMemory();
+	BOOL isAddrInWhiteList(ADDRINT address);
 	//
 	ADDRINT getFakeMemory(ADDRINT address);
 };

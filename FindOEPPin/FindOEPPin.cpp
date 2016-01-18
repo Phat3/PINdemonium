@@ -44,6 +44,9 @@ INT32 Usage(){
 }
 
 
+
+
+
 // - Get initial entropy
 // - Get PE section data 
 // - Add filtered library
@@ -54,6 +57,7 @@ void imageLoadCallback(IMG img,void *){
 		}
 	}*/
 
+	
 	Section item;
 	static int va_hooked = 0;
 	ProcInfo *proc_info = ProcInfo::getInstance();

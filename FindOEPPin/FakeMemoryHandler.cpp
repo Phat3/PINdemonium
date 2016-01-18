@@ -206,6 +206,29 @@ VOID printProcessHeap(){
     }
 	MYINFO("-------- END ----------");
 }
+void getCurrentDlls(){
+	MYINFO("Calling current dlls");
+	W::HMODULE hMods[1024];
+    W::DWORD cbNeeded;
+
+	typedef W::DWORD (WINAPI *MyEnumProcessModules)(W::HANDLE hProcess, W::HMODULE *lphModule, W::DWORD cb, W::LPDWORD lpcbNeeded);
+	W::HINSTANCE hPsapi = NULL;
+	MyEnumProcessModules enumProcessModules = NULL;
+	hPsapi = W::LoadLibraryW(L"psapi.dll");
+	enumProcessModules = (MyEnumProcessModules) W::GetProcAddress(hPsapi, "EnumProcessModules");
+	MYINFO("enumProcess address %08x ",enumProcessModules);
+	  if( enumProcessModules(W::GetCurrentProcess(), hMods, sizeof(hMods), &cbNeeded))
+    {
+        for (int  i = 0; i < (cbNeeded / sizeof(W::HMODULE)); i++ )
+        {
+            W::TCHAR szModName[MAX_PATH];
+
+            // Get the full path to the module's file.
+             MYINFO("\tFound dll at (0x%08X)\n", hMods[i] );
+            
+        }
+    }
+}
 
 
 ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
@@ -245,6 +268,7 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 		//********************** POC **********************
 		//printProcessHeap();
 		//p->printHeapList();
+		getCurrentDlls();
 		curFakeMemory = "TopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMoto";
 		
 		return NULL;

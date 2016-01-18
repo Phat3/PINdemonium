@@ -3,6 +3,7 @@
 #include <map>
 #include "pin.H"
 #include "ProcInfo.h"
+#include "FakeMemoryHandler.h"
 
 
 
@@ -15,7 +16,8 @@
 #define RTLREALLOCATEHEAP_INDEX 6
 #define MAPVIEWOFFILE_INDEX 7
 #define VIRTUALFREE_INDEX 8
-
+#define VIRTUALQUERY_INDEX 9
+#define VIRTUALPROTECT_INDEX 10
 
 class HookFunctions
 {

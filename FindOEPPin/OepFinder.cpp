@@ -119,7 +119,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 
 	//W xor X broken
 	if(writeItemIndex != -1 ){
-
+		
 		//	proc_info->printHeapList();
 		//	wxorxHandler->displayWriteSet();
 		//W::DebugBreak();
