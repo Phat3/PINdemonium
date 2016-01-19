@@ -250,8 +250,19 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 
 		    //MYINFO("Module found at %08x - %08x\n" , mi.lpBaseOfDll , end_addr);
 			ProcInfo *p = ProcInfo::getInstance();
-			
-			p->addLibrary("prova",(UINT32)mi.lpBaseOfDll,end_addr);
+			BOOL isMain = FALSE;
+
+			PIN_LockClient();
+			IMG img = IMG_FindByAddress((UINT32)mi.lpBaseOfDll);
+			PIN_UnlockClient();
+
+			if(IMG_Valid(img)){
+			isMain = IMG_IsMainExecutable(img);
+			}
+
+			if(!isMain){
+				p->addLibrary("prova",(UINT32)mi.lpBaseOfDll,end_addr);
+			}
 
 			if(address_to_check >= (UINT32)mi.lpBaseOfDll && address_to_check <= end_addr){
 				isDll = true;

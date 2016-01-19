@@ -88,10 +88,12 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	clock_t now = clock();
 
 	//check the timeout
+	/*
 	if(proc_info->getStartTimer() != -1  && ((double)( now - proc_info->getStartTimer() )/CLOCKS_PER_SEC) > Config::TIMEOUT_TIMER_SECONDS  ){
 		MYINFO("TIMER SCADUTO");
 		exit(0);
 	}
+	*/
 	
 	UINT32 writeItemIndex=-1;
 	ADDRINT curEip = INS_Address(ins);
