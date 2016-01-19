@@ -256,6 +256,7 @@
   <ItemGroup>
     <ClCompile Include="EvasionPatches.cpp" />
     <ClCompile Include="FakeMemoryHandler.cpp" />
+    <ClCompile Include="FakeWriteHandler.cpp" />
     <ClCompile Include="GdbDebugger.cpp" />
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="HookFunctions.cpp" />
@@ -282,6 +283,7 @@
     <ClInclude Include="Debug.h" />
     <ClInclude Include="EvasionPatches.h" />
     <ClInclude Include="FakeMemoryHandler.h" />
+    <ClInclude Include="FakeWriteHandler.h" />
     <ClInclude Include="GdbDebugger.h" />
     <ClInclude Include="HookFunctions.h" />
     <ClInclude Include="HookSyscalls.h" />

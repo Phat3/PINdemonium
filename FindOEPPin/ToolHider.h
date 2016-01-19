@@ -6,6 +6,7 @@
 #include "FilterHandler.h"
 #include "EvasionPatches.h"
 #include "FakeMemoryHandler.h"
+#include "FakeWriteHandler.h"
 namespace W {
 #include <Windows.h>
 }
@@ -22,6 +23,7 @@ public:
 private:
 	EvasionPatches evasionPatcher;
 	FakeMemoryHandler fakeMemH;
+	FakeWriteHandler fakeWriteH;
 	BOOL firstRead;
 	void ScanForMappedFiles();
 	

@@ -552,7 +552,7 @@ VOID ProcInfo::setCurrentMappedFiles(){
 			range.StartAddress = (ADDRINT)mbi.BaseAddress;
 			range.EndAddress = (ADDRINT)mbi.BaseAddress+mbi.RegionSize;
 			mappedFiles.push_back(range);
-			MYINFO("Init Mapped File base address %08x -> %08x",range.StartAddress ,range.EndAddress);
+		//	MYINFO("Init Mapped File base address %08x -> %08x",range.StartAddress ,range.EndAddress);
 		}
 		MyAddress += mbi.RegionSize;
 	}
