@@ -1,7 +1,14 @@
 #include "FakeMemoryHandler.h"
 
 
+	typedef struct _MODULEINFO {
+    W::LPVOID lpBaseOfDll;
+    W::DWORD  SizeOfImage;
+    W::LPVOID EntryPoint;
+	} MODULEINFO, *LPMODULEINFO;
 
+	typedef W::DWORD (WINAPI *MyEnumProcessModules)(W::HANDLE hProcess, W::HMODULE *lphModule, W::DWORD cb, W::LPDWORD lpcbNeeded);
+	typedef W::DWORD (WINAPI *MyGetModuleInformation)(W::HANDLE hProcess, W::HMODULE HModule, LPMODULEINFO module_info, W::DWORD  cb);
 
 FakeMemoryHandler::FakeMemoryHandler(void)
 {
@@ -206,28 +213,62 @@ VOID printProcessHeap(){
     }
 	MYINFO("-------- END ----------");
 }
-void getCurrentDlls(){
-	MYINFO("Calling current dlls");
+
+
+BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
+	
+	//MYINFO("Calling current dlls");
+	
 	W::HMODULE hMods[1024];
     W::DWORD cbNeeded;
+	BOOL isDll = FALSE;
 
-	typedef W::DWORD (WINAPI *MyEnumProcessModules)(W::HANDLE hProcess, W::HMODULE *lphModule, W::DWORD cb, W::LPDWORD lpcbNeeded);
 	W::HINSTANCE hPsapi = NULL;
 	MyEnumProcessModules enumProcessModules = NULL;
-	hPsapi = W::LoadLibraryW(L"psapi.dll");
+	MyGetModuleInformation getModuleInformation = NULL;
+
+	
+	hPsapi = W::LoadLibraryA("psapi.dll");
+
+	
 	enumProcessModules = (MyEnumProcessModules) W::GetProcAddress(hPsapi, "EnumProcessModules");
-	MYINFO("enumProcess address %08x ",enumProcessModules);
-	  if( enumProcessModules(W::GetCurrentProcess(), hMods, sizeof(hMods), &cbNeeded))
+	getModuleInformation= (MyGetModuleInformation) W::GetProcAddress(hPsapi,"GetModuleInformation");
+
+	
+
+	//MYINFO("enumProcess address %08x ",enumProcessModules);
+	
+	W::HANDLE process = W::GetCurrentProcess(); 
+	MODULEINFO mi;
+	
+	
+	if( enumProcessModules(process, hMods, sizeof(hMods), &cbNeeded))
     {
         for (int  i = 0; i < (cbNeeded / sizeof(W::HMODULE)); i++ )
         {
-            W::TCHAR szModName[MAX_PATH];
+            getModuleInformation(process,hMods[i], &mi,sizeof(mi));
 
-            // Get the full path to the module's file.
-             MYINFO("\tFound dll at (0x%08X)\n", hMods[i] );
-            
+			UINT32 end_addr = (UINT32)mi.lpBaseOfDll + mi.SizeOfImage;
+
+		    //MYINFO("Module found at %08x - %08x\n" , mi.lpBaseOfDll , end_addr);
+			ProcInfo *p = ProcInfo::getInstance();
+			
+	
+
+			p->addLibrary("prova",(UINT32)mi.lpBaseOfDll,end_addr);
+
+
+			if(address_to_check >= (UINT32)mi.lpBaseOfDll && address_to_check <= end_addr){
+				isDll = true;
+			}
         }
     }
+	
+	
+	W::FreeLibrary(hPsapi);
+	
+	return TRUE;
+
 }
 
 
@@ -257,21 +298,30 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 		MYINFO("Detected suspicious read at %08x ",address);
 		ProcInfo *p = ProcInfo::getInstance();
 
+		
 		//********************** POC **********************
 		p->addProcessHeapsAddress();
+
 		//p->setCurrentMappedFiles();
+
+		/*
 		if(isAddrInWhiteList(address)){
 			//printProcessHeap();
 			//p->printHeapList();
 			return address;
 		}
+		*/
+
 		//********************** POC **********************
 		//printProcessHeap();
 		//p->printHeapList();
-		getCurrentDlls();
-		curFakeMemory = "TopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMoto";
-		
-		return NULL;
+		if(CheckInCurrentDlls(address)){
+			return address;
+		}
+		else{
+			curFakeMemory = "TopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMotoTopoMoto";
+			return NULL;
+		}
 	}
 	
 }

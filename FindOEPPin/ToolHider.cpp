@@ -51,14 +51,17 @@ void ToolHider::avoidEvasion(INS ins){
    ADDRINT curEip = INS_Address(ins);
    ProcInfo *pInfo = ProcInfo::getInstance();
 
-   //MYINFO("[DEBUG] EIP: %08x INS: %s\n", curEip , INS_Disassemble(ins).c_str());
 
 	//Filter instructions inside a known library (only graphic dll)
-	if(pInfo->isKnownLibraryInstruction(curEip)){
+    //  pInfo->isKnownLibraryInstruction(curEip) 
+   if(pInfo->isKnownLibraryInstruction(curEip)){
 		//MYINFO("That's a GDI\n\n");
 		//MYINFO("Name of RTN is %s\n" , RTN_FindNameByAddress(curEip).c_str());
 		return;
 	}
+
+	  //MYINFO("[DEBUG] RTN: %s EIP: %08x INS: %s\n", RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+
 
 	// 1 - single instruction detection
 	if(this->evasionPatcher.patchDispatcher(ins, curEip)){

@@ -141,6 +141,7 @@ public:
 	BOOL isKnownLibraryInstruction(ADDRINT address);
 	BOOL isInsideProtectedSection(ADDRINT address);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
+	BOOL isLibItemDuplicate(UINT32 address , std::vector<LibraryItem> Libraries);
 	VOID addProtectedSection(ADDRINT startAddr,ADDRINT endAddr);
 	VOID addRtn(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	//Generic Address (pContexData, SharedMemory..)

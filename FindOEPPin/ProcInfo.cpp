@@ -288,6 +288,17 @@ void ProcInfo::retrieveInterestingPidFromNames(){
 
 //--------------------------------------------------Library--------------------------------------------------------------
 
+
+BOOL ProcInfo::isLibItemDuplicate(UINT32 address , std::vector<LibraryItem> Libraries ){
+
+	for(std::vector<LibraryItem>::iterator lib =  Libraries.begin(); lib != Libraries.end(); ++lib) {
+		if ( address == lib->StartAddress ){
+		return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 /**
 add library in a list sorted by address
 **/
@@ -299,15 +310,28 @@ VOID ProcInfo::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
 	libItem.EndAddress = endAddr;
 	libItem.name = name;
 
+
+
 	if(isKnownLibrary(name,startAddr,endAddr)){
+		
+	    //if(!isLibItemDuplicate(startAddr , knownLibraries)){
+
 		knownLibraries.push_back(libItem);
-		MYINFO("Add to known Library %s",libToString(libItem));
+		//MYINFO("Add to known Library %s",libToString(libItem).c_str());
+
+		//}
+
 		return;
 	
 	}
 	else{
+
+		//if(!isLibItemDuplicate(startAddr , unknownLibraries)){
+
 		unknownLibraries.push_back(libItem);
-		MYINFO("Add to unknown Library %s",libToString(libItem));
+		//MYINFO("Add to unknown Library %s",libToString(libItem).c_str());
+
+		//}
 		return;
 	}
 
