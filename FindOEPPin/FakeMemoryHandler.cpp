@@ -234,8 +234,6 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 	enumProcessModules = (MyEnumProcessModules) W::GetProcAddress(hPsapi, "EnumProcessModules");
 	getModuleInformation= (MyGetModuleInformation) W::GetProcAddress(hPsapi,"GetModuleInformation");
 
-	
-
 	//MYINFO("enumProcess address %08x ",enumProcessModules);
 	
 	W::HANDLE process = W::GetCurrentProcess(); 
@@ -253,10 +251,7 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 		    //MYINFO("Module found at %08x - %08x\n" , mi.lpBaseOfDll , end_addr);
 			ProcInfo *p = ProcInfo::getInstance();
 			
-	
-
 			p->addLibrary("prova",(UINT32)mi.lpBaseOfDll,end_addr);
-
 
 			if(address_to_check >= (UINT32)mi.lpBaseOfDll && address_to_check <= end_addr){
 				isDll = true;
@@ -295,7 +290,8 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 	}
 	//Read address is outside of the Whitelist probably in the PIN address space (need to return some random garbage)
 	else{
-		MYINFO("Detected suspicious read at %08x ",address);
+		
+		//MYINFO("Detected suspicious read at %08x ",address);
 		ProcInfo *p = ProcInfo::getInstance();
 
 		
@@ -304,13 +300,12 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 
 		//p->setCurrentMappedFiles();
 
-		/*
 		if(isAddrInWhiteList(address)){
 			//printProcessHeap();
 			//p->printHeapList();
 			return address;
 		}
-		*/
+
 
 		//********************** POC **********************
 		//printProcessHeap();

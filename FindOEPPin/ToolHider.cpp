@@ -57,7 +57,7 @@ void ToolHider::avoidEvasion(INS ins){
    if(pInfo->isKnownLibraryInstruction(curEip)){
 		//MYINFO("That's a GDI\n\n");
 		//MYINFO("Name of RTN is %s\n" , RTN_FindNameByAddress(curEip).c_str());
-		return;
+		//return;
 	}
 
 	  //MYINFO("[DEBUG] RTN: %s EIP: %08x INS: %s\n", RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());

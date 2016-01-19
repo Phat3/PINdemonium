@@ -310,28 +310,26 @@ VOID ProcInfo::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
 	libItem.EndAddress = endAddr;
 	libItem.name = name;
 
-
-
 	if(isKnownLibrary(name,startAddr,endAddr)){
 		
-	    //if(!isLibItemDuplicate(startAddr , knownLibraries)){
+	    if(!isLibItemDuplicate(startAddr , knownLibraries)){
 
 		knownLibraries.push_back(libItem);
 		//MYINFO("Add to known Library %s",libToString(libItem).c_str());
 
-		//}
+		}
 
 		return;
 	
 	}
 	else{
 
-		//if(!isLibItemDuplicate(startAddr , unknownLibraries)){
+		if(!isLibItemDuplicate(startAddr , unknownLibraries)){
 
 		unknownLibraries.push_back(libItem);
 		//MYINFO("Add to unknown Library %s",libToString(libItem).c_str());
 
-		//}
+		}
 		return;
 	}
 
@@ -459,7 +457,7 @@ VOID ProcInfo::addPebAddress(){
 	MyZwQueryInformationProcess(W::GetCurrentProcess(),0,&tmppeb,sizeof(W::PROCESS_BASIC_INFORMATION),&tmp);
 	peb = (PEB *) tmppeb.PebBaseAddress;
 	
-	MYINFO("Init Peb base address %08x  -> %08x",(ADDRINT)peb, (ADDRINT)peb + sizeof(PEB));
+	//MYINFO("Init Peb base address %08x  -> %08x",(ADDRINT)peb, (ADDRINT)peb + sizeof(PEB));
 
 }
 
@@ -491,7 +489,7 @@ VOID ProcInfo::addThreadTebAddress(){
 	MemoryRange cur_teb;
 	cur_teb.StartAddress = (ADDRINT)tebAddr;
 	cur_teb.EndAddress = (ADDRINT)tebAddr +TEB_SIZE;
-	MYINFO("Init Teb base address %x   ->  %x",cur_teb.StartAddress,cur_teb.EndAddress);
+	//MYINFO("Init Teb base address %x   ->  %x",cur_teb.StartAddress,cur_teb.EndAddress);
 	tebs.push_back(cur_teb);
 
 }
@@ -688,7 +686,7 @@ VOID ProcInfo::addCodePageDataAddress(){
 VOID ProcInfo::addpShimDataAddress(){
 	MemoryRange pShimData;
 	if(getMemoryRange((ADDRINT) peb->pShimData,pShimData)){
-		MYINFO("Init pShimData base address  %08x -> %08x",pShimData.StartAddress,pShimData.EndAddress);
+		//MYINFO("Init pShimData base address  %08x -> %08x",pShimData.StartAddress,pShimData.EndAddress);
 		genericMemoryRanges.push_back(pShimData);
 	}
 }
@@ -697,7 +695,7 @@ VOID ProcInfo::addpShimDataAddress(){
 VOID ProcInfo::addpApiSetMapAddress(){
 	MemoryRange ApiSetMap;
 	if(getMemoryRange((ADDRINT) peb->ApiSetMap,ApiSetMap)){
-		MYINFO("Init ApiSetMap base address  %08x -> %08x",ApiSetMap.StartAddress,ApiSetMap.EndAddress);
+		//MYINFO("Init ApiSetMap base address  %08x -> %08x",ApiSetMap.StartAddress,ApiSetMap.EndAddress);
 		genericMemoryRanges.push_back(ApiSetMap);
 	}
 }
@@ -741,7 +739,7 @@ VOID ProcInfo::addProcessHeapsAddress(){
 	 for (int i = 0; i < NumberOfHeaps; ++i) {
 		MemoryRange processHeap;
 		if(getMemoryRange((ADDRINT) aHeaps[i],processHeap)){
-			MYINFO("Init processHeaps base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
+			//MYINFO("Init processHeaps base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
 			genericMemoryRanges.push_back(processHeap);
 		}
     }

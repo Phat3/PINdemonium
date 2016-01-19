@@ -111,7 +111,7 @@ VOID VirtualFreeHook(UINT32 address_to_free){
 	int index_to_remove = -1;
 
 	MYINFO("HeapZone before free");
-	pInfo->printHeapList();
+	//pInfo->printHeapList();
 
 	for(unsigned index=0; index <  HeapMap.size(); index++) {
 		if(address_to_free == pInfo->getHeapZoneByIndex(index)->begin){
@@ -124,7 +124,7 @@ VOID VirtualFreeHook(UINT32 address_to_free){
 	}
 
 	MYINFO("HeapZone after free");
-	pInfo->printHeapList();
+	//pInfo->printHeapList();
 
 }
 
