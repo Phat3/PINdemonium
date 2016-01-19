@@ -16,7 +16,7 @@ namespace W{
 #define SCYLLA_SUCCESS_FIX 0
 
 typedef UINT32 (* def_ScyllaDumpAndFix)(int pid, int oep, W::WCHAR * output_file,W::WCHAR * base_path, W::WCHAR * tmp_dump);
-typedef void (* def_ScyllaWrapAddSection)(const W::WCHAR * dump_path , const W::CHAR * sectionName, W::DWORD sectionSize, UINT32 offset , W::BYTE * sectionData);
+typedef UINT32 (* def_ScyllaWrapAddSection)(const W::WCHAR * dump_path , const W::CHAR * sectionName, W::DWORD sectionSize, UINT32 offset , W::BYTE * sectionData);
 
 
 

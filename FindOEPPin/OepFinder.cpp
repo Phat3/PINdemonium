@@ -276,12 +276,8 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s",pid, Config::getInstance()->getCurrentDumpFilePath().c_str());
 
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();
-
 	sc->loadScyllaLibary();
-
 	UINT32 result = sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)outputFile_w.c_str(),(W::WCHAR *)base_path_w.c_str(), (W::WCHAR *)tmpDump_w.c_str());
-	//Check if Scylla ha Succeded
-	
 	sc->unloadScyllaLibrary();
 
 	
@@ -291,8 +287,6 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	};
 	
 	MYINFO("Scylla execution Success");
-
-	
 
 	return 1;
 }
