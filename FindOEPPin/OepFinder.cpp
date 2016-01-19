@@ -220,7 +220,8 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
 
 	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
-
+	
+	//DA RIGUARDARE!!
 	if( item.getHeapFlag() && (error != -1) ){
 
 		   //MYINFO("DUMPING HEAP: %08x" , hz->begin);
@@ -244,9 +245,10 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 
 		   // calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone ) 
 		   UINT32 offset = curEip - item.getAddrBegin();
-
+		   //REMEMEBER TO LOAD AND UNLOAD SCYLLAWRAPPER!
+		   scylla_wrapper->loadScyllaLibary();
 		   scylla_wrapper->ScyllaWrapAddSection(widecstr, ".heap" ,size_write_set , offset , Buffer);
-
+		   scylla_wrapper->unloadScyllaLibrary();
 		   free(Buffer);
 
 		   MYINFO("DUMPED HEAP OK\n");
@@ -274,12 +276,8 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s",pid, Config::getInstance()->getCurrentDumpFilePath().c_str());
 
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();
-
 	sc->loadScyllaLibary();
-
 	UINT32 result = sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)outputFile_w.c_str(),(W::WCHAR *)base_path_w.c_str(), (W::WCHAR *)tmpDump_w.c_str());
-	//Check if Scylla ha Succeded
-	
 	sc->unloadScyllaLibrary();
 
 	
@@ -289,8 +287,6 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	};
 	
 	MYINFO("Scylla execution Success");
-
-	
 
 	return 1;
 }

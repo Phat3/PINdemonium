@@ -3,6 +3,10 @@
 #include "pin.H"
 #include "ProcInfo.h"
 
+#define TICK_MULTIPLIER_OFFSET 0x4
+#define LOW_PART_KSYSTEM_OFFSET 0x8
+#define HIGH_1_KSYSTEM_OFFSET 0xc
+#define HIGH_2_KSYSTEM_OFFSET 0x10
 
 //string containing the current faked memory NB need to static because it need to survive and been accessible in the HandleRead callback inside ToolHider
 static string curFakeMemory;

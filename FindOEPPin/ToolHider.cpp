@@ -116,6 +116,7 @@ void ToolHider::avoidEvasion(INS ins){
 		}
     }
 
+
 	//3. memory write filter
 	
 	for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
@@ -135,6 +136,5 @@ void ToolHider::avoidEvasion(INS ins){
 		}
 		
 	}
-	
 	
 }
