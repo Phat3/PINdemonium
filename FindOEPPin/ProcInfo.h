@@ -143,7 +143,6 @@ public:
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	BOOL isLibItemDuplicate(UINT32 address , std::vector<LibraryItem> Libraries);
 	VOID addProtectedSection(ADDRINT startAddr,ADDRINT endAddr);
-	VOID addRtn(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	//Generic Address (pContexData, SharedMemory..)
 	BOOL isGenericMemoryAddress(ADDRINT address);
 	//Whitelist Memory
@@ -187,7 +186,6 @@ private:
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
 	std::vector<LibraryItem> knownLibraries;			//vector of know library loaded
 	std::vector<LibraryItem> unknownLibraries;			//vector of unknow library loaded	
-	std::vector<LibraryItem> rtn_not_filtered;			//vector of routine not filtered ( as for example GetTickCount )
 	std::vector<Section> protected_section;			//vector of protected section ( for example the .text of ntdll is protected ( write on these memory range are redirected to other heap's zone ) )
 
 	float InitialEntropy;

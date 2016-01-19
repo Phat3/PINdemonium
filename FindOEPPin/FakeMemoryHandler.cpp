@@ -41,7 +41,7 @@ ADDRINT FakeMemoryHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr
 	int tick_multiplier;
 	ostringstream convert; 
 
-	ADDRINT kuser = 0x7ffe0004;
+	ADDRINT kuser = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET;
 	memcpy(&tick_multiplier,(const void *)kuser,sizeof(int));
 
 	MYINFO("Tick multiplier is %08x\n",tick_multiplier);
@@ -64,7 +64,7 @@ ADDRINT FakeMemoryHandler::KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 
 	ostringstream convert;
 
-	if(curReadAddr == 0x7ffe0008){
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET){
 	
 		W::ULONG32 LowPart;
 		memcpy(&LowPart,(const void*)curReadAddr,sizeof(W::DWORD));
@@ -84,7 +84,7 @@ ADDRINT FakeMemoryHandler::KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 	}
 
 	
-	if(curReadAddr == 0x7ffe000c){
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_1_KSYSTEM_OFFSET){
 	
 		W::LONG32 High1Time;
 		memcpy(&High1Time,(const void*)curReadAddr,sizeof(W::DWORD));
@@ -104,7 +104,7 @@ ADDRINT FakeMemoryHandler::KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 	}
 
 	
-	if(curReadAddr == 0x7ffe0010){
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_2_KSYSTEM_OFFSET){
 	
 		W::LONG32 High2Time;
 		memcpy(&High2Time,(const void*)curReadAddr,sizeof(W::DWORD));
@@ -145,15 +145,15 @@ VOID FakeMemoryHandler::initFakeMemory(){
 	//add other FakeMemoryItem to the fakeMemory array for handling other cases
 
 	FakeMemoryItem fakeMem2;
-	fakeMem2.StartAddress = 0x7ffe0004;
-	fakeMem2.EndAddress = 0x7ffe0007;
-	fakeMem2.func = &FakeMemoryHandler::TickMultiplierPatch;
+	fakeMem2.StartAddress = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET;  
+	fakeMem2.EndAddress = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET + LOW_PART_KSYSTEM_OFFSET - 1; // the end of the TickMultiplier field 
+	fakeMem2.func = &FakeMemoryHandler::TickMultiplierPatch; 
 	fakeMemory.push_back(fakeMem2);
 
 
 	FakeMemoryItem fakeMem3;
-	fakeMem3.StartAddress = 0x7ffe0008;
-	fakeMem3.EndAddress = 0x7ffe0010;
+	fakeMem3.StartAddress = KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET;
+	fakeMem3.EndAddress = KUSER_SHARED_DATA_ADDRESS + HIGH_2_KSYSTEM_OFFSET;
 	fakeMem3.func = &FakeMemoryHandler::KSystemTimePatch;
 	fakeMemory.push_back(fakeMem3);
 }
@@ -261,7 +261,7 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 			}
 
 			if(!isMain){
-				p->addLibrary("prova",(UINT32)mi.lpBaseOfDll,end_addr);
+				p->addLibrary("NoNameForNow",(UINT32)mi.lpBaseOfDll,end_addr);
 			}
 
 			if(address_to_check >= (UINT32)mi.lpBaseOfDll && address_to_check <= end_addr){
