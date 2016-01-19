@@ -312,6 +312,7 @@ VOID ProcInfo::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
 
 	if(isKnownLibrary(name,startAddr,endAddr)){
 		
+		//check if the library is present yet in the list of knownLibraries
 	    if(!isLibItemDuplicate(startAddr , knownLibraries)){
 
 		knownLibraries.push_back(libItem);
@@ -324,6 +325,7 @@ VOID ProcInfo::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
 	}
 	else{
 
+		//check if the library is present yet in the list of unknownLibraries
 		if(!isLibItemDuplicate(startAddr , unknownLibraries)){
 
 		unknownLibraries.push_back(libItem);
@@ -335,15 +337,6 @@ VOID ProcInfo::addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){
 
 }
 
-VOID ProcInfo::addRtn(const string name,ADDRINT startAddr,ADDRINT endAddr){
-
-	LibraryItem rtn_item;
-	rtn_item.StartAddress = startAddr;
-	rtn_item.EndAddress = endAddr;
-	rtn_item.name = name;
-	rtn_not_filtered.push_back(rtn_item);
-
-}
 
 /**
 Convert a LibraryItem object to string
@@ -388,13 +381,6 @@ BOOL ProcInfo::isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAdd
 //TODO add a whiitelist of Windows libraries that will be loaded
 BOOL ProcInfo::isLibraryInstruction(ADDRINT address){
 	 
-	for(std::vector<LibraryItem>::iterator rtn = rtn_not_filtered.begin(); rtn != rtn_not_filtered.end(); ++rtn) {
-		if (rtn->StartAddress <= address && address <= rtn->EndAddress){
-			//MYINFO("Instruction at %x not filtered", address);
-			//MYINFO("RTN ALLOWED\n");
-			return FALSE;}
-	}
-
 	//check inside known libraries
 	for(std::vector<LibraryItem>::iterator lib = knownLibraries.begin(); lib != knownLibraries.end(); ++lib) {
 		if (lib->StartAddress <= address && address <= lib->EndAddress){

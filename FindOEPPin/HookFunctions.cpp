@@ -186,11 +186,11 @@ void HookFunctions::hookDispatcher(IMG img){
 					RTN_Replace(rtn, AFUNPTR(IsDebuggerPresentHook));
 					break;
 				case (GETTICKCOUNT):
-					pInfo->addRtn("GetTickCount",va_address,va_address+RTN_Size(rtn)); // add the GetTickCount in the list of not filtered rtn
+					//pInfo->addRtn("GetTickCount",va_address,va_address+RTN_Size(rtn)); // add the GetTickCount in the list of not filtered rtn
 					// the handling of the GetTickCount is done by changing the value of the TickMultiplier in the kuser_shared_data when the process tries to read it
 					break;
 				case(TIMEGETTIME):					
-					pInfo->addRtn("timeGetTime",va_address,end_address); // add the timeGetTime in the list of not filtered rtn
+					//pInfo->addRtn("timeGetTime",va_address,end_address); // add the timeGetTime in the list of not filtered rtn
 					MYINFO("timeGetTime from %08x to %08x\n" , va_address,end_address);
 					break;
 				case(RTLREALLOCATEHEAP_INDEX):
