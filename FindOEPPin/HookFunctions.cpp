@@ -9,11 +9,6 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );
 
-	//TIMING FUNCTIONS 
-	this->functionsMap.insert( std::pair<string,int>("GetTickCount",GETTICKCOUNT) );
-	this->functionsMap.insert( std::pair<string,int>("timeGetTime",TIMEGETTIME) );
-	// QueryPerformanceCounter is hooked at syscall level with the NtQueryPerformanceCounter
-
 	this->functionsMap.insert( std::pair<string,int>("RtlReAllocateHeap",RTLREALLOCATEHEAP_INDEX) );
 
 	//this->functionsMap.insert( std::pair<string,int>("MapViewOfFile",MAPVIEWOFFILE_INDEX) );   //hookata la syscall NtMapViewOfSection 
@@ -184,14 +179,6 @@ void HookFunctions::hookDispatcher(IMG img){
 					break;
 				case(ISDEBUGGERPRESENT_INDEX):
 					RTN_Replace(rtn, AFUNPTR(IsDebuggerPresentHook));
-					break;
-				case (GETTICKCOUNT):
-					//pInfo->addRtn("GetTickCount",va_address,va_address+RTN_Size(rtn)); // add the GetTickCount in the list of not filtered rtn
-					// the handling of the GetTickCount is done by changing the value of the TickMultiplier in the kuser_shared_data when the process tries to read it
-					break;
-				case(TIMEGETTIME):					
-					//pInfo->addRtn("timeGetTime",va_address,end_address); // add the timeGetTime in the list of not filtered rtn
-					MYINFO("timeGetTime from %08x to %08x\n" , va_address,end_address);
 					break;
 				case(RTLREALLOCATEHEAP_INDEX):
 					//IPOINT_BEFORE because the address to be realloc is passed as an input paramenter

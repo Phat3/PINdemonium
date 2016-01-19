@@ -60,7 +60,7 @@ void ToolHider::avoidEvasion(INS ins){
 		//return;
 	}
 
-	  //MYINFO("[DEBUG] RTN: %s EIP: %08x INS: %s\n", RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	//MYINFO("[DEBUG] RTN: %s EIP: %08x INS: %s\n", RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 
 
 	// 1 - single instruction detection
