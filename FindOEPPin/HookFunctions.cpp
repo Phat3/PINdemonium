@@ -16,6 +16,8 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualQuery",VIRTUALQUERY_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualProtect",VIRTUALPROTECT_INDEX) );
 
+
+
 }
 
 

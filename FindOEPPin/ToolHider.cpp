@@ -96,5 +96,4 @@ void ToolHider::avoidEvasion(INS ins){
 			INS_RewriteMemoryOperand(ins, op, scratchReg); 
 		}
     }
-	
 }
