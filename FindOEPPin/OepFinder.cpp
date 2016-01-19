@@ -220,7 +220,8 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
 
 	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
-
+	
+	//DA RIGUARDARE!!
 	if( item.getHeapFlag() && (error != -1) ){
 
 		   //MYINFO("DUMPING HEAP: %08x" , hz->begin);
@@ -244,9 +245,10 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 
 		   // calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone ) 
 		   UINT32 offset = curEip - item.getAddrBegin();
-
+		   //REMEMEBER TO LOAD AND UNLOAD SCYLLAWRAPPER!
+		   scylla_wrapper->loadScyllaLibary();
 		   scylla_wrapper->ScyllaWrapAddSection(widecstr, ".heap" ,size_write_set , offset , Buffer);
-
+		   scylla_wrapper->unloadScyllaLibrary();
 		   free(Buffer);
 
 		   MYINFO("DUMPED HEAP OK\n");
