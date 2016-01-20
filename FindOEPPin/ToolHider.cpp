@@ -117,21 +117,7 @@ void ToolHider::avoidEvasion(INS ins){
     }
 
 
-	//3. memory write filter
-	
-	/*
-	if(INS_IsMemoryWrite(ins)){
-	
-		INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(handleWrite),
-			IARG_INST_PTR,
-			IARG_MEMORYWRITE_EA, 
-			IARG_PTR, &fakeWriteH,
-			IARG_END);
-	
-	}
-	*/
-
-	
+	//3. memory write filter	
 	for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
 		if(INS_MemoryOperandIsWritten(ins,op)){
 			//MYINFO("Cur instruction %s ",INS_Disassemble(ins).c_str());
