@@ -755,7 +755,7 @@ VOID ProcInfo::addProtectedSection(ADDRINT startAddr,ADDRINT endAddr){
 */
 BOOL ProcInfo::isInsideProtectedSection(ADDRINT address){
 
-	MYINFO("Protected section size is %d\n" , this->protected_section.size());
+	//MYINFO("INSIDE PROTECTED SECTION Protected section size is %d\n" , this->protected_section.size());
 
 	for(std::vector<Section>::iterator it = protected_section.begin(); it != protected_section.end(); ++it){
 		if(it->begin <= address && address <= it->end){
