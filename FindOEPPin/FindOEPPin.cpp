@@ -164,7 +164,20 @@ EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInf
 {
     MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     MYINFO("%s",PIN_ExceptionToString(pExceptInfo).c_str());
-	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	if(PIN_GetExceptionCode(pExceptInfo) == EXCEPTCODE_RECEIVED_ACCESS_FAULT){
+
+		ADDRINT addr = 0x0;
+		PIN_GetFaultyAccessAddress(pExceptInfo,&addr);
+
+		MYINFO("FAULTY ADDRESS %08x", addr);
+		
+		if(addr){
+			W::VirtualAlloc((W::LPVOID)addr, 0x4, MEM_COMMIT, PAGE_READWRITE);
+			memset((W::LPVOID)addr, 0x90, 0x4);
+			return EHR_HANDLED;
+		}
+
+	}
     return EHR_UNHANDLED ;
 }
 
@@ -207,7 +220,7 @@ int main(int argc, char * argv[]){
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
 
-	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
+	//PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
 
 	// Start the program, never returns
 	PIN_StartProgram();
