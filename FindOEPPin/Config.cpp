@@ -23,7 +23,7 @@ const string Config::DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "du
 const bool  Config::INTER_WRITESET_ANALYSIS_ENABLE = true;
 const bool  Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
-const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 10;
+const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 5;
 const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
 
 // Divisor of the timing 
@@ -124,7 +124,7 @@ FILE* Config::getLogFile()
 //write the JSON resulted by the analysis for this write set
 void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 {
-	if(this->working == 0)
+	if(this->working == 1)
 		fprintf(this->report_file,"{\"dump number\" : \"%d\", \"runnable?\" : \"PROBABLY YES\", \"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_outer_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n", (int)this->getDumpNumber(), ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
 	else
 		fprintf(this->report_file,"{\"dump number\" : \"%d\", \"runnable?\" : \"NO\", \"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_outer_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n", (int)this->getDumpNumber(), ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);

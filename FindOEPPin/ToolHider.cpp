@@ -3,6 +3,9 @@
 ToolHider::ToolHider(void)
 {
 
+	this->filtered_library_name.push_back("GDI");
+
+
 }
 
 
@@ -65,6 +68,16 @@ static REG GetScratchReg(UINT32 index)
     return regs[index];
 }
 
+BOOL IsInFilteredArray(std::string img_name){
+
+	return FALSE;
+}
+
+BOOL ToolHider::isFilteredLibraryInstruction(ADDRINT eip){
+
+	return FALSE;
+}
+
 void ToolHider::avoidEvasion(INS ins){
 
    ADDRINT curEip = INS_Address(ins);
@@ -73,7 +86,7 @@ void ToolHider::avoidEvasion(INS ins){
 
 	//Filter instructions inside a known library (only graphic dll)
     //  pInfo->isKnownLibraryInstruction(curEip) 
-   if(pInfo->isKnownLibraryInstruction(curEip)){
+   if(this->isFilteredLibraryInstruction(curEip)){
 		//MYINFO("That's a GDI\n\n");
 		//MYINFO("Name of RTN is %s\n" , RTN_FindNameByAddress(curEip).c_str());
 		//return;

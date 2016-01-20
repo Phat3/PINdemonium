@@ -187,6 +187,8 @@ private:
 	std::vector<LibraryItem> knownLibraries;			//vector of know library loaded
 	std::vector<LibraryItem> unknownLibraries;			//vector of unknow library loaded	
 	std::vector<Section> protected_section;			//vector of protected section ( for example the .text of ntdll is protected ( write on these memory range are redirected to other heap's zone ) )
+	
+
 
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad

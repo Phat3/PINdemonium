@@ -1,14 +1,16 @@
 #include "FakeMemoryHandler.h"
 
 
-	typedef struct _MODULEINFO {
+typedef struct _MODULEINFO {
     W::LPVOID lpBaseOfDll;
     W::DWORD  SizeOfImage;
     W::LPVOID EntryPoint;
 	} MODULEINFO, *LPMODULEINFO;
 
-	typedef W::DWORD (WINAPI *MyEnumProcessModules)(W::HANDLE hProcess, W::HMODULE *lphModule, W::DWORD cb, W::LPDWORD lpcbNeeded);
-	typedef W::DWORD (WINAPI *MyGetModuleInformation)(W::HANDLE hProcess, W::HMODULE HModule, LPMODULEINFO module_info, W::DWORD  cb);
+typedef W::DWORD (WINAPI *MyEnumProcessModules)(W::HANDLE hProcess, W::HMODULE *lphModule, W::DWORD cb, W::LPDWORD lpcbNeeded);
+typedef W::DWORD (WINAPI *MyGetModuleInformation)(W::HANDLE hProcess, W::HMODULE HModule, LPMODULEINFO module_info, W::DWORD  cb);
+typedef W::DWORD (WINAPI *MyGetModuleNameW)(W::HMODULE HModule, W::LPWSTR module_name, W::DWORD  size);
+
 
 FakeMemoryHandler::FakeMemoryHandler(void)
 {
@@ -226,13 +228,14 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 	W::HINSTANCE hPsapi = NULL;
 	MyEnumProcessModules enumProcessModules = NULL;
 	MyGetModuleInformation getModuleInformation = NULL;
-
+	MyGetModuleNameW getModuleNameW = NULL;
 	
 	hPsapi = W::LoadLibraryA("psapi.dll");
 
-	
+
 	enumProcessModules = (MyEnumProcessModules) W::GetProcAddress(hPsapi, "EnumProcessModules");
 	getModuleInformation= (MyGetModuleInformation) W::GetProcAddress(hPsapi,"GetModuleInformation");
+	getModuleNameW = (MyGetModuleNameW) W::GetProcAddress(hPsapi,"GetModuleFileNameW");
 
 	//MYINFO("enumProcess address %08x ",enumProcessModules);
 	
@@ -261,7 +264,14 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 			}
 
 			if(!isMain){
-				p->addLibrary("NoNameForNow",(UINT32)mi.lpBaseOfDll,end_addr);
+
+				W::WCHAR cwBuffer[2048] = { 0 };
+				W::LPWSTR pszBuffer = cwBuffer;
+				getModuleNameW(hMods[i],pszBuffer,sizeof(cwBuffer));
+
+				// CONVERT HERE THE LPWSTR AND PASS IT TO ADDLIBRARY 
+				p->addLibrary(module_name,(UINT32)mi.lpBaseOfDll,end_addr);
+				//MYINFO("I've added %s to the list of know libary\n" , module_name);
 			}
 
 			if(address_to_check >= (UINT32)mi.lpBaseOfDll && address_to_check <= end_addr){
@@ -307,7 +317,13 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 
 		
 		//********************** POC **********************
-		p->addProcessHeapsAddress();
+		// DA TESTARE ANCORA SE E' POSSIBILE RIMUOVERE QUESTE 2 COSE DA QUA
+		// SE NON E' POSSIBILE ALLORA FARE IN MODO DI CHECKARE SE address E'  
+		// ALL'INTERNO DEGLI INDIRIZZI NUOVI AGGIUNTI IN addProcessHeapsAddress
+		// COSI' RISPARMIAMO TEMPO AL POSTO CHE CHECKARE L'INTERA WHITELIST
+
+		/*
+		p->addProcessHeapsAddress();  // here the whitelist is updated 
 
 		//p->setCurrentMappedFiles();
 
@@ -316,6 +332,7 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 			//p->printHeapList();
 			return address;
 		}
+		*/
 
 
 		//********************** POC **********************

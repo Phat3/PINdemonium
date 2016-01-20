@@ -26,6 +26,9 @@ private:
 	FakeWriteHandler fakeWriteH;
 	BOOL firstRead;
 	void ScanForMappedFiles();
+	std::vector<LibraryItem> filtered_libray;
+	std::vector<std::string> filtered_library_name;
+	BOOL isFilteredLibraryInstruction(ADDRINT eip);
 	
 };
 
