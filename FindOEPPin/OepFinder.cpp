@@ -278,6 +278,7 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();
 	sc->loadScyllaLibary();
 	UINT32 result = sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)outputFile_w.c_str(),(W::WCHAR *)base_path_w.c_str(), (W::WCHAR *)tmpDump_w.c_str());
+	//UINT32 result = 1;
 	sc->unloadScyllaLibrary();
 
 	

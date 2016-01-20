@@ -160,6 +160,13 @@ void initDebug(){
 	PIN_SetDebugMode(&mode);
 }
 
+EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInfo, PHYSICAL_CONTEXT *pPhysCtxt, VOID *v)
+{
+    MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    MYINFO("%s",PIN_ExceptionToString(pExceptInfo).c_str());
+	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    return EHR_UNHANDLED ;
+}
 
 
 /* ===================================================================== */
@@ -199,6 +206,8 @@ int main(int argc, char * argv[]){
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
+
+	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
 
 	// Start the program, never returns
 	PIN_StartProgram();
