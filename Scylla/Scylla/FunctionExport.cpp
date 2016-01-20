@@ -504,33 +504,36 @@ int WINAPI ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, 
 	
 	PeParser * peFile = 0;
 
-	/* open the dumped file */
+	// open the dumped file 
 	if (dump_path)
 	{
 		peFile = new PeParser(dump_path, TRUE);
 	}
 
-	/* read the data inside all the section from the PE in order to left unchanged the dumped PE */
+	// read the data inside all the section from the PE in order to left unchanged the dumped PE 
 	peFile->readPeSectionsFromFile();
 
-	/* add a new last section */
+	// add a new last section
 	bool res = peFile->addNewLastSection(sectionName, sectionSize, sectionData);
 
-	/* fix the PE file */
+	// fix the PE file 
 	peFile->alignAllSectionHeaders();
 	peFile->setDefaultFileAlignment();
 	peFile->fixPeHeader();
 	
-	/* get the last inserted section in order to retreive the VA */
+	// get the last inserted section in order to retreive the VA 
 	PeFileSection last_section = peFile->getSectionHeaderList().back();
 	IMAGE_SECTION_HEADER last_section_header = last_section.sectionHeader;
 	UINT32 last_section_header_va = last_section_header.VirtualAddress;
 
-	/* set the entry point of the dumped program to the .heap section */
+	// set the entry point of the dumped program to the .heap section 
 	peFile->setEntryPointVa(last_section_header_va + offset );
 	
-	/* save the pe */
-	return peFile->savePeFileToDisk(dump_path);
+	// save the pe
 
+	return peFile->savePeFileToDisk(dump_path);
+	
+	//return 1;
+	
 }
 

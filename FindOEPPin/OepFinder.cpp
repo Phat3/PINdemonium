@@ -249,7 +249,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		   scylla_wrapper->loadScyllaLibary();
 		   scylla_wrapper->ScyllaWrapAddSection(widecstr, ".heap" ,size_write_set , offset , Buffer);
 		   scylla_wrapper->unloadScyllaLibrary();
-		   free(Buffer);
+		   //free(Buffer);
 
 		   MYINFO("DUMPED HEAP OK\n");
 	}

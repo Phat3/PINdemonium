@@ -21,6 +21,8 @@ void Log::initLogPath(WCHAR * cur_path){
 	swprintf(buffer,MAX_PATH, L"%s%s", cur_path ,Log::LOG_FILENAME);
 
 	this->log_file = _wfopen(buffer,L"a");
+	
+	//this->log_file = fopen("C:\\pin\\log_prova_c.log","w");
 }
 
 //singleton
