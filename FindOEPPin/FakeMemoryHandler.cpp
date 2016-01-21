@@ -319,27 +319,22 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 		//MYINFO("Detected suspicious read at %08x ",address);
 		ProcInfo *p = ProcInfo::getInstance();
 
-		
-		//********************** POC **********************
-		// DA TESTARE ANCORA SE E' POSSIBILE RIMUOVERE QUESTE 2 COSE DA QUA
-		// SE NON E' POSSIBILE ALLORA FARE IN MODO DI CHECKARE SE address E'  
-		// ALL'INTERNO DEGLI INDIRIZZI NUOVI AGGIUNTI IN addProcessHeapsAddress
-		// COSI' RISPARMIAMO TEMPO AL POSTO CHE CHECKARE L'INTERA WHITELIST
+		// here the whitelist is updated and we check also if the address is inside the new discovere heaps
+		if(p->addProcessHeapsAndCheckAddress(address)){
 
-		
-		p->addProcessHeapsAddress();  // here the whitelist is updated 
+			MYINFO("@@@@@@Calling addProcessHeapAndCheckAddress\n");
+			return address;
+		}	  
 
 		//p->setCurrentMappedFiles();
-
+		/*
 		if(isAddrInWhiteList(address)){
 			//printProcessHeap();
 			//p->printHeapList();
 			return address;
 		}
-		
+		*/
 
-
-		//********************** POC **********************
 		//printProcessHeap();
 		//p->printHeapList();
 		if(CheckInCurrentDlls(address)){

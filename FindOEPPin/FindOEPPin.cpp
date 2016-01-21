@@ -33,9 +33,14 @@ VOID Fini(INT32 code, VOID *v){
 	MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
 	//DEBUG --- get the execution time
 	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+
+	//ProcInfo *proc_info = ProcInfo::getInstance();
+	//proc_info->PrintWhiteListedAddr();
+
 	CLOSELOG();
 	Config::getInstance()->closeReportFile();
 
+	
 }
 
 
