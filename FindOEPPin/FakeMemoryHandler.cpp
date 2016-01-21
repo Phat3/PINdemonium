@@ -9,7 +9,6 @@ typedef struct _MODULEINFO {
 
 typedef W::DWORD (WINAPI *MyEnumProcessModules)(W::HANDLE hProcess, W::HMODULE *lphModule, W::DWORD cb, W::LPDWORD lpcbNeeded);
 typedef W::DWORD (WINAPI *MyGetModuleInformation)(W::HANDLE hProcess, W::HMODULE HModule, LPMODULEINFO module_info, W::DWORD  cb);
-typedef W::DWORD (WINAPI *MyGetModuleFileNameExA)(W::HANDLE hProcess, W::HMODULE HModule, W::LPTSTR module_info, W::DWORD  size);
 
 
 FakeMemoryHandler::FakeMemoryHandler(void)
@@ -232,7 +231,7 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 	W::HINSTANCE hPsapi = NULL;
 	MyEnumProcessModules enumProcessModules = NULL;
 	MyGetModuleInformation getModuleInformation = NULL;
-	MyGetModuleFileNameExA getModuleFileNameExA = NULL;
+
 
 	hPsapi = W::LoadLibraryA("psapi.dll");
 	W::HANDLE process = W::GetCurrentProcess(); 
@@ -241,9 +240,7 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 
 	enumProcessModules = (MyEnumProcessModules) W::GetProcAddress(hPsapi, "EnumProcessModules");
 	getModuleInformation= (MyGetModuleInformation) W::GetProcAddress(hPsapi,"GetModuleInformation");
-	getModuleFileNameExA = (MyGetModuleFileNameExA) W::GetProcAddress(hPsapi,"GetModuleFileNameExA");
 
-	MYINFO("getModuleFileNameExA address %08x ",getModuleFileNameExA);
 
 	if( enumProcessModules(process, hMods, sizeof(hMods), &cbNeeded))
     {
@@ -251,7 +248,7 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
         {
 
             getModuleInformation(process,hMods[i], &mi,sizeof(mi));
-		    //getModuleFileNameExA(process,hMods[i], pBuffer,sizeof(Buffer));
+		    GetModuleFileNameA(hMods[i], pBuffer,sizeof(Buffer));
 
 			UINT32 end_addr = (UINT32)mi.lpBaseOfDll + mi.SizeOfImage;
 
