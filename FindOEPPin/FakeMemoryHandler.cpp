@@ -9,7 +9,7 @@ typedef struct _MODULEINFO {
 
 typedef W::DWORD (WINAPI *MyEnumProcessModules)(W::HANDLE hProcess, W::HMODULE *lphModule, W::DWORD cb, W::LPDWORD lpcbNeeded);
 typedef W::DWORD (WINAPI *MyGetModuleInformation)(W::HANDLE hProcess, W::HMODULE HModule, LPMODULEINFO module_info, W::DWORD  cb);
-typedef W::DWORD (WINAPI *MyGetModuleNameW)(W::HMODULE HModule, W::LPWSTR module_name, W::DWORD  size);
+typedef W::DWORD (WINAPI *MyGetModuleFileNameExA)(W::HANDLE hProcess, W::HMODULE HModule, W::LPTSTR module_info, W::DWORD  size);
 
 
 FakeMemoryHandler::FakeMemoryHandler(void)
@@ -222,32 +222,36 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 	//MYINFO("Calling current dlls");
 	
 	W::HMODULE hMods[1024];
+	char Buffer[2048];
+
+	W::LPTSTR pBuffer = Buffer;
+
     W::DWORD cbNeeded;
 	BOOL isDll = FALSE;
 
 	W::HINSTANCE hPsapi = NULL;
 	MyEnumProcessModules enumProcessModules = NULL;
 	MyGetModuleInformation getModuleInformation = NULL;
-	MyGetModuleNameW getModuleNameW = NULL;
-	
-	hPsapi = W::LoadLibraryA("psapi.dll");
+	MyGetModuleFileNameExA getModuleFileNameExA = NULL;
 
+	hPsapi = W::LoadLibraryA("psapi.dll");
+	W::HANDLE process = W::GetCurrentProcess(); 
+
+	MODULEINFO mi;
 
 	enumProcessModules = (MyEnumProcessModules) W::GetProcAddress(hPsapi, "EnumProcessModules");
 	getModuleInformation= (MyGetModuleInformation) W::GetProcAddress(hPsapi,"GetModuleInformation");
-	getModuleNameW = (MyGetModuleNameW) W::GetProcAddress(hPsapi,"GetModuleFileNameW");
+	getModuleFileNameExA = (MyGetModuleFileNameExA) W::GetProcAddress(hPsapi,"GetModuleFileNameExA");
 
-	//MYINFO("enumProcess address %08x ",enumProcessModules);
-	
-	W::HANDLE process = W::GetCurrentProcess(); 
-	MODULEINFO mi;
-	
-	
+	MYINFO("getModuleFileNameExA address %08x ",getModuleFileNameExA);
+
 	if( enumProcessModules(process, hMods, sizeof(hMods), &cbNeeded))
     {
         for (int  i = 0; i < (cbNeeded / sizeof(W::HMODULE)); i++ )
         {
+
             getModuleInformation(process,hMods[i], &mi,sizeof(mi));
+		    //getModuleFileNameExA(process,hMods[i], pBuffer,sizeof(Buffer));
 
 			UINT32 end_addr = (UINT32)mi.lpBaseOfDll + mi.SizeOfImage;
 
@@ -265,13 +269,11 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 
 			if(!isMain){
 
-				W::WCHAR cwBuffer[2048] = { 0 };
-				W::LPWSTR pszBuffer = cwBuffer;
-				getModuleNameW(hMods[i],pszBuffer,sizeof(cwBuffer));
+				//std::string module_name = std::string(module_name);
 
-				// CONVERT HERE THE LPWSTR AND PASS IT TO ADDLIBRARY 
-				p->addLibrary(module_name,(UINT32)mi.lpBaseOfDll,end_addr);
-				//MYINFO("I've added %s to the list of know libary\n" , module_name);
+				p->addLibrary("prova",(UINT32)mi.lpBaseOfDll,end_addr);
+				//MYINFO("I've added %s to the list of know libary\n" , module_name.c_str());
+		
 			}
 
 			if(address_to_check >= (UINT32)mi.lpBaseOfDll && address_to_check <= end_addr){
