@@ -2,10 +2,7 @@
 
 ToolHider::ToolHider(void)
 {
-
-	this->filtered_library_name.push_back("GDI");
-
-
+	
 }
 
 
@@ -68,28 +65,20 @@ static REG GetScratchReg(UINT32 index)
     return regs[index];
 }
 
-BOOL IsInFilteredArray(std::string img_name){
-
-	return FALSE;
-}
-
-BOOL ToolHider::isFilteredLibraryInstruction(ADDRINT eip){
-
-	return FALSE;
-}
 
 void ToolHider::avoidEvasion(INS ins){
 
    ADDRINT curEip = INS_Address(ins);
    ProcInfo *pInfo = ProcInfo::getInstance();
-
+   FilterHandler *filterHandler = FilterHandler::getInstance();
 
 	//Filter instructions inside a known library (only graphic dll)
     //  pInfo->isKnownLibraryInstruction(curEip) 
-   if(this->isFilteredLibraryInstruction(curEip)){
+   if(filterHandler->isFilteredLibraryInstruction(curEip)){
 		//MYINFO("That's a GDI\n\n");
 		//MYINFO("Name of RTN is %s\n" , RTN_FindNameByAddress(curEip).c_str());
-		//return;
+	    MYINFO("Skipping filtered library code\n");
+		return;
 	}
 
 	//MYINFO("[DEBUG] RTN: %s EIP: %08x INS: %s\n", RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
@@ -129,7 +118,7 @@ void ToolHider::avoidEvasion(INS ins){
 		}
     }
 
-
+	/*
 	//3. memory write filter	
 	for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
 		if(INS_MemoryOperandIsWritten(ins,op)){
@@ -147,7 +136,7 @@ void ToolHider::avoidEvasion(INS ins){
 			
 		}
 		
-	}
+	}*/
 	
 	
 }

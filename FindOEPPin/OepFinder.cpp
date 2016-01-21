@@ -173,6 +173,8 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//update the previous IP
 	proc_info->setPrevIp(INS_Address(ins));
 
+
+
 	return OEPFINDER_NOT_WXORX_INST;
 }
 

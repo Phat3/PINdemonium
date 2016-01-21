@@ -7,14 +7,17 @@ FilterHandler* FilterHandler::getInstance()
 {
 	if (instance == 0){	
 		instance = new FilterHandler;
-
 	}
 	return instance;
 }
 
 FilterHandler::FilterHandler(){
+	
+	
 	pInfo = ProcInfo::getInstance();
-
+	filtered_library_name.push_back("GDI32.dll");
+	filtered_library_name.push_back("LPK.dll");
+	filtered_library_name.push_back("USP10.dll");
 
 	//Initializing the Filter map:   "stack" => adding FILTER_STACK to filterExecutionFlag
 	initFilterMap();
@@ -82,6 +85,44 @@ BOOL FilterHandler::isLibStackWrite(ADDRINT addr,ADDRINT eip){
 	return (pInfo->isStackAddress(addr) && 
 		pInfo->isLibraryInstruction(eip));
 }
+
+
+BOOL FilterHandler::IsNameInFilteredArray(std::string img_name){
+
+	for(std::vector<string>::iterator name = this->filtered_library_name.begin(); name != filtered_library_name.end(); ++name){
+		if(img_name.find(name->c_str()) != std::string::npos ){
+			this->filtered_library_name.erase(name); // WARNING-> SIDE EFFECT: remove the element from the name of the library filtered ( brute optimization: basically when we have registered the filtered library in the filtered_library vector we can avoid to re-check another time the name )
+			return TRUE;
+		} 
+	}
+
+	return FALSE;
+}
+
+BOOL FilterHandler::isFilteredLibraryInstruction(ADDRINT eip){
+
+	for(std::vector<LibraryItem>::iterator lib = this->filtered_libray.begin(); lib != this->filtered_libray.end(); ++lib){
+		if(eip >= lib->StartAddress && eip <= lib->EndAddress){
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+
+void FilterHandler::addToFilteredLibrary(std::string name , ADDRINT start_addr , ADDRINT end_addr){
+	
+	LibraryItem li;
+	li.StartAddress = start_addr;
+	li.EndAddress = end_addr;
+	li.name = name;
+	
+	this->filtered_libray.push_back(li);
+
+	MYINFO("filtered library size is %d\n" , this->filtered_libray.size());
+}
+
 
 
 

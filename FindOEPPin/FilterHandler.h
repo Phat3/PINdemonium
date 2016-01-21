@@ -9,10 +9,7 @@
 #include "Config.h"
 #include "ProcInfo.h"
 
-		
-
-
-
+	
 class FilterHandler
 {
 public:
@@ -25,6 +22,9 @@ public:
 	VOID setFilters(const string spaceSeparedFilters);
 	//utils
 	BOOL isFilteredWrite(ADDRINT addr, ADDRINT eip);
+	void addToFilteredLibrary(std::string img_name , ADDRINT start_addr , ADDRINT end_addr);
+	BOOL IsNameInFilteredArray(std::string img_name);
+	BOOL isFilteredLibraryInstruction(ADDRINT eip);
 
 private:
 	static FilterHandler* instance;
@@ -37,6 +37,8 @@ private:
 	BOOL isLibStackWrite(ADDRINT addr, ADDRINT eip);
 	BOOL isLibTEBWrite(ADDRINT addr,ADDRINT eip);
 	BOOL binarySearch (int start, int end, ADDRINT value);
+	std::vector<LibraryItem> filtered_libray;
+	std::vector<std::string> filtered_library_name;
 
 };
 

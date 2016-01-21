@@ -11,6 +11,7 @@ typedef W::DWORD (WINAPI *MyEnumProcessModules)(W::HANDLE hProcess, W::HMODULE *
 typedef W::DWORD (WINAPI *MyGetModuleInformation)(W::HANDLE hProcess, W::HMODULE HModule, LPMODULEINFO module_info, W::DWORD  cb);
 
 
+
 FakeMemoryHandler::FakeMemoryHandler(void)
 {
 	pInfo = ProcInfo::getInstance();
@@ -249,10 +250,12 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 
             getModuleInformation(process,hMods[i], &mi,sizeof(mi));
 		    GetModuleFileNameA(hMods[i], pBuffer,sizeof(Buffer));
-
+			
+			//MYINFO("I've added %s to the list of know libary\n", Buffer);
 			UINT32 end_addr = (UINT32)mi.lpBaseOfDll + mi.SizeOfImage;
 
-		    //MYINFO("Module found at %08x - %08x\n" , mi.lpBaseOfDll , end_addr);
+		   // MYINFO("Module %s found at %08x - %08x\n" , Buffer , mi.lpBaseOfDll , end_addr);
+			
 			ProcInfo *p = ProcInfo::getInstance();
 			BOOL isMain = FALSE;
 
@@ -265,12 +268,14 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 			}
 
 			if(!isMain){
+				p->addLibrary(Buffer,(UINT32)mi.lpBaseOfDll,end_addr);		
+			}
 
-				//std::string module_name = std::string(module_name);
+			FilterHandler *filterHandler = FilterHandler::getInstance();
 
-				p->addLibrary("prova",(UINT32)mi.lpBaseOfDll,end_addr);
-				//MYINFO("I've added %s to the list of know libary\n" , module_name.c_str());
-		
+			if(filterHandler->IsNameInFilteredArray(Buffer)){
+				MYINFO("Added to the filtered array the module %s\n" , Buffer);
+				filterHandler->addToFilteredLibrary(Buffer,(UINT32)mi.lpBaseOfDll,end_addr);
 			}
 
 			if(address_to_check >= (UINT32)mi.lpBaseOfDll && address_to_check <= end_addr){
@@ -321,7 +326,7 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 		// ALL'INTERNO DEGLI INDIRIZZI NUOVI AGGIUNTI IN addProcessHeapsAddress
 		// COSI' RISPARMIAMO TEMPO AL POSTO CHE CHECKARE L'INTERA WHITELIST
 
-		/*
+		
 		p->addProcessHeapsAddress();  // here the whitelist is updated 
 
 		//p->setCurrentMappedFiles();
@@ -331,7 +336,7 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 			//p->printHeapList();
 			return address;
 		}
-		*/
+		
 
 
 		//********************** POC **********************

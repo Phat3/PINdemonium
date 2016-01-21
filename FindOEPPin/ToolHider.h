@@ -7,6 +7,8 @@
 #include "EvasionPatches.h"
 #include "FakeMemoryHandler.h"
 #include "FakeWriteHandler.h"
+#include "FilterHandler.h"
+
 namespace W {
 #include <Windows.h>
 }
@@ -20,15 +22,14 @@ public:
 	~ToolHider(void);
 	void avoidEvasion(INS ins);
 
+
 private:
 	EvasionPatches evasionPatcher;
 	FakeMemoryHandler fakeMemH;
 	FakeWriteHandler fakeWriteH;
 	BOOL firstRead;
 	void ScanForMappedFiles();
-	std::vector<LibraryItem> filtered_libray;
-	std::vector<std::string> filtered_library_name;
-	BOOL isFilteredLibraryInstruction(ADDRINT eip);
+
 	
 };
 

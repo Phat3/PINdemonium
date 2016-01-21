@@ -2,6 +2,7 @@
 #include <map>
 #include "pin.H"
 #include "ProcInfo.h"
+#include "FilterHandler.h"
 
 #define TICK_MULTIPLIER_OFFSET 0x4
 #define LOW_PART_KSYSTEM_OFFSET 0x8
