@@ -735,7 +735,7 @@ BOOL ProcInfo::addProcessHeapsAndCheckAddress(ADDRINT eip){
 		}
     }
 	 
-	 MYINFO("Added some heaps@@@@\n");
+	 //MYINFO("Added some heaps@@@@\n");
 	 return isEipDiscoveredHere;
 }
 

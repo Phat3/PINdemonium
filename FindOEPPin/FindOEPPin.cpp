@@ -26,8 +26,8 @@ ProcInfo *proc_info = ProcInfo::getInstance();
 
 
 
-//Using of this option:
-// pin -t FindOEPPin.dll -iwae "true 5"
+//------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
+
 KNOB <UINT32> KnobInterWriteSetAnalysis(KNOB_MODE_WRITEONCE, "pintool",
     "iwae", "0" , "specify if you want or not to track the inter_write_set analysis dumps and how many jump");
 
@@ -45,6 +45,8 @@ KNOB <BOOL> KnobAntiEvasionSuspiciousWrite(KNOB_MODE_WRITEONCE, "pintool",
 
 KNOB <BOOL> KnobUnpacking(KNOB_MODE_WRITEONCE, "pintool",
     "unp", "false" , "specify if you want or not to activate the unpacking engine");
+
+//------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
 
 
