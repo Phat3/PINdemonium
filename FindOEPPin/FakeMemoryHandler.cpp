@@ -322,7 +322,7 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 		// here the whitelist is updated and we check also if the address is inside the new discovere heaps
 		if(p->addProcessHeapsAndCheckAddress(address)){
 
-			MYINFO("@@@@@@Calling addProcessHeapAndCheckAddress\n");
+			//MYINFO("@@@@@@Calling addProcessHeapAndCheckAddress\n");
 			return address;
 		}	  
 

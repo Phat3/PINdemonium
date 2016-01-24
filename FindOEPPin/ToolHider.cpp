@@ -77,11 +77,11 @@ void ToolHider::avoidEvasion(INS ins){
    if(filterHandler->isFilteredLibraryInstruction(curEip)){
 		//MYINFO("That's a GDI\n\n");
 		//MYINFO("Name of RTN is %s\n" , RTN_FindNameByAddress(curEip).c_str());
-	    MYINFO("Skipping filtered library code\n");
+	    //MYINFO("Skipping filtered library code\n");
 		return;
 	}
 
-	//MYINFO("[DEBUG] RTN: %s EIP: %08x INS: %s\n", RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	MYINFO("[DEBUG] RTN: %s EIP: %08x INS: %s\n", RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 
 
 	// 1 - single instruction detection
@@ -118,6 +118,7 @@ void ToolHider::avoidEvasion(INS ins){
 		}
     }
 
+	
 	//3. memory write filter	
 	for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
 		if(INS_MemoryOperandIsWritten(ins,op)){
@@ -135,6 +136,7 @@ void ToolHider::avoidEvasion(INS ins){
 			
 		}	
 	}
+	
 	
 	
 }

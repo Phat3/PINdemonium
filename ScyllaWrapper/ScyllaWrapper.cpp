@@ -158,8 +158,6 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR * cur_path,
 
 
 UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file, WCHAR * cur_path, WCHAR * tmp_dump){
-	printf("RECEIVED CUR PATH : %S\n",cur_path);
-	printf("RECEIVED TMP PATH : %S\n",tmp_dump);
 	return IATAutoFix(pid, oep, output_file, cur_path, tmp_dump);
 }
 
