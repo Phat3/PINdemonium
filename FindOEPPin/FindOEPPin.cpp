@@ -29,7 +29,7 @@ ProcInfo *proc_info = ProcInfo::getInstance();
 //Using of this option:
 // pin -t FindOEPPin.dll -iwae "true 5"
 KNOB <UINT32> KnobInterWriteSetAnalysis(KNOB_MODE_WRITEONCE, "pintool",
-    "iwae", "2" , "specify if you want or not to track the inter_write_set analysis dumps and how many jump");
+    "iwae", "0" , "specify if you want or not to track the inter_write_set analysis dumps and how many jump");
 
 KNOB <BOOL> KnobAntiEvasion(KNOB_MODE_WRITEONCE, "pintool",
     "antiev", "false" , "specify if you want or not to activate the anti evasion engine");
@@ -198,19 +198,20 @@ void ConfigureTool(){
 	
 	Config *config = Config::getInstance();
 
-	if(KnobInterWriteSetAnalysis.Value()){
+	if(KnobInterWriteSetAnalysis.Value()>0){ // if >0 the user has defined his own value so INTER_WRITE_ANALYSIS is enabled 
 		config->INTER_WRITESET_ANALYSIS_ENABLE = true;
-		if(KnobInterWriteSetAnalysis.Value() >= 1 && KnobInterWriteSetAnalysis.Value() <= 9 ){
+
+		if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= 9 ){
 			config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
 		}
 		else{
 			MYWARN("Invalid number of jumps to track, se to default value: 2\n");
-			config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have a not clear value
+			config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have invalid value 
 		}
+	}else{ //otherwise the inter write se analysis is disabled by default 
+		config->INTER_WRITESET_ANALYSIS_ENABLE = false;
 	}
-	else
-	{config->INTER_WRITESET_ANALYSIS_ENABLE = false;}
-	    
+
 	if(KnobAntiEvasion.Value()){
 		config->ANTIEVASION_MODE = true;
 
@@ -226,19 +227,9 @@ void ConfigureTool(){
 			config->ANTIEVASION_MODE_SWRITE = true;
 		}
 	}
-	else{
-		config->ANTIEVASION_MODE = false;
-		config->ANTIEVASION_MODE_INS_PATCHING = false;
-		config->ANTIEVASION_MODE_SREAD = false;
-		config->ANTIEVASION_MODE_SWRITE = false;
-	}
-
 
 	if(KnobUnpacking.Value()){
 		config->UNPACKING_MODE = true;
-	}
-	else{
-		config->UNPACKING_MODE = false;
 	}
 }
 
