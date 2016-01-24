@@ -26,6 +26,28 @@ ProcInfo *proc_info = ProcInfo::getInstance();
 
 
 
+//Using of this option:
+// pin -t FindOEPPin.dll -iwae "true 5"
+KNOB <UINT32> KnobInterWriteSetAnalysis(KNOB_MODE_WRITEONCE, "pintool",
+    "iwae", "2" , "specify if you want or not to track the inter_write_set analysis dumps and how many jump");
+
+KNOB <BOOL> KnobAntiEvasion(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev", "false" , "specify if you want or not to activate the anti evasion engine");
+
+KNOB <BOOL> KnobAntiEvasionINSpatcher(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev-ins", "false" , "specify if you want or not to activate the single patching of evasive instruction as int2e, fsave...");
+
+KNOB <BOOL> KnobAntiEvasionSuspiciousRead(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev-sread", "false" , "specify if you want or not to activate the handling of suspicious reads");
+
+KNOB <BOOL> KnobAntiEvasionSuspiciousWrite(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev-swrite", "false" , "specify if you want or not to activate the handling of suspicious writes");
+
+KNOB <BOOL> KnobUnpacking(KNOB_MODE_WRITEONCE, "pintool",
+    "unp", "false" , "specify if you want or not to activate the unpacking engine");
+
+
+
 // This function is called when the application exits
 VOID Fini(INT32 code, VOID *v){
 	//DEBUG --- inspect the write set at the end of the execution
@@ -145,12 +167,12 @@ void Instruction(INS ins,void *v){
 	}
 	*/
 
-
-	if(Config::EVASION_MODE){
+	Config *config = Config::getInstance();
+	if(config->ANTIEVASION_MODE){
 		thider.avoidEvasion(ins);
 	}
 
-	if(Config::UNPACKING_MODE){
+	if(config->UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
 	}	
 }
@@ -172,7 +194,53 @@ void initDebug(){
 	PIN_SetDebugMode(&mode);
 }
 
+void ConfigureTool(){
+	
+	Config *config = Config::getInstance();
 
+	if(KnobInterWriteSetAnalysis.Value()){
+		config->INTER_WRITESET_ANALYSIS_ENABLE = true;
+		if(KnobInterWriteSetAnalysis.Value() >= 1 && KnobInterWriteSetAnalysis.Value() <= 9 ){
+			config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
+		}
+		else{
+			MYWARN("Invalid number of jumps to track, se to default value: 2\n");
+			config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have a not clear value
+		}
+	}
+	else
+	{config->INTER_WRITESET_ANALYSIS_ENABLE = false;}
+	    
+	if(KnobAntiEvasion.Value()){
+		config->ANTIEVASION_MODE = true;
+
+		if(KnobAntiEvasionINSpatcher.Value()){
+			config->ANTIEVASION_MODE_INS_PATCHING = true;
+		}
+
+		if(KnobAntiEvasionSuspiciousRead.Value()){
+			config->ANTIEVASION_MODE_SREAD = true;
+		}
+
+		if(KnobAntiEvasionSuspiciousWrite.Value()){
+			config->ANTIEVASION_MODE_SWRITE = true;
+		}
+	}
+	else{
+		config->ANTIEVASION_MODE = false;
+		config->ANTIEVASION_MODE_INS_PATCHING = false;
+		config->ANTIEVASION_MODE_SREAD = false;
+		config->ANTIEVASION_MODE_SWRITE = false;
+	}
+
+
+	if(KnobUnpacking.Value()){
+		config->UNPACKING_MODE = true;
+	}
+	else{
+		config->UNPACKING_MODE = false;
+	}
+}
 
 /* ===================================================================== */
 /* Main                                                                  */
@@ -195,6 +263,7 @@ int main(int argc, char * argv[]){
 	PIN_InitSymbols();
 
 	if (PIN_Init(argc, argv)) return Usage();
+
 	
 	INS_AddInstrumentFunction(Instruction,0);
 
@@ -210,6 +279,9 @@ int main(int argc, char * argv[]){
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
+
+	ConfigureTool();
+
 
 	// Start the program, never returns
 	PIN_StartProgram();

@@ -70,6 +70,7 @@ void ToolHider::avoidEvasion(INS ins){
 
    ADDRINT curEip = INS_Address(ins);
    ProcInfo *pInfo = ProcInfo::getInstance();
+   Config *config = Config::getInstance();
    FilterHandler *filterHandler = FilterHandler::getInstance();
 
 	//Filter instructions inside a known library (only graphic dll)
@@ -85,11 +86,12 @@ void ToolHider::avoidEvasion(INS ins){
 
 
 	// 1 - single instruction detection
-	if(this->evasionPatcher.patchDispatcher(ins, curEip)){
+	if(config->ANTIEVASION_MODE_INS_PATCHING && this->evasionPatcher.patchDispatcher(ins, curEip)){
 		//MYINFO("Returned\n");
 		return;
 	}
 	
+	if(config->ANTIEVASION_MODE_SREAD){
 	// 2 - memory read 
 	// Checking if there is a read at addresses that the application shouldn't be aware of
 	for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
@@ -116,9 +118,10 @@ void ToolHider::avoidEvasion(INS ins){
 				
 			INS_RewriteMemoryOperand(ins, op, scratchReg); 
 		}
-    }
+	  }
+	}
 
-	
+	if(config->ANTIEVASION_MODE_SWRITE){
 	//3. memory write filter	
 	for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
 		if(INS_MemoryOperandIsWritten(ins,op)){
@@ -135,8 +138,6 @@ void ToolHider::avoidEvasion(INS ins){
 			INS_RewriteMemoryOperand(ins, op, writeReg); 
 			
 		}	
-	}
-	
-	
-	
+	}	
+  }
 }

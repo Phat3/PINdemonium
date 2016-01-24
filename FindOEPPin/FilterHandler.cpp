@@ -19,6 +19,10 @@ FilterHandler::FilterHandler(){
 	filtered_library_name.push_back("LPK.dll");
 	filtered_library_name.push_back("USP10.dll");
 
+	// Still to check 
+	filtered_library_name.push_back("RPCRT4.dll");
+	filtered_library_name.push_back("IMM32.dll");
+
 	//Initializing the Filter map:   "stack" => adding FILTER_STACK to filterExecutionFlag
 	initFilterMap();
 }
