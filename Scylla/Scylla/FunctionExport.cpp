@@ -450,7 +450,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 
 	//DEBUG
-
+	/*
 	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
 	printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImports);
 	
@@ -473,7 +473,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	displayModuleList(moduleList);
 
 	//FINE DEBUG
-
+	*/
 	//add IAT section to dump
 
 	ImportRebuilder importRebuild(dumpFile);
