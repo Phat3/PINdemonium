@@ -355,6 +355,9 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 	INSTRUCTION inst;
 	DWORD_PTR invalidApiAddress = 0;
 	MEMORY_BASIC_INFORMATION memBasic = {0};
+	LPVOID instruction_buffer;
+	instruction_buffer = (LPVOID)malloc(sizeof(UINT8)*4);
+
 	while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
 	{
 		bool resolved = false;
@@ -366,16 +369,16 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 		for (j = 0; j <  1000; j++)
 		{
 			//if we cannot query this memory address then bypass the analysis of this address
-			if (!VirtualQuery((LPVOID)(IATbase), &memBasic, sizeof(MEMORY_BASIC_INFORMATION)))
+			if (!VirtualQueryEx(ProcessAccessHelp::hProcess,(LPVOID)(IATbase), &memBasic, sizeof(MEMORY_BASIC_INFORMATION)))
 			{
 				insDelta = insDelta + i;
 				IATbase = IATbase + i;
 				continue;
 			}
 			memset(&inst, 0x00, sizeof(INSTRUCTION));
-			//get the disassembled instruction
-			fflush(stdout);
-			i = get_instruction(&inst, (BYTE *)IATbase, MODE_32);
+			ProcessAccessHelp::readMemoryFromProcess(IATbase, 0x4, instruction_buffer);
+
+			i = get_instruction(&inst, (BYTE *)instruction_buffer, MODE_32);
 			//if libdasm fails to recognize the insruction bypass this instruction
 			if(i==0){
 				insDelta = insDelta + i;
@@ -388,8 +391,17 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			if (strstr(buffer, "jmp"))
 			{
 				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
-				unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
-				*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
+				unsigned int correct_address = ( (unsigned int)std::strtoul(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
+				printf("\n\n---------------- MINI REP --------------\n");
+				printf("INST %s: \n", buffer);
+				printf("INVALID API :  %08x \n", invalidApiAddress);
+				printf("INST DELTA %d \n", insDelta);
+				printf("IAT POINTER : %08x\n", (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer));
+				printf("CORRECT ADDR : %08x\n", correct_address);
+				printf("SIZE OF CORRECT ADDR: %d\n", sizeof(correct_address));
+				printf("---------------- END MINI REP --------------\n\n");
+				ProcessAccessHelp::writeMemoryToProcess( (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), sizeof(correct_address), &correct_address);
+				//*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
 				//unresolved import probably resolved
 				resolved = true;
 				break;
@@ -403,7 +415,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 		}
 		//if we cannot resolve the import fix it with a dummy address so scylla isn't able to resolve the API and it will remove the unresolved import
 		if(!resolved){
-			*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  0x0;
+			//*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  0x0;
 			resolved = false;
 		}
 		unresolvedImport++; //next pointer to struct
@@ -450,12 +462,13 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 
 	//DEBUG
-	/*
+	//get the number of unresolved immports based on the current module list
 	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
 	printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImports);
+	//if we have some unresolved imports (IAT entry not resolved)
 	
 	if (numberOfUnresolvedImports != 0){
-
+		
 		customFix(numberOfUnresolvedImports, moduleList);
 
 		apiReader.clearAll();
@@ -469,11 +482,11 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 		apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 		
 	}
-
+	
 	displayModuleList(moduleList);
 
 	//FINE DEBUG
-	*/
+	
 	//add IAT section to dump
 
 	ImportRebuilder importRebuild(dumpFile);
