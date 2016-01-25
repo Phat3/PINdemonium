@@ -389,6 +389,13 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			{
 				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
 				unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
+				printf("\n\n---------------- MINI REP --------------\n");
+				printf("INST %s: \n", buffer);
+				printf("INVALID API :  %08x \n", invalidApiAddress);
+				printf("INST DELTA %d \n", insDelta);
+				printf("IAT POINTER : %p\n", *(DWORD*)(unresolvedImport->ImportTableAddressPointer));
+				printf("CORRECT ADDR : %08x\n", correct_address);
+				printf("---------------- END MINI REP --------------\n\n");
 				*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
 				//unresolved import probably resolved
 				resolved = true;
@@ -454,6 +461,9 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
 	printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImports);
 	
+	printf("\n-------BEFORE:-------------\n");
+	displayModuleList(moduleList);
+
 	if (numberOfUnresolvedImports != 0){
 
 		customFix(numberOfUnresolvedImports, moduleList);
@@ -469,7 +479,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 		apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 		
 	}
-
+	printf("\n-------AFTER:-------------\n");
 	displayModuleList(moduleList);
 
 	//FINE DEBUG
