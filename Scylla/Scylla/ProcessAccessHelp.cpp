@@ -187,6 +187,8 @@ bool ProcessAccessHelp::writeMemoryToProcess(DWORD_PTR address, SIZE_T size, LPV
 		return false;
 	}
 
+	printf("--- WRITE PROC ---- address : %08x \n", address);
+	printf("--- WRITE PROC ---- content : %08x \n", *(unsigned int *) dataBuffer);
 
 	return (WriteProcessMemory(hProcess,(LPVOID)address, dataBuffer, size,&lpNumberOfBytesWritten) != FALSE);
 }

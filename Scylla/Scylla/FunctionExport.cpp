@@ -355,8 +355,8 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 	INSTRUCTION inst;
 	DWORD_PTR invalidApiAddress = 0;
 	MEMORY_BASIC_INFORMATION memBasic = {0};
-	LPVOID instruction_buffer;
-	instruction_buffer = (LPVOID)malloc(sizeof(UINT8)*4);
+	LPVOID instruction_buffer = (LPVOID)malloc(sizeof(UINT8)*4);
+	//LPVOID debug_buffer =  (LPVOID)malloc(sizeof(UINT8)*4);
 
 	while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
 	{
@@ -376,6 +376,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 				continue;
 			}
 			memset(&inst, 0x00, sizeof(INSTRUCTION));
+
 			ProcessAccessHelp::readMemoryFromProcess(IATbase, 0x4, instruction_buffer);
 
 			i = get_instruction(&inst, (BYTE *)instruction_buffer, MODE_32);
@@ -392,11 +393,13 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			{
 				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
 				unsigned int correct_address = ( (unsigned int)std::strtoul(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
+				//ProcessAccessHelp::readMemoryFromProcess((DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), 0x4, debug_buffer);
+
 				printf("\n\n---------------- MINI REP --------------\n");
 				printf("INST %s: \n", buffer);
 				printf("INVALID API :  %08x \n", invalidApiAddress);
 				printf("INST DELTA %d \n", insDelta);
-				printf("IAT POINTER : %08x\n", (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer));
+				//printf("IAT POINTER : %p\n", debug_buffer);
 				printf("CORRECT ADDR : %08x\n", correct_address);
 				printf("SIZE OF CORRECT ADDR: %d\n", sizeof(correct_address));
 				printf("---------------- END MINI REP --------------\n\n");
