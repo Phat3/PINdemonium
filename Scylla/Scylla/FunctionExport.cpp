@@ -469,6 +469,8 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
 	printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImports);
 	//if we have some unresolved imports (IAT entry not resolved)
+	printf("\n-------BEFORE:-------------\n");
+	displayModuleList(moduleList);
 	
 	if (numberOfUnresolvedImports != 0){
 		
@@ -486,6 +488,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 		
 	}
 	
+	printf("\n-------AFTER:-------------\n");
 	displayModuleList(moduleList);
 
 	//FINE DEBUG
