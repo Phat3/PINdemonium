@@ -134,7 +134,9 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//not the first broken in this write set		
 		if(item.getBrokenFlag()){
 			//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis
-			if(Config::INTER_WRITESET_ANALYSIS_ENABLE){ 				
+			Config *config = Config::getInstance();
+			
+			if(config->INTER_WRITESET_ANALYSIS_ENABLE == true){ 				
 				interWriteSetJMPAnalysis(curEip,prev_ip,ins,writeItemIndex,item );
 			}
 		
@@ -182,26 +184,26 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex, WriteInterval item){
 	
 	WxorXHandler *wxorxH = WxorXHandler::getInstance();
-
 	ProcInfo *pInfo = ProcInfo::getInstance();
+	Config *config = Config::getInstance();
 
 	//long jump detected intra-writeset ---> trigger analysis and dump
 	UINT32 currJMPLength = std::abs( (int)curEip - (int)prev_ip);
 	if( currJMPLength > item.getThreshold()){
 		//Check if the current WriteSet has already dumped more than WRITEINTERVAL_MAX_NUMBER_JMP times
 		//and check if the previous instruction was in the library (Long jump because return from Library)
-		if(item.getCurrNumberJMP() < Config::WRITEINTERVAL_MAX_NUMBER_JMP  && !pInfo->isLibraryInstruction(prev_ip)){
+		if(item.getCurrNumberJMP() < config->WRITEINTERVAL_MAX_NUMBER_JMP  && !pInfo->isLibraryInstruction(prev_ip)){
 			//Try to dump and Fix the IAT if successful trigger the analysis
 			MYPRINT("\n\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYPRINT("- - - - - - - - - - - - - - JUMP NUMBER %d OF LENGHT %d  IN STUB FORM %08x TO %08x- - - - - - - - - - - - - -",item.getCurrNumberJMP(),currJMPLength, item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYINFO("Current EIP %08x",curEip);
 			int result = this->DumpAndFixIAT(curEip);
-			Config::getInstance()->setWorking(result);
+			config->setWorking(result);
 			this->analysis(item, ins, prev_ip, curEip);
 
 			wxorxH->incrementCurrJMPNumber(writeItemIndex);
-			Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
+			config->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 		}
 				
 	}
