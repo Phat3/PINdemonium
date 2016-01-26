@@ -367,7 +367,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 		//get the starting IAT address to be analyzed yet
 		for (j = 0; j <  1000; j++)
 		{
-			DebugBreak();
+			//DebugBreak();
 			//if we cannot query the invalidApiAddress then bypass the analysis of this address
 			SIZE_T result = VirtualQueryEx(ProcessAccessHelp::hProcess,(LPVOID)invalidApiAddress, &memBasic, sizeof(MEMORY_BASIC_INFORMATION));
 			if (!result || memBasic.State != MEM_COMMIT || memBasic.Protect == PAGE_NOACCESS)

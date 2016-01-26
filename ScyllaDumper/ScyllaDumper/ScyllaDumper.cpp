@@ -38,7 +38,7 @@ int wmain(int argc, wchar_t *argv[]){
 	DWORD_PTR oep = wcstoul(argv[2],NULL,16);
 	
 	WCHAR *outputFile = argv[3];
-	DebugBreak();
+	//DebugBreak();
 	return IATAutoFix(pid, oep, outputFile);
 	
 }
@@ -136,6 +136,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	INFO("[SCYLLA SEARCH] iat_start : %08x\t iat_size : %08x\t pid : %d", iatStart,iatSize,pid,outputFile);
 	
 	//Fixing the IAT
+	//DebugBreak();
 	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmp_dump,outputFile);
 	if(error){
 		INFO("[SCYLLA FIX] error %d",error);
