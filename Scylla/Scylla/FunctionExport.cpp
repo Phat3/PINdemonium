@@ -394,6 +394,12 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			{				
 				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
 				unsigned int correct_address = ( (unsigned int)std::strtoul(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
+				result = VirtualQueryEx(ProcessAccessHelp::hProcess,(LPVOID)correct_address, &memBasic, sizeof(MEMORY_BASIC_INFORMATION));
+				if (!result || memBasic.State != MEM_COMMIT || memBasic.Protect == PAGE_NOACCESS)
+				{
+					//if the memory region pointed by invalidApiAddress isn't mapped break the for loop and check the next unresolved import
+					break;
+				}
 				//ProcessAccessHelp::readMemoryFromProcess((DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), 0x4, debug_buffer);
 				printf("\n\n---------------- MINI REP --------------\n");
 				printf("INST %s: \n", buffer);
