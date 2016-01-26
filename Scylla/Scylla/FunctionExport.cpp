@@ -398,12 +398,6 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			{				
 				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
 				unsigned int correct_address = ( (unsigned int)std::strtoul(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
-				result = VirtualQueryEx(ProcessAccessHelp::hProcess,(LPVOID)correct_address, &memBasic, sizeof(MEMORY_BASIC_INFORMATION));
-				if (!result || memBasic.State != MEM_COMMIT || memBasic.Protect == PAGE_NOACCESS)
-				{
-					//if the memory region pointed by invalidApiAddress isn't mapped break the for loop and check the next unresolved import
-					break;
-				}
 				//ProcessAccessHelp::readMemoryFromProcess((DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), 0x4, debug_buffer);
 				printf("\n\n---------------- MINI REP --------------\n");
 				printf("INST %s: \n", buffer);
@@ -416,7 +410,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 				ProcessAccessHelp::writeMemoryToProcess( (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), sizeof(correct_address), &correct_address);
 				//*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
 				//unresolved import probably resolved
-				//resolved = true;
+				resolved = true;
 				break;
 			}
 			//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
@@ -424,13 +418,12 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			//check the next row inthe IAT
 			invalidApiAddress = invalidApiAddress + instruction_size;
 		}
-		/*
 		//if we cannot resolve the import fix it with a dummy address so scylla isn't able to resolve the API and it will remove the unresolved import		
 		if(!resolved){
-			//*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  0x0;
+			unsigned int correct_address = 0x0;
+			ProcessAccessHelp::writeMemoryToProcess( (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), sizeof(correct_address), &correct_address);
 			resolved = false;
 		}
-		*/
 		unresolvedImport++; //next pointer to struct
 	}
 	
