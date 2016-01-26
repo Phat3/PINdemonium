@@ -2,7 +2,7 @@
 
 //mode of operation
 const bool Config::UNPACKING_MODE = true;
-const bool Config::EVASION_MODE =  false;
+const bool Config::EVASION_MODE =  true;
 
 //constanth path and variable for our logging system
 const string Config::PIN_DIRECTORY_PATH_OUTPUT = "C:\\pin\\PinUnpackerResults\\";

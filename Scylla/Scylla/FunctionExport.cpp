@@ -282,29 +282,30 @@ void addUnresolvedImports( PUNRESOLVED_IMPORT firstUnresImp, std::map<DWORD_PTR,
 	ImportThunk * importThunk = 0;
 
 	iterator1 = moduleList.begin();
-
+	
 	while (iterator1 != moduleList.end())
 	{
 		moduleThunk = &(iterator1->second);
 
 		iterator2 = moduleThunk->thunkList.begin();
-
+		
 		while (iterator2 != moduleThunk->thunkList.end())
 		{
 			importThunk = &(iterator2->second);
-
+			
 			if (importThunk->valid == false)
 			{
 				firstUnresImp->InvalidApiAddress = importThunk->apiAddressVA;
 				firstUnresImp->ImportTableAddressPointer = importThunk->va;
 				firstUnresImp++;
 			}
-
+			
 			iterator2++;
 		}
-
+		
 		iterator1++;
 	}
+	
 
 	firstUnresImp->InvalidApiAddress = 0;
 	firstUnresImp->ImportTableAddressPointer = 0;
@@ -344,7 +345,9 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 	printf("Unresolved imports detected...\n");
 
 	PUNRESOLVED_IMPORT unresolvedImport = 0;
-	unresolvedImport = (PUNRESOLVED_IMPORT)calloc(numberOfUnresolvedImports, sizeof(UNRESOLVED_IMPORT));
+	//allocate the structure in order to keep track of the unresolved imports
+	//(numberOfUnresolvedImport +1) because we beed one last structure as end of the list
+	unresolvedImport = (PUNRESOLVED_IMPORT)malloc(sizeof(UNRESOLVED_IMPORT)*(numberOfUnresolvedImports + 1));
 	addUnresolvedImports(unresolvedImport, moduleList);
 	//local variable
 	int max_instruction_size = sizeof(UINT8)*15;
@@ -356,7 +359,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 	MEMORY_BASIC_INFORMATION memBasic = {0};
 	LPVOID instruction_buffer = (LPVOID)malloc(max_instruction_size);
 	//LPVOID debug_buffer =  (LPVOID)malloc(sizeof(UINT8)*4);
-
+	
 	while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
 	{
 
@@ -365,6 +368,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 		insDelta = 0;
 		invalidApiAddress = unresolvedImport->InvalidApiAddress;
 		//get the starting IAT address to be analyzed yet
+		
 		for (j = 0; j <  1000; j++)
 		{
 			//DebugBreak();
@@ -384,12 +388,12 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			//if libdasm fails to recognize the insruction bypass this instruction
 			//WRONG!!
 			if(instruction_size == 0){
-				//XXXXXXXXXXXXX think about a better solution
-				//if the memory region pointed by invalidApiAddress isn't mapped break the for loop and check the next unresolved import
-				break;
+				invalidApiAddress = invalidApiAddress + 1;
+				insDelta = insDelta + 1;
+				continue;
 			}
 			get_instruction_string(&inst, FORMAT_ATT, 0, buffer, sizeof(buffer));
-			//check if it is a jump
+			//check if it is a jump		
 			if (strstr(buffer, "jmp"))
 			{				
 				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
@@ -416,14 +420,12 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 				break;
 			}
 			//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
-			else{
-				insDelta = insDelta + instruction_size;
-			}
+			insDelta = insDelta + instruction_size;
 			//check the next row inthe IAT
 			invalidApiAddress = invalidApiAddress + instruction_size;
 		}
-		//if we cannot resolve the import fix it with a dummy address so scylla isn't able to resolve the API and it will remove the unresolved import
 		/*
+		//if we cannot resolve the import fix it with a dummy address so scylla isn't able to resolve the API and it will remove the unresolved import		
 		if(!resolved){
 			//*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  0x0;
 			resolved = false;
@@ -431,7 +433,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 		*/
 		unresolvedImport++; //next pointer to struct
 	}
-
+	
 }
 
 
@@ -479,7 +481,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	//if we have some unresolved imports (IAT entry not resolved)
 	printf("\n-------BEFORE:-------------\n");
 	displayModuleList(moduleList);
-	
+
 	if (numberOfUnresolvedImports != 0){
 		
 		customFix(numberOfUnresolvedImports, moduleList);

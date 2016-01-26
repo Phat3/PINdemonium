@@ -267,22 +267,26 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	UINT32 pid = W::GetCurrentProcessId();
 
 	string outputFile = Config::getInstance()->getCurrentDumpFilePath();
-	std::wstring outputFile_w = std::wstring(outputFile.begin(), outputFile.end());
 
-	string base_path = Config::getInstance()->getBasePath();
-	std::wstring base_path_w = std::wstring(base_path.begin(), base_path.end());
+	// -------- Scylla launched as a dll --------
+	//std::wstring outputFile_w = std::wstring(outputFile.begin(), outputFile.end());
 
-	string tmpDump = Config::getInstance()->getNotWorkingPath();
-	std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
+	//string base_path = Config::getInstance()->getBasePath();
+	//std::wstring base_path_w = std::wstring(base_path.begin(), base_path.end());
+
+	//string tmpDump = Config::getInstance()->getNotWorkingPath();
+	//std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
+
+	//sc->loadScyllaLibary();
+	//UINT32 result = sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)outputFile_w.c_str(),(W::WCHAR *)base_path_w.c_str(), (W::WCHAR *)tmpDump_w.c_str());
+	//sc->unloadScyllaLibrary();
 
 	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s",pid, Config::getInstance()->getCurrentDumpFilePath().c_str());
 
-	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();
-	//sc->loadScyllaLibary();
+	// -------- Scylla launched as an exe --------
+	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();	
 	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile);
-	//sc->unloadScyllaLibrary();
 
-	
 	if(result != SCYLLA_SUCCESS_FIX){
 		MYERRORE("Scylla execution Failed error %d ",result);
 		return result;
