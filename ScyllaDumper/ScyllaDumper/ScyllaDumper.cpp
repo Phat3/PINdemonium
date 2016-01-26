@@ -38,6 +38,7 @@ int wmain(int argc, wchar_t *argv[]){
 	DWORD_PTR oep = wcstoul(argv[2],NULL,16);
 	
 	WCHAR *outputFile = argv[3];
+	DebugBreak();
 	return IATAutoFix(pid, oep, outputFile);
 	
 }
