@@ -19,8 +19,16 @@ static std::map<string,string> ntdllHooksNamesPatch;
 //<0x77dff2ac,"\x8b..">
 static std::map<ADDRINT,string> ntdllHooksAddrPatch;
 
-class FakeMemoryHandler
-{
+
+typedef struct _MODULEINFO {
+    W::LPVOID lpBaseOfDll;
+    W::DWORD  SizeOfImage;
+    W::LPVOID EntryPoint;
+	} MODULEINFO, *LPMODULEINFO;
+
+typedef W::DWORD (WINAPI *MyEnumProcessModules)(W::HANDLE hProcess, W::HMODULE *lphModule, W::DWORD cb, W::LPDWORD lpcbNeeded);
+typedef W::DWORD (WINAPI *MyGetModuleInformation)(W::HANDLE hProcess, W::HMODULE HModule, LPMODULEINFO module_info, W::DWORD  cb);
+
 /*function which return the ADDRINT containing the fake memory content for the curAddr address
 	curAddr: current address which is queried
 	startAddr: Startaddress of the FakeMemoryItem which contain the curAddr (used to take care of offsets inside the FakeMemoryItem range)
@@ -35,6 +43,9 @@ typedef struct FakeMemoryItem{
 
 }FakeMemoryItem;
 
+
+class FakeMemoryHandler
+{
 private:
 	//list containig the MemoryAddress which needs to me faked
 	std::vector<FakeMemoryItem> fakeMemory;
@@ -44,7 +55,10 @@ private:
 	static ADDRINT ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFuncAddr);
 	static ADDRINT TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr);
 	static ADDRINT KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr);
-		
+	//attributes for the  load library psapi
+	MyEnumProcessModules enumProcessModules;
+	MyGetModuleInformation getModuleInformation;
+	W::HINSTANCE hPsapi;
 
 public:
 	FakeMemoryHandler(void);
@@ -52,7 +66,5 @@ public:
 	VOID initFakeMemory();
 	BOOL isAddrInWhiteList(ADDRINT address);
 	BOOL CheckInCurrentDlls(UINT32 address_to_check);
-
-	//
 	ADDRINT getFakeMemory(ADDRINT address);
 };
