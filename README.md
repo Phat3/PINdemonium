@@ -60,7 +60,7 @@
 	```
 
 	**Flags :**
-	- **iwae of jump to dump** : specify if you want or not to track the inter_write_set analysis dumps and how many jump
+	- **iwae number_of_jump_to_dump** : specify if you want or not to track the inter_write_set analysis dumps and how many jump
 
 
 	- **antiev** : specify if you want or not to activate the anti evasion engine
@@ -76,6 +76,6 @@
 
 
 	- **unp** : specify if you want or not to activate the unpacking engine
-	
+
 
 2. Check your result in **C:\pin\PinUnpackerResults\\< current_date_and_time >\\**
