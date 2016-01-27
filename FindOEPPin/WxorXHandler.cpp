@@ -93,7 +93,7 @@ VOID WxorXHandler::incrementCurrJMPNumber(int writeItemIndex){
 VOID WxorXHandler::displayWriteSet(){
 	
 	for(unsigned index=0; index <  this->WritesSet.size(); index++) {
-		MYINFO("WriteInterval number %d  start %08x end %08x",index,this->WritesSet.at(index).getAddrBegin(),this->WritesSet.at(index).getAddrEnd());
+		MYINFO("WriteInterval number %u  start %08x end %08x",index,this->WritesSet.at(index).getAddrBegin(),this->WritesSet.at(index).getAddrEnd());
 	}
 	/*
 	int i = 0;y doesn't WORK?

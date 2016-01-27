@@ -1,8 +1,5 @@
 #include "Config.h"
 
-//mode of operation
-const bool Config::UNPACKING_MODE = false;
-const bool Config::EVASION_MODE = true;
 
 //constanth path and variable for our logging system
 const string Config::PIN_DIRECTORY_PATH_OUTPUT = "C:\\pin\\PinUnpackerResults\\";
@@ -20,11 +17,15 @@ const string Config::DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "du
 
 //Tuning Flags
 
-const bool  Config::INTER_WRITESET_ANALYSIS_ENABLE = true;
-const bool  Config::ATTACH_DEBUGGER = false;
+
+const bool Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
-const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 2;
 const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
+
+// Divisor of the timing 
+const UINT32 Config::TICK_DIVISOR = 800000;
+const UINT32 Config::CC_DIVISOR = 1000000000;
+const UINT32 Config::LONG_DIVISOR = 800000000;
 
 Config* Config::instance = 0;
 
@@ -43,8 +44,10 @@ Config::Config(){
 	//create the log and report files
 	string log_file_path = this->base_path + LOG_FILENAME;
 	string report_file_path = this->base_path + REPORT_FILENAME;
+
 	this->log_file = fopen(log_file_path.c_str(),"w");
 	this->report_file = fopen(report_file_path.c_str(),"w");
+
 	this->numberOfBadImports = calculateNumberOfBadImports();
 	//initialize the path of the ScyllaWrapperLog
 	this->working = -1;
@@ -117,12 +120,13 @@ FILE* Config::getLogFile()
 //write the JSON resulted by the analysis for this write set
 void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 {
-	if(this->working == 0)
+	if(this->working == 1)
 		fprintf(this->report_file,"{\"dump number\" : \"%d\", \"runnable?\" : \"PROBABLY YES\", \"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_outer_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n", (int)this->getDumpNumber(), ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
 	else
 		fprintf(this->report_file,"{\"dump number\" : \"%d\", \"runnable?\" : \"NO\", \"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_outer_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n", (int)this->getDumpNumber(), ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
 	fflush(this->report_file);
 }
+
 
 //Sets if the current dump works or not
 void Config::setWorking(int working)

@@ -162,8 +162,8 @@ UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file, WCHAR * cur_path,
 }
 
 
-void ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData){
-	ScyllaAddSection(dump_path , sectionName, sectionSize, offset , sectionData);
+UINT32 ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData){
+	return ScyllaAddSection(dump_path , sectionName, sectionSize, offset , sectionData);
 }
 
 

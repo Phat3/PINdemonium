@@ -56,7 +56,26 @@
 1. Run this command from the directory **C:\pin\\**
 
 	```
-	pin -t FindOEPPin.dll -- <path_to_the_exe_to_be_instrumented>
+	pin -t FindOEPPin.dll [-flags] -- <path_to_the_exe_to_be_instrumented>
 	```
+
+	**Flags :**
+	- **iwae number_of_jump_to_dump** : specify if you want or not to track the inter_write_set analysis dumps and how many jump
+
+
+	- **antiev** : specify if you want or not to activate the anti evasion engine
+
+
+	- **antiev-ins** : specify if you want or not to activate the single patching of evasive instruction as int2e, fsave...
+
+
+	- **antiev-sread** : specify if you want or not to activate the handling of suspicious reads
+
+
+	- **antiev-swrite** : specify if you want or not to activate the handling of suspicious writes
+
+
+	- **unp** : specify if you want or not to activate the unpacking engine
+
 
 2. Check your result in **C:\pin\PinUnpackerResults\\< current_date_and_time >\\**

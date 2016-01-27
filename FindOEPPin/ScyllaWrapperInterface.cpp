@@ -8,6 +8,7 @@ ScyllaWrapperInterface* ScyllaWrapperInterface::instance = 0;
 //singleton
 ScyllaWrapperInterface* ScyllaWrapperInterface::getInstance()
 {
+	
 	if (instance == 0)
 		instance = new ScyllaWrapperInterface();
 	return instance;
@@ -16,16 +17,6 @@ ScyllaWrapperInterface* ScyllaWrapperInterface::getInstance()
 //we have to use loadLibrary and GetProcAddress because PIN doesn't support external libraries
 ScyllaWrapperInterface::ScyllaWrapperInterface(void)
 {
-	//init
-	this->hScyllaWrapper = 0;
-	//load library
-	this->hScyllaWrapper = W::LoadLibraryW(L"C:\\pin\\PinUnpackerDependencies\\Scylla\\ScyllaWrapper.dll");
-	//get proc address
-	if (this->hScyllaWrapper)
-	{
-		this->ScyllaDumpAndFix = (def_ScyllaDumpAndFix)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaDumpAndFix");
-		this->ScyllaWrapAddSection = (def_ScyllaWrapAddSection)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaWrapAddSection");
-	}
 }
 
 //----------------------------------------------------
@@ -47,13 +38,14 @@ BOOL ScyllaWrapperInterface::existFile (std::string name) {
  pid: pid of the process to dump (Current PID if you want to use the Pin Instrumented Binary)
  curEip: curre
 **/
-UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(std::string scylla,int pid, int curEip,std::string outputFile){	
+UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::string outputFile){	
 
 	MYINFO("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 	MYINFO("LAUNCHING SCYLLADUMP AS AN EXTERNAL PROCESS!!");
 	MYINFO("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 	MYINFO("CURR EIP  %x",curEip);
 
+	std::string scylla = Config::SCYLLA_DUMPER_PATH;
 	W::DWORD exitCode;
 	//Creating the string containing the arguments to pass to the ScyllaTest.exe
 	std::stringstream scyllaArgsStream;
@@ -89,4 +81,30 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(std::string scylla,int pid
 	return exitCode;
 }
 
+void ScyllaWrapperInterface::loadScyllaLibary(){
 
+	//init
+	this->hScyllaWrapper = 0;
+	//load library
+
+	this->hScyllaWrapper = W::LoadLibraryEx("C:\\pin\\PinUnpackerDependencies\\Scylla\\ScyllaWrapper.dll", NULL, NULL);
+
+	W::HANDLE scyh = W::GetModuleHandle("C:\\pin\\PinUnpackerDependencies\\Scylla\\ScyllaWrapper.dll");
+
+	//MYINFO("Address in which scylla is mapped: %08x\n" , scyh);
+
+	//get proc address
+	if (this->hScyllaWrapper)
+	{
+		this->ScyllaDumpAndFix = (def_ScyllaDumpAndFix)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaDumpAndFix");
+		this->ScyllaWrapAddSection = (def_ScyllaWrapAddSection)W::GetProcAddress((W::HMODULE)this->hScyllaWrapper, "ScyllaWrapAddSection");
+	}
+
+}
+
+
+void ScyllaWrapperInterface::unloadScyllaLibrary(){
+
+	W::FreeLibrary((W::HINSTANCE)this->hScyllaWrapper);
+
+}

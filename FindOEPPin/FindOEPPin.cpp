@@ -10,17 +10,43 @@
 #include "FilterHandler.h"
 #include "HookFunctions.h"
 #include "HookSyscalls.h"
+
+
 namespace W {
 	#include <windows.h>
+
 }
-
-
 
 ToolHider thider;
 OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
+static int prova =0;
 ProcInfo *proc_info = ProcInfo::getInstance();
+
+
+
+//------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
+
+KNOB <UINT32> KnobInterWriteSetAnalysis(KNOB_MODE_WRITEONCE, "pintool",
+    "iwae", "0" , "specify if you want or not to track the inter_write_set analysis dumps and how many jump");
+
+KNOB <BOOL> KnobAntiEvasion(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev", "false" , "specify if you want or not to activate the anti evasion engine");
+
+KNOB <BOOL> KnobAntiEvasionINSpatcher(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev-ins", "false" , "specify if you want or not to activate the single patching of evasive instruction as int2e, fsave...");
+
+KNOB <BOOL> KnobAntiEvasionSuspiciousRead(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev-sread", "false" , "specify if you want or not to activate the handling of suspicious reads");
+
+KNOB <BOOL> KnobAntiEvasionSuspiciousWrite(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev-swrite", "false" , "specify if you want or not to activate the handling of suspicious writes");
+
+KNOB <BOOL> KnobUnpacking(KNOB_MODE_WRITEONCE, "pintool",
+    "unp", "false" , "specify if you want or not to activate the unpacking engine");
+
+//------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
 
 
@@ -31,10 +57,16 @@ VOID Fini(INT32 code, VOID *v){
 	MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
 	//DEBUG --- get the execution time
 	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+
+	//ProcInfo *proc_info = ProcInfo::getInstance();
+	//proc_info->PrintWhiteListedAddr();
+
 	CLOSELOG();
 	Config::getInstance()->closeReportFile();
 
+	
 }
+
 
 //cc
 INT32 Usage(){
@@ -44,20 +76,31 @@ INT32 Usage(){
 
 
 
+
+
 // - Get initial entropy
 // - Get PE section data 
 // - Add filtered library
 void imageLoadCallback(IMG img,void *){
+	/*for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
+		for( RTN rtn= SEC_RtnHead(sec); RTN_Valid(rtn); rtn = RTN_Next(rtn) ){
+			MYINFO("Inside %s -> %s",IMG_Name(img).c_str(),RTN_Name(rtn).c_str());
+		}
+	}*/
 
+	
 	Section item;
 	static int va_hooked = 0;
 	ProcInfo *proc_info = ProcInfo::getInstance();
+	FilterHandler *filterHandler = FilterHandler::getInstance();
 
 	//get the initial entropy of the PE
 	//we have to consder only the main executable and avìvoid the libraries
 	if(IMG_IsMainExecutable(img)){
 		
-		
+		ADDRINT startAddr = IMG_LowAddress(img);
+		ADDRINT endAddr = IMG_HighAddress(img);
+		proc_info->setMainIMGAddress(startAddr, endAddr);
 		//get the  address of the first instruction
 		proc_info->setFirstINSaddress(IMG_Entry(img));
 		//get the program name
@@ -81,35 +124,69 @@ void imageLoadCallback(IMG img,void *){
 	ADDRINT startAddr = IMG_LowAddress(img);
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
+	
+	if(!IMG_IsMainExecutable(img)){	
+		
+		if(name.find("ntdll")!= std::string::npos){
+		
+		  for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
 
-	if(!IMG_IsMainExecutable(img) && proc_info->isKnownLibrary(name,startAddr,endAddr)){	
+			if(strcmp(SEC_Name(sec).c_str(),".text")==0){
+			proc_info->addProtectedSection(SEC_Address(sec),SEC_Address(sec)+SEC_Size(sec));
+			}
+	      }
+		}
+
+		//*** If you need to protect other sections of other dll put them here ***
+
 		hookFun.hookDispatcher(img);		
+		
 		proc_info->addLibrary(name,startAddr,endAddr);
 
+		if(filterHandler->IsNameInFilteredArray(name)){
+			filterHandler->addToFilteredLibrary(name,startAddr,endAddr);
+			MYINFO("Added to the filtered array the module %s\n" , name);
+		}
 	}
 }
-
-
 
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
-// (Testing if batter than trace iteration)
+// (Testing if better than trace iteration)
 void Instruction(INS ins,void *v){
-	if(Config::EVASION_MODE){
+
+	//printf("ADDR %08x - INS %s\n" , INS_Address(ins), INS_Disassemble(ins).c_str());
+	/*
+	MemoryRange mem;
+	
+	ProcInfo::getInstance()->getMemoryRange(0x75e714a4 ,mem);
+
+	if(mem.StartAddress <= 0x75e714a4  &&  0x75e714a4  <= mem.EndAddress){
+		MYINFO("yyyyyyyyyyyyyyyyyNow the address has been mapped EIP:%08x  mapped from %08x -> %08x name %s",INS_Address(ins),mem.StartAddress,mem.EndAddress,RTN_FindNameByAddress(INS_Address(ins)).c_str());
+	}
+	else{ 
+		MYINFO("zzzzzzCur EIP:%08x name %s ",INS_Address(ins),RTN_FindNameByAddress(INS_Address(ins)).c_str());
+	}
+	*/
+
+	Config *config = Config::getInstance();
+	if(config->ANTIEVASION_MODE){
 		thider.avoidEvasion(ins);
 	}
-	if(Config::UNPACKING_MODE){
-		oepf.IsCurrentInOEP(ins);
-	}
 
+	if(config->UNPACKING_MODE){
+		oepf.IsCurrentInOEP(ins);
+	}	
 }
+
 
 
 // - retrive the stack base address
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
-	FilterHandler *filterH = FilterHandler::getInstance();
-	filterH->setStackBase(stackBase);
+	ProcInfo *pInfo = ProcInfo::getInstance();
+	pInfo->addThreadStackAddress(stackBase);
+	pInfo->addThreadTebAddress();
 }
 
 void initDebug(){
@@ -119,24 +196,64 @@ void initDebug(){
 	PIN_SetDebugMode(&mode);
 }
 
+void ConfigureTool(){
+	
+	Config *config = Config::getInstance();
+
+	if(KnobInterWriteSetAnalysis.Value()>0){ // if >0 the user has defined his own value so INTER_WRITE_ANALYSIS is enabled 
+		config->INTER_WRITESET_ANALYSIS_ENABLE = true;
+
+		if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= 9 ){
+			config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
+		}
+		else{
+			MYWARN("Invalid number of jumps to track, se to default value: 2\n");
+			config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have invalid value 
+		}
+	}else{ //otherwise the inter write se analysis is disabled by default 
+		config->INTER_WRITESET_ANALYSIS_ENABLE = false;
+	}
+
+	if(KnobAntiEvasion.Value()){
+		config->ANTIEVASION_MODE = true;
+
+		if(KnobAntiEvasionINSpatcher.Value()){
+			config->ANTIEVASION_MODE_INS_PATCHING = true;
+		}
+
+		if(KnobAntiEvasionSuspiciousRead.Value()){
+			config->ANTIEVASION_MODE_SREAD = true;
+		}
+
+		if(KnobAntiEvasionSuspiciousWrite.Value()){
+			config->ANTIEVASION_MODE_SWRITE = true;
+		}
+	}
+
+	if(KnobUnpacking.Value()){
+		config->UNPACKING_MODE = true;
+	}
+}
 
 /* ===================================================================== */
 /* Main                                                                  */
 /* ===================================================================== */
 
 int main(int argc, char * argv[]){
+
 	//If we want to debug the program manually setup the proper options in order to attach an external debugger
 	if(Config::ATTACH_DEBUGGER){
 		initDebug();
 	}
+
 
 	MYINFO("Starting prototype ins");
 	//W::DebugBreak();
 	FilterHandler *filterH = FilterHandler::getInstance();
 	//set the filters for the libraries
 	MYINFO("%s",Config::FILTER_WRITES_ENABLES.c_str());
-	filterH->setFilters(Config::FILTER_WRITES_ENABLES);
-
+	//filterH->setFilters(Config::FILTER_WRITES_ENABLES);
+	
 	//get the start time of the execution (benchmark)
 	tStart = clock();
 	
@@ -144,22 +261,29 @@ int main(int argc, char * argv[]){
 	PIN_InitSymbols();
 
 	if (PIN_Init(argc, argv)) return Usage();
+
 	
 	INS_AddInstrumentFunction(Instruction,0);
 
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageUnload to be called when an image is unloaded
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
-	proc_info->SearchPinVMDll();
-	
+
+	proc_info->addProcAddresses();
+
 	// Register Fini to be called when the application exits
 	PIN_AddFiniFunction(Fini, 0);
+	
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
+
+	ConfigureTool();
+
 
 	// Start the program, never returns
 	PIN_StartProgram();
 	
 	return 0;
+	
 }

@@ -6,6 +6,7 @@
 
 //avoid the leak of the modified ip by pin
 VOID patchInt2e(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
+
 	//set the return value of the int2e (stored in edx) as the current ip
 	PIN_SetContextReg(ctxt, REG_EDX, cur_eip);	
 } 
@@ -13,6 +14,7 @@ VOID patchInt2e(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
 
 //avoid the leak of the modified ip by pin
 VOID patchFsave(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
+
 	//set the return value of the int2e (stored in edx) as the current ip
 	FPSTATE a;
 	//get the current fp unit state
@@ -42,7 +44,8 @@ EvasionPatches::~EvasionPatches(void)
 
 //search if we have a patch for the current instruction and if yes insert the patch in the next round
 bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){
-	//if we have found an instruction that has to be patchet in the previous round then we have a correct function pointer end we can instrument the code
+	
+	//if we have found an instruction that has to be patched in the previous round then we have a correct function pointer end we can instrument the code
 	//
 	//we have to use this trick because some instructions, such as int 2e, don't have a fall throug and is not possible to insert an analysis routine with the IPOINT_AFTER attribute
 	if(this->curPatchPointer){
@@ -52,6 +55,7 @@ bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){
 		REGSET regsOut;
 		REGSET_AddAll(regsOut);
 		//add the analysis rtoutine (the patch)
+
 		INS_InsertCall(ins, IPOINT_BEFORE, this->curPatchPointer, IARG_INST_PTR, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_ADDRINT, curEip, IARG_END);
 		//invalidate the function pointer for the next round
 		this->curPatchPointer = 0x0;

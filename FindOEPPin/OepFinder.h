@@ -34,6 +34,7 @@ private:
 	BOOL analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip);
 	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex, WriteInterval item);
 	UINT32 DumpAndFixIAT(ADDRINT curEip);
+	void getCurrentDlls();
 
 };
 

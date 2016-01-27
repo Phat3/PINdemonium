@@ -7,19 +7,22 @@ FilterHandler* FilterHandler::getInstance()
 {
 	if (instance == 0){	
 		instance = new FilterHandler;
-
 	}
 	return instance;
 }
 
 FilterHandler::FilterHandler(){
+	
+	
 	pInfo = ProcInfo::getInstance();
-	//Initializing the TEB
-	char *tebStr=(char *)malloc(16); 
-	W::_TEB *teb = W::NtCurrentTeb();
-	sprintf(tebStr,"%x",teb);
-	tebAddr = strtoul(tebStr,NULL,16);
-	MYINFO("Init FilterHandler Teb %x",tebAddr);
+	filtered_library_name.push_back("GDI32.dll");
+	filtered_library_name.push_back("LPK.dll");
+	filtered_library_name.push_back("USP10.dll");
+
+	// Still to check 
+	filtered_library_name.push_back("RPCRT4.dll");
+	filtered_library_name.push_back("IMM32.dll");
+
 	//Initializing the Filter map:   "stack" => adding FILTER_STACK to filterExecutionFlag
 	initFilterMap();
 }
@@ -59,19 +62,6 @@ VOID FilterHandler::setFilters(const string filters){
 	
 }
 
-/**
-Initializing the base stack address
-**/
-VOID FilterHandler::setStackBase(ADDRINT addr){
-	//hasn't been already initialized
-	if(stackBase == 0) {	
-		stackBase = addr;
-		MYINFO("Init FilterHandler Stack from %x to %x",stackBase+STACK_BASE_PADDING,stackBase -MAX_STACK_SIZE);
-	}	
-}
-
-
-
 
 
 
@@ -88,7 +78,7 @@ BOOL FilterHandler::isFilteredWrite(ADDRINT addr, ADDRINT eip){
 //Check if the addr belongs to the TEB
 BOOL FilterHandler::isLibTEBWrite(ADDRINT addr,ADDRINT eip){
 	//MYINFO("Calling isTEBWrite");
-	return (tebAddr <= addr && addr <= tebAddr + TEB_SIZE ) && pInfo->isLibraryInstruction(eip);
+	return (pInfo->isTebAddress(addr) && pInfo->isLibraryInstruction(eip));
 }
 
 
@@ -96,9 +86,47 @@ BOOL FilterHandler::isLibTEBWrite(ADDRINT addr,ADDRINT eip){
 BOOL FilterHandler::isLibStackWrite(ADDRINT addr,ADDRINT eip){	
 	
 	//MYINFO("Calling isStackWrite");
-	return (stackBase - MAX_STACK_SIZE < addr && addr < stackBase +STACK_BASE_PADDING) && 
-		pInfo->isLibraryInstruction(eip);
+	return (pInfo->isStackAddress(addr) && 
+		pInfo->isLibraryInstruction(eip));
 }
+
+
+BOOL FilterHandler::IsNameInFilteredArray(std::string img_name){
+
+	for(std::vector<string>::iterator name = this->filtered_library_name.begin(); name != filtered_library_name.end(); ++name){
+		if(img_name.find(name->c_str()) != std::string::npos ){
+			this->filtered_library_name.erase(name); // WARNING-> SIDE EFFECT: remove the element from the name of the library filtered ( brute optimization: basically when we have registered the filtered library in the filtered_library vector we can avoid to re-check another time the name )
+			return TRUE;
+		} 
+	}
+
+	return FALSE;
+}
+
+BOOL FilterHandler::isFilteredLibraryInstruction(ADDRINT eip){
+
+	for(std::vector<LibraryItem>::iterator lib = this->filtered_libray.begin(); lib != this->filtered_libray.end(); ++lib){
+		if(eip >= lib->StartAddress && eip <= lib->EndAddress){
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+
+void FilterHandler::addToFilteredLibrary(std::string name , ADDRINT start_addr , ADDRINT end_addr){
+	
+	LibraryItem li;
+	li.StartAddress = start_addr;
+	li.EndAddress = end_addr;
+	li.name = name;
+	
+	this->filtered_libray.push_back(li);
+
+	MYINFO("filtered library size is %d\n" , this->filtered_libray.size());
+}
+
 
 
 

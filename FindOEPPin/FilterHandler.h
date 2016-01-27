@@ -9,13 +9,7 @@
 #include "Config.h"
 #include "ProcInfo.h"
 
-#define MAX_STACK_SIZE 0x5000    //Used to define the memory range of the stack
-#define STACK_BASE_PADDING 0x500 //needed because the stack pointer given by pin is not the highest one
-#define TEB_SIZE 0xf28			
-
-
-
-
+	
 class FilterHandler
 {
 public:
@@ -26,15 +20,16 @@ public:
 	~FilterHandler(void);
 	//setter
 	VOID setFilters(const string spaceSeparedFilters);
-	VOID setStackBase(ADDRINT addr);
 	//utils
 	BOOL isFilteredWrite(ADDRINT addr, ADDRINT eip);
+	void addToFilteredLibrary(std::string img_name , ADDRINT start_addr , ADDRINT end_addr);
+	BOOL IsNameInFilteredArray(std::string img_name);
+	BOOL isFilteredLibraryInstruction(ADDRINT eip);
 
 private:
-static FilterHandler* instance;
+	static FilterHandler* instance;
 	ProcInfo *pInfo;
-	ADDRINT tebAddr;								//TEB base address
-	ADDRINT stackBase;								//Stack base address
+									//TEB base address
 	std::map<std::string,int> filterMap;			//Hashmap containing the association between the 
 	int filterExecutionFlag;						//flag which keeps track of the enabled filters
 	FilterHandler();
@@ -42,6 +37,8 @@ static FilterHandler* instance;
 	BOOL isLibStackWrite(ADDRINT addr, ADDRINT eip);
 	BOOL isLibTEBWrite(ADDRINT addr,ADDRINT eip);
 	BOOL binarySearch (int start, int end, ADDRINT value);
+	std::vector<LibraryItem> filtered_libray;
+	std::vector<std::string> filtered_library_name;
 
 };
 
