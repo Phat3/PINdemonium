@@ -78,7 +78,7 @@
 	- **unp** : specify if you want or not to activate the unpacking engine
 
 
-	- **adv-iatfix** specify if you want or not to activate the advanced IAT fix technique
+	- **adv-iatfix** : specify if you want or not to activate the advanced IAT fix technique
 
 
 2. Check your result in **C:\pin\PinUnpackerResults\\< current_date_and_time >\\**
