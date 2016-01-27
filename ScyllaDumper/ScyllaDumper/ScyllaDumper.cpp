@@ -15,7 +15,7 @@
 #define SCYLLA_SUCCESS_FIX 0
 
 
-UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile);
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag);
 BOOL GetFilePathFromPID(DWORD dwProcessId, WCHAR *filename);
 DWORD_PTR GetExeModuleBase(DWORD dwProcessId);
 
@@ -29,17 +29,17 @@ int wmain(int argc, wchar_t *argv[]){
 
 	
 	if(argc < 4){
-		INFO("ScyllaTest.exe <pid> <oep> <output_file>");
+		INFO("ScyllaTest.exe <pid> <oep> <output_file> <advance_iat_fix_flag>");
 		return -1;
 	}
-	INFO("argv0 %S argv1 %S argv2 %S argv3 %S",argv[0],argv[1],argv[2],argv[3]);
+	INFO("argv0 %S argv1 %S argv2 %S argv3 %S argv4 %S",argv[0],argv[1],argv[2],argv[3], argv[4]);
 	DWORD pid = _wtoi(argv[1]);
 	// DWORD_PTR oep  = _wtoi(argv[2]);// Works if passed and integer base 10 value
 	DWORD_PTR oep = wcstoul(argv[2],NULL,16);
-	
 	WCHAR *outputFile = argv[3];
+	DWORD advance_iat_fix_flag = _wtoi(argv[4]);
 	//DebugBreak();
-	return IATAutoFix(pid, oep, outputFile);
+	return IATAutoFix(pid, oep, outputFile, advance_iat_fix_flag);
 	
 }
 
@@ -66,7 +66,7 @@ BOOL isMemoryReadable(DWORD pid, void *ptr, size_t byteCount)
 
 
 
-UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile,  DWORD advance_iat_fix_flag)
 {
 
 	DWORD_PTR iatStart = 0;
@@ -137,7 +137,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
 	
 	//Fixing the IAT
 	//DebugBreak();
-	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmp_dump,outputFile);
+	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmp_dump,outputFile,advance_iat_fix_flag);
 	if(error){
 		INFO("[SCYLLA FIX] error %d",error);
 		return SCYLLA_ERROR_IAT_NOT_FIXED;

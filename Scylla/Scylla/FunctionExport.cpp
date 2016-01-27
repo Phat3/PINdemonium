@@ -429,7 +429,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 }
 
 
-int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile)
+int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile,  DWORD advance_iat_fix_flag)
 {
 	ApiReader apiReader;
 	ProcessLister processLister;
@@ -465,38 +465,36 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	apiReader.readApisFromModuleList();		//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
 
 	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
-
-	//DEBUG
-	//get the number of unresolved immports based on the current module list
-	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
-	printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImports);
-	//if we have some unresolved imports (IAT entry not resolved)
-	printf("\n-------BEFORE:-------------\n");
-	displayModuleList(moduleList);
+	//if we want the advanced iat fix technique
+	if(advance_iat_fix_flag){
+		//get the number of unresolved immports based on the current module list
+		DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
+		printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImports);
+		//if we have some unresolved imports (IAT entry not resolved)
+		printf("\n-------BEFORE:-------------\n");
+		displayModuleList(moduleList);
 	
-	if (numberOfUnresolvedImports != 0){
+		if (numberOfUnresolvedImports != 0){
 		
-		//customFix(numberOfUnresolvedImports, moduleList);
+			customFix(numberOfUnresolvedImports, moduleList);
 
-		apiReader.clearAll();
+			apiReader.clearAll();
 
-		//moduleList.clear();
+			//moduleList.clear();
 
-		ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
+			ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
 
-		apiReader.readApisFromModuleList();
+			apiReader.readApisFromModuleList();
 
-		apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
+			apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 		
+		}
+	
+		printf("\n-------AFTER:-------------\n");
+		displayModuleList(moduleList);
 	}
-	
-	printf("\n-------AFTER:-------------\n");
-	displayModuleList(moduleList);
 
-	//FINE DEBUG
-	
 	//add IAT section to dump
-
 	ImportRebuilder importRebuild(dumpFile);
 
 	importRebuild.enableOFTSupport();
