@@ -46,6 +46,9 @@ KNOB <BOOL> KnobAntiEvasionSuspiciousWrite(KNOB_MODE_WRITEONCE, "pintool",
 KNOB <BOOL> KnobUnpacking(KNOB_MODE_WRITEONCE, "pintool",
     "unp", "false" , "specify if you want or not to activate the unpacking engine");
 
+KNOB <BOOL> KnobAdvancedIATFixing(KNOB_MODE_WRITEONCE, "pintool",
+    "adv-iatfix", "false" , "specify if you want or not to activate the advanced IAT fix technique");
+
 //------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
 
@@ -73,10 +76,6 @@ INT32 Usage(){
 	PIN_ERROR("This Pintool unpacks common packers\n" + KNOB_BASE::StringKnobSummary() + "\n");
 	return -1;
 }
-
-
-
-
 
 // - Get initial entropy
 // - Get PE section data 
@@ -199,40 +198,22 @@ void initDebug(){
 void ConfigureTool(){
 	
 	Config *config = Config::getInstance();
+	config->INTER_WRITESET_ANALYSIS_ENABLE = KnobInterWriteSetAnalysis.Value();	
+	config->ANTIEVASION_MODE = KnobAntiEvasion.Value();
+	config->ANTIEVASION_MODE_INS_PATCHING = KnobAntiEvasionINSpatcher.Value();
+	config->ANTIEVASION_MODE_SREAD = KnobAntiEvasionSuspiciousRead.Value();
+	config->ANTIEVASION_MODE_SWRITE = KnobAntiEvasionSuspiciousWrite.Value();
+	config->UNPACKING_MODE = KnobUnpacking.Value();
+	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
 
-	if(KnobInterWriteSetAnalysis.Value()>0){ // if >0 the user has defined his own value so INTER_WRITE_ANALYSIS is enabled 
-		config->INTER_WRITESET_ANALYSIS_ENABLE = true;
-
-		if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= 9 ){
-			config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
-		}
-		else{
-			MYWARN("Invalid number of jumps to track, se to default value: 2\n");
-			config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have invalid value 
-		}
-	}else{ //otherwise the inter write se analysis is disabled by default 
-		config->INTER_WRITESET_ANALYSIS_ENABLE = false;
+	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= 10 ){
+		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
+	}
+	else{
+		MYWARN("Invalid number of jumps to track, se to default value: 2\n");
+		config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have invalid value 
 	}
 
-	if(KnobAntiEvasion.Value()){
-		config->ANTIEVASION_MODE = true;
-
-		if(KnobAntiEvasionINSpatcher.Value()){
-			config->ANTIEVASION_MODE_INS_PATCHING = true;
-		}
-
-		if(KnobAntiEvasionSuspiciousRead.Value()){
-			config->ANTIEVASION_MODE_SREAD = true;
-		}
-
-		if(KnobAntiEvasionSuspiciousWrite.Value()){
-			config->ANTIEVASION_MODE_SWRITE = true;
-		}
-	}
-
-	if(KnobUnpacking.Value()){
-		config->UNPACKING_MODE = true;
-	}
 }
 
 /* ===================================================================== */

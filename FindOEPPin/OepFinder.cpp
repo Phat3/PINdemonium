@@ -216,6 +216,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
 	
 	//DA RIGUARDARE!!
+	
 	if( item.getHeapFlag() && (error != -1) ){
 
 		   //MYINFO("DUMPING HEAP: %08x" , hz->begin);
@@ -243,7 +244,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		   scylla_wrapper->loadScyllaLibary();
 		   scylla_wrapper->ScyllaWrapAddSection(widecstr, ".heap" ,size_write_set , offset , Buffer);
 		   scylla_wrapper->unloadScyllaLibrary();
-		   //free(Buffer);
+		   free(Buffer);
 
 		   MYINFO("DUMPED HEAP OK\n");
 	}
@@ -275,10 +276,10 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 
 	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s",pid, Config::getInstance()->getCurrentDumpFilePath().c_str());
 
-	// -------- Scylla launched as an exe --------
+	// -------- Scylla launched as an exe --------	
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();	
 	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile);
-
+	
 	if(result != SCYLLA_SUCCESS_FIX){
 		MYERRORE("Scylla execution Failed error %d ",result);
 		return result;

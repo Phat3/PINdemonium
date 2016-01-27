@@ -358,8 +358,7 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 	DWORD_PTR invalidApiAddress = 0;
 	MEMORY_BASIC_INFORMATION memBasic = {0};
 	LPVOID instruction_buffer = (LPVOID)malloc(max_instruction_size);
-	//LPVOID debug_buffer =  (LPVOID)malloc(sizeof(UINT8)*4);
-	
+		
 	while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
 	{
 
@@ -474,10 +473,10 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	//if we have some unresolved imports (IAT entry not resolved)
 	printf("\n-------BEFORE:-------------\n");
 	displayModuleList(moduleList);
-
+	
 	if (numberOfUnresolvedImports != 0){
 		
-		customFix(numberOfUnresolvedImports, moduleList);
+		//customFix(numberOfUnresolvedImports, moduleList);
 
 		apiReader.clearAll();
 

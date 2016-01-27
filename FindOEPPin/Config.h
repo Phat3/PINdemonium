@@ -65,6 +65,7 @@ public:
 	bool ANTIEVASION_MODE_INS_PATCHING;
 	bool ANTIEVASION_MODE_SREAD;
 	bool ANTIEVASION_MODE_SWRITE;
+	bool ADVANCED_IAT_FIX;
 
 	//--------------------------Command line Tuning Flags----------------------------
 
