@@ -130,14 +130,16 @@ int main(int argc, char * argv[]){
 		initDebug();
 	}
 
-	MYINFO("Strating prototype ins");
-		//W::DebugBreak();
+	MYINFO("Starting prototype ins");
+	//W::DebugBreak();
 	FilterHandler *filterH = FilterHandler::getInstance();
 	//set the filters for the libraries
 	MYINFO("%s",Config::FILTER_WRITES_ENABLES.c_str());
 	filterH->setFilters(Config::FILTER_WRITES_ENABLES);
+
 	//get the start time of the execution (benchmark)
 	tStart = clock();
+	
 	// Initialize pin
 	PIN_InitSymbols();
 
