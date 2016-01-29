@@ -80,7 +80,7 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::
 		return exitCode;
 	}
 	MYINFO("Scylla Finished");
-	return exitCode;
+	return SCYLLA_SUCCESS_FIX;
 }
 
 void ScyllaWrapperInterface::loadScyllaLibary(){
