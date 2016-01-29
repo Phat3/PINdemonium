@@ -15,7 +15,7 @@
 #define SCYLLA_SUCCESS_FIX 0
 
 
-UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag);
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag, WCHAR* tmpDumpFile);
 BOOL GetFilePathFromPID(DWORD dwProcessId, WCHAR *filename);
 DWORD_PTR GetExeModuleBase(DWORD dwProcessId);
 
@@ -29,17 +29,18 @@ int wmain(int argc, wchar_t *argv[]){
 
 	
 	if(argc < 4){
-		INFO("ScyllaTest.exe <pid> <oep> <output_file> <advance_iat_fix_flag>");
+		INFO("ScyllaTest.exe <pid> <oep> <output_file> <advance_iat_fix_flag> <tmp_dump");
 		return -1;
 	}
-	INFO("argv0 %S argv1 %S argv2 %S argv3 %S argv4 %S",argv[0],argv[1],argv[2],argv[3], argv[4]);
+	INFO("argv0 %S argv1 %S argv2 %S argv3 %S argv4 %S", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]);
 	DWORD pid = _wtoi(argv[1]);
 	// DWORD_PTR oep  = _wtoi(argv[2]);// Works if passed and integer base 10 value
 	DWORD_PTR oep = wcstoul(argv[2],NULL,16);
 	WCHAR *outputFile = argv[3];
 	DWORD advance_iat_fix_flag = _wtoi(argv[4]);
+	WCHAR *tmpDumpFile = argv[5];
 	//DebugBreak();
-	return IATAutoFix(pid, oep, outputFile, advance_iat_fix_flag);
+	return IATAutoFix(pid, oep, outputFile, advance_iat_fix_flag, tmpDumpFile);
 	
 }
 
@@ -66,13 +67,12 @@ BOOL isMemoryReadable(DWORD pid, void *ptr, size_t byteCount)
 
 
 
-UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile,  DWORD advance_iat_fix_flag)
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag, WCHAR *tmpDumpFile)
 {
 
 	DWORD_PTR iatStart = 0;
 	DWORD iatSize = 0;
 	WCHAR originalExe[MAX_PATH]; // Path of the original PE which as launched the current process
-	WCHAR *tmp_dump = L"./tmp_dump_file.exe";  //Path of the file where the process will be dumped during the Dumping Process
 
 	//getting the Base Address
 	DWORD_PTR hMod = GetExeModuleBase(pid);
@@ -89,12 +89,12 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile,  DWORD advance_ia
 	}
 	INFO("Original Exe Path: %S",originalExe);
 		
-	success = ScyllaDumpProcessW(pid,originalExe,hMod,oep,tmp_dump);
+	success = ScyllaDumpProcessW(pid,originalExe,hMod,oep,tmpDumpFile);
 	if(!success){
-		INFO("[SCYLLA DUMP] Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,tmp_dump);
+		INFO("[SCYLLA DUMP] Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,tmpDumpFile);
 		return SCYLLA_ERROR_DUMP;
 	}
-	INFO("[SCYLLA DUMP] Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,tmp_dump);
+	INFO("[SCYLLA DUMP] Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,tmpDumpFile);
 		
 	//DebugBreak();
 	//Searching the IAT
@@ -111,14 +111,14 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile,  DWORD advance_ia
 			ERRORE("[SCYLLA ADVANCED SEARCH] error %d  ",error); 
 		}
 		else{
-				ERRORE("[SCYLLA ADVANCED SEARCH] IAT address not readable/mapped iat_start : %08x\t iat_size : %08x\t  ",iatStart,iatSize);
+			ERRORE("[SCYLLA ADVANCED SEARCH] IAT address not readable/mapped iat_start : %08x\t iat_size : %08x\t  ",iatStart,iatSize);
 		}
 		
 		INFO("[SCYLLA SEARCH] Trying basic IAT search");
 
 		//Trying  Basic IAT search
 		int error2 = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, FALSE);
-		if(error2  || !isMemoryReadable(pid, (void *) iatStart,iatSize)){
+		if(error2 || !isMemoryReadable(pid, (void *) iatStart,iatSize)){
 
 			/*Display why the Scylla IAT Search failed: 
 			 - error in IAT search
@@ -127,7 +127,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile,  DWORD advance_ia
 				ERRORE("[SCYLLA BASIC SEARCH] error %d  ",error2); 
 			}
 			else{
-				 ERRORE("[SCYLLA BASIC SEARCH] IAT address  not readable/mapped iat_start : %08x\t iat_size : %08x\t ",iatStart,iatSize);
+				ERRORE("[SCYLLA BASIC SEARCH] IAT address  not readable/mapped iat_start : %08x\t iat_size : %08x\t ",iatStart,iatSize);
 			}
 			return SCYLLA_ERROR_IAT_NOT_FOUND;
 		}
@@ -137,14 +137,14 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile,  DWORD advance_ia
 	
 	//Fixing the IAT
 	//DebugBreak();
-	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmp_dump,outputFile,advance_iat_fix_flag);
+	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile,advance_iat_fix_flag);
 	if(error){
 		INFO("[SCYLLA FIX] error %d",error);
 		return SCYLLA_ERROR_IAT_NOT_FIXED;
 	}
 
 	//Removing the correct dump from the not working directory
-	_wremove(tmp_dump);
+	_wremove(tmpDumpFile);
 
 	INFO("[SCYLLA FIX] Success fixed file at %S",outputFile);
 	return SCYLLA_SUCCESS_FIX;
