@@ -282,29 +282,30 @@ void addUnresolvedImports( PUNRESOLVED_IMPORT firstUnresImp, std::map<DWORD_PTR,
 	ImportThunk * importThunk = 0;
 
 	iterator1 = moduleList.begin();
-
+	
 	while (iterator1 != moduleList.end())
 	{
 		moduleThunk = &(iterator1->second);
 
 		iterator2 = moduleThunk->thunkList.begin();
-
+		
 		while (iterator2 != moduleThunk->thunkList.end())
 		{
 			importThunk = &(iterator2->second);
-
+			
 			if (importThunk->valid == false)
 			{
 				firstUnresImp->InvalidApiAddress = importThunk->apiAddressVA;
 				firstUnresImp->ImportTableAddressPointer = importThunk->va;
 				firstUnresImp++;
 			}
-
+			
 			iterator2++;
 		}
-
+		
 		iterator1++;
 	}
+	
 
 	firstUnresImp->InvalidApiAddress = 0;
 	firstUnresImp->ImportTableAddressPointer = 0;
@@ -344,75 +345,91 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 	printf("Unresolved imports detected...\n");
 
 	PUNRESOLVED_IMPORT unresolvedImport = 0;
-	unresolvedImport = (PUNRESOLVED_IMPORT)calloc(numberOfUnresolvedImports, sizeof(UNRESOLVED_IMPORT));
-
+	//allocate the structure in order to keep track of the unresolved imports
+	//(numberOfUnresolvedImport +1) because we beed one last structure as end of the list
+	unresolvedImport = (PUNRESOLVED_IMPORT)malloc(sizeof(UNRESOLVED_IMPORT)*(numberOfUnresolvedImports + 1));
 	addUnresolvedImports(unresolvedImport, moduleList);
 	//local variable
+	int max_instruction_size = sizeof(UINT8)*15;
 	int insDelta;
 	char buffer[2048];
-	DWORD_PTR IATbase;
-	int i,j;
+	int j,instruction_size;
 	INSTRUCTION inst;
 	DWORD_PTR invalidApiAddress = 0;
 	MEMORY_BASIC_INFORMATION memBasic = {0};
+	LPVOID instruction_buffer = (LPVOID)malloc(max_instruction_size);
+		
 	while (unresolvedImport->ImportTableAddressPointer != 0) //last element is a nulled struct
 	{
+
 		bool resolved = false;
-		memset(buffer, 0x00, sizeof(buffer));
+
 		insDelta = 0;
 		invalidApiAddress = unresolvedImport->InvalidApiAddress;
 		//get the starting IAT address to be analyzed yet
-		IATbase = unresolvedImport->InvalidApiAddress;
+		
 		for (j = 0; j <  1000; j++)
 		{
-			//if we cannot query this memory address then bypass the analysis of this address
-			if (!VirtualQuery((LPVOID)(IATbase), &memBasic, sizeof(MEMORY_BASIC_INFORMATION)))
+			//DebugBreak();
+			//if we cannot query the invalidApiAddress then bypass the analysis of this address
+			SIZE_T result = VirtualQueryEx(ProcessAccessHelp::hProcess,(LPVOID)invalidApiAddress, &memBasic, sizeof(MEMORY_BASIC_INFORMATION));
+			if (!result || memBasic.State != MEM_COMMIT || memBasic.Protect == PAGE_NOACCESS)
 			{
-				insDelta = insDelta + i;
-				IATbase = IATbase + i;
-				continue;
+				//if the memory region pointed by invalidApiAddress isn't mapped break the for loop and check the next unresolved import
+				break;
 			}
-			memset(&inst, 0x00, sizeof(INSTRUCTION));
-			//get the disassembled instruction
-			fflush(stdout);
-			i = get_instruction(&inst, (BYTE *)IATbase, MODE_32);
+			//read the memory pointed by invalidApiAddress of the external process in order to disassembke the first instruction found
+			//we read 15 bytes because in the x86varchitectures the instructions are guaranteed to fit in 15 bytes
+			ProcessAccessHelp::readMemoryFromProcess(invalidApiAddress, max_instruction_size, instruction_buffer);
+			//disassemble the first instruction in the buffer
+			//instruction_size will contains the length of the disassembled instruction (0 if fails)
+			instruction_size = get_instruction(&inst, (BYTE *)instruction_buffer, MODE_32);
 			//if libdasm fails to recognize the insruction bypass this instruction
-			if(i==0){
-				insDelta = insDelta + i;
-				IATbase = IATbase + i;
+			//WRONG!!
+			if(instruction_size == 0){
+				invalidApiAddress = invalidApiAddress + 1;
+				insDelta = insDelta + 1;
 				continue;
 			}
-			memset(buffer, 0x00, sizeof(buffer));
 			get_instruction_string(&inst, FORMAT_ATT, 0, buffer, sizeof(buffer));
-			//check if it is a jump
+			//check if it is a jump		
 			if (strstr(buffer, "jmp"))
-			{
+			{				
 				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
-				unsigned int correct_address = ( (unsigned int)strtol(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
-				*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
+				unsigned int correct_address = ( (unsigned int)std::strtoul(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
+				//ProcessAccessHelp::readMemoryFromProcess((DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), 0x4, debug_buffer);
+				printf("\n\n---------------- MINI REP --------------\n");
+				printf("INST %s: \n", buffer);
+				printf("INVALID API :  %08x \n", invalidApiAddress);
+				printf("INST DELTA %d \n", insDelta);
+				//printf("IAT POINTER : %p\n", debug_buffer);
+				printf("CORRECT ADDR : %08x\n", correct_address);
+				printf("SIZE OF CORRECT ADDR: %d\n", sizeof(correct_address));
+				printf("---------------- END MINI REP --------------\n\n");
+				ProcessAccessHelp::writeMemoryToProcess( (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), sizeof(correct_address), &correct_address);
+				//*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
 				//unresolved import probably resolved
 				resolved = true;
 				break;
 			}
 			//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
-			else{
-				insDelta = insDelta + i;
-			}
+			insDelta = insDelta + instruction_size;
 			//check the next row inthe IAT
-			IATbase = IATbase + i;
+			invalidApiAddress = invalidApiAddress + instruction_size;
 		}
-		//if we cannot resolve the import fix it with a dummy address so scylla isn't able to resolve the API and it will remove the unresolved import
+		//if we cannot resolve the import fix it with a dummy address so scylla isn't able to resolve the API and it will remove the unresolved import		
 		if(!resolved){
-			*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  0x0;
+			unsigned int correct_address = 0x0;
+			ProcessAccessHelp::writeMemoryToProcess( (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), sizeof(correct_address), &correct_address);
 			resolved = false;
 		}
 		unresolvedImport++; //next pointer to struct
 	}
-
+	
 }
 
 
-int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile)
+int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile,  DWORD advance_iat_fix_flag)
 {
 	ApiReader apiReader;
 	ProcessLister processLister;
@@ -448,34 +465,36 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	apiReader.readApisFromModuleList();		//fill the apiReader::apiList with the function exported by the dll in ProcessAccessHelp::moduleList
 
 	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
-
-	//DEBUG
-
-	DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
-	printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImports);
+	//if we want the advanced iat fix technique
+	if(advance_iat_fix_flag){
+		//get the number of unresolved immports based on the current module list
+		DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
+		printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImports);
+		//if we have some unresolved imports (IAT entry not resolved)
+		printf("\n-------BEFORE:-------------\n");
+		displayModuleList(moduleList);
 	
-	if (numberOfUnresolvedImports != 0){
-
-		customFix(numberOfUnresolvedImports, moduleList);
-
-		apiReader.clearAll();
-
-		//moduleList.clear();
-
-		ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
-
-		apiReader.readApisFromModuleList();
-
-		apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
+		if (numberOfUnresolvedImports != 0){
 		
+			customFix(numberOfUnresolvedImports, moduleList);
+
+			apiReader.clearAll();
+
+			//moduleList.clear();
+
+			ProcessAccessHelp::getProcessModules(ProcessAccessHelp::hProcess, ProcessAccessHelp::moduleList);
+
+			apiReader.readApisFromModuleList();
+
+			apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
+		
+		}
+	
+		printf("\n-------AFTER:-------------\n");
+		displayModuleList(moduleList);
 	}
 
-	displayModuleList(moduleList);
-
-	//FINE DEBUG
-
 	//add IAT section to dump
-
 	ImportRebuilder importRebuild(dumpFile);
 
 	importRebuild.enableOFTSupport();

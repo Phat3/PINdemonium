@@ -227,4 +227,5 @@ public:
     static bool isPageExecutable( DWORD Protect );
 	static bool isPageAccessable( DWORD Protect );
     static SIZE_T getSizeOfImageProcessNative( HANDLE processHandle, DWORD_PTR moduleBase );
+
 };

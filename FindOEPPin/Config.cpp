@@ -1,8 +1,5 @@
 #include "Config.h"
 
-//mode of operation
-const bool Config::UNPACKING_MODE = true;
-const bool Config::EVASION_MODE =  true;
 
 //constanth path and variable for our logging system
 const string Config::PIN_DIRECTORY_PATH_OUTPUT = "C:\\pin\\PinUnpackerResults\\";
@@ -20,10 +17,9 @@ const string Config::DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "du
 
 //Tuning Flags
 
-const bool  Config::INTER_WRITESET_ANALYSIS_ENABLE = true;
-const bool  Config::ATTACH_DEBUGGER = false;
+
+const bool Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
-const UINT32 Config::WRITEINTERVAL_MAX_NUMBER_JMP = 6;
 const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
 
 // Divisor of the timing 

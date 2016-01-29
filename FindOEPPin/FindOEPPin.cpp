@@ -26,6 +26,33 @@ ProcInfo *proc_info = ProcInfo::getInstance();
 
 
 
+//------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
+
+KNOB <UINT32> KnobInterWriteSetAnalysis(KNOB_MODE_WRITEONCE, "pintool",
+    "iwae", "0" , "specify if you want or not to track the inter_write_set analysis dumps and how many jump");
+
+KNOB <BOOL> KnobAntiEvasion(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev", "false" , "specify if you want or not to activate the anti evasion engine");
+
+KNOB <BOOL> KnobAntiEvasionINSpatcher(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev-ins", "false" , "specify if you want or not to activate the single patching of evasive instruction as int2e, fsave...");
+
+KNOB <BOOL> KnobAntiEvasionSuspiciousRead(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev-sread", "false" , "specify if you want or not to activate the handling of suspicious reads");
+
+KNOB <BOOL> KnobAntiEvasionSuspiciousWrite(KNOB_MODE_WRITEONCE, "pintool",
+    "antiev-swrite", "false" , "specify if you want or not to activate the handling of suspicious writes");
+
+KNOB <BOOL> KnobUnpacking(KNOB_MODE_WRITEONCE, "pintool",
+    "unp", "false" , "specify if you want or not to activate the unpacking engine");
+
+KNOB <BOOL> KnobAdvancedIATFixing(KNOB_MODE_WRITEONCE, "pintool",
+    "adv-iatfix", "false" , "specify if you want or not to activate the advanced IAT fix technique");
+
+//------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
+
+
+
 // This function is called when the application exits
 VOID Fini(INT32 code, VOID *v){
 	//DEBUG --- inspect the write set at the end of the execution
@@ -33,9 +60,14 @@ VOID Fini(INT32 code, VOID *v){
 	MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
 	//DEBUG --- get the execution time
 	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+
+	//ProcInfo *proc_info = ProcInfo::getInstance();
+	//proc_info->PrintWhiteListedAddr();
+
 	CLOSELOG();
 	Config::getInstance()->closeReportFile();
 
+	
 }
 
 
@@ -44,10 +76,6 @@ INT32 Usage(){
 	PIN_ERROR("This Pintool unpacks common packers\n" + KNOB_BASE::StringKnobSummary() + "\n");
 	return -1;
 }
-
-
-
-
 
 // - Get initial entropy
 // - Get PE section data 
@@ -140,12 +168,12 @@ void Instruction(INS ins,void *v){
 	}
 	*/
 
-
-	if(Config::EVASION_MODE){
+	Config *config = Config::getInstance();
+	if(config->ANTIEVASION_MODE){
 		thider.avoidEvasion(ins);
 	}
 
-	if(Config::UNPACKING_MODE){
+	if(config->UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
 	}	
 }
@@ -167,7 +195,26 @@ void initDebug(){
 	PIN_SetDebugMode(&mode);
 }
 
+void ConfigureTool(){
+	
+	Config *config = Config::getInstance();
+	config->INTER_WRITESET_ANALYSIS_ENABLE = KnobInterWriteSetAnalysis.Value();	
+	config->ANTIEVASION_MODE = KnobAntiEvasion.Value();
+	config->ANTIEVASION_MODE_INS_PATCHING = KnobAntiEvasionINSpatcher.Value();
+	config->ANTIEVASION_MODE_SREAD = KnobAntiEvasionSuspiciousRead.Value();
+	config->ANTIEVASION_MODE_SWRITE = KnobAntiEvasionSuspiciousWrite.Value();
+	config->UNPACKING_MODE = KnobUnpacking.Value();
+	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
 
+	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= 10 ){
+		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
+	}
+	else{
+		MYWARN("Invalid number of jumps to track, se to default value: 2\n");
+		config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have invalid value 
+	}
+
+}
 
 /* ===================================================================== */
 /* Main                                                                  */
@@ -180,16 +227,22 @@ int main(int argc, char * argv[]){
 		initDebug();
 	}
 
+
+	MYINFO("Starting prototype ins");
+	//W::DebugBreak();
 	FilterHandler *filterH = FilterHandler::getInstance();
 	//set the filters for the libraries
 	MYINFO("%s",Config::FILTER_WRITES_ENABLES.c_str());
 	//filterH->setFilters(Config::FILTER_WRITES_ENABLES);
+	
 	//get the start time of the execution (benchmark)
 	tStart = clock();
+	
 	// Initialize pin
 	PIN_InitSymbols();
 
 	if (PIN_Init(argc, argv)) return Usage();
+
 	
 	INS_AddInstrumentFunction(Instruction,0);
 
@@ -205,6 +258,9 @@ int main(int argc, char * argv[]){
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
+
+	ConfigureTool();
+
 
 	// Start the program, never returns
 	PIN_StartProgram();

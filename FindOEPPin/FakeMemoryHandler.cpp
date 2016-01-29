@@ -1,16 +1,6 @@
 #include "FakeMemoryHandler.h"
 
 
-typedef struct _MODULEINFO {
-    W::LPVOID lpBaseOfDll;
-    W::DWORD  SizeOfImage;
-    W::LPVOID EntryPoint;
-	} MODULEINFO, *LPMODULEINFO;
-
-typedef W::DWORD (WINAPI *MyEnumProcessModules)(W::HANDLE hProcess, W::HMODULE *lphModule, W::DWORD cb, W::LPDWORD lpcbNeeded);
-typedef W::DWORD (WINAPI *MyGetModuleInformation)(W::HANDLE hProcess, W::HMODULE HModule, LPMODULEINFO module_info, W::DWORD  cb);
-
-
 
 FakeMemoryHandler::FakeMemoryHandler(void)
 {
@@ -20,6 +10,11 @@ FakeMemoryHandler::FakeMemoryHandler(void)
 	ntdllHooksNamesPatch.insert(std::pair<string,string>("KiUserCallbackDispatcher","\x64\x8B\x0D\x00\x00\x00\x00"));
 	ntdllHooksNamesPatch.insert(std::pair<string,string>("KiUserExceptionDispatcher","\xFC\x8B\x4C\x24\x04"));
 	ntdllHooksNamesPatch.insert(std::pair<string,string>("LdrInitializeThunk","\x8B\xFF\x55\x8B\xEC"));
+
+	
+	this->hPsapi = W::LoadLibraryA("psapi.dll");
+	this->enumProcessModules = (MyEnumProcessModules) W::GetProcAddress(hPsapi, "EnumProcessModules");
+	this->getModuleInformation= (MyGetModuleInformation) W::GetProcAddress(hPsapi,"GetModuleInformation");
 	
 }
 
@@ -27,6 +22,7 @@ FakeMemoryHandler::FakeMemoryHandler(void)
 
 FakeMemoryHandler::~FakeMemoryHandler(void)
 {
+	//W::FreeLibrary(this->hPsapi);
 }
 
 ADDRINT FakeMemoryHandler::ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFuncAddr){
@@ -130,6 +126,8 @@ ADDRINT FakeMemoryHandler::KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 }
 
 VOID FakeMemoryHandler::initFakeMemory(){
+
+
 	//Hide the ntdll hooks
 	for(map<string,string>::iterator it = ntdllHooksNamesPatch.begin(); it != ntdllHooksNamesPatch.end();++it){
 		const char  *funcName = it->first.c_str();
@@ -219,36 +217,20 @@ VOID printProcessHeap(){
 
 BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 	
-	//MYINFO("Calling current dlls");
-	
 	W::HMODULE hMods[1024];
 	char Buffer[2048];
-
 	W::LPTSTR pBuffer = Buffer;
-
     W::DWORD cbNeeded;
 	BOOL isDll = FALSE;
-
-	W::HINSTANCE hPsapi = NULL;
-	MyEnumProcessModules enumProcessModules = NULL;
-	MyGetModuleInformation getModuleInformation = NULL;
-
-
-	hPsapi = W::LoadLibraryA("psapi.dll");
 	W::HANDLE process = W::GetCurrentProcess(); 
-
 	MODULEINFO mi;
-
-	enumProcessModules = (MyEnumProcessModules) W::GetProcAddress(hPsapi, "EnumProcessModules");
-	getModuleInformation= (MyGetModuleInformation) W::GetProcAddress(hPsapi,"GetModuleInformation");
-
-
-	if( enumProcessModules(process, hMods, sizeof(hMods), &cbNeeded))
+	
+	if( this->enumProcessModules(process, hMods, sizeof(hMods), &cbNeeded))
     {
         for (int  i = 0; i < (cbNeeded / sizeof(W::HMODULE)); i++ )
         {
 
-            getModuleInformation(process,hMods[i], &mi,sizeof(mi));
+            this->getModuleInformation(process,hMods[i], &mi,sizeof(mi));
 		    GetModuleFileNameA(hMods[i], pBuffer,sizeof(Buffer));
 			
 			//MYINFO("I've added %s to the list of know libary\n", Buffer);
@@ -283,10 +265,7 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 			}
         }
     }
-	
-	
-	W::FreeLibrary(hPsapi);
-	
+
 	return TRUE;
 
 }
@@ -319,27 +298,22 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 		//MYINFO("Detected suspicious read at %08x ",address);
 		ProcInfo *p = ProcInfo::getInstance();
 
-		
-		//********************** POC **********************
-		// DA TESTARE ANCORA SE E' POSSIBILE RIMUOVERE QUESTE 2 COSE DA QUA
-		// SE NON E' POSSIBILE ALLORA FARE IN MODO DI CHECKARE SE address E'  
-		// ALL'INTERNO DEGLI INDIRIZZI NUOVI AGGIUNTI IN addProcessHeapsAddress
-		// COSI' RISPARMIAMO TEMPO AL POSTO CHE CHECKARE L'INTERA WHITELIST
+		// here the whitelist is updated and we check also if the address is inside the new discovere heaps
+		if(p->addProcessHeapsAndCheckAddress(address)){
 
-		
-		p->addProcessHeapsAddress();  // here the whitelist is updated 
+			//MYINFO("@@@@@@Calling addProcessHeapAndCheckAddress\n");
+			return address;
+		}	  
 
 		//p->setCurrentMappedFiles();
-
+		/*
 		if(isAddrInWhiteList(address)){
 			//printProcessHeap();
 			//p->printHeapList();
 			return address;
 		}
-		
+		*/
 
-
-		//********************** POC **********************
 		//printProcessHeap();
 		//p->printHeapList();
 		if(CheckInCurrentDlls(address)){

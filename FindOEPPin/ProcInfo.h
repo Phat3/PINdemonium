@@ -159,7 +159,7 @@ public:
 	//Debug
 	void printHeapList();
 	void PrintAllMemory();
-	VOID addProcessHeapsAddress();
+	BOOL addProcessHeapsAndCheckAddress(ADDRINT address);
 
 	
 

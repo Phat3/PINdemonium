@@ -38,10 +38,6 @@ public:
 	void Config::writeOnTimeLog(string s);
 	void setWorking (int working);
 
-	//mode of operation
-	static const bool UNPACKING_MODE;
-	static const bool EVASION_MODE;
-
 	//files and paths
 	static const string PIN_DIRECTORY_PATH_DEP;
 	static const string PIN_DIRECTORY_PATH_OUTPUT;
@@ -56,11 +52,24 @@ public:
 	static const string DUMPER_SELECTOR_PATH;
 
 
-	//Tuning Flags
+	//--------------------------Command line Tuning Flags----------------------------
 	static const bool  ATTACH_DEBUGGER;
-	static const bool INTER_WRITESET_ANALYSIS_ENABLE; //Trigger the analysis inside a WriteSet in which WxorX is already broken if a Long JMP is encontered (MPress packer)
+	
+	//Tunable from command line
+	bool INTER_WRITESET_ANALYSIS_ENABLE; //Trigger the analysis inside a WriteSet in which WxorX is already broken if a Long JMP is encontered (MPress packer)
+	UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
+
+	//mode of operation
+    bool UNPACKING_MODE;
+    bool ANTIEVASION_MODE;
+	bool ANTIEVASION_MODE_INS_PATCHING;
+	bool ANTIEVASION_MODE_SREAD;
+	bool ANTIEVASION_MODE_SWRITE;
+	bool ADVANCED_IAT_FIX;
+
+	//--------------------------Command line Tuning Flags----------------------------
+
 	static const string FILTER_WRITES_ENABLES;        //Which write instructions are filtered(possible values: 'stack teb')
-	static const UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
 	static const UINT32 TIMEOUT_TIMER_SECONDS;
 	static const UINT32 TICK_DIVISOR; //this is used in order to lowe the ticks returnedd from GetTickCount and timeGetTime 
 	static const UINT32 CC_DIVISOR; // this is used in order to lower the microseconds returned from the QueryPerformanceCounter 

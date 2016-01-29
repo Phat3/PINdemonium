@@ -419,7 +419,7 @@ void ProcInfo::addProcAddresses(){
 	addContextDataAddress();
 	addCodePageDataAddress();
 	addSharedMemoryAddress();
-	addProcessHeapsAddress();
+	addProcessHeapsAndCheckAddress(NULL);
 	addpShimDataAddress();
 	addpApiSetMapAddress();
 	addKUserSharedDataAddress();
@@ -698,7 +698,9 @@ VOID ProcInfo::addKUserSharedDataAddress(){
 
 
 //Adding the ProcessHeaps to the generic Memory Ranges
-VOID ProcInfo::addProcessHeapsAddress(){
+BOOL ProcInfo::addProcessHeapsAndCheckAddress(ADDRINT eip){
+
+	BOOL isEipDiscoveredHere = FALSE;
 	/*
 	if(!genericMemoryRanges.empty()) {
 		genericMemoryRanges.clear();
@@ -710,14 +712,14 @@ VOID ProcInfo::addProcessHeapsAddress(){
 	W::DWORD NumberOfHeaps = W::GetProcessHeaps(0, NULL);
     if (NumberOfHeaps == 0) {
 		MYERRORE("Error in retrieving number of Process Heaps");
-		return;
+		return isEipDiscoveredHere;
 	}
 	//Allocating space for the ProcessHeaps Addresses
 	W::SIZETMult(NumberOfHeaps, sizeof(*aHeaps), &BytesToAllocate);
 	aHeaps = (W::PHANDLE)W::HeapAlloc(W::GetProcessHeap(), 0, BytesToAllocate);
 	 if ( aHeaps == NULL) {
 		MYERRORE("HeapAlloc failed to allocate space");
-		return;
+		return isEipDiscoveredHere;
 	} 
 
 	W::GetProcessHeaps(NumberOfHeaps,aHeaps);
@@ -727,8 +729,14 @@ VOID ProcInfo::addProcessHeapsAddress(){
 		if(getMemoryRange((ADDRINT) aHeaps[i],processHeap)){
 			//MYINFO("Init processHeaps base address  %08x -> %08x",processHeap.StartAddress,processHeap.EndAddress);
 			genericMemoryRanges.push_back(processHeap);
+			if(eip >= processHeap.StartAddress && eip <= processHeap.EndAddress){
+				isEipDiscoveredHere = TRUE;
+			}
 		}
     }
+	 
+	 //MYINFO("Added some heaps@@@@\n");
+	 return isEipDiscoveredHere;
 }
 
 
@@ -892,17 +900,33 @@ VOID ProcInfo::mergeCurrentMemory(){
 void ProcInfo::PrintWhiteListedAddr(){
 	//Iterate through the already whitelisted memory addresses
 
-	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin(); item != whiteListMemory.end(); ++item) {
-		MYPRINT("Whitelisted  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
-	}	
+	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {
+		MYINFO("[MEMORY RANGE]Whitelisted  %08x  ->  %08x\n",item->StartAddress,item->EndAddress);				
+	}
 
+	for(std::vector<HeapZone>::iterator item = this->HeapMap.begin(); item != this->HeapMap.end(); ++item) {
+			MYINFO("[HEAPZONES]Whitelisted  %08x  ->  %08x\n",item->begin,item->end);				
+	}
+
+	for(std::vector<LibraryItem>::iterator item = this->unknownLibraries.begin(); item != this->unknownLibraries.end(); ++item) {
+		MYINFO("[UNKNOWN LIBRARY ITEM]Whitelisted  %08x  ->  %08x\n",item->StartAddress,item->EndAddress);				
+	}
+
+	for(std::vector<LibraryItem>::iterator item = this->knownLibraries.begin(); item != this->knownLibraries.end(); ++item) {
+		MYINFO("[KNOWN LIBRARY ITEM]Whitelisted  %08x  ->  %08x\n",item->StartAddress,item->EndAddress);				
+	}
+
+	for(std::vector<MemoryRange>::iterator item = this->mappedFiles.begin(); item != this->mappedFiles.end(); ++item) {
+		MYINFO("[MAPPED FILES]Whitelisted  %08x  ->  %08x\n",item->StartAddress,item->EndAddress);				
+	}
 
 	/*
 	//iterate through the allocated memory addresses
 	for(std::vector<HeapZone>::iterator item = HeapMap.begin(); item != HeapMap.end(); ++item) {
 		MYINFO("Whitelisted dynamic %08x  ->  %08x",item->begin,item->end)		;						
 	}
-
+	*/
+	/*
 	for(std::vector<LibraryItem>::iterator lib = LibrarySet.begin(); lib != LibrarySet.end(); ++lib) {
 		MYINFO("Whitelisted library %08x  ->  %08x",lib->StartAddress,lib->StartAddress)		;	
 	}

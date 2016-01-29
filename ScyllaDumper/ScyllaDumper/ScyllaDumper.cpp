@@ -15,7 +15,7 @@
 #define SCYLLA_SUCCESS_FIX 0
 
 
-UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile);
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag);
 BOOL GetFilePathFromPID(DWORD dwProcessId, WCHAR *filename);
 DWORD_PTR GetExeModuleBase(DWORD dwProcessId);
 
@@ -29,80 +29,124 @@ int wmain(int argc, wchar_t *argv[]){
 
 	
 	if(argc < 4){
-		INFO("ScyllaTest.exe <pid> <oep> <output_file>");
+		INFO("ScyllaTest.exe <pid> <oep> <output_file> <advance_iat_fix_flag>");
 		return -1;
 	}
-	INFO("argv0 %S argv1 %S argv2 %S argv3 %S",argv[0],argv[1],argv[2],argv[3]);
+	INFO("argv0 %S argv1 %S argv2 %S argv3 %S argv4 %S",argv[0],argv[1],argv[2],argv[3], argv[4]);
 	DWORD pid = _wtoi(argv[1]);
 	// DWORD_PTR oep  = _wtoi(argv[2]);// Works if passed and integer base 10 value
 	DWORD_PTR oep = wcstoul(argv[2],NULL,16);
-	
 	WCHAR *outputFile = argv[3];
-	return IATAutoFix(pid, oep, outputFile);
+	DWORD advance_iat_fix_flag = _wtoi(argv[4]);
+	//DebugBreak();
+	return IATAutoFix(pid, oep, outputFile, advance_iat_fix_flag);
 	
 }
 
 
 
 
-
-
-
-
-UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile)
+BOOL isMemoryReadable(DWORD pid, void *ptr, size_t byteCount)
 {
-	INFO("----------------IAT Fixing Test----------------\n");
+  MEMORY_BASIC_INFORMATION mbi;
+  HANDLE hProcess = 0;
+  hProcess =  OpenProcess(PROCESS_VM_OPERATION|PROCESS_QUERY_INFORMATION|PROCESS_VM_READ, 0, pid);
+  if(hProcess){
+	  if (VirtualQueryEx(hProcess, ptr, &mbi, sizeof(MEMORY_BASIC_INFORMATION)) == 0)
+		return false;
 
-	
+	  if (mbi.State != MEM_COMMIT || mbi.Protect == PAGE_NOACCESS)
+		return false;
+
+	  return true;
+  }
+  return false;
+}
+
+
+
+
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile,  DWORD advance_iat_fix_flag)
+{
+
 	DWORD_PTR iatStart = 0;
 	DWORD iatSize = 0;
 	WCHAR originalExe[MAX_PATH]; // Path of the original PE which as launched the current process
-	WCHAR *dumpFile = L"./tmp_dump_file.exe";  //Path of the file where the process will be dumped during the Dumping Process
-	
+	WCHAR *tmp_dump = L"./tmp_dump_file.exe";  //Path of the file where the process will be dumped during the Dumping Process
+
 	//getting the Base Address
 	DWORD_PTR hMod = GetExeModuleBase(pid);
 	if(!hMod){
-		DEBUG("Can't find PID");
+		INFO("Can't find PID");
 	}
-	INFO("GetExeModuleBase %X\n", hMod);
-
-	
+	INFO("GetExeModuleBase %X", hMod);
 
 	//Dumping Process
 	BOOL success = GetFilePathFromPID(pid,originalExe);
 	if(!success){
-		ERRORE("Error in getting original Path from Pid: %d\n",pid);
+		INFO("Error in getting original Path from Pid: %d",pid);
 		return SCYLLA_ERROR_FILE_FROM_PID;
 	}
-	INFO("Original Exe Path: %S\n",originalExe);
-	
-	/* hMod is the reference to the ExE module base */
-	success = ScyllaDumpProcessW(pid,originalExe,hMod,oep,dumpFile);
+	INFO("Original Exe Path: %S",originalExe);
+		
+	success = ScyllaDumpProcessW(pid,originalExe,hMod,oep,tmp_dump);
 	if(!success){
-		ERRORE("Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
+		INFO("[SCYLLA DUMP] Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,tmp_dump);
 		return SCYLLA_ERROR_DUMP;
 	}
-	INFO("Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S \n",pid,originalExe,hMod,oep,dumpFile);
+	INFO("[SCYLLA DUMP] Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,tmp_dump);
 		
 	//DebugBreak();
 	//Searching the IAT
 	int error = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, TRUE);
-	if(error){
-		ERRORE("(IAT SEARCH) error %d \n",error);
-		return SCYLLA_ERROR_IAT_NOT_FOUND;
-	}
-	INFO("(IAT SEARCH) iatStart %X iatSize %X\n",iatStart, iatSize);
+
+	//check if ScyllaIATSearch failed and if the result IAT address is readable
 	
+	if(error || !isMemoryReadable(pid, (void *) iatStart,iatSize)){
+
+		/*Display why the Scylla IAT Search failed: 
+			- error in IAT search
+			- address found not readable */
+		if(error){  
+			ERRORE("[SCYLLA ADVANCED SEARCH] error %d  ",error); 
+		}
+		else{
+				ERRORE("[SCYLLA ADVANCED SEARCH] IAT address not readable/mapped iat_start : %08x\t iat_size : %08x\t  ",iatStart,iatSize);
+		}
+		
+		INFO("[SCYLLA SEARCH] Trying basic IAT search");
+
+		//Trying  Basic IAT search
+		int error2 = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, FALSE);
+		if(error2  || !isMemoryReadable(pid, (void *) iatStart,iatSize)){
+
+			/*Display why the Scylla IAT Search failed: 
+			 - error in IAT search
+			 - address found not readable */
+			if(error2){  
+				ERRORE("[SCYLLA BASIC SEARCH] error %d  ",error2); 
+			}
+			else{
+				 ERRORE("[SCYLLA BASIC SEARCH] IAT address  not readable/mapped iat_start : %08x\t iat_size : %08x\t ",iatStart,iatSize);
+			}
+			return SCYLLA_ERROR_IAT_NOT_FOUND;
+		}
+	}
+
+	INFO("[SCYLLA SEARCH] iat_start : %08x\t iat_size : %08x\t pid : %d", iatStart,iatSize,pid,outputFile);
 	
 	//Fixing the IAT
-	INFO("\n\n\n\nFIXING ...... start : %08x\t size : %08x\t pid : %d\t output : %s\n\n\n\n", iatStart,iatSize,pid,dumpFile,outputFile);
-
-	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,dumpFile,outputFile);
+	//DebugBreak();
+	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmp_dump,outputFile,advance_iat_fix_flag);
 	if(error){
-		ERRORE("(IAT FIX) error %d",error);
+		INFO("[SCYLLA FIX] error %d",error);
 		return SCYLLA_ERROR_IAT_NOT_FIXED;
 	}
-	INFO("[IAT FIX] Success");
+
+	//Removing the correct dump from the not working directory
+	_wremove(tmp_dump);
+
+	INFO("[SCYLLA FIX] Success fixed file at %S",outputFile);
 	return SCYLLA_SUCCESS_FIX;
 	
 }
