@@ -37,8 +37,8 @@ ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 	ADDRINT fakeAddr = fakeWrite.getFakeWriteAddress(write_addr);
 
 
-	if(fakeAddr == NULL){
-		MYINFO("wwwwwwwwwwwwwwww %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , write_addr);
+	if(fakeAddr != write_addr){
+		MYINFO("wwwwwwwwwwwwwwww suspicious write from %08x in %s",eip, RTN_FindNameByAddress(write_addr).c_str());
 	}
 	
 
@@ -135,7 +135,7 @@ void ToolHider::avoidEvasion(INS ins){
 			IARG_RETURN_REGS, writeReg, // this is an output param
 			IARG_END);
 				
-			INS_RewriteMemoryOperand(ins, op, writeReg); 
+			//INS_RewriteMemoryOperand(ins, op, writeReg); 
 			
 		}	
 	}	
