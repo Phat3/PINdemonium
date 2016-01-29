@@ -24,8 +24,6 @@ ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
 	
 	}
 
-	//MYINFO("read_addr was %08x\n",read_addr);
-	//MYINFO("fakeAddr is %08x\n",fakeAddr);
 	return fakeAddr;
 }
 
@@ -36,14 +34,10 @@ ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
 	ADDRINT fakeAddr = fakeWrite.getFakeWriteAddress(write_addr);
 
-
 	if(fakeAddr == NULL){
 		MYINFO("wwwwwwwwwwwwwwww %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , write_addr);
 	}
 	
-
-	//MYINFO("write addr was %08x\n",write_addr);
-	//MYINFO("fakeAddr is %08x\n",fakeAddr);
 	return fakeAddr;
 }
 
@@ -124,7 +118,7 @@ void ToolHider::avoidEvasion(INS ins){
 	if(config->ANTIEVASION_MODE_SWRITE){
 	//3. memory write filter	
 	for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
-		if(INS_MemoryOperandIsWritten(ins,op)){
+		if(INS_MemoryOperandIsWritten(ins,op) && INS_IsMov(ins)){
 			//MYINFO("Cur instruction %s ",INS_Disassemble(ins).c_str());
 			REG writeReg = GetScratchReg(op);
 			
