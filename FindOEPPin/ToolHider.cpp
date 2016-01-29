@@ -34,8 +34,8 @@ ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
 	ADDRINT fakeAddr = fakeWrite.getFakeWriteAddress(write_addr);
 
-	if(fakeAddr == NULL){
-		MYINFO("wwwwwwwwwwwwwwww %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , write_addr);
+	if(fakeAddr != write_addr){
+		MYINFO("wwwwwwwwwwwwwwww suspicious write from %08x in %s in %08x redirected to %08x", eip, RTN_FindNameByAddress(write_addr).c_str(), write_addr, fakeAddr);
 	}
 	
 	return fakeAddr;
