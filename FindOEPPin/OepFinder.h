@@ -27,14 +27,16 @@ public:
 	~OepFinder(void);
 	UINT32 IsCurrentInOEP(INS ins);
 
+
 private:
 	//check if the current instruction is a pushad or a popad
 	//if so then set the proper flags in ProcInfo
 	void handlePopadAndPushad(INS ins);
 	BOOL analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip);
 	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex, WriteInterval item);
-	UINT32 DumpAndFixIAT(ADDRINT curEip);
 	void getCurrentDlls();
+	UINT32 DumpAndFixIAT(ADDRINT curEip);
+
 
 };
 

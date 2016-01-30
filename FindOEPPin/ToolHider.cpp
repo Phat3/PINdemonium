@@ -18,10 +18,11 @@ ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
 	ADDRINT fakeAddr = fakeMem.getFakeMemory(read_addr);
 
+	ProcInfo *pInfo = ProcInfo::getInstance();
+
 	if(fakeAddr==NULL){
 
 		MYINFO("xxxxxxxxxxxxxx %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr);
-	
 	}
 
 	return fakeAddr;
@@ -36,6 +37,7 @@ ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 
 	if(fakeAddr != write_addr){
 		MYINFO("wwwwwwwwwwwwwwww suspicious write from %08x in %s in %08x redirected to %08x", eip, RTN_FindNameByAddress(write_addr).c_str(), write_addr, fakeAddr);
+		MYINFO("Binary writes %08x %08x %08x %08x\n" , *(unsigned int *)(fakeAddr) , *(unsigned int *)(fakeAddr+4) , *(unsigned int *)(fakeAddr+8), *(unsigned int *)(fakeAddr+12));
 	}
 	
 	return fakeAddr;
@@ -76,7 +78,7 @@ void ToolHider::avoidEvasion(INS ins){
 		return;
 	}
 
-	//MYINFO("[DEBUG] RTN: %s EIP: %08x INS: %s\n", RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	MYINFO("[DEBUG] THEAD: %08x RTN: %s EIP: %08x INS: %s\n", PIN_ThreadId() ,RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 
 
 	// 1 - single instruction detection

@@ -17,7 +17,20 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualProtect",VIRTUALPROTECT_INDEX) );
 
 
+	// DEBUGGING OBSIDIUM -----
+	this->functionsMap.insert( std::pair<string,int>("CreateFileW",ANOTHERHOOK) );
 
+	this->functionsMap.insert( std::pair<string,int>("RegOpenKeyExW",ANOTHERHOOK2));
+
+			this->functionsMap.insert( std::pair<string,int>("RegGetValueW",ANOTHERHOOK3));
+
+		this->functionsMap.insert( std::pair<string,int>("RegQueryValueExW",ANOTHERHOOK3));
+
+	
+	
+
+
+	
 }
 
 
@@ -149,6 +162,44 @@ VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProt
 	}
 	MYINFO("calling Virutalprotect at address %08x ->  %08x",(ADDRINT)baseAddress,size + (ADDRINT)baseAddress);
 }
+
+VOID AnotherHook ( W::LPCWSTR file_name) {
+	
+	MYINFO("Creating a new file %S\n" , file_name);
+
+	/*
+	W::WCHAR new_name = (W::WCHAR)"c";
+
+	file_name = &new_name;
+
+	*/
+}
+
+VOID AnotherHook2 ( W::LPCWSTR key_name) {
+	
+	MYINFO("Opening a reg-key  %S\n" , key_name);
+
+	/*
+	W::WCHAR new_name = (W::WCHAR)"c";
+
+	file_name = &new_name;
+
+	*/
+}
+
+
+VOID AnotherHook3 ( W::LPCWSTR lib_name) {
+	
+	MYINFO("querying the reg key %S\n" , lib_name);
+
+	/*
+	W::WCHAR new_name = (W::WCHAR)"c";
+
+	file_name = &new_name;
+
+	*/
+}
+
 //----------------------------- HOOKED DISPATCHER -----------------------------//
 
 //scan the image and try to hook all the function specified above
@@ -166,9 +217,7 @@ void HookFunctions::hookDispatcher(IMG img){
 
 			RTN_Open(rtn); 	
 			int index = item->second;
-			va_address = 0x70e626c0; // Stupid pin doesn't recognize correctly the address range of timeGetTime... -.-" 
-			ADDRINT end_address = 0x70e62712;
-			ProcInfo *pInfo = ProcInfo::getInstance();
+
 			//decide what to do based on the function hooked
 			//Different arguments are passed to the hooking routine based on the function
 			switch(index){
@@ -192,13 +241,26 @@ void HookFunctions::hookDispatcher(IMG img){
 					break;
 				case(VIRTUALFREE_INDEX):
 					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)VirtualFreeHook , IARG_FUNCARG_ENTRYPOINT_VALUE,0, IARG_END);
+					break;
 				case(VIRTUALQUERY_INDEX):
 					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualQueryHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0, IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
-			/*	case(VIRTUALPROTECT_INDEX):
+					break;
+					/*	case(VIRTUALPROTECT_INDEX):
 					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualProtectHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCARG_ENTRYPOINT_VALUE, 3, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
 				*/
+				case (ANOTHERHOOK):
+					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)AnotherHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_END);
+					break;
+				case (ANOTHERHOOK2):
+					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)AnotherHook2, IARG_FUNCARG_ENTRYPOINT_VALUE, 1,  IARG_END);
+					break;
+				case (ANOTHERHOOK3):
+					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)AnotherHook3, IARG_FUNCARG_ENTRYPOINT_VALUE, 1,  IARG_END);
+					break;
+
+
 			}			
 			RTN_Close(rtn);
 		}

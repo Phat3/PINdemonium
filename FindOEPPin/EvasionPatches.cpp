@@ -1,4 +1,5 @@
 #include "EvasionPatches.h"
+#include "Config.h"
 #include <regex>
 
 
@@ -24,6 +25,22 @@ VOID patchFsave(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
 	PIN_SetContextFPState(ctxt, &a);
 } 
 
+
+VOID patchRtdsc(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
+
+	unsigned int eax_value = PIN_GetContextReg(ctxt, REG_EAX);
+	unsigned int edx_value = PIN_GetContextReg(ctxt, REG_EDX);
+
+	unsigned int eax_new_value = eax_value/Config::RDTSC_DIVISOR_EAX;
+	unsigned int edx_new_value = edx_value/Config::RDTSC_DIVISOR_EDX;
+
+	MYINFO("Detected a rdtsc, EAX before = %08x , EAX after = %08x , EDX before: %08x , EDX after: %08x\n", eax_value,eax_new_value,edx_value, edx_new_value);
+
+	PIN_SetContextReg(ctxt, REG_EAX,eax_new_value);
+	PIN_SetContextReg(ctxt, REG_EDX,edx_new_value);
+
+} 
+
 //----------------------------- END PATCH FUNCTIONS -----------------------------//
 
 
@@ -35,6 +52,9 @@ EvasionPatches::EvasionPatches(void)
 	//ex : if i find an int 2e instruction we have the functon pointer for the right patch 
 	this->patchesMap.insert( std::pair<string,AFUNPTR>("int 0x2e",(AFUNPTR)patchInt2e) );
 	this->patchesMap.insert( std::pair<string,AFUNPTR>("fsave",(AFUNPTR)patchFsave) );
+	this->patchesMap.insert( std::pair<string,AFUNPTR>("rdtsc ",(AFUNPTR)patchRtdsc) );
+
+	
 }
 
 
@@ -76,7 +96,8 @@ bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){
 		INS_InsertCall(ins, IPOINT_BEFORE,  this->patchesMap.at("fsave"), IARG_INST_PTR, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_ADDRINT, curEip, IARG_END);
 		return true;
 	}
-	
+
+	//MYINFO("disass_instr is %s\n" , disass_instr.c_str());
 	//search if we have a patch foir this instruction
 	std::map<string, AFUNPTR>::iterator item = this->patchesMap.find(disass_instr);
 	if(item != this->patchesMap.end()){

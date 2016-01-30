@@ -107,8 +107,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//If the instruction doesn't violate WxorX return -1
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
 
-	
-
 	//W xor X broken
 	if(writeItemIndex != -1 ){
 		
@@ -116,10 +114,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//	wxorxHandler->displayWriteSet();
 		//W::DebugBreak();
 		WriteInterval item = wxorxHandler->getWritesSet()[writeItemIndex];
-
-		//update the start timer 
-		proc_info->setStartTimer(clock());
-		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
 
 		//not the first broken in this write set		
 		if(item.getBrokenFlag()){
