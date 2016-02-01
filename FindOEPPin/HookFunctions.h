@@ -22,6 +22,7 @@
 #define ANOTHERHOOK2 12
 #define ANOTHERHOOK3 13
 #define ANOTHERHOOK4 14
+#define ANOTHERHOOK5 15
 
 
 class HookFunctions

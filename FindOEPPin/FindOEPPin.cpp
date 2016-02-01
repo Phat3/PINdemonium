@@ -261,7 +261,6 @@ int main(int argc, char * argv[]){
 
 	ConfigureTool();
 
-
 	// Start the program, never returns
 	PIN_StartProgram();
 	

@@ -26,6 +26,9 @@ HookFunctions::HookFunctions(void)
 
 		this->functionsMap.insert( std::pair<string,int>("RegQueryValueExW",ANOTHERHOOK3));
 
+				this->functionsMap.insert( std::pair<string,int>("GetEnvironmentStringsW",ANOTHERHOOK4));
+
+					this->functionsMap.insert( std::pair<string,int>("memcpy",ANOTHERHOOK5));
 	
 	
 
@@ -200,6 +203,28 @@ VOID AnotherHook3 ( W::LPCWSTR lib_name) {
 	*/
 }
 
+
+VOID AnotherHook5 ( void * buffer) {
+	
+	int i;
+
+	MYINFO("Destination buffer of the memcpy is %08x\n" , (unsigned int ) buffer);
+
+	/*
+	for(i=0;i<200;i++){
+	
+		MYINFO("memcpy called\n in buffer @ position (buffer+%d) we have: %c\n" , i, *(unsigned int *)buffer+i);
+	}
+	*/
+	/*
+	W::WCHAR new_name = (W::WCHAR)"c";
+
+	file_name = &new_name;
+
+	*/
+}
+
+
 //----------------------------- HOOKED DISPATCHER -----------------------------//
 
 //scan the image and try to hook all the function specified above
@@ -258,6 +283,9 @@ void HookFunctions::hookDispatcher(IMG img){
 					break;
 				case (ANOTHERHOOK3):
 					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)AnotherHook3, IARG_FUNCARG_ENTRYPOINT_VALUE, 1,  IARG_END);
+					break;
+				case (ANOTHERHOOK5):
+					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)AnotherHook5, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_END);
 					break;
 
 

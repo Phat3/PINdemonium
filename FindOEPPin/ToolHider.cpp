@@ -1,4 +1,6 @@
 #include "ToolHider.h"
+#include <regex>
+
 
 ToolHider::ToolHider(void)
 {
@@ -24,6 +26,10 @@ ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
 
 		MYINFO("xxxxxxxxxxxxxx %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr);
 	}
+
+	// OBSIDIUM INVESTIGATION 
+
+
 
 	return fakeAddr;
 }
@@ -79,7 +85,29 @@ void ToolHider::avoidEvasion(INS ins){
 	}
 
 	MYINFO("[DEBUG] THEAD: %08x RTN: %s EIP: %08x INS: %s\n", PIN_ThreadId() ,RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	
+	std::string disass_instr = INS_Disassemble(ins);
+	//if we find an fsave instruction or similar we have to patch it immediately
 
+	if ( strcmp(disass_instr.c_str() ,"cmp dword ptr [ebp-0x14], 0x4" )==0){
+		printf("Ho beccato la cmp stronza\n");
+		ADDRINT hardcoded = 0x00434f0f;
+		INS_InsertDirectJump(ins,IPOINT_BEFORE,hardcoded);
+		INS_Delete(ins);	
+		return;
+	}
+	
+	/*
+	if(curEip == 0x00428197){
+	
+		printf("REDIRECTING\n");
+
+		ADDRINT hardcoded = 0x00428134;
+		INS_InsertDirectJump(ins,IPOINT_BEFORE,hardcoded);
+		INS_Delete(ins);
+
+	}
+	*/
 
 	// 1 - single instruction detection
 	if(config->ANTIEVASION_MODE_INS_PATCHING && this->evasionPatcher.patchDispatcher(ins, curEip)){

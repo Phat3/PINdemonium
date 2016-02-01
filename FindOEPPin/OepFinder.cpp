@@ -213,7 +213,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	
 	if( item.getHeapFlag() && (error != -1) ){
 
-		   //MYINFO("DUMPING HEAP: %08x" , hz->begin);
+		    MYINFO("-----DUMPING HEAP-----\n");
 			unsigned char * Buffer;
 			UINT32 size_write_set = item.getAddrEnd() - item.getAddrBegin();
 		    //prepare the buffer to copy inside the stuff into the heap section to dump 		  
@@ -240,7 +240,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		   scylla_wrapper->unloadScyllaLibrary();
 		   free(Buffer);
 
-		   MYINFO("DUMPED HEAP OK\n");
+		   //MYINFO("DUMPED HEAP OK\n");
 	}
 	
 	//write the heuristic results on ile
