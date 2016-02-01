@@ -14,6 +14,7 @@ namespace W{
 //--------------- HELPER DATA STRUCTURES --------------//
 
 #define SYSTEM_PROCESS_INFORMATION 5
+#define SYSTEM_HANDLE_INFORMATION 16
 
 //information on the syscall
 typedef struct _syscall_t {
@@ -41,6 +42,24 @@ typedef struct _SYSTEM_PROCESS_INFO
     W::HANDLE                  ProcessId;
 	W::HANDLE                  InheritedFromProcessId;
 } SYSTEM_PROCESS_INFO, *PSYSTEM_PROCESS_INFO;
+
+
+typedef struct _SYSTEM_HANDLE
+{
+    W::ULONG ProcessId;
+    W::BYTE ObjectTypeNumber;
+    W::BYTE Flags;
+    W::USHORT Handle;
+    W::PVOID Object;
+    W::ACCESS_MASK GrantedAccess;
+} SYSTEM_HANDLE, *PSYSTEM_HANDLE;
+
+typedef struct _SYSTEM_HANDLE_INFORMATION
+{
+    W::ULONG HandleCount;
+    SYSTEM_HANDLE Handles[1];
+
+} SYSTEM_HANDLE_INFORMATION_STRUCT, *PSYSTEM_HANDLE_INFORMATION_STRUCT;
 
 //information about the process that the malware wants to open
 typedef struct _CLIENT_ID
@@ -78,6 +97,7 @@ private:
 	static void NtAllocateVirtualMemoryHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
 	static void NtMapViewOfSectionHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
 	static void NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
+	
 
 	//Helpers
 	static void syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v);

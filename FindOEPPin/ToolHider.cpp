@@ -1,4 +1,6 @@
 #include "ToolHider.h"
+#include <regex>
+
 
 ToolHider::ToolHider(void)
 {
@@ -18,11 +20,16 @@ ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
 	ADDRINT fakeAddr = fakeMem.getFakeMemory(read_addr);
 
+	ProcInfo *pInfo = ProcInfo::getInstance();
+
 	if(fakeAddr==NULL){
 
 		MYINFO("xxxxxxxxxxxxxx %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr);
-	
 	}
+
+	// OBSIDIUM INVESTIGATION 
+
+
 
 	return fakeAddr;
 }
@@ -36,6 +43,7 @@ ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 
 	if(fakeAddr != write_addr){
 		MYINFO("wwwwwwwwwwwwwwww suspicious write from %08x in %s in %08x redirected to %08x", eip, RTN_FindNameByAddress(write_addr).c_str(), write_addr, fakeAddr);
+		MYINFO("Binary writes %08x %08x %08x %08x\n" , *(unsigned int *)(fakeAddr) , *(unsigned int *)(fakeAddr+4) , *(unsigned int *)(fakeAddr+8), *(unsigned int *)(fakeAddr+12));
 	}
 	
 	return fakeAddr;
@@ -76,8 +84,30 @@ void ToolHider::avoidEvasion(INS ins){
 		return;
 	}
 
-	//MYINFO("[DEBUG] RTN: %s EIP: %08x INS: %s\n", RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	MYINFO("[DEBUG] THEAD: %08x RTN: %s EIP: %08x INS: %s\n", PIN_ThreadId() ,RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	
+	std::string disass_instr = INS_Disassemble(ins);
+	//if we find an fsave instruction or similar we have to patch it immediately
 
+	if ( strcmp(disass_instr.c_str() ,"cmp dword ptr [ebp-0x14], 0x4" )==0){
+		printf("Ho beccato la cmp stronza\n");
+		ADDRINT hardcoded = 0x00434f0f;
+		INS_InsertDirectJump(ins,IPOINT_BEFORE,hardcoded);
+		INS_Delete(ins);	
+		return;
+	}
+	
+	/*
+	if(curEip == 0x00428197){
+	
+		printf("REDIRECTING\n");
+
+		ADDRINT hardcoded = 0x00428134;
+		INS_InsertDirectJump(ins,IPOINT_BEFORE,hardcoded);
+		INS_Delete(ins);
+
+	}
+	*/
 
 	// 1 - single instruction detection
 	if(config->ANTIEVASION_MODE_INS_PATCHING && this->evasionPatcher.patchDispatcher(ins, curEip)){

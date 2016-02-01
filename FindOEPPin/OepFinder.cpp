@@ -107,8 +107,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//If the instruction doesn't violate WxorX return -1
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
 
-	
-
 	//W xor X broken
 	if(writeItemIndex != -1 ){
 		
@@ -116,10 +114,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 		//	wxorxHandler->displayWriteSet();
 		//W::DebugBreak();
 		WriteInterval item = wxorxHandler->getWritesSet()[writeItemIndex];
-
-		//update the start timer 
-		proc_info->setStartTimer(clock());
-		//MYINFO("SETTED TIMER", (double) (proc_info->getStartTimer())/CLOCKS_PER_SEC);
 
 		//not the first broken in this write set		
 		if(item.getBrokenFlag()){
@@ -219,7 +213,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	
 	if( item.getHeapFlag() && (error != -1) ){
 
-		   //MYINFO("DUMPING HEAP: %08x" , hz->begin);
+		    MYINFO("-----DUMPING HEAP-----\n");
 			unsigned char * Buffer;
 			UINT32 size_write_set = item.getAddrEnd() - item.getAddrBegin();
 		    //prepare the buffer to copy inside the stuff into the heap section to dump 		  
@@ -246,7 +240,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		   scylla_wrapper->unloadScyllaLibrary();
 		   free(Buffer);
 
-		   MYINFO("DUMPED HEAP OK\n");
+		   //MYINFO("DUMPED HEAP OK\n");
 	}
 	
 	//write the heuristic results on ile
