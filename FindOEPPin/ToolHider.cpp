@@ -84,8 +84,11 @@ void ToolHider::avoidEvasion(INS ins){
 		return;
 	}
 
-	MYINFO("[DEBUG] THEAD: %08x RTN: %s EIP: %08x INS: %s\n", PIN_ThreadId() ,RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
-	
+    if(PIN_IsApplicationThread() == TRUE){
+	MYINFO("[DEBUG] THEAD: %08x RTN: %s EIP: %08x INS: %s\n", PIN_GetTid()  ,RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	}
+
+	/*
 	std::string disass_instr = INS_Disassemble(ins);
 	//if we find an fsave instruction or similar we have to patch it immediately
 
@@ -96,7 +99,7 @@ void ToolHider::avoidEvasion(INS ins){
 		INS_Delete(ins);	
 		return;
 	}
-	
+	*/
 	/*
 	if(curEip == 0x00428197){
 	

@@ -137,7 +137,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			Config::getInstance()->setWorking(result);
 			
 			//W::DebugBreak();
-			this->analysis(item, ins, prev_ip, curEip);
+			this->analysis(item, ins, prev_ip, curEip,result);
 			
 			wxorxHandler->setBrokenFlag(writeItemIndex);
 			Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
@@ -184,7 +184,7 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 			MYINFO("Current EIP %08x",curEip);
 			int result = this->DumpAndFixIAT(curEip);
 			config->setWorking(result);
-			this->analysis(item, ins, prev_ip, curEip);
+			this->analysis(item, ins, prev_ip, curEip , result);
 
 			wxorxH->incrementCurrJMPNumber(writeItemIndex);
 			config->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
@@ -193,7 +193,7 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 	}
 }
 
-BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip){
+BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip , int dumpAndFixResult){
 	//call the proper heuristics
 	//we have to implement it in a better way!!
 	item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
@@ -206,12 +206,13 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	//wait for scylla
 	//ConnectDebugger();
 	//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
+		
+	MYINFO("OEP TO CHECK IF IN HEAP is %08x\n CURRENT HEAP ZONE:\n" , curEip);
+	ProcInfo *proc_info = ProcInfo::getInstance();
+	proc_info->printHeapList();
+	MYINFO("item.getHeapFlag is %d\n", item.getHeapFlag());
 
-	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
-	
-	//DA RIGUARDARE!!
-	
-	if( item.getHeapFlag() && (error != -1) ){
+	if( item.getHeapFlag() && dumpAndFixResult != SCYLLA_ERROR_FILE_FROM_PID  && dumpAndFixResult != SCYLLA_ERROR_DUMP ){
 
 		    MYINFO("-----DUMPING HEAP-----\n");
 			unsigned char * Buffer;
@@ -227,6 +228,15 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		   // get the name of the last dump from the Config object 
 		   Config *config = Config::getInstance();
 		   string dump_path = config->getCurrentDumpFilePath();
+
+		   if(!existFile(dump_path)){ // this is the case in which we have a not working dump but we want to add anyway the .heap 
+			   dump_path = config->getNotWorkingPath();
+		   }
+
+		   if(!existFile(dump_path)){
+				MYINFO("[CRITICAL ERROR]Dump file not found\n");
+				return OEPFINDER_HEURISTIC_FAIL;
+		   }
 
 		   // and convert it into the WCHAR representation 
 		   std::wstring widestr = std::wstring(dump_path.begin(), dump_path.end());
@@ -284,3 +294,11 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	return 1;
 }
 
+BOOL OepFinder::existFile (std::string name) {
+	if (FILE *file = fopen(name.c_str(), "r")) {
+        fclose(file);
+        return true;
+    } else {
+        return false;
+    }   
+}
