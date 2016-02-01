@@ -134,7 +134,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			MYINFO("Current EIP %08x",curEip);
 			//W::DebugBreak();
 			int result = this->DumpAndFixIAT(curEip);
-			//Config::getInstance()->setWorking(result);
+			Config::getInstance()->setWorking(result);
 			
 			//W::DebugBreak();
 			this->analysis(item, ins, prev_ip, curEip);
@@ -261,8 +261,8 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	//string base_path = Config::getInstance()->getBasePath();
 	//std::wstring base_path_w = std::wstring(base_path.begin(), base_path.end());
 
-	//string tmpDump = Config::getInstance()->getNotWorkingPath();
-	//std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
+	string tmpDump = Config::getInstance()->getNotWorkingPath();
+	std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
 
 	//sc->loadScyllaLibary();
 	//UINT32 result = sc->ScyllaDumpAndFix(pid, curEip, (W::WCHAR *)outputFile_w.c_str(),(W::WCHAR *)base_path_w.c_str(), (W::WCHAR *)tmpDump_w.c_str());
@@ -272,7 +272,7 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 
 	// -------- Scylla launched as an exe --------	
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();	
-	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, Config::getInstance()->ADVANCED_IAT_FIX);
+	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, Config::getInstance()->ADVANCED_IAT_FIX, tmpDump);
 	
 	if(result != SCYLLA_SUCCESS_FIX){
 		MYERRORE("Scylla execution Failed error %d ",result);

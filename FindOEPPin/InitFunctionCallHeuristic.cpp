@@ -62,6 +62,7 @@ UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval* wi){
 	char * init_func_detected = (char *)malloc(file_size);
 	fread(init_func_detected,file_size,1,fd);
 	MYWARN("Found init functions %s\n",init_func_detected);
+	free(init_func_detected);
 	fclose(fd);
 	
 	int numberOfLines = 0;

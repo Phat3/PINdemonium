@@ -38,7 +38,7 @@ BOOL ScyllaWrapperInterface::existFile (std::string name) {
  pid: pid of the process to dump (Current PID if you want to use the Pin Instrumented Binary)
  curEip: curre
 **/
-UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::string outputFile, int advanced_iat_fix_flag){	
+UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::string outputFile, int advanced_iat_fix_flag, std::string tmpDump){	
 
 	MYINFO("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 	MYINFO("LAUNCHING SCYLLADUMP AS AN EXTERNAL PROCESS!!");
@@ -54,6 +54,7 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::
 	scyllaArgsStream << std::hex  << curEip << " ";
 	scyllaArgsStream << outputFile << " ";
 	scyllaArgsStream << advanced_iat_fix_flag << " ";
+	scyllaArgsStream << tmpDump << " ";
 	std::string scyllaArgs = scyllaArgsStream.str();	
 
 	//sprintf(scyllaArgs,"%s %d %x %s",scylla,pid,curEip,outputFile); //argv[0] is the name of the program
@@ -79,7 +80,7 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::
 		return exitCode;
 	}
 	MYINFO("Scylla Finished");
-	return exitCode;
+	return SCYLLA_SUCCESS_FIX;
 }
 
 void ScyllaWrapperInterface::loadScyllaLibary(){

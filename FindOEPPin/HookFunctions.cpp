@@ -15,10 +15,14 @@ HookFunctions::HookFunctions(void)
 
 	this->functionsMap.insert( std::pair<string,int>("VirtualQuery",VIRTUALQUERY_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualProtect",VIRTUALPROTECT_INDEX) );
+	this->functionsMap.insert( std::pair<string,int>("VirtualQueryEx",VIRTUALQUERYEX_INDEX) );
+
 
 
 	// DEBUGGING OBSIDIUM -----
+	/*
 	this->functionsMap.insert( std::pair<string,int>("CreateFileW",ANOTHERHOOK) );
+
 
 	this->functionsMap.insert( std::pair<string,int>("RegOpenKeyExW",ANOTHERHOOK2));
 
@@ -29,7 +33,7 @@ HookFunctions::HookFunctions(void)
 				this->functionsMap.insert( std::pair<string,int>("GetEnvironmentStringsW",ANOTHERHOOK4));
 
 					this->functionsMap.insert( std::pair<string,int>("memcpy",ANOTHERHOOK5));
-	
+	*/
 	
 
 
@@ -166,28 +170,23 @@ VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProt
 	MYINFO("calling Virutalprotect at address %08x ->  %08x",(ADDRINT)baseAddress,size + (ADDRINT)baseAddress);
 }
 
+/*
 VOID AnotherHook ( W::LPCWSTR file_name) {
 	
 	MYINFO("Creating a new file %S\n" , file_name);
 
-	/*
 	W::WCHAR new_name = (W::WCHAR)"c";
 
 	file_name = &new_name;
-
-	*/
 }
 
 VOID AnotherHook2 ( W::LPCWSTR key_name) {
 	
 	MYINFO("Opening a reg-key  %S\n" , key_name);
 
-	/*
 	W::WCHAR new_name = (W::WCHAR)"c";
 
 	file_name = &new_name;
-
-	*/
 }
 
 
@@ -195,12 +194,10 @@ VOID AnotherHook3 ( W::LPCWSTR lib_name) {
 	
 	MYINFO("querying the reg key %S\n" , lib_name);
 
-	/*
 	W::WCHAR new_name = (W::WCHAR)"c";
 
 	file_name = &new_name;
 
-	*/
 }
 
 
@@ -210,21 +207,23 @@ VOID AnotherHook5 ( void * buffer) {
 
 	MYINFO("Destination buffer of the memcpy is %08x\n" , (unsigned int ) buffer);
 
-	/*
 	for(i=0;i<200;i++){
 	
 		MYINFO("memcpy called\n in buffer @ position (buffer+%d) we have: %c\n" , i, *(unsigned int *)buffer+i);
 	}
-	*/
-	/*
+
 	W::WCHAR new_name = (W::WCHAR)"c";
 
 	file_name = &new_name;
 
-	*/
+	
 }
+*/
 
-
+VOID VirtualQueryExHook (W::HANDLE hProcess, W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi, W::SIZE_T *numBytes) {
+	if (hProcess == W::GetCurrentProcess())
+		VirtualQueryHook(baseAddress, mbi, numBytes);
+}
 //----------------------------- HOOKED DISPATCHER -----------------------------//
 
 //scan the image and try to hook all the function specified above
@@ -275,6 +274,7 @@ void HookFunctions::hookDispatcher(IMG img){
 					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualProtectHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCARG_ENTRYPOINT_VALUE, 3, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
 				*/
+				/*
 				case (ANOTHERHOOK):
 					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)AnotherHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_END);
 					break;
@@ -287,9 +287,11 @@ void HookFunctions::hookDispatcher(IMG img){
 				case (ANOTHERHOOK5):
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)AnotherHook5, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_END);
 					break;
-
-
-			}			
+				*/
+				case(VIRTUALQUERYEX_INDEX):
+					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
+					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualQueryExHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCARG_ENTRYPOINT_VALUE, 2, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
+				}			
 			RTN_Close(rtn);
 		}
 	}
