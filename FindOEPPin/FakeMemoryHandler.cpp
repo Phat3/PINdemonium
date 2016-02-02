@@ -46,6 +46,8 @@ ADDRINT FakeMemoryHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr
 
 	tick_multiplier = tick_multiplier / Config::TICK_DIVISOR;
 
+	MYINFO("TICK value %08x", tick_multiplier);
+
 	convert << tick_multiplier;
 
 	curFakeMemory = convert.str(); 
@@ -53,7 +55,7 @@ ADDRINT FakeMemoryHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr
 	ADDRINT patchAddr = (ADDRINT)&curFakeMemory;
 
 	//MYINFO("Tick multiplier fake is %08x\n",curFakeMemory);
-
+	//MYINFO("Tick multiplier fake is %08x\n",&curFakeMemory);
 	return patchAddr;
 
 }
@@ -142,20 +144,22 @@ VOID FakeMemoryHandler::initFakeMemory(){
 		fakeMemory.push_back(fakeMem);
 		MYINFO("Add FakeMemory ntdll %s addr  %08x -> %08x",funcName,fakeMem.StartAddress,fakeMem.EndAddress);
 	}
-	//add other FakeMemoryItem to the fakeMemory array for handling other cases
 
-	FakeMemoryItem fakeMem2;
-	fakeMem2.StartAddress = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET;  
-	fakeMem2.EndAddress = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET + LOW_PART_KSYSTEM_OFFSET - 1; // the end of the TickMultiplier field 
-	fakeMem2.func = &FakeMemoryHandler::TickMultiplierPatch; 
-	fakeMemory.push_back(fakeMem2);
+	//add FakeMemoryItem in order to fake the getTickCount value
+	FakeMemoryItem fakeGetTickCount;
+	fakeGetTickCount.StartAddress = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET;  
+	fakeGetTickCount.EndAddress = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET + TICK_MULTIPLIER_SIZE; // the end of the TickMultiplier field 
+	fakeGetTickCount.func = &FakeMemoryHandler::TickMultiplierPatch;
 
+	MYINFO("KUSER START : %08x\t END : %08x", fakeGetTickCount.StartAddress, fakeGetTickCount.EndAddress);
+	fakeMemory.push_back(fakeGetTickCount);
 
-	FakeMemoryItem fakeMem3;
-	fakeMem3.StartAddress = KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET;
-	fakeMem3.EndAddress = KUSER_SHARED_DATA_ADDRESS + HIGH_2_KSYSTEM_OFFSET;
-	fakeMem3.func = &FakeMemoryHandler::KSystemTimePatch;
-	fakeMemory.push_back(fakeMem3);
+	//add FakeMemoryItem in order to fake TimeGetTime value
+	FakeMemoryItem fakeTimeGetTime;
+	fakeTimeGetTime.StartAddress = KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET;
+	fakeTimeGetTime.EndAddress = KUSER_SHARED_DATA_ADDRESS + HIGH_2_KSYSTEM_OFFSET;
+	fakeTimeGetTime.func = &FakeMemoryHandler::KSystemTimePatch;
+	//fakeMemory.push_back(fakeTimeGetTime);
 }
 
 BOOL getMemoryRange(ADDRINT address, MemoryRange& range){
@@ -243,6 +247,8 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 
 
 ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
+	 
+
 
 	//Check if address is inside the FakeMemory array (need to modify the result of the read)
 	for(std::vector<FakeMemoryItem>::iterator it = fakeMemory.begin(); it != fakeMemory.end(); ++it){
@@ -251,7 +257,7 @@ ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address){
 			//Executing the PatchFunction associated to this memory range which contains the address
 			ADDRINT patchedAddr = it->func(address,it->StartAddress);
 			//MYINFO("Found address in FakeMemory %08x ",address);
-			//MYINFO("Found FakeMemory read at %08x containig %08x  Patched at %08x with %08x\n",address, *(unsigned int *)address,patchedAddr, *(unsigned int *)(*(string *)patchedAddr).c_str());
+			MYINFO("Found FakeMemory read at %08x containig %08x  Patched at %08x with %08x\n",address, *(unsigned int *)address, patchedAddr, *(unsigned int *)(*(string *)patchedAddr).c_str());
 			//MYINFO("[DEBUG] Address violated the FakeMemory\n");
 			return patchedAddr;
 		}

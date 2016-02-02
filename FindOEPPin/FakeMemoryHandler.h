@@ -5,6 +5,7 @@
 #include "FilterHandler.h"
 
 #define TICK_MULTIPLIER_OFFSET 0x4
+#define TICK_MULTIPLIER_SIZE 0x3
 #define LOW_PART_KSYSTEM_OFFSET 0x8
 #define HIGH_1_KSYSTEM_OFFSET 0xc
 #define HIGH_2_KSYSTEM_OFFSET 0x10
