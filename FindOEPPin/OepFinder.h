@@ -35,9 +35,8 @@ private:
 	BOOL analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip, int ResultDumpAndFix);
 	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex, WriteInterval item);
 	void getCurrentDlls();
-
+	WxorXHandler *wxorxHandler;
 	UINT32 DumpAndFixIAT(ADDRINT curEip);
-
 
 };
 
