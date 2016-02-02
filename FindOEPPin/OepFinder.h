@@ -36,5 +36,7 @@ private:
 	UINT32 DumpAndFixIAT(ADDRINT curEip);
 	void getCurrentDlls();
 
+	WxorXHandler *wxorxHandler;
+
 };
 

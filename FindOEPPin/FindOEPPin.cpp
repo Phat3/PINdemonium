@@ -131,14 +131,14 @@ void imageLoadCallback(IMG img,void *){
 		  for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
 
 			if(strcmp(SEC_Name(sec).c_str(),".text")==0){
-			proc_info->addProtectedSection(SEC_Address(sec),SEC_Address(sec)+SEC_Size(sec));
+				proc_info->addProtectedSection(SEC_Address(sec),SEC_Address(sec)+SEC_Size(sec));
 			}
 	      }
 		}
 
 		//*** If you need to protect other sections of other dll put them here ***
 
-		hookFun.hookDispatcher(img);		
+		//hookFun.hookDispatcher(img);		
 		
 		proc_info->addLibrary(name,startAddr,endAddr);
 
@@ -147,6 +147,7 @@ void imageLoadCallback(IMG img,void *){
 			MYINFO("Added to the filtered array the module %s\n" , name);
 		}
 	}
+	
 }
 
 
@@ -172,10 +173,11 @@ void Instruction(INS ins,void *v){
 	if(config->ANTIEVASION_MODE){
 		thider.avoidEvasion(ins);
 	}
-
+	
 	if(config->UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
 	}	
+	
 }
 
 
@@ -216,6 +218,13 @@ void ConfigureTool(){
 
 }
 
+EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInfo, PHYSICAL_CONTEXT *pPhysCtxt, VOID *v){
+	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	MYINFO("%s",PIN_ExceptionToString(pExceptInfo).c_str());
+	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	return EHR_UNHANDLED ;
+}
+
 /* ===================================================================== */
 /* Main                                                                  */
 /* ===================================================================== */
@@ -243,9 +252,7 @@ int main(int argc, char * argv[]){
 
 	if (PIN_Init(argc, argv)) return Usage();
 
-	
 	INS_AddInstrumentFunction(Instruction,0);
-
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageUnload to be called when an image is unloaded
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
@@ -261,6 +268,7 @@ int main(int argc, char * argv[]){
 
 	ConfigureTool();
 
+	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
 
 	// Start the program, never returns
 	PIN_StartProgram();

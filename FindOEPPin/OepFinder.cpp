@@ -4,22 +4,41 @@
 #include "TimeTracker.h"
 
 OepFinder::OepFinder(void){
-	
+	this->wxorxHandler = WxorXHandler::getInstance();
 }
 
 OepFinder::~OepFinder(void){
 }
 
-//update the write set manager
-VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size){	
+static bool start_dump = false;
 
+//update the write set manager
+VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size, void *handler){	
+	
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	//check if the target address belongs to some filtered range		
 	if(!filterHandler->isFilteredWrite(end_addr,ip)){
-		//if not update the write set
-		WxorXHandler::getInstance()->writeSetManager(ip, end_addr, size);
-	//	MYINFO("Writing start %x   ->  %x",end_addr,end_addr + size);
+		//if not update the write set		
+		WxorXHandler *WHandler = (WxorXHandler *)handler;
+		ADDRINT address = (ADDRINT)&WHandler->WritesSet[1];
+		/*
+		if(address == 0x0bdb0030){
+			start_dump = true;
+			MYINFO("HANDL : %08x", address);
+		}
+		if(start_dump){
+			 W::MEMORY_BASIC_INFORMATION mbi;
+			 if (VirtualQuery((W::LPCVOID)address, &mbi, sizeof(W::MEMORY_BASIC_INFORMATION)) == 0){
+				MYINFO("VIRTUAL QUERY FAILED");
+			 }
+			 else{
+				MYINFO("ADDR : %08x \tSTATE : %08X\t prot : %08X", address, mbi.State, mbi.Protect);
+			 }
+		}
+		*/
+		WHandler->writeSetManager(ip, end_addr, size);
 	}
+	
 }
 
 //check if the current instruction is a pushad or a popad
@@ -78,20 +97,21 @@ static VOID DoBreakpoint(const CONTEXT *ctxt, THREADID tid, ADDRINT ip)
 // - Check if the current instruction broke the W xor X law  -----> trigger the heuristics and write the report
 // - Set the previous ip to the current ip ( useful for some heuristics like jumpOuterSection )
 UINT32 OepFinder::IsCurrentInOEP(INS ins){
+		
 
-	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
+	
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	ProcInfo *proc_info = ProcInfo::getInstance();
-
+		
 	int heap_index = -1;
 
 	UINT32 writeItemIndex=-1;
 	ADDRINT curEip = INS_Address(ins);
 	ADDRINT prev_ip = proc_info->getPrevIp();
-
+	
 	//check if current instruction is a write
 	if(wxorxHandler->isWriteINS(ins)){
-		INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_END);
+		INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleWrite, IARG_INST_PTR, IARG_MEMORYWRITE_EA, IARG_MEMORYWRITE_SIZE, IARG_PTR, this->wxorxHandler, IARG_END);
 	}
 	
 	//Tracking violating WxorX instructions
@@ -107,7 +127,6 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//If the instruction doesn't violate WxorX return -1
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
 
-	
 
 	//W xor X broken
 	if(writeItemIndex != -1 ){
