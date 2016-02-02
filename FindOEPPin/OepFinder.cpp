@@ -206,11 +206,15 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	//wait for scylla
 	//ConnectDebugger();
 	//INS_InsertCall(ins,  IPOINT_BEFORE, (AFUNPTR)DoBreakpoint, IARG_CONST_CONTEXT, IARG_THREAD_ID, IARG_END);
-		
+	
+	/*
 	MYINFO("OEP TO CHECK IF IN HEAP is %08x\n CURRENT HEAP ZONE:\n" , curEip);
 	ProcInfo *proc_info = ProcInfo::getInstance();
 	proc_info->printHeapList();
 	MYINFO("item.getHeapFlag is %d\n", item.getHeapFlag());
+	*/
+
+	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
 
 	if( item.getHeapFlag() && dumpAndFixResult != SCYLLA_ERROR_FILE_FROM_PID  && dumpAndFixResult != SCYLLA_ERROR_DUMP ){
 
