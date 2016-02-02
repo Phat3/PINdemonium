@@ -26,6 +26,9 @@ const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
 const UINT32 Config::TICK_DIVISOR = 800000;
 const UINT32 Config::CC_DIVISOR = 1000000000;
 const UINT32 Config::LONG_DIVISOR = 800000000;
+const UINT32 Config::RDTSC_DIVISOR_EAX = 10000;
+const UINT32 Config::RDTSC_DIVISOR_EDX = 10;
+
 
 Config* Config::instance = 0;
 
@@ -87,6 +90,7 @@ string Config::getNotWorkingPath(){
 string Config::getCurrentDumpFilePath(){	
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
 	this->cur_dump_path = this->base_path + ProcInfo::getInstance()->getProcName() + "_" + std::to_string(this->dump_number) + ".exe" ;
+	
 	return this->cur_dump_path;	
 }
 

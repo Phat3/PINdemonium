@@ -17,13 +17,10 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 		return;
 	}
 
-
 	if(syscall_number == 0x12b){
 		MYINFO("Invoked WaitReply of syscall is %08x %d\n",PIN_GetContextReg(ctx,REG_EIP), syscall_number);
 		
 	}
-	
-
 
 	//fill the structure with the provided info
 	syscall_t *sc = &((syscall_t *) v)[thread_id];	
@@ -38,7 +35,7 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 	std::map<unsigned long, string>::iterator syscallMapItem = syscallsMap.find(sc->syscall_number);
 	//search for an hook on entry
 	if(syscallMapItem !=  syscallsMap.end()){
-		//serch if we have an hook for the syscall
+		//search if we have an hook for the syscall
 		std::map<string, syscall_hook>::iterator syscallHookItem = syscallsHooks.find(syscallMapItem->second + "_entry");
 		if(syscallHookItem != syscallsHooks.end()){
 			//if so call the hook
@@ -87,6 +84,37 @@ void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx,
 			}
 			spi=(PSYSTEM_PROCESS_INFO)((W::LPBYTE)spi+spi->NextEntryOffset); // Calculate the address of the next entry.
 		} 
+	}
+
+	else{
+		if(sc->arg0 == SYSTEM_HANDLE_INFORMATION){
+			
+			MYINFO("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Retreiving process's handle\n");
+
+			PSYSTEM_HANDLE_INFORMATION_STRUCT phi;
+			SYSTEM_HANDLE_INFORMATION_STRUCT fake_shis;  //shish the world 
+
+			phi = (PSYSTEM_HANDLE_INFORMATION_STRUCT)sc->arg1;
+
+			UINT32 pid = W::GetCurrentProcessId();
+			MYINFO("Pid is %d\n" , pid);
+
+			int handle_counter = 0;
+
+			fake_shis.HandleCount = phi->HandleCount;
+			MYINFO("#######Total number of handles returned are %d\n" , phi->HandleCount);
+			
+			int i=0;
+
+			for(i=0;i<phi->HandleCount;i++){
+				SYSTEM_HANDLE handle = phi->Handles[i];
+				if(handle.ProcessId == pid){
+					MYINFO("Handle %#x\n", handle.Handle);
+					 handle_counter++;
+				}
+			}
+			MYINFO("@@@@@Handle of the current process are %d\n");
+	    }
 	}
 }
 
@@ -237,7 +265,8 @@ void HookSyscalls::initHooks(){
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtWriteVirtualMemory_entry",&HookSyscalls::NtWriteVirtualMemoryHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtRequestWaitReplyPort_exit",&HookSyscalls::NtRequestWaitReplyPortHook));
 
-	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));  
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));
+	
 
 
 	static syscall_t sc[256] = {0};
