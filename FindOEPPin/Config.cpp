@@ -30,8 +30,9 @@ const W::ULONG32 Config::LOW_PART_DIVISOR = 10;
 //is consistent ( high_1_part == high_2_part -> low_part consistent ) 
 const UINT32 Config::HIGH_PART_DIVISOR = 1; 
 
-const UINT32 Config::RDTSC_DIVISOR_EAX = 10000;
-const UINT32 Config::RDTSC_DIVISOR_EDX = 10;
+//the rdtsc works like this :
+//store the least 32 significant bit of the returned value in EAX and the most 32 significant bit in EDX ( value = EDX:EAX )
+const UINT32 Config::RDTSC_DIVISOR = 400;
 
 
 Config* Config::instance = 0;
