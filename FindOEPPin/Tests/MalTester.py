@@ -52,7 +52,7 @@ def runWithTimeout(cmd,timeout):
 def executePin(cur_malware):
   command = "%s -t %s -unp -antiev -antiev-ins -antiev-sread -antiev-swrite -adv-iatfix -iwae 3 -- %s "%(pin_executable,pin_tool, cur_malware)
   print("launching " + command)
-  stdout,stderr,code =runWithTimeout(command,60)
+  stdout,stderr,code =runWithTimeout(command,300)
   print("stdout: "+ stdout)
   print("stderror: "+stderr)
 
