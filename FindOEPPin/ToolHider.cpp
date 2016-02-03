@@ -18,7 +18,7 @@ ADDRINT handleRead(ADDRINT eip, ADDRINT read_addr,void *fake_mem_h){
 	//MYINFO("%0x8 %s Trying to  read %08x : res %d\n",ip,s.c_str(), read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
 	FakeMemoryHandler fake_mem = *(FakeMemoryHandler *)fake_mem_h;
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
-	ADDRINT fake_addr = fake_mem.getFakeMemory(read_addr);
+	ADDRINT fake_addr = fake_mem.getFakeMemory(read_addr, eip);
 
 	if(fake_addr==NULL){
 

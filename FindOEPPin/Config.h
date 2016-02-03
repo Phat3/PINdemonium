@@ -73,7 +73,8 @@ public:
 	static const UINT32 TIMEOUT_TIMER_SECONDS;
 	static const UINT32 TICK_DIVISOR; //this is used in order to lowe the ticks returnedd from GetTickCount and timeGetTime 
 	static const UINT32 CC_DIVISOR; // this is used in order to lower the microseconds returned from the QueryPerformanceCounter 
-	static const UINT32 LONG_DIVISOR; // this is used to lower the LONG returned from the timeGetTime in the struct _KSYSTEM_TIME inside kuser_shared_data
+	static const W::ULONG32 LOW_PART_DIVISOR; // this is used to lower the LONG lowpart returned from the timeGetTime in the struct _KSYSTEM_TIME inside kuser_shared_data
+	static const UINT32 HIGH_PART_DIVISOR;  // this is used to lower the LONG High1Time and High1Time returned from the timeGetTime in the struct _KSYSTEM_TIME inside kuser_shared_data
 	static const UINT32 RDTSC_DIVISOR_EAX;
 	static const UINT32 RDTSC_DIVISOR_EDX;
 

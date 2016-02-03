@@ -67,5 +67,5 @@ public:
 	VOID initFakeMemory();
 	BOOL isAddrInWhiteList(ADDRINT address);
 	BOOL CheckInCurrentDlls(UINT32 address_to_check);
-	ADDRINT getFakeMemory(ADDRINT address);
+	ADDRINT getFakeMemory(ADDRINT address, ADDRINT eip);
 };
