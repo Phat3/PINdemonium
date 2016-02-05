@@ -289,4 +289,9 @@ _Pvt_Extensions
 *.vrb
 *.xdy
 *.tdo
+*.synctex(2).gz
+*.synctex(3).gz
+*.synctex(4).gz
+
+
 
