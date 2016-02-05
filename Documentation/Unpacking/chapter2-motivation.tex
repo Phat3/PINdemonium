@@ -1,0 +1,17 @@
+\chapter{Motivation}
+\label{chapter2}
+\thispagestyle{empty}
+
+\section{Problem statement}
+Malwares usually pack their code in order to avoid static analysis of their payload. Basically their original code is transformed is some way and only when the malware executes it is restored. There can be more than one layer of packing, which means that a packed code can be packed another time. However, all the packers have one thing in common: when the program executes and the original code must be revealed, then they must first write in the memory area that contains the original code, in order to unpack it, and then execute from there. This sequence of operations is used by almost every unpacker as a metric to evaluate the unpacking process. There are a lot of common packers, UPX, FSG, PECompact, Themida, etc., but malware authors can also write custom packers.\\
+Some packers implement a more complicated technique of unpacking: they unpack only portions of the original code and execute it, then they pack again this part and unpack the next portion. This kind of packers are outside the scope of this paper.
+
+\section{State of the art}
+There have been a lot of attempts to build an automatic unpacker. Some of them are standalone tools like PolyUnpack, Ether, Eureka; others work together with an antivirus, like OmniUnpack and JustIn.\\
+There are other approaches: BCR, for example, does not aim to extract the original code, but the unpacking routine, and then use it to unpack the malware.
+
+\section{Goals and challenges}
+Our approach aims not only to unpack the malware, but also to reconstruct a working binary of it. To do so, we not only have to identify the original entry point (OEP) and dump the code at that moment of the execution of the malware, but we have to resolve all the imports, reconstructing its import address table (IAT).\\
+The first thing we have to deal with are the unpacking routines of the packers: every time the execution of the malware is from a previously written memory area, then it could be a sign that the unpacking stage has finished or that a new unpacking layer has started.\\
+We have also to deal with techniques of IAT obfuscation: some malwares can do this in order to make difficult to statically analyse them to understand what they are doing.
+

@@ -1,0 +1,505 @@
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.10.12)  4 FEB 2016 13:40
+entering extended mode
+**frontispiece.tex
+
+("C:\Users\utente\Google Drive\Tesi\Documentation\Unpacking Thesis\frontispiece
+.tex"
+LaTeX2e <2011/06/27>
+Babel <v3.8m> and hyphenation patterns for english, afrikaans, ancientgreek, ar
+abic, armenian, assamese, basque, bengali, bokmal, bulgarian, catalan, coptic, 
+croatian, czech, danish, dutch, esperanto, estonian, farsi, finnish, french, ga
+lician, german, german-x-2013-05-26, greek, gujarati, hindi, hungarian, iceland
+ic, indonesian, interlingua, irish, italian, kannada, kurmanji, latin, latvian,
+ lithuanian, malayalam, marathi, mongolian, mongolianlmc, monogreek, ngerman, n
+german-x-2013-05-26, nynorsk, oriya, panjabi, pinyin, polish, portuguese, roman
+ian, russian, sanskrit, serbian, slovak, slovenian, spanish, swedish, swissgerm
+an, tamil, telugu, turkish, turkmen, ukenglish, ukrainian, uppersorbian, usengl
+ishmax, welsh, loaded.
+
+! LaTeX Error: Missing \begin{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.4 \begin{center}
+                  
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+
+Overfull \hbox (20.0pt too wide) in paragraph at lines 4--4
+[] 
+ []
+
+! Undefined control sequence.
+l.6 	\large
+           
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+Overfull \hbox (81.94398pt too wide) in paragraph at lines 7--7
+ \OT1/cmr/bx/n/10 POLITECNICO 
+ []
+
+
+Overfull \hbox (13.18048pt too wide) in paragraph at lines 7--7
+ \OT1/cmr/bx/n/10 DI 
+ []
+
+
+Overfull \hbox (19.11101pt too wide) in paragraph at lines 7--7
+ \OT1/cmr/bx/n/10 MI- 
+ []
+
+
+Overfull \hbox (33.24982pt too wide) in paragraph at lines 7--7
+ \OT1/cmr/bx/n/10 LANO 
+ []
+
+
+! LaTeX Error: The font size command \normalsize is not defined:
+               there is probably something wrong with the class file.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.9   	\normalsize
+                  
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Overfull \hbox (29.07762pt too wide) in paragraph at lines 10--10
+ []\OT1/cmr/bx/n/10 Corso 
+ []
+
+
+Overfull \hbox (9.58328pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 di 
+ []
+
+
+Overfull \hbox (22.72902pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 Lau- 
+ []
+
+
+Overfull \hbox (15.59714pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 rea 
+ []
+
+
+Overfull \hbox (42.91643pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 MAGIS- 
+ []
+
+
+Overfull \hbox (39.79144pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 TRALE 
+ []
+
+
+Overfull \hbox (9.58328pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 in 
+ []
+
+
+Overfull \hbox (14.58325pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 In- 
+ []
+
+
+Overfull \hbox (20.60406pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 geg- 
+ []
+
+
+Overfull \hbox (15.49298pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 ne- 
+ []
+
+
+Overfull \hbox (13.52075pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 ria 
+ []
+
+
+Overfull \hbox (14.58325pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 In- 
+ []
+
+
+Overfull \hbox (17.83325pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 for- 
+ []
+
+
+Overfull \hbox (23.47902pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 mat- 
+ []
+
+
+Overfull \hbox (13.89574pt too wide) in paragraph at lines 10--10
+ \OT1/cmr/bx/n/10 ica 
+ []
+
+
+Overfull \hbox (67.5413pt too wide) in paragraph at lines 11--11
+ []\OT1/cmr/bx/n/10 Dipartimento 
+ []
+
+
+Overfull \hbox (9.58328pt too wide) in paragraph at lines 11--11
+ \OT1/cmr/bx/n/10 di 
+ []
+
+
+Overfull \hbox (24.32626pt too wide) in paragraph at lines 11--11
+ \OT1/cmr/bx/n/10 Elet- 
+ []
+
+
+Overfull \hbox (25.18044pt too wide) in paragraph at lines 11--11
+ \OT1/cmr/bx/n/10 tron- 
+ []
+
+
+Overfull \hbox (13.89574pt too wide) in paragraph at lines 11--11
+ \OT1/cmr/bx/n/10 ica 
+ []
+
+
+Overfull \hbox (5.27081pt too wide) in paragraph at lines 11--11
+ \OT1/cmr/bx/n/10 e 
+ []
+
+
+Overfull \hbox (14.58325pt too wide) in paragraph at lines 11--11
+ \OT1/cmr/bx/n/10 In- 
+ []
+
+
+Overfull \hbox (17.83325pt too wide) in paragraph at lines 11--11
+ \OT1/cmr/bx/n/10 for- 
+ []
+
+
+Overfull \hbox (40.88866pt too wide) in paragraph at lines 11--11
+ \OT1/cmr/bx/n/10 mazione 
+ []
+
+
+! LaTeX Error: Environment figure undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.13   	\begin{figure}
+                      [htbp]
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Overfull \hbox (29.70818pt too wide) in paragraph at lines 13--14
+ []\OT1/cmr/bx/n/10 [htbp] 
+ []
+
+! Undefined control sequence.
+l.15       		\includegraphics
+                              [width = 3.5 cm]{./pictures/logopm}
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+Overfull \hbox (31.94427pt too wide) in paragraph at lines 15--16
+ \OT1/cmr/bx/n/10 [width 
+ []
+
+
+Overfull \hbox (8.9444pt too wide) in paragraph at lines 15--16
+ \OT1/cmr/bx/n/10 = 
+ []
+
+
+Overfull \hbox (14.69437pt too wide) in paragraph at lines 15--16
+ \OT1/cmr/bx/n/10 3.5 
+ []
+
+
+Overfull \hbox (109.09804pt too wide) in paragraph at lines 15--16
+ \OT1/cmr/bx/n/10 cm]./pictures/logopm 
+ []
+
+
+! LaTeX Error: \begin{center} on input line 4 ended by \end{figure}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.17   	\end{figure}
+                    
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Overfull \hbox (20.0pt too wide) in paragraph at lines 22--22
+[] 
+ []
+
+! Undefined control sequence.
+l.24   	\vspace*{0.3 cm} \LARGE
+                               
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.28 	\vspace*{.75 true cm} \large
+                                  
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+Overfull \hbox (39.24979pt too wide) in paragraph at lines 30--30
+ []\OT1/cmr/bx/n/10 NECST 
+ []
+
+
+Overfull \hbox (18.8957pt too wide) in paragraph at lines 30--30
+ \OT1/cmr/bx/n/10 Lab 
+ []
+
+
+Overfull \hbox (31.84012pt too wide) in paragraph at lines 31--31
+ []\OT1/cmr/bx/n/10 Novel, 
+ []
+
+
+Overfull \hbox (36.72899pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 Emerg- 
+ []
+
+
+Overfull \hbox (15.33325pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 ing 
+ []
+
+
+Overfull \hbox (27.47208pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 Com- 
+ []
+
+
+Overfull \hbox (21.08322pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 put- 
+ []
+
+
+Overfull \hbox (15.33325pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 ing 
+ []
+
+
+Overfull \hbox (20.82765pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 Sys- 
+ []
+
+
+Overfull \hbox (19.3263pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 tem 
+ []
+
+
+Overfull \hbox (27.32625pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 Tech- 
+ []
+
+
+Overfull \hbox (24.91653pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 nolo- 
+ []
+
+
+Overfull \hbox (18.75128pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 gies 
+ []
+
+
+Overfull \hbox (22.72902pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 Lab- 
+ []
+
+
+Overfull \hbox (9.58328pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 o- 
+ []
+
+
+Overfull \hbox (14.15964pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 ra- 
+ []
+
+
+Overfull \hbox (21.02768pt too wide) in paragraph at lines 31--31
+ \OT1/cmr/bx/n/10 tory 
+ []
+
+! Undefined control sequence.
+l.35 \vspace*{3.0 cm} \large
+                            
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+Overfull \hbox (46.10393pt too wide) in paragraph at lines 39--39
+\OT1/cmr/bx/n/10 Relatore:  
+ []
+
+
+Overfull \hbox (61.00665pt too wide) in paragraph at lines 40--40
+[]\OT1/cmr/bx/n/10 Correlatore:  
+ []
+
+
+Overfull \hbox (20.04294pt too wide) in paragraph at lines 45--45
+ \OT1/cmr/bx/n/10 Tesi
+ []
+
+
+Overfull \hbox (9.58328pt too wide) in paragraph at lines 45--45
+ \OT1/cmr/bx/n/10 di
+ []
+
+
+Overfull \hbox (22.72902pt too wide) in paragraph at lines 45--45
+ \OT1/cmr/bx/n/10 Lau-
+ []
+
+
+Overfull \hbox (15.59714pt too wide) in paragraph at lines 45--45
+ \OT1/cmr/bx/n/10 rea
+ []
+
+
+Overfull \hbox (12.77771pt too wide) in paragraph at lines 45--45
+ \OT1/cmr/bx/n/10 di:
+ []
+
+
+! LaTeX Error: There's no line here to end.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.46   		 \\
+            
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+! LaTeX Error: There's no line here to end.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.47 		 \\
+          
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+Overfull \hbox (20.0pt too wide) in paragraph at lines 37--50
+[][]
+ []
+
+
+Overfull \hbox (20.0pt too wide) in paragraph at lines 53--53
+[] 
+ []
+
+
+Overfull \hbox (27.22208pt too wide) in paragraph at lines 54--55
+ \OT1/cmr/bx/n/10 Anno 
+ []
+
+
+Overfull \hbox (17.6388pt too wide) in paragraph at lines 54--55
+ \OT1/cmr/bx/n/10 Ac- 
+ []
+
+
+Overfull \hbox (14.53462pt too wide) in paragraph at lines 54--55
+ \OT1/cmr/bx/n/10 ca- 
+ []
+
+
+Overfull \hbox (35.29843pt too wide) in paragraph at lines 54--55
+ \OT1/cmr/bx/n/10 demico 
+ []
+
+
+Overfull \hbox (26.83319pt too wide) in paragraph at lines 54--55
+ \OT1/cmr/bx/n/10 2015- 
+ []
+
+
+Overfull \hbox (22.99988pt too wide) in paragraph at lines 54--55
+ \OT1/cmr/bx/n/10 2016 
+ []
+
+
+! LaTeX Error: The font size command \normalsize is not defined:
+               there is probably something wrong with the class file.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.55 \end{center} \clearpage
+                            
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+[1{C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}])
+! Emergency stop.
+<*> frontispiece.tex
+                    
+*** (job aborted, no legal \end found)
+
+ 
+Here is how much of TeX's memory you used:
+ 14 strings out of 493921
+ 373 string characters out of 3147278
+ 52031 words of memory out of 3000000
+ 3404 multiletter control sequences out of 15000+200000
+ 3948 words of font info for 15 fonts, out of 3000000 for 9000
+ 841 hyphenation exceptions out of 8191
+ 20i,4n,14p,102b,121s stack positions out of 5000i,500n,10000p,200000b,50000s
+!  ==> Fatal error occurred, no output PDF file produced!

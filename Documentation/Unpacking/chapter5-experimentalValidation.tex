@@ -1,0 +1,14 @@
+\chapter{Experimental validation}
+\label{chapter5}
+\thispagestyle{empty}
+
+\section{Goals}
+
+
+\section{Dataset}
+We built our dataset from the database of VirusTotal. Using a python script we were able to write a specific query to download only packed executables. We put these malwares in a shared folder between the host and the guest system.
+
+\section{Experimental setup}
+In order to automatize our system we used VBoxManage, the command line tool of VirtualBox. We created a .bat script on the host machine that was able to restore, start, wait for 10 minutes and close the VirtualMachine using VBoxManage commands. At the start up of the Virtual Machine, a python script was set to automatically move a malware sample from the shared folder into the Virtual Machine and then trigger the execution of PIN with all the command line arguments to properly analyse the sample. After 5 minutes, it eventually stopped the execution of PIN. The final results were then moved into the shared folder to the host, in order to not lose them at the restoring of the Virtual Machine.
+\section{Experiments}
+

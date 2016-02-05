@@ -1,0 +1,16 @@
+\chapter{Approach}
+\label{chapter3}
+\thispagestyle{empty}
+
+\section{Approach overview}
+We have classified the DBI-evasion techniques into six main areas:
+\begin{enumerate}
+\item real EIP leak: DBIs usually copy instrumented code in a code cache on the heap. Consequently the real EIP of the program is different from the EIP expected by the application inside the main module. This group of techniques employs a single instruction to leak the real EIP in the code cache and check it against the expected one. We deal with these techniques patching the return value with the expected address inside the main module address space
+\item detect JIT-related API calls: identify functions that are commonly used by JIT compilers and write a small routine at the beginning of them in order to check how many times are called. If this count is above a given threshold, then the JIT compiler is detected. We deal with it marking some memory areas as "protected" and tracking the writes: if a write is inside one of this "protected" areas it is redirected into another place
+\item detect page permissions: usually JIT compilers need to allocate a lot of pages with read-write-execute privileges. If the number of these allocations is above a certain threshold, then the JIT compiler is detected. We defeat it by hooking all the function that check or retrieve in some way page permissions information
+\item memory fingerprinting: scanning the process' memory can discover some DBIs' artefacts or code patterns on the heap. We defeat these techniques creating a whitelist of memory areas in which the process is allowed to read. Then we instrument all the reads and return fake values if the read address is outside the whitelist
+\item timing attacks: since DBIs take longer time than normal execution to instrument code, this delay can be used to detect them. We hook every instruction that can read time and divide the results by a configurable divisor in order to lower the results
+\item detect by parent process: a DBI is the parent process of the binaries being instrumented. Consequently, if a program discovers that the parent process is different from \textit{cmd.exe} or \textit{explorer.exe} it can detect a DBI. We deal with it faking the list of processes and avoiding to open processes like \textit{csrss.exe} that leak the processes' list
+\end{enumerate}
+\section{Approach details}
+

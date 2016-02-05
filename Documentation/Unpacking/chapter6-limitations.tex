@@ -1,0 +1,13 @@
+\chapter{Limitations}
+\label{chapter6}
+\thispagestyle{empty}
+
+The main limitations of our work are:
+\begin{itemize}
+\item we do not handle packers that decrypt part of the code and after the execution re-encrypt it
+\item we do not handle spawning of new processes, dropping of new malware, downloading and executing of new binaries, DLL injection 
+\item if there is an IAT obfuscation technique that we can not handle we still produce a dump, but it will not be runnable
+\item the packers do not write and execute directly on the stack
+\item there are not relative calls in the heap section, because we dump the heap and create a new section with the stuff discovered in it without patching any call to a relative address 
+\item the binary analysed is a 32 bit binary
+\end{itemize}

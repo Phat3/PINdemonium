@@ -1,0 +1,10 @@
+\chapter{Implementation details}
+\label{chapter4}
+\thispagestyle{empty}
+
+\section{System architecture}
+Our tool is entirely based on PIN, a binary instrumentation framework developed by PIN. It lets us to have the instruction-level granularity useful to insert callback before and after instructions. In this way we are able, for example, to see where a write instruction is going to write and consequently create the write sets.\\
+We have integratd Scylla, an external plug-in, to dump the code and reconstruct the IAT. However, we have modified it in order to deal with \textit{IAT Redirection} and \textit{Stolen API} techniques.\\
+Finally we use the IDA Pro disassembler and an IDAPython script in the \textbf{Init function calls} heuristic. The script calls IDA which reads the imports of the dump and compare them to a list of functions commonly used by the malware and not by the packer (regitry manipulation, internet communication).
+
+\section{System details}
