@@ -8,9 +8,9 @@
 In this section we are going to focus in detail about the implementation of each of the six points listed in the previous chapter:
 \begin{enumerate}
 
-\item The techniques used in order to retrieve the real EIP exploit some assembly instructions which need to save the execution context, including the instruction pointer value, in order to work correcly. Some of these are the instructions that trigger exceptions (E.g. INT 2E) or those that save the floating point unit state (E.g. FSAVE). In order to deal with these techniques we performed a single instruction analysis, and if we found one of these instructions, after its execution, we restore the context with a fake EIP value ( The one that the program would have seen if it was run without PIN ).
+\item The techniques used in order to retrieve the real EIP exploit some assembly instructions which need to save the execution context, including the instruction pointer value, in order to work correctly. Some of these are the instructions that trigger exceptions (E.g. INT 2E) or those that save the floating point unit state (E.g. FSAVE). In order to deal with these techniques we perform a single instruction analysis, and if we find one of these instructions, after its execution, we restore the context with a fake EIP value (The one that the program would have seen if it was run without PIN).
 
-\item A common method used to detect a Just In Time compiler is to write a small routine at the beginning of ZwAllocateVirtualMemory (frequently used by JIT) which increments a counter every time it is called with the following two parameters : 
+\item A common method used to detect a Just In Time compiler is to write a small routine at the beginning of \textit{ZwAllocateVirtualMemory} (frequently used by JIT) which increments a counter every time it is called with the following two parameters : 
 
 \begin{itemize}
 \item AllocationType MEM\_COMMIT and MEM\_RESERVEs
@@ -18,28 +18,28 @@ In this section we are going to focus in detail about the implementation of each
 \item Protect = PAGE\_EXECUTE\_READWRITE
 \end{itemize}
 
-If the counter becomes bigger than a threshold the pin tool has been detected. We avoid this technique analyzing all the write operation made by the instrumented program, and when one of these is attempted in the protected memory range, identified as the beginning of the API ZwAllocateVirtualMemory, it is redirected into another memory address.
+If the counter becomes bigger than a threshold the pin tool has been detected. We avoid this technique analysing all the write operations made by the instrumented program, and when one of these is attempted in the protected memory range, identified as the beginning of the API \textit{ZwAllocateVirtualMemory}, it is redirected into another memory address.
 
-\item the eXait library uses the function VirtuaQuery to retrieve information about the page permissions. In order to avoid this we hooked the VirtualQuery and when the program queries pages outside the whitelist we fake the results and return that those pages are not mapped. Moreover, the VirtualQueryEx has the same function of the VirtualQuery but it allows to specify a handle of the process whose pages we want to query. However, if the handle corresponds to the current process, the VirtuaQueryEx does exactly the same things as the VirtualQuery. In order to prevent this, we patched also the VirtualQueryEx.
+\item the eXait library uses the function \textit{VirtuaQuery} to retrieve information about the page permissions. In order to avoid this we hooked the \textit{VirtuaQuery} and when the program queries pages outside the whitelist we fake the results and return that those pages are not mapped. Moreover, the \textit{VirtuaQueryEx} has the same function of the \textit{VirtuaQuery} but it allows to specify a handle of the process whose pages we want to query. However, if the handle corresponds to the current process, the \textit{VirtuaQueryEx} does exactly the same things as the \textit{VirtuaQuery}. In order to prevent this, we patched also the \textit{VirtuaQueryEx}.
 
-\item To avoid the readings made by the instrumented process in the memory region in which reside dlls, code patterns or resources necessary to the DBI, we have built a whitelist with all the memory area in which a process is allowed to read ( stack, sections, the runtime dynamic allocated memor, mapped file ). If the process tries to access resources outside those in the whitelist, we return random data to avoid leak of PIN artifacts.
+\item To avoid the readings made by the instrumented process in the memory region in which reside dlls, code patterns or resources necessary to the DBI, we have built a whitelist with all the memory area in which a process is allowed to read (stack, sections, the runtime dynamic allocated memory, mapped file). If the process tries to access resources outside those in the whitelist, we return random data to avoid leak of PIN artefacts.
 
 \item A process can retrieve the time from the system in three main different ways and we developed three techniques in order to lower correctly the time value returned :
 
 \begin{itemize}
-\item Detect the reads on the KUSER\_SHARED\_DATA structure where tick count and clock cycles passed are stored and divided it by a configurable divisor.
+\item Detect the reads on the KUSER\_SHARED\_DATA structure, where tick count and clock cycles passed are stored, and divide it by a configurable divisor.
 
-\item Hook the system call NtQueryPerformanceCounter and fake, in the same way as the point above, the returned result using a different divsor.
+\item Hook the system call \textit{NtQueryPerformanceCounter} and fake, in the same way as the point above, the returned result using a different divisor.
 
-\item Intercepted the rtdsc assembly instruction and fake the value returned in the registers EAX and EDX.
+\item Intercepted the \textit{rtdsc} assembly instruction and fake the value returned in the registers EAX and EDX.
 \end{itemize}
 
-\item Based on a survey\cite{Controlling-Windows-process-list} of the most frequent techniques employed to discover the parent process we implemented some countermeasures in order to fake the list of processes :
+\item Based on a survey \cite{Controlling-Windows-process-list} of the most frequent techniques employed to discover the parent process we implemented some countermeasures in order to fake the list of processes :
 
 \begin{itemize}
-\item Hook the system call NtQueryProcessInformationSystem in order to modify the returned process list changing the name pin.exe in cmd.exe
+\item Hook the system call \textit{NtQueryProcessInformationSystem} in order to modify the returned process list changing the name \textit{pin.exe} in \textit{cmd.exe}
 
-\item Hook the system call NtOpenProcess and, if the process that has to be open is csrss.exe return the status of the operation as NTSTATUS\_ACCESS\_DENIED
+\item Hook the system call \textit{NtOpenProcess} and, if the process that has to be open is \textit{csrss.exe} return the status of the operation as NTSTATUS\_ACCESS\_DENIED
 \end{itemize}
 
 \end{enumerate}
