@@ -76,6 +76,8 @@ public:
 	static const W::ULONG32 LOW_PART_DIVISOR; // this is used to lower the LONG lowpart returned from the timeGetTime in the struct _KSYSTEM_TIME inside kuser_shared_data
 	static const UINT32 HIGH_PART_DIVISOR;  // this is used to lower the LONG High1Time and High1Time returned from the timeGetTime in the struct _KSYSTEM_TIME inside kuser_shared_data
 	static const UINT32 RDTSC_DIVISOR;
+	static const UINT32 INTERRUPT_TIME_DIVISOR;
+	static const UINT32 SYSTEM_TIME_DIVISOR;
 
 private:
 	Config::Config();

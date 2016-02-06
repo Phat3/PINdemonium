@@ -35,6 +35,8 @@ const UINT32 Config::HIGH_PART_DIVISOR = 1;
 //store the least 32 significant bit of the returned value in EAX and the most 32 significant bit in EDX ( value = EDX:EAX )
 const UINT32 Config::RDTSC_DIVISOR = 400;
 
+const UINT32 Config::INTERRUPT_TIME_DIVISOR = 1000;
+const UINT32 Config::SYSTEM_TIME_DIVISOR = 10;
 
 Config* Config::instance = 0;
 

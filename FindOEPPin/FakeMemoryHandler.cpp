@@ -49,10 +49,11 @@ ADDRINT FakeMemoryHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr
 ADDRINT FakeMemoryHandler::InterruptTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 	
 	//MYINFO("REaDING AT %08x", curReadAddr);	
-	UINT32 low_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET);
-	UINT32 high_1_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_1_KSYSTEM_OFFSET);
-	UINT32 high_2_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_2_KSYSTEM_OFFSET);
-	//if these two values are differen, by the documentation, the value contained in the low_part is not consistent
+	UINT32 low_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + LOW_PART_INTERRUPT_TIME_OFFSET);
+	UINT32 high_1_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_1_INTERRUPT_TIME_OFFSET);
+	UINT32 high_2_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_2_INTERRUPT_TIME_OFFSET);
+
+	//if these two values are differen, according to the documentation, the value contained in the low_part is not consistent
 	// then tthe program must retry the read (we will return the original read address)
 	if(high_1_part != high_2_part){
 		return curReadAddr;
@@ -65,7 +66,7 @@ ADDRINT FakeMemoryHandler::InterruptTimePatch(ADDRINT curReadAddr, ADDRINT addr)
 	UINT32 high_1_part_new_value = 0;
 	UINT32 high_2_part_new_value = 0;
 	UINT64 divided_time = 0;
-	UINT32 current_divisor = Config::KSYSTEM_TIME_DIVISOR;
+	UINT32 current_divisor = Config::INTERRUPT_TIME_DIVISOR;
 	/*
 	do{
 		MYINFO("------------ INIZIO -----------------");
@@ -84,24 +85,24 @@ ADDRINT FakeMemoryHandler::InterruptTimePatch(ADDRINT curReadAddr, ADDRINT addr)
 	} while( high_1_part_new_value <= 0x5 && current_divisor > 1);
 	*/
 	UINT64 orig = ( (tmp_high_1_part << 32) + low_part );
-	divided_time = ( (tmp_high_1_part << 32) + low_part ) / Config::KSYSTEM_TIME_DIVISOR;
+	divided_time = orig / Config::INTERRUPT_TIME_DIVISOR;
 	low_part_new_value = divided_time; 
 	high_1_part_new_value = divided_time >> 32;
 	high_2_part_new_value = high_1_part_new_value;
 	//MYINFO("HIGH 1 B : %08x  HIGH 1 A : %08x HIGH 2 B : %08x  HIGH 2 A : %08x  LOW B : %08x  LOW A : %08x  COMP : %I64u  DIV : %I64u", high_1_part, high_1_part_new_value, high_2_part, high_2_part_new_value, low_part, low_part_new_value, orig, divided_time);
-	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET){
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + LOW_PART_INTERRUPT_TIME_OFFSET){
 		//MYINFO("LOW PART BEFORE : %08x", low_part);
 		//MYINFO("LOW PART AFTER : %08x", low_part_new_value);
 		memcpy((void*)curFakeMemory.c_str(),(const void*)&low_part_new_value,sizeof(UINT32));	
 	}
 
-	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_1_KSYSTEM_OFFSET){
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_1_INTERRUPT_TIME_OFFSET){
 		//MYINFO("HIGH 1 PART BEFORE : %08x", high_1_part);
 		//MYINFO("HIGH 1 PART AFTER: %08x", high_1_part_new_value);
 		memcpy((void*)curFakeMemory.c_str(),(const void*)&high_1_part_new_value,sizeof(UINT32));
 	}
 
-	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_2_KSYSTEM_OFFSET){
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_2_INTERRUPT_TIME_OFFSET){
 		//MYINFO("HIGH 2 PART BEFORE : %08x", high_2_part);
 		//MYINFO("HIGH 2 PART AFTER: %08x", high_2_part_new_value);
 		memcpy((void*)curFakeMemory.c_str(),(const void*)&high_2_part_new_value,sizeof(UINT32));
@@ -115,10 +116,68 @@ ADDRINT FakeMemoryHandler::InterruptTimePatch(ADDRINT curReadAddr, ADDRINT addr)
 
 ADDRINT FakeMemoryHandler::SystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 
+	UINT32 low_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + LOW_PART_SYSTEM_TIME_OFFSET);
+	UINT32 high_1_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_1_SYSTEM_TIME_OFFSET);
+	UINT32 high_2_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_2_SYSTEM_TIME_OFFSET);
 
-	// TO FAKE AS THE INTERRUPT TIME STRUCTURE ( USED BY OBSIDIUM )
+	//printf("Accessed the SystemTime structure: low_part = %08x , high1_part = %08x , high2_part = %08x \n " , low_part,high_1_part,high_2_part);
+	
+	//if these two values are differen, according to the documentation, the value contained in the low_part is not consistent
+	// then tthe program must retry the read (we will return the original read address)
+	if(high_1_part != high_2_part){
+		return curReadAddr;
+	}
 
-	return curReadAddr;
+	//store the value of edx in a 64 bit data in order to shift this value correctly
+	UINT64 tmp_high_1_part = high_1_part;
+
+	UINT32 low_part_new_value = 0; 
+	UINT32 high_1_part_new_value = 0;
+	UINT32 high_2_part_new_value = 0;
+	UINT64 divided_time = 0;
+	UINT32 current_divisor = Config::SYSTEM_TIME_DIVISOR;
+	/*
+	do{
+		MYINFO("------------ INIZIO -----------------");
+		
+		
+		//we have to compose the proper returned value (EDX:EAX) so let's shift the value of EDX by 32 bit on the left (tmp_edx00..0) and add to this value eax_value (tmp_edxeax_value) and divide the result by a proper divisor
+		divided_time = ( (tmp_high_1_part << 32) + low_part ) / current_divisor;
+
+		low_part_new_value = divided_time; 
+		high_1_part_new_value = divided_time >> 32;
+		high_2_part_new_value = high_1_part_new_value;
+		MYINFO("high_1_part_new_value %08x", high_1_part_new_value);
+		MYINFO("DIVISOR %d", current_divisor);
+		current_divisor = current_divisor / 2;
+		MYINFO("------------ FINE -----------------");
+	} while( high_1_part_new_value <= 0x5 && current_divisor > 1);
+	*/
+	UINT64 orig = ( (tmp_high_1_part << 32) + low_part );
+	divided_time = orig / Config::SYSTEM_TIME_DIVISOR;
+	low_part_new_value = divided_time; 
+	high_1_part_new_value = divided_time >> 32;
+	high_2_part_new_value = high_1_part_new_value;
+	//MYINFO("HIGH 1 B : %08x  HIGH 1 A : %08x HIGH 2 B : %08x  HIGH 2 A : %08x  LOW B : %08x  LOW A : %08x  COMP : %I64u  DIV : %I64u", high_1_part, high_1_part_new_value, high_2_part, high_2_part_new_value, low_part, low_part_new_value, orig, divided_time);
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + LOW_PART_SYSTEM_TIME_OFFSET){
+		//MYINFO("LOW PART BEFORE : %08x", low_part);
+		//MYINFO("LOW PART AFTER : %08x", low_part_new_value);
+		memcpy((void*)curFakeMemory.c_str(),(const void*)&low_part_new_value,sizeof(UINT32));	
+	}
+
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_1_SYSTEM_TIME_OFFSET){
+		//MYINFO("HIGH 1 PART BEFORE : %08x", high_1_part);
+		//MYINFO("HIGH 1 PART AFTER: %08x", high_1_part_new_value);
+		memcpy((void*)curFakeMemory.c_str(),(const void*)&high_1_part_new_value,sizeof(UINT32));
+	}
+
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_2_SYSTEM_TIME_OFFSET){
+		//MYINFO("HIGH 2 PART BEFORE : %08x", high_2_part);
+		//MYINFO("HIGH 2 PART AFTER: %08x", high_2_part_new_value);
+		memcpy((void*)curFakeMemory.c_str(),(const void*)&high_2_part_new_value,sizeof(UINT32));
+	}
+	
+	return (ADDRINT)curFakeMemory.c_str();
 }
 
 
@@ -148,17 +207,17 @@ VOID FakeMemoryHandler::initFakeMemory(){
 	
 	//add FakeMemoryItem in order to fake TimeGetTime value retreived from the InterruptTime structure in KUSER_SHARED_DATA 
 	FakeMemoryItem fakeTimeGetTime;
-	fakeTimeGetTime.StartAddress = KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET;
-	fakeTimeGetTime.EndAddress = KUSER_SHARED_DATA_ADDRESS + HIGH_2_KSYSTEM_OFFSET;
+	fakeTimeGetTime.StartAddress = KUSER_SHARED_DATA_ADDRESS + LOW_PART_INTERRUPT_TIME_OFFSET;
+	fakeTimeGetTime.EndAddress = KUSER_SHARED_DATA_ADDRESS + HIGH_2_INTERRUPT_TIME_OFFSET;
 	fakeTimeGetTime.func = &FakeMemoryHandler::InterruptTimePatch;
 	fakeMemory.push_back(fakeTimeGetTime);
 
 	// Faking the SystemTime structure 
-	FakeMemoryItem fakeMem4;
-	fakeMem4.StartAddress = KUSER_SHARED_DATA_ADDRESS +0x14 ; // start addr of systemtime structure 
-	fakeMem4.EndAddress = KUSER_SHARED_DATA_ADDRESS + 0x1c;
-	fakeMem4.func = &FakeMemoryHandler::SystemTimePatch;
-	fakeMemory.push_back(fakeMem4);
+	FakeMemoryItem fakeSystemTime;
+	fakeSystemTime.StartAddress = KUSER_SHARED_DATA_ADDRESS + LOW_PART_SYSTEM_TIME_OFFSET ; // start addr of systemtime structure 
+	fakeSystemTime.EndAddress = KUSER_SHARED_DATA_ADDRESS + HIGH_2_SYSTEM_TIME_OFFSET;
+	fakeSystemTime.func = &FakeMemoryHandler::SystemTimePatch;
+	fakeMemory.push_back(fakeSystemTime);
 }
 
 BOOL getMemoryRange(ADDRINT address, MemoryRange& range){
