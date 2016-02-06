@@ -1,0 +1,18 @@
+\chapter{Motivation}
+\label{chapter2}
+\thispagestyle{empty}
+
+\section{Problem statement}
+Malware usually pack their code in order to avoid static analysis of their payload. Basically their original code is transformed runtime employing different techniques. All packers have one thing in common: the original code must be written somewhere in memory and then the execution must be redirected there. Malware authors can use commercial tool  like UPX, FSG, PECompact and Themida,or they can write their own custom packers.\\
+The complexity of packers can be very different: from those which write and execute direcly the original code, to others that employe multiple unpacking routine and obfuscation techniques such as runtime repacking of previously unpacked code. \\
+The process of reverse engineering a packed malware could be very time consuming and for this reason different works have been done in order to automate this  task and help the analysis.  
+
+\section{State of the art}
+There have been a lot of attempts to build an automatic unpacker. Some of them are standalone tools like PolyUnpack, Ether, Eureka; others work together with an antivirus, like OmniUnpack and JustIn.\\
+There are other approaches: BCR, for example, does not aim to extract the original code, but the unpacking routine, and then use it to unpack the malware.
+
+\section{Goals and challenges}
+Our approach aims not only to unpack the malware, but also to reconstruct a working binary of it. To do so, we not only have to identify the original entry point (OEP) and dump the code at that moment of the execution of the malware, but we have to resolve all the imports, reconstructing its import address table (IAT).\\
+The first thing we have to deal with are the unpacking routines of the packers: every time the execution of the malware is from a previously written memory area, then it could be a sign that the unpacking stage has finished or that a new unpacking layer has started.\\
+We have also to deal with techniques of IAT obfuscation: some malwares can do this in order to make difficult to statically analyse them to understand what they are doing.
+
