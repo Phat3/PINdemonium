@@ -30,7 +30,7 @@ ADDRINT FakeMemoryHandler::ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFunc
 	int delta = curReadAddr - ntdllFuncAddr;
 	curFakeMemory = patch.substr(delta,string::npos);
 	ADDRINT patchAddr = (ADDRINT)&curFakeMemory;
-	//MYINFO("read at %08x containig %02x  Patched address %08x with string %02x \n",curReadAddr, *(char *)curReadAddr,patchAddr,*(char *)curFakeMemory.c_str());
+	MYINFO("read at %08x containig %02x  Patched address %08x with string %02x \n",curReadAddr, *(char *)curReadAddr,patchAddr,*(char *)curFakeMemory.c_str());
 	return patchAddr;
 }
 
@@ -146,7 +146,7 @@ VOID FakeMemoryHandler::initFakeMemory(){
 
 	FakeMemoryItem fakeMem2;
 	fakeMem2.StartAddress = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET;  
-	fakeMem2.EndAddress = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET + LOW_PART_KSYSTEM_OFFSET - 1; // the end of the TickMultiplier field 
+	fakeMem2.EndAddress = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET + 0x3; // the end of the TickMultiplier field 
 	fakeMem2.func = &FakeMemoryHandler::TickMultiplierPatch; 
 	fakeMemory.push_back(fakeMem2);
 

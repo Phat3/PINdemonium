@@ -150,6 +150,10 @@ void imageLoadCallback(IMG img,void *){
 	
 }
 
+void DetachFunc(){
+
+	PIN_Detach();
+}
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if better than trace iteration)
@@ -208,7 +212,7 @@ void ConfigureTool(){
 	config->UNPACKING_MODE = KnobUnpacking.Value();
 	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
 
-	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= 10 ){
+	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= 20 ){
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
 	}
 	else{

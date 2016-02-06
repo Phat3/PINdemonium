@@ -17,27 +17,20 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualProtect",VIRTUALPROTECT_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualQueryEx",VIRTUALQUERYEX_INDEX) );
 
-
-
 	// DEBUGGING OBSIDIUM -----
 	/*
 	this->functionsMap.insert( std::pair<string,int>("CreateFileW",ANOTHERHOOK) );
 
-
 	this->functionsMap.insert( std::pair<string,int>("RegOpenKeyExW",ANOTHERHOOK2));
 
-			this->functionsMap.insert( std::pair<string,int>("RegGetValueW",ANOTHERHOOK3));
+	this->functionsMap.insert( std::pair<string,int>("RegGetValueW",ANOTHERHOOK3));
 
-		this->functionsMap.insert( std::pair<string,int>("RegQueryValueExW",ANOTHERHOOK3));
+	this->functionsMap.insert( std::pair<string,int>("RegQueryValueExW",ANOTHERHOOK3));
 
-				this->functionsMap.insert( std::pair<string,int>("GetEnvironmentStringsW",ANOTHERHOOK4));
+	this->functionsMap.insert( std::pair<string,int>("GetEnvironmentStringsW",ANOTHERHOOK4));
 
-					this->functionsMap.insert( std::pair<string,int>("memcpy",ANOTHERHOOK5));
-	*/
-	
-
-
-	
+	this->functionsMap.insert( std::pair<string,int>("memcpy",ANOTHERHOOK5));
+	*/	
 }
 
 
