@@ -49,37 +49,67 @@ ADDRINT FakeMemoryHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr
 
 ADDRINT FakeMemoryHandler::KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 	
-	MYINFO("REaDING AT %08x", curReadAddr);	
-	W::ULONG32 field_to_be_divided;
-	memcpy(&field_to_be_divided,(const void*)curReadAddr,sizeof(W::DWORD));
-
-	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET){
-		MYINFO("LOW PART BEFORE : %08x", field_to_be_divided);
-		field_to_be_divided = field_to_be_divided / 2;
-		MYINFO("LOW PART AFTER : %08x", field_to_be_divided);
-		memcpy((void*)curFakeMemory.c_str(),(const void*)&field_to_be_divided,sizeof(W::DWORD));
-		return (ADDRINT)curFakeMemory.c_str();
+	//MYINFO("REaDING AT %08x", curReadAddr);	
+	UINT32 low_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET);
+	UINT32 high_1_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_1_KSYSTEM_OFFSET);
+	UINT32 high_2_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_2_KSYSTEM_OFFSET);
+	//if these two values are differen, by the documentation, the value contained in the low_part is not consistent
+	// then tthe program must retry the read (we will return the original read address)
+	if(high_1_part != high_2_part){
+		return curReadAddr;
 	}
-	
-	return curReadAddr;
 
+	//store the value of edx in a 64 bit data in order to shift this value correctly
+	UINT64 tmp_high_1_part = high_1_part;
+
+	UINT32 low_part_new_value = 0; 
+	UINT32 high_1_part_new_value = 0;
+	UINT32 high_2_part_new_value = 0;
+	UINT64 divided_time = 0;
+	UINT32 current_divisor = Config::KSYSTEM_TIME_DIVISOR;
 	/*
-	//let's divide only the lowPart for now until we understand better ho timeGetTime works
-	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_1_KSYSTEM_OFFSET){
-		MYINFO("HIGH_1_PART : %08x", field_to_be_divided);
-		return curReadAddr;
-	}
+	do{
+		MYINFO("------------ INIZIO -----------------");
+		
+		
+		//we have to compose the proper returned value (EDX:EAX) so let's shift the value of EDX by 32 bit on the left (tmp_edx00..0) and add to this value eax_value (tmp_edxeax_value) and divide the result by a proper divisor
+		divided_time = ( (tmp_high_1_part << 32) + low_part ) / current_divisor;
 
-	
-	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_2_KSYSTEM_OFFSET){
-		MYINFO("HIGH_2_PART : %08x", field_to_be_divided);
-		return curReadAddr;
-	}
-
-	memcpy((void*)curFakeMemory.c_str(),(const void*)&field_to_be_divided,sizeof(W::DWORD));
-	ADDRINT patchAddr = (ADDRINT)&curFakeMemory;
-	return patchAddr;
+		low_part_new_value = divided_time; 
+		high_1_part_new_value = divided_time >> 32;
+		high_2_part_new_value = high_1_part_new_value;
+		MYINFO("high_1_part_new_value %08x", high_1_part_new_value);
+		MYINFO("DIVISOR %d", current_divisor);
+		current_divisor = current_divisor / 2;
+		MYINFO("------------ FINE -----------------");
+	} while( high_1_part_new_value <= 0x5 && current_divisor > 1);
 	*/
+	UINT64 orig = ( (tmp_high_1_part << 32) + low_part );
+	divided_time = ( (tmp_high_1_part << 32) + low_part ) / Config::KSYSTEM_TIME_DIVISOR;
+	low_part_new_value = divided_time; 
+	high_1_part_new_value = divided_time >> 32;
+	high_2_part_new_value = high_1_part_new_value;
+	//MYINFO("HIGH 1 B : %08x  HIGH 1 A : %08x HIGH 2 B : %08x  HIGH 2 A : %08x  LOW B : %08x  LOW A : %08x  COMP : %I64u  DIV : %I64u", high_1_part, high_1_part_new_value, high_2_part, high_2_part_new_value, low_part, low_part_new_value, orig, divided_time);
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET){
+		//MYINFO("LOW PART BEFORE : %08x", low_part);
+		//MYINFO("LOW PART AFTER : %08x", low_part_new_value);
+		memcpy((void*)curFakeMemory.c_str(),(const void*)&low_part_new_value,sizeof(UINT32));	
+	}
+
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_1_KSYSTEM_OFFSET){
+		//MYINFO("HIGH 1 PART BEFORE : %08x", high_1_part);
+		//MYINFO("HIGH 1 PART AFTER: %08x", high_1_part_new_value);
+		memcpy((void*)curFakeMemory.c_str(),(const void*)&high_1_part_new_value,sizeof(UINT32));
+	}
+
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + HIGH_2_KSYSTEM_OFFSET){
+		//MYINFO("HIGH 2 PART BEFORE : %08x", high_2_part);
+		//MYINFO("HIGH 2 PART AFTER: %08x", high_2_part_new_value);
+		memcpy((void*)curFakeMemory.c_str(),(const void*)&high_2_part_new_value,sizeof(UINT32));
+	}
+	
+	return (ADDRINT)curFakeMemory.c_str();
+
 
 }
 
