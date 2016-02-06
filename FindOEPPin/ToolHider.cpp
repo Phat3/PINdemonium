@@ -13,29 +13,23 @@ ToolHider::~ToolHider(void)
 }
 
 
-ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
+ADDRINT handleRead(ADDRINT eip, ADDRINT read_addr,void *fake_mem_h){
 	
 	//MYINFO("%0x8 %s Trying to  read %08x : res %d\n",ip,s.c_str(), read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
-	FakeMemoryHandler fakeMem = *(FakeMemoryHandler *)fakeMemH;
+	FakeMemoryHandler fake_mem = *(FakeMemoryHandler *)fake_mem_h;
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
-	ADDRINT fakeAddr = fakeMem.getFakeMemory(read_addr);
+	ADDRINT fake_addr = fake_mem.getFakeMemory(read_addr, eip);
 
-	ProcInfo *pInfo = ProcInfo::getInstance();
-
-	if(read_addr >= 0x7ffe0018 && read_addr <= 0x7ffe001c){
-		MYINFO("ACCESSING SYSTEMTIME STRUCTURE\n");
-	}
-
-	if(fakeAddr==NULL){
+	if(fake_addr==NULL){
 
 		MYINFO("xxxxxxxxxxxxxx %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr);
 	}
 
-	// OBSIDIUM INVESTIGATION 
+	if (fake_addr != read_addr){
+		MYINFO("ip : %08x in %s reading %08x and it has been redirected to : %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr, fake_addr);
+	}
 
-
-
-	return fakeAddr;
+	return fake_addr;
 }
 
 ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
@@ -74,14 +68,6 @@ static REG GetScratchReg(UINT32 index)
 
 unsigned int first_ebx;
 
-VOID MyPrintReg(CONTEXT *ctxt){
-		
-		unsigned int ebx_value = PIN_GetContextReg(ctxt, REG_EBX);
-
-		MYINFO("EBX IS %08x and points to %08x\n" , *(unsigned int *)ebx_value , ebx_value);
-
-		return;
-}
 
 
 VOID MyPrintRegEbx1(CONTEXT *ctxt){
@@ -1569,6 +1555,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov dword ptr [eax], 0x6") == 0){
 	}
 	}
 
+
 	// 1 - single instruction detection
 	if(config->ANTIEVASION_MODE_INS_PATCHING && this->evasionPatcher.patchDispatcher(ins, curEip)){
 		//MYINFO("Returned\n");
@@ -1588,10 +1575,6 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov dword ptr [eax], 0x6") == 0){
 			}
 			
 			REG scratchReg = GetScratchReg(op);
-			//INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleRead,IARG_INST_PTR, IARG_MEMORYREAD_EA, op, IARG_PTR,&fakeMemH, IARG_RETURN_REGS, REG_INST_G0+op, IARG_END);
-			//INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleRead2,IARG_INST_PTR, IARG_CONTEXT, IARG_CALL_ORDER, CALL_ORDER_LAST, IARG_END);
-			//MYINFO("INST : %s", INS_Disassemble(ins).c_str());
-			//INS_RewriteMemoryOperand(ins, op, REG(REG_INST_G0+op));
 			
 			INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(handleRead),
 				IARG_INST_PTR,

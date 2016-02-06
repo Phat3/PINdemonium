@@ -25,7 +25,7 @@ VOID patchFsave(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
 	PIN_SetContextFPState(ctxt, &a);
 } 
 
-
+//fake the result of an rdtsc operation by dividing it by RDTSC_DIVISOR
 VOID patchRtdsc(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
 
 	//get the two original values ()
@@ -42,7 +42,6 @@ VOID patchRtdsc(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
 	//set the registerss
 	PIN_SetContextReg(ctxt, REG_EAX,eax_new_value);
 	PIN_SetContextReg(ctxt, REG_EDX,edx_new_value);
-
 } 
 
 //----------------------------- END PATCH FUNCTIONS -----------------------------//
@@ -56,9 +55,7 @@ EvasionPatches::EvasionPatches(void)
 	//ex : if i find an int 2e instruction we have the functon pointer for the right patch 
 	this->patchesMap.insert( std::pair<string,AFUNPTR>("int 0x2e",(AFUNPTR)patchInt2e) );
 	this->patchesMap.insert( std::pair<string,AFUNPTR>("fsave",(AFUNPTR)patchFsave) );
-	this->patchesMap.insert( std::pair<string,AFUNPTR>("rdtsc ",(AFUNPTR)patchRtdsc) );
-
-	
+	this->patchesMap.insert( std::pair<string,AFUNPTR>("rdtsc ",(AFUNPTR)patchRtdsc) );	
 }
 
 
