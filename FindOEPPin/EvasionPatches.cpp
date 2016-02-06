@@ -28,14 +28,18 @@ VOID patchFsave(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
 
 VOID patchRtdsc(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
 
-	unsigned int eax_value = PIN_GetContextReg(ctxt, REG_EAX);
-	unsigned int edx_value = PIN_GetContextReg(ctxt, REG_EDX);
-
-	unsigned int eax_new_value = eax_value/Config::RDTSC_DIVISOR_EAX;
-	unsigned int edx_new_value = edx_value/Config::RDTSC_DIVISOR_EDX;
-
-	MYINFO("Detected a rdtsc, EAX before = %08x , EAX after = %08x , EDX before: %08x , EDX after: %08x\n", eax_value,eax_new_value,edx_value, edx_new_value);
-
+	//get the two original values ()
+	UINT32 eax_value = PIN_GetContextReg(ctxt, REG_EAX);
+	UINT32 edx_value = PIN_GetContextReg(ctxt, REG_EDX);
+	//store the value of edx in a 64 bit data in order to shift this value correctly
+	UINT64 tmp_edx = edx_value;
+	//we have to compose the proper returned value (EDX:EAX) so let's shift the value of EDX by 32 bit on the left (tmp_edx00..0) and add to this value eax_value (tmp_edxeax_value) and divide the result by a proper divisor
+	UINT64 divided_time = ( (tmp_edx << 32) + eax_value ) / Config::RDTSC_DIVISOR;
+	//get the right parts 
+	UINT32 eax_new_value = divided_time; 
+	UINT32 edx_new_value = divided_time >> 32;	
+	//MYINFO("Detected a rdtsc, EAX before = %08x , EAX after = %08x , EDX before: %08x , EDX after: %08x\n", eax_value, eax_new_value, edx_value, edx_new_value);
+	//set the registerss
 	PIN_SetContextReg(ctxt, REG_EAX,eax_new_value);
 	PIN_SetContextReg(ctxt, REG_EDX,edx_new_value);
 

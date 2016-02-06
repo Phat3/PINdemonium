@@ -54,7 +54,8 @@ private:
 	// fakeMemoryFunction to handle ntdll inspection
 	static ADDRINT ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFuncAddr);
 	static ADDRINT TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr);
-	static ADDRINT KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr);
+	static ADDRINT InterruptTimePatch(ADDRINT curReadAddr, ADDRINT addr);
+	static ADDRINT SystemTimePatch(ADDRINT curReadAddr, ADDRINT addr);
 	//attributes for the  load library psapi
 	MyEnumProcessModules enumProcessModules;
 	MyGetModuleInformation getModuleInformation;

@@ -22,6 +22,10 @@ ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
 
 	ProcInfo *pInfo = ProcInfo::getInstance();
 
+	if(read_addr >= 0x7ffe0018 && read_addr <= 0x7ffe001c){
+		MYINFO("ACCESSING SYSTEMTIME STRUCTURE\n");
+	}
+
 	if(fakeAddr==NULL){
 
 		MYINFO("xxxxxxxxxxxxxx %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr);
@@ -1426,6 +1430,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"cmp byte ptr [eax], 0xe9") == 0){
 		REGSET_AddAll(regsIn);
 		REGSET regsOut;
 		REGSET_AddAll(regsOut);
+
 
 		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyPrintRegAQ6, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
 

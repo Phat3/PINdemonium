@@ -39,7 +39,7 @@ ADDRINT FakeMemoryHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr
 	int tick_multiplier;
 	ostringstream convert; 
 
-	ADDRINT kuser = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET;
+	ADDRINT kuser = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET; //from 0x7ffe0000 to 0x7ffe0004
 	memcpy(&tick_multiplier,(const void *)kuser,sizeof(int));
 
 	//MYINFO("Tick multiplier is %08x\n",tick_multiplier);
@@ -58,11 +58,11 @@ ADDRINT FakeMemoryHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr
 
 }
 
-ADDRINT FakeMemoryHandler::KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
+ADDRINT FakeMemoryHandler::InterruptTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 
 	ostringstream convert;
 
-	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET){
+	if(curReadAddr == KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET){ //from 0x7ffe0000 to 0x7ffe0004
 	
 		W::ULONG32 LowPart;
 		memcpy(&LowPart,(const void*)curReadAddr,sizeof(W::DWORD));
@@ -125,6 +125,16 @@ ADDRINT FakeMemoryHandler::KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 
 }
 
+
+ADDRINT FakeMemoryHandler::SystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
+
+
+
+
+
+}
+
+
 VOID FakeMemoryHandler::initFakeMemory(){
 
 
@@ -150,12 +160,19 @@ VOID FakeMemoryHandler::initFakeMemory(){
 	fakeMem2.func = &FakeMemoryHandler::TickMultiplierPatch; 
 	fakeMemory.push_back(fakeMem2);
 
-
+	// Faking the InterruptTime structure 
 	FakeMemoryItem fakeMem3;
 	fakeMem3.StartAddress = KUSER_SHARED_DATA_ADDRESS + LOW_PART_KSYSTEM_OFFSET;
 	fakeMem3.EndAddress = KUSER_SHARED_DATA_ADDRESS + HIGH_2_KSYSTEM_OFFSET;
-	fakeMem3.func = &FakeMemoryHandler::KSystemTimePatch;
+	fakeMem3.func = &FakeMemoryHandler::InterruptTimePatch;
 	fakeMemory.push_back(fakeMem3);
+
+	// Faking the SystemTime structure 
+	FakeMemoryItem fakeMem4;
+	fakeMem4.StartAddress = KUSER_SHARED_DATA_ADDRESS +0x14 ; // start addr of systemtime structure 
+	fakeMem4.EndAddress = KUSER_SHARED_DATA_ADDRESS + 0x1c;
+	fakeMem4.func = &FakeMemoryHandler::SystemTimePatch;
+	fakeMemory.push_back(fakeMem4);
 }
 
 BOOL getMemoryRange(ADDRINT address, MemoryRange& range){

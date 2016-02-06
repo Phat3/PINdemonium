@@ -26,8 +26,7 @@ const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
 const UINT32 Config::TICK_DIVISOR = 800000;
 const UINT32 Config::CC_DIVISOR = 1000000000;
 const UINT32 Config::LONG_DIVISOR = 800000000;
-const UINT32 Config::RDTSC_DIVISOR_EAX = 10000;
-const UINT32 Config::RDTSC_DIVISOR_EDX = 10;
+const UINT32 Config::RDTSC_DIVISOR = 4000;
 
 
 Config* Config::instance = 0;
