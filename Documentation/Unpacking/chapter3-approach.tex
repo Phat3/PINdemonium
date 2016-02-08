@@ -22,7 +22,6 @@ During the development we have adapted our approach in order to increase speed a
 \item in the first step, we add the option of not to track writes of library instructions on the stack and in the teb
 \item in the second step we filter instructions of known libraries before dumping
 	\begin{enumerate}
-	\item in this step there are no improvements
 	\item when trying to reconstruct the IAT we added some code in order to deal with 			obfuscation techniques like \textit{IAT Redirection} and \textit{Stolen API}
 	\item our heuristics are:
 		\begin{itemize}

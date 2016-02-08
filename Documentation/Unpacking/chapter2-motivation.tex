@@ -3,16 +3,53 @@
 \thispagestyle{empty}
 
 \section{Problem statement}
-Malware usually pack their code in order to avoid static analysis of their payload. Basically their original code is transformed runtime employing different techniques. All packers have one thing in common: the original code must be written somewhere in memory and then the execution must be redirected there. Malware authors can use commercial tool  like UPX, FSG, PECompact and Themida,or they can write their own custom packers.\\
-The complexity of packers can be very different: from those which write and execute direcly the original code, to others that employe multiple unpacking routine and obfuscation techniques such as runtime repacking of previously unpacked code. \\
-The process of reverse engineering a packed malware could be very time consuming and for this reason different works have been done in order to automate this  task and help the analysis.  
+
+In order to avoid Anti-Virus (AV) detection and harden the process of reverse engineering usually malware hide their code employing different techniques. This process, called \textit{packing}, makes the static analysis of a binary completely useless.
+A \textit{packer} is the tool that implements the previously described functions, it receives in input a binary, transform and obfuscates its code/resources and then appends new codes that will \textit{unpack} the original one runtime.\\
+The complexity of \textit{packers} can be very different: from those which write and execute direcly the original code, to others that employe multiple unpacking routine and obfuscation techniques such as runtime repacking of previously unpacked code.
+This process has different consequences both in the AV detection and manual analysis of malicious binary :
+\begin{itemize}
+\item Packing a binary destroy any possibility to understand what the program will do on the system without executing it, this problem with the fact that packing a binary with different packers lead to different signature of the malware, void any static analysis techniques implemented by AV. 
+
+\item The process of reverse engineering a packed malware could be very time consuming and since lots of malware is pushed every day on internet there is a necessity of fast analysis and fast updating of AV software.
+\end{itemize}
+\\
+These problems inspired different works in building an automatic generic unpacker aimed to extract the original code from the packed one. Some of them are more oriented in detection of malicious packed program helping an AV software on end users's PCs, others are instead proposed as tools for speed up the work of professional malware analyst.
 
 \section{State of the art}
-There have been a lot of attempts to build an automatic unpacker. Some of them are standalone tools like PolyUnpack, Ether, Eureka; others work together with an antivirus, like OmniUnpack and JustIn.\\
-There are other approaches: BCR, for example, does not aim to extract the original code, but the unpacking routine, and then use it to unpack the malware.
+Lots of different tools using different approach and techniques have been proposed. 
+The approaches for automatic unpacking can be very different:
+\begin{itemize}
+\item Static unpacking: this can sound counterintuitive, but some works proposed to identify unpacking routines inside the binary and reconstruct an ad hoc unpacker for the binary starting from these.
+\item Hybrid unpacking: this mixed some static heuristics with dynamic analysis.
+\item Dynamic unpacking: this let the unpacker does its work and try to extract runtime the unpacked code. 
+\end{itemize}
+Depending on the purpose of the tool there are different requirements that a generic unpacker must respect. If the aim is to help the AV on end users's PCs:
+\begin{itemize}
+\item Safety: try to recognize the malicious behavior as fast as possible and block the execution. 
+\item Performance: it shouldn't slow down too much the execution of AV scans.
+\end{itemize}
+\\
+Note that in this case, the scope isn't to reconstruct a binary from a packed one, but rather stop malicious behaviors when they manifest. \\
+In this area different works has been done, some of them are: OmniUnpack,JustIn. 
+\\\\
+On the other side if the aim is to help the analysis in a lab:
+
+\begin{itemize}
+\item Fidelty: the unpacked binary extracted by the tool should be equal to the one that would be unpacked normally. 
+\item Generality: the unpacker can't be focused only against one packer but should unpack with one generic algorithm different of them.
+\end{itemize}
+\\
+In this case we don't care so much about safety because usually analysis is performed inside controlled lab and the analysts want to observe the complete execution of malware. Also the performance are not a critical feature here because we are not constricted by user experience needs.
+\\
+In this category have been developed tools like PolyUnpack,Ether,Eureka,Renovo,Lynx.
+These tools merely collect dumps of the binary while unpacking and they fail to reconstruct a fully runnable binary given a packed one.
+
 
 \section{Goals and challenges}
-Our approach aims not only to unpack the malware, but also to reconstruct a working binary of it. To do so, we not only have to identify the original entry point (OEP) and dump the code at that moment of the execution of the malware, but we have to resolve all the imports, reconstructing its import address table (IAT).\\
-The first thing we have to deal with are the unpacking routines of the packers: every time the execution of the malware is from a previously written memory area, then it could be a sign that the unpacking stage has finished or that a new unpacking layer has started.\\
+Since our work is born as a component of a bigger malware analysis platform ( Jackdaw ), our tool is oriented to help malware analyst. 
+Our approach aims not only to unpack the malware, but also to reconstruct a fully working unpacked binary. To do so, we not only have to identify the original entry point (OEP) and dump the code at that moment, but we have to find the IAT inside the process and reconstruct a correct import directory in the final PE file.\\
+
+The first thing we have to deal with are the unpacking routines of the packers: every time the execution of the malware comes from a previously written memory area, then it could be a sign that the unpacking stage has finished or that a new unpacking layer has started.\\
 We have also to deal with techniques of IAT obfuscation: some malwares can do this in order to make difficult to statically analyse them to understand what they are doing.
 
