@@ -3,10 +3,11 @@
 \thispagestyle{empty}
 
 \section{Approach overview}
+\paragraph{}
 Our tool has an instruction-level granularity: each instruction is analysed and then goes trough the following steps:
 \begin{enumerate}
-\item check if it is a write instruction: we track the memory region in which the instruction writes, in order to create a list of memory blocks (we call them "Write sets") of contiguous writes.
-\item check if instruction executes from one of the write sets, including write instructions. If this is the case we do the following things:
+\item check if it is a write instruction: we track the memory region in which the instruction writes, in order to create a list of memory blocks (we call them \textit{Write Intervals}) of contiguous writes.
+\item check if instruction executes from one of the \textit{Write Intervals}, including write instructions. If this is the case we do the following things:
 	\begin{enumerate}
 	\item dump the code at this point of execution
 	\item reconstruct the IAT of the obtained dump
@@ -17,6 +18,7 @@ Our tool has an instruction-level granularity: each instruction is analysed and 
 In this way, at the end of the execution of the malware we have a series of dumps and a report which includes the results of each heuristic for every dump. With these information we can choose the best dump, that is the one that has the greatest chance of work.\\
 
 \section{Approach details}
+\paragraph{}
 During the development we have adapted our approach in order to increase speed and effectiveness of our tool. Following there is a detailed explanation of our improvements on the initial approach:
 \begin{enumerate}
 \item in the first step, we add the option of not to track writes of library instructions on the stack and in the teb

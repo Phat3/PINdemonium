@@ -3,38 +3,57 @@
 \thispagestyle{empty}
 
 \section{System architecture}
+\paragraph{}
 Our tool is entirely based on PIN, a binary instrumentation framework developed by Intel. It lets us to have the instruction-level granularity useful to track memory writes on a finer grain. In this way we are able, for example, to see where a single assembly write instruction is going to write and consequently create the write sets.\\
 We have integrated Scylla, an external open source program, to dump the code and reconstruct the IAT. Moreover we have extended it in order to deal with \textit{IAT Redirection} and \textit{Stolen API} techniques.\\
 Finally we use the IDA Pro disassembler and an IDAPython script in the \textit{Init function calls} heuristic. The script calls IDA which reads the imports of the dump and compare them to a list of functions commonly used by the malware and not by the packer (registry manipulation, internet communication).
 
 \section{System details}
+\paragraph{}
 In this section we are going to explain in detail the implementation of the most important parts of our tool.
 
 \subsection{WriteSet management}
-We introduced the concept of \textit{WriteInterval} in order to group together contiguous writes, in order to check if an instruction executes from a previously written memory area. All the \textit{WriteIntervals} are grouped together in a \textit{WriteSet}, a simple C++ vector.\\
+\paragraph{}
+We introduce the concept of \textit{WriteInterval} in order to group together contiguous writes to check if an instruction executes from a previously written memory area. All the \textit{WriteIntervals} are grouped together in a \textit{WritesSet}, a simple C++ vector.\\
+\paragraph{}
 A \textit{WriteInterval} is a C++ structure with the following fields:
 \begin{itemize}
-\item addr\_begin
-\item addr\_end
-\item entropy\_flag
-\item long\_jmp\_flag
-\item jmp\_outer\_section\_flag
-\item pushad\_popad\_flag
-\item broken\_falg
-\item detectedFunctions
-\item cur\_number\_jmp
-\item heap\_flag
+\item addr\_begin: start address in memory of the \textit{WriteInterval}
+\item addr\_end: end address in memory of the \textit{WriteInterval}
+\item entropy\_flag: flag used by the \textit{Entropy Heuristic}
+\item long\_jmp\_flag: flag used by the \textit{Long Jump Heuristic}
+\item jmp\_outer\_section\_flag: flag used by the \textit{Jump Outer Section Heuristic}
+\item pushad\_popad\_flag: flag used by the \textit{Pushad Popad Heuristic}
+\item broken\_falg: flag which indicates if the WxorX law has already been broken in this \textit{WriteInterval}
+\item detectedFunctions: flag used in conjunction with the \textit{Init Function Call Heuristic} 
+\item cur\_number\_jmp: current jump number, used to properly name the result file (see Section \ref{Dumping module})
+\item heap\_flag: flag that indicates if the write is on the heap
 \end{itemize}
-The following steps explain how \textit{WriteInterval} are created and updated:
+For more information about heuristic see Section \ref{Heuristics implementation}.\\
+\paragraph{}
+The following steps explain how \textit{WriteIntervals} are created and updated:
 \begin{enumerate}
 \item for each instruction we check if it is a write
-\item if so, we insert a \textit{callback} function before it. A \textit{callback} is a feature of PIN: it allows to instrument the code by inserting some code that will be executed before or after the original instruction. In our case, we intercept the write instruction and before the execution we retrieve its EIP, the address where it will write and the size of the memory that will be written
+\item if so, we insert a \textit{callback} function before it. A \textit{callback} is a feature of PIN: it allows to instrument the code by inserting some code that will be executed before or after the original instruction. In our case, we intercept the write instruction and before the execution we retrieve its EIP, the address where it will write and the size of the memory that will be written. With these information we compute the start and end addresses of the write
 \item Now we proceed to the construction or the update of the \textit{WriteInterval}. We have five cases:
 	\begin{enumerate}
-	\item the memory written by the instruction neither is contained nor overlaps with another \textit{WriteInterval}. In this case we create a new one and add it to the \textit{WriteSet} vector
-	\item the start address of the write is before the start of a \textit{WriteInterval}, but the end address is inside the same \textit{WriteInterval} In this case we update the \textit{WriteInterval} setting as start address the start of the write, but leaving unaltered the end address
+	\item the memory written by the instruction neither is contained nor overlaps with another \textit{WriteInterval}. In this case we create a new one and add it to the \textit{WritesSet} vector
+	\item the start address of the write is before the start of a \textit{WriteInterval}, but the end address is inside it. In this case we update the \textit{WriteInterval} setting as start address the start of the write, but leaving unaltered the end address
 	\item the same as case (b), but this time regarding the end address. Consequently, we only update the end of the \textit{WriteInterval} 
 	\item the memory written by the instruction completely contains a \textit{WriteInterval}. In this case we update both the start and the end of the \textit{WriteInterval}
 	\item the memory written by the instruction is completely contained by an existing \textit{WriteInterval}. In this case we do nothing
 	\end{enumerate}
 \end{enumerate}
+We check each instruction, including writes, to see if it executes from one of the \textit{WriteIntervals}. If this is the case, then we proceed with our analysis; in the other case we execute the instruction and go to the next one. In both cases the \textit{Write Intervals} are preserved, the reason will be clear in Section \ref{Dumping module}.\\
+
+\subsection{Hooks of functions and syscalls}
+\label{Hooks of functions and syscalls}
+
+\subsection{Dumping module}
+\label{Dumping module}
+
+\subsection{Heuristics implementation}
+\label{Heuristics implementation}
+
+\subsection{Best dump selection}
+\label{Best dump selection}
