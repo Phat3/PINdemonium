@@ -16,18 +16,22 @@ const string Config::DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "du
 
 
 //Tuning Flags
-
-
 const bool Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
 const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
 
 // Divisor of the timing 
-const UINT32 Config::TICK_DIVISOR = 800000;
-const UINT32 Config::CC_DIVISOR = 1000000000;
-const UINT32 Config::LONG_DIVISOR = 800000000;
-const UINT32 Config::RDTSC_DIVISOR_EAX = 10000;
-const UINT32 Config::RDTSC_DIVISOR_EDX = 10;
+const UINT32 Config::TICK_DIVISOR = 300;	//this value is based on exait technique (the time returned is equal to the time returned when the program is not instrumented)
+const UINT32 Config::CC_DIVISOR = 350;	//this value is based on exait technique (the time returned is equal to the time returned when the program is not instrumented)
+
+//if we divide high_1_part and high_2_part with two different values the timeGetTime() doesn't work
+//it doesn't work because high_1_part and high_2_part are used in order to understand if the value read for the low_part
+//is consistent ( high_1_part == high_2_part -> low_part consistent ) 
+const UINT32 Config::KSYSTEM_TIME_DIVISOR = 1;
+
+//the rdtsc works like this :
+//store the least 32 significant bit of the returned value in EAX and the most 32 significant bit in EDX ( value = EDX:EAX )
+const UINT32 Config::RDTSC_DIVISOR = 400;
 
 
 Config* Config::instance = 0;
@@ -124,10 +128,11 @@ FILE* Config::getLogFile()
 //write the JSON resulted by the analysis for this write set
 void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 {
+	char * works = "NO";
 	if(this->working == 1)
-		fprintf(this->report_file,"{\"dump number\" : \"%d\", \"runnable?\" : \"PROBABLY YES\", \"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_outer_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n", (int)this->getDumpNumber(), ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
-	else
-		fprintf(this->report_file,"{\"dump number\" : \"%d\", \"runnable?\" : \"NO\", \"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_outer_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n", (int)this->getDumpNumber(), ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
+		works = "PROBABLY YES";
+	
+	fprintf(this->report_file,"{\"dump number\" : \"%d\", \"runnable?\" : \"%s\", \"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_outer_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n", (int)this->getDumpNumber(), works, ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
 	fflush(this->report_file);
 }
 
