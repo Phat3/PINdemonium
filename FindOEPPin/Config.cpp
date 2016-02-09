@@ -24,11 +24,10 @@ const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
 const UINT32 Config::TICK_DIVISOR = 300;	//this value is based on exait technique (the time returned is equal to the time returned when the program is not instrumented)
 const UINT32 Config::CC_DIVISOR = 350;	//this value is based on exait technique (the time returned is equal to the time returned when the program is not instrumented)
 
-const W::ULONG32 Config::LOW_PART_DIVISOR = 10;
 //if we divide high_1_part and high_2_part with two different values the timeGetTime() doesn't work
 //it doesn't work because high_1_part and high_2_part are used in order to understand if the value read for the low_part
 //is consistent ( high_1_part == high_2_part -> low_part consistent ) 
-const UINT32 Config::HIGH_PART_DIVISOR = 1; 
+const UINT32 Config::KSYSTEM_TIME_DIVISOR = 1;
 
 //the rdtsc works like this :
 //store the least 32 significant bit of the returned value in EAX and the most 32 significant bit in EDX ( value = EDX:EAX )
