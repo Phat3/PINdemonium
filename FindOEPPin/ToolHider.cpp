@@ -13,25 +13,23 @@ ToolHider::~ToolHider(void)
 }
 
 
-ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
+ADDRINT handleRead(ADDRINT eip, ADDRINT read_addr,void *fake_mem_h){
 	
 	//MYINFO("%0x8 %s Trying to  read %08x : res %d\n",ip,s.c_str(), read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
-	FakeMemoryHandler fakeMem = *(FakeMemoryHandler *)fakeMemH;
+	FakeMemoryHandler fake_mem = *(FakeMemoryHandler *)fake_mem_h;
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
-	ADDRINT fakeAddr = fakeMem.getFakeMemory(read_addr);
+	ADDRINT fake_addr = fake_mem.getFakeMemory(read_addr, eip);
 
-	ProcInfo *pInfo = ProcInfo::getInstance();
-
-	if(fakeAddr==NULL){
+	if(fake_addr==NULL){
 
 		MYINFO("xxxxxxxxxxxxxx %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr);
 	}
 
-	// OBSIDIUM INVESTIGATION 
+	if (fake_addr != read_addr){
+		MYINFO("ip : %08x in %s reading %08x and it has been redirected to : %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr, fake_addr);
+	}
 
-
-
-	return fakeAddr;
+	return fake_addr;
 }
 
 ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
@@ -78,39 +76,8 @@ void ToolHider::avoidEvasion(INS ins){
 	//Filter instructions inside a known library (only graphic dll)
     //  pInfo->isKnownLibraryInstruction(curEip) 
    if(filterHandler->isFilteredLibraryInstruction(curEip)){
-		//MYINFO("That's a GDI\n\n");
-		//MYINFO("Name of RTN is %s\n" , RTN_FindNameByAddress(curEip).c_str());
-	    //MYINFO("Skipping filtered library code\n");
 		return;
 	}
-
-    if(PIN_IsApplicationThread() == TRUE){
-	MYINFO("[DEBUG] THEAD: %08x RTN: %s EIP: %08x INS: %s\n", PIN_GetTid()  ,RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
-	}
-
-	/*
-	std::string disass_instr = INS_Disassemble(ins);
-	//if we find an fsave instruction or similar we have to patch it immediately
-
-	if ( strcmp(disass_instr.c_str() ,"cmp dword ptr [ebp-0x14], 0x4" )==0){
-		printf("Ho beccato la cmp stronza\n");
-		ADDRINT hardcoded = 0x00434f0f;
-		INS_InsertDirectJump(ins,IPOINT_BEFORE,hardcoded);
-		INS_Delete(ins);	
-		return;
-	}
-	*/
-	/*
-	if(curEip == 0x00428197){
-	
-		printf("REDIRECTING\n");
-
-		ADDRINT hardcoded = 0x00428134;
-		INS_InsertDirectJump(ins,IPOINT_BEFORE,hardcoded);
-		INS_Delete(ins);
-
-	}
-	*/
 
 	// 1 - single instruction detection
 	if(config->ANTIEVASION_MODE_INS_PATCHING && this->evasionPatcher.patchDispatcher(ins, curEip)){
@@ -131,10 +98,6 @@ void ToolHider::avoidEvasion(INS ins){
 			}
 			
 			REG scratchReg = GetScratchReg(op);
-			//INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleRead,IARG_INST_PTR, IARG_MEMORYREAD_EA, op, IARG_PTR,&fakeMemH, IARG_RETURN_REGS, REG_INST_G0+op, IARG_END);
-			//INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleRead2,IARG_INST_PTR, IARG_CONTEXT, IARG_CALL_ORDER, CALL_ORDER_LAST, IARG_END);
-			//MYINFO("INST : %s", INS_Disassemble(ins).c_str());
-			//INS_RewriteMemoryOperand(ins, op, REG(REG_INST_G0+op));
 			
 			INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(handleRead),
 				IARG_INST_PTR,
