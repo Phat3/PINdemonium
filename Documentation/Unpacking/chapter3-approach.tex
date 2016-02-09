@@ -22,14 +22,14 @@ During the development we have adapted our approach in order to increase speed a
 \item in the first step, we add the option of not to track writes of library instructions on the stack and in the teb
 \item in the second step we filter instructions of known libraries before dumping
 	\begin{enumerate}
-	\item when trying to reconstruct the IAT we added some code in order to deal with 			obfuscation techniques like \textit{IAT Redirection} and \textit{Stolen API}
+	\item when trying to reconstruct the IAT we added some code in order to deal with obfuscation techniques like \textit{IAT Redirection} and \textit{Stolen API}
 	\item our heuristics are:
 		\begin{itemize}
 		\item entropy: check if the value of the entropy is above a certain threshold
-		\item long jump: check if the "distance" between the current EIP and the previous 			one is above a certain threshold
-		\item jump outer section: check if the current EIP is a different section from the 		one of the previous EIP
+		\item long jump: check if the "distance" between the current EIP and the previous one is above a certain threshold
+		\item jump outer section: check if the current EIP is a different section from the one of the previous EIP
 		\item pushad popad: check is a pushad popad has been found in the trace
-		\item init function calls: check if the imports of the dump are function commonly 			 used by the malware and not by the unpacking layers
+		\item init function calls: check if the imports of the dump are function commonly used by the malware and not by the unpacking layers
 		\end{itemize}
 	\end{enumerate}
 \end{enumerate} 

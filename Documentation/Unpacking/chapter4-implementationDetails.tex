@@ -8,3 +8,19 @@ We have integrated Scylla, an external open source program, to dump the code and
 Finally we use the IDA Pro disassembler and an IDAPython script in the \textit{Init function calls} heuristic. The script calls IDA which reads the imports of the dump and compare them to a list of functions commonly used by the malware and not by the packer (registry manipulation, internet communication).
 
 \section{System details}
+In this section we are going to explain in detail the implementation of the most important parts of our tool.
+
+\subsection{WriteSet management}
+We introduced the concept of \textit{WriteSet} in order to group together contiguous writes. The following steps explain how writeSets are created and updated:
+\begin{enumerate}
+\item for each instruction we check if it is a write
+\item if so, we insert a \textit{callback} function before it. A \textit{callback} is a feature of PIN: it allows to instrument the code by inserting some code that will be executed before or after the original instruction. In our case, we intercept the write instruction and before the execution we retrieve its EIP, the address where it will write and the size of the memory that will be written
+\item Now we proceed to the construction or the update of the writeSet. We have five cases:
+	\begin{enumerate}
+	\item the memory written by the instruction neither is contained nor overlaps with another writeSet. In this case we create a new writeSet and add it to the writeSets vector
+	\item the start address of the write is before the start of a writeSet, but the end address is inside the same writeSet In this case we update the writeSet setting as start address the start of the write, but leaving unaltered the end address
+	\item the same as case (b), but this time regarding the end address. Consequently, we only update the end of the writeSet 
+	\item the memory written by the instruction completely contains a writeSet. In this case we update both the start and the end of the writeSet
+	\item the memory written by the instruction is completely contained by an existing writeSet. In this case we do nothing
+	\end{enumerate}
+\end{enumerate}
