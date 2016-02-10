@@ -750,13 +750,27 @@ VOID MyPrintRegAQ16(CONTEXT *ctxt){
 		return;
 }
 
-VOID MyPrintFakeStack1(CONTEXT *ctxt){
+VOID MyFucking(CONTEXT *ctxt){
 
-	unsigned int esp_value = PIN_GetContextReg(ctxt, REG_ESP);
-	MYINFO("Inside HEAP , esp is %08x , value at esp: %08x , value at esp-4: %08x\n" , esp_value , *(unsigned int *)esp_value, *(unsigned int * )esp_value+4);
-	*(unsigned int *)esp_value = 0; 
+
 }
 
+
+VOID MyCallStrange(CONTEXT *ctxt){
+	
+	unsigned int eax_value = PIN_GetContextReg(ctxt, REG_EAX);
+	unsigned int esi_value = PIN_GetContextReg(ctxt, REG_ESI);
+
+
+	MYINFO("eax_value is %08x\n" , eax_value);
+	MYINFO("esi value is %08x\n", esi_value);
+
+	MYINFO("Trying to get the strings if this is a create file\n");
+
+	//MYINFO("%s %s\n" , eax_value , esi_value);
+
+
+}
 
 VOID PrintFs(CONTEXT *ctxt){
 
@@ -1581,6 +1595,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov dword ptr [eax], 0x6") == 0){
 
 //----------------------------------------------------------
 
+/*
 if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x11") == 0){
 
 		REGSET regsIn;
@@ -1593,24 +1608,9 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x11") == 0){
 		}
 }
 
-
-if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x1f") == 0){
-
-		REGSET regsIn;
-		REGSET_AddAll(regsIn);
-		REGSET regsOut;
-		REGSET_AddAll(regsOut);
-
-		printf("Ecco una push 0x1f\n");
-		
-		if(INS_HasFallThrough(ins)){
-			INS_InsertCall(ins,IPOINT_AFTER,(AFUNPTR)MyPrintFakeStack1, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
-		}
-}
-
-	
-		
-	if(strcmp( (INS_Disassemble(ins).c_str() ),"or byte ptr [esp+0x1], 0x1") == 0){
+*/
+			
+if(strcmp( (INS_Disassemble(ins).c_str() ),"or byte ptr [esp+0x1], 0x1") == 0){
 
 		REGSET regsIn;
 		REGSET_AddAll(regsIn);
@@ -1620,9 +1620,9 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x1f") == 0){
 		MYINFO("@@@@@@@@@@@@@@@@@@@@@@@@\n");
 		printf("Ecco una push OR\n");
 		
-		//INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyJumpException, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyFucking, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
 		INS_Delete(ins);
-  }
+  }	
 } // End if HEAP code 
 	//}
 
@@ -1634,8 +1634,6 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x1f") == 0){
 	if(curEip == 0x0041e000){
 		entry_point_passed = 1;
 	}
-
-	
 
 	if(entry_point_passed == 1){
 	if(PIN_IsApplicationThread() == TRUE && pInfo->searchHeapMap(curEip)!=-1){

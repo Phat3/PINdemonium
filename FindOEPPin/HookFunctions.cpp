@@ -17,9 +17,12 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualProtect",VIRTUALPROTECT_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualQueryEx",VIRTUALQUERYEX_INDEX) );
 
-		this->functionsMap.insert( std::pair<string,int>("ZwSetInformationThread",SETINFOTHREAD_INDEX) );
+	this->functionsMap.insert( std::pair<string,int>("ZwSetInformationThread",SETINFOTHREAD_INDEX) );
+
+	this->functionsMap.insert( std::pair<string,int>("Process32NextW",PROCESS32NEXT_INDEX) );
 
 	
+
 
 	// DEBUGGING OBSIDIUM -----
 	/*
@@ -167,16 +170,13 @@ VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProt
 	MYINFO("calling Virutalprotect at address %08x ->  %08x",(ADDRINT)baseAddress,size + (ADDRINT)baseAddress);
 }
 
-/*
-VOID AnotherHook ( W::LPCWSTR file_name) {
-	
-	MYINFO("Creating a new file %S\n" , file_name);
 
-	W::WCHAR new_name = (W::WCHAR)"c";
+VOID Process32Hook(){
 
-	file_name = &new_name;
+	printf("###################CALLED PROCESS32HOOK\n");
 }
 
+/*
 VOID AnotherHook2 ( W::LPCWSTR key_name) {
 	
 	MYINFO("Opening a reg-key  %S\n" , key_name);
@@ -274,9 +274,6 @@ void HookFunctions::hookDispatcher(IMG img){
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualProtectHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCARG_ENTRYPOINT_VALUE, 3, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
 				*/
 				/*
-				case (ANOTHERHOOK):
-					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)AnotherHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_END);
-					break;
 				case (ANOTHERHOOK2):
 					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)AnotherHook2, IARG_FUNCARG_ENTRYPOINT_VALUE, 1,  IARG_END);
 					break;
@@ -291,6 +288,8 @@ void HookFunctions::hookDispatcher(IMG img){
 					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualQueryExHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCARG_ENTRYPOINT_VALUE, 2, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
 					break;
+				case(PROCESS32NEXT_INDEX):
+					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)Process32Hook,  IARG_END);	
 				}			
 			RTN_Close(rtn);
 		}

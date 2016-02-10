@@ -193,6 +193,23 @@ void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL
 	proc_info->addMappedFilesAddress(base_address);
 }
 
+
+void HookSyscalls::NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
+
+	if( sc->arg1 == 0x1f){
+
+	unsigned int  * pdebug_flag = (unsigned int *)sc->arg2;
+
+	printf("The debug flag  BEFORE is %08x\n", *(unsigned int *)pdebug_flag);
+
+	memset(pdebug_flag,1,4);
+
+	printf("The debug flag  AFTER  is %08x\n", *(unsigned int *)pdebug_flag);
+	}
+
+
+}
+
 //The NtRequestWaitReplyPortHook allocates 4 memory pages of type MEM_MAPPED so we need to rescan the memory after it has been performed
 void HookSyscalls::NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
 	MYINFO("Found a NtRequestWaitReplyPort");
@@ -269,8 +286,10 @@ void HookSyscalls::initHooks(){
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtRequestWaitReplyPort_exit",&HookSyscalls::NtRequestWaitReplyPortHook));
 
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));
-	
 
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryInformationProcess_exit",&HookSyscalls::NtQueryInformationProcessHook));
+
+	
 
 	static syscall_t sc[256] = {0};
 	PIN_AddSyscallEntryFunction(&HookSyscalls::syscallEntry,&sc);
