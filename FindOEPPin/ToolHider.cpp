@@ -41,7 +41,7 @@ ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 
 	if(fakeAddr != write_addr){
 		MYINFO("wwwwwwwwwwwwwwww suspicious write from %08x in %s in %08x redirected to %08x", eip, RTN_FindNameByAddress(write_addr).c_str(), write_addr, fakeAddr);
-		MYINFO("Binary writes %08x %08x %08x %08x\n" , *(unsigned int *)(fakeAddr) , *(unsigned int *)(fakeAddr+4) , *(unsigned int *)(fakeAddr+8), *(unsigned int *)(fakeAddr+12));
+		MYINFO("Binary writes %08x\n" , *(unsigned int *)(fakeAddr));
 	}
 	
 	return fakeAddr;
@@ -444,6 +444,7 @@ VOID MyPrintRegAM4(CONTEXT *ctxt){
 
 		MYINFO("The value of esp will be putted inside fs:[eax]\n");
 		MYINFO("Inside stub (AM) - 4th pattern match , esp is %08x\n " , esp_value);
+		MYINFO("Address of the installed handler is %08x\n" , *(unsigned int *)(esp_value + 4));
 
 		return;
 }
@@ -749,18 +750,81 @@ VOID MyPrintRegAQ16(CONTEXT *ctxt){
 		return;
 }
 
+VOID MyPrintFakeStack1(CONTEXT *ctxt){
+
+	unsigned int esp_value = PIN_GetContextReg(ctxt, REG_ESP);
+	MYINFO("Inside HEAP , esp is %08x , value at esp: %08x , value at esp-4: %08x\n" , esp_value , *(unsigned int *)esp_value, *(unsigned int * )esp_value+4);
+	*(unsigned int *)esp_value = 0; 
+}
+
+
+VOID PrintFs(CONTEXT *ctxt){
+
+	unsigned int efs_value = PIN_GetContextReg(ctxt , REG_SEG_FS_BASE);
+	MYINFO("efs_value is %08x , address of next SEH is %08x, current SEH is %08x\n" , efs_value , *(unsigned int *)efs_value , *(unsigned int *)(efs_value + 4));
+
+	
+	
+}
+
+VOID MyJumpException(CONTEXT *ctxt){
+
+	unsigned int efs_value = PIN_GetContextReg(ctxt , REG_SEG_FS_BASE);
+	MYINFO("efs_value is %08x , address of next SEH is %08x, current SEH is %08x\n" , efs_value , *(unsigned int *)efs_value , *(unsigned int *)(efs_value + 4));
+
+
+	unsigned int next_record_address = *(unsigned int *)efs_value;
+
+	MYINFO("----@#NEXT SEH RECORD#@\n---");
+	MYINFO("Next SEH %08x , SEH value %08x\n" ,  *(unsigned int *)efs_value ,   *(unsigned int *)(efs_value + 4));
+
+	/*
+	next_record_address = *(unsigned int *)next_record_address;
+
+	MYINFO("----@#NEXT SEH RECORD#@\n---");
+	MYINFO("Next SEH %08x , SEH value %08x\n" , *(unsigned int *)next_record_address ,   *(unsigned int *)(next_record_address+4));
+	/*
+	next_record_address = *(unsigned int *)next_record_address;
+	MYINFO("----@#NEXT SEH RECORD#@\n---");
+	MYINFO("Next SEH %08x , SEH value %08x\n" , *(unsigned int *)next_record_address ,   *(unsigned int *)(next_record_address+4));
+
+	next_record_address = *(unsigned int *)next_record_address;
+	MYINFO("----@#NEXT SEH RECORD#@\n---");
+	MYINFO("Next SEH %08x , SEH value %08x\n" , *(unsigned int *)next_record_address ,   *(unsigned int *)(next_record_address+4));
+
+	next_record_address = *(unsigned int *)next_record_address;
+	MYINFO("----@#NEXT SEH RECORD#@\n---");
+	MYINFO("Next SEH %08x , SEH value %08x\n" , *(unsigned int *)next_record_address ,   *(unsigned int *)(next_record_address+4));
+	*/
+	//PIN_SetContextReg(ctxt,REG_EIP,*(unsigned int *)(efs_value + 4));
+	//PIN_ExecuteAt(ctxt);
+	
+}
+
+
 VOID MyPrintRegMM1(CONTEXT *ctxt){
 
 		unsigned int eax_value = PIN_GetContextReg(ctxt, REG_EAX);
 		unsigned int esp_value = PIN_GetContextReg(ctxt, REG_ESP);
 		unsigned int ecx_value = PIN_GetContextReg(ctxt, REG_ECX);
 
-
 		MYINFO("Inside Main module, eax is %08x , esp: %08x , ecx: %08x\n" , eax_value , esp_value, ecx_value);
-
 
 		return;
 }
+
+VOID MyPrintRegMM2(CONTEXT *ctxt){
+
+
+	//[edx+0xb8], 0x96
+		unsigned int edx_value = PIN_GetContextReg(ctxt, REG_EDX);
+	
+		MYINFO("Inside Main module, edx is %08x\n" , edx_value);
+		MYINFO("Accessing [%08x] -> %08x\n" , edx_value+0xb8, *(unsigned int *)edx_value+0xb8);
+
+		return;
+}
+
 
 
 
@@ -785,7 +849,7 @@ void ToolHider::avoidEvasion(INS ins){
 
 
 	if(pInfo->searchHeapMap(curEip)!=-1){
-	   printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@inside the heap code\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+	   //printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@inside the heap code\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 
 
 	   //-------------- STUB AA---------------------
@@ -1432,6 +1496,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"cmp byte ptr [eax], 0xeb") == 0){
 		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyPrintRegAQ7, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 	 
 }
 
+
 if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0xa5c44c50") == 0){
 
 		REGSET regsIn;
@@ -1516,30 +1581,61 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov dword ptr [eax], 0x6") == 0){
 
 //----------------------------------------------------------
 
+if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x11") == 0){
 
-	} // End if HEAP code 
-	//}
-
-
-	//----------- MAIN MODULE--------------------
-
-
-	if(curEip == 0x0041e057 || curEip == 0x0041e04b || curEip == 0x0041e03a || curEip == 0x0041e0ba || curEip == 0x0041e0bd || curEip == 0x0041e193){
-	
 		REGSET regsIn;
 		REGSET_AddAll(regsIn);
 		REGSET regsOut;
 		REGSET_AddAll(regsOut);
-		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyPrintRegMM1, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		
+		if(INS_HasFallThrough(ins)){
+			INS_InsertCall(ins,IPOINT_AFTER,(AFUNPTR)MyPrintFakeStack1, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		}
+}
 
-	}
+
+if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x1f") == 0){
+
+		REGSET regsIn;
+		REGSET_AddAll(regsIn);
+		REGSET regsOut;
+		REGSET_AddAll(regsOut);
+
+		printf("Ecco una push 0x1f\n");
+		
+		if(INS_HasFallThrough(ins)){
+			INS_InsertCall(ins,IPOINT_AFTER,(AFUNPTR)MyPrintFakeStack1, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		}
+}
+
+	
+		
+	if(strcmp( (INS_Disassemble(ins).c_str() ),"or byte ptr [esp+0x1], 0x1") == 0){
+
+		REGSET regsIn;
+		REGSET_AddAll(regsIn);
+		REGSET regsOut;
+		REGSET_AddAll(regsOut);
+
+		MYINFO("@@@@@@@@@@@@@@@@@@@@@@@@\n");
+		printf("Ecco una push OR\n");
+		
+		//INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyJumpException, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		INS_Delete(ins);
+  }
+} // End if HEAP code 
+	//}
 
 
+	//----------- MAIN MODULE--------------------
+	
 	static int entry_point_passed = 0;
 
 	if(curEip == 0x0041e000){
 		entry_point_passed = 1;
 	}
+
+	
 
 	if(entry_point_passed == 1){
 	if(PIN_IsApplicationThread() == TRUE && pInfo->searchHeapMap(curEip)!=-1){

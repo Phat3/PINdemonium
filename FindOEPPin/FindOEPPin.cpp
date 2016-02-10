@@ -173,6 +173,7 @@ void Instruction(INS ins,void *v){
 	}
 	*/
 
+	
 	Config *config = Config::getInstance();
 	if(config->ANTIEVASION_MODE){
 		thider.avoidEvasion(ins);
@@ -182,9 +183,14 @@ void Instruction(INS ins,void *v){
 		oepf.IsCurrentInOEP(ins);
 	}	
 	
+
 }
 
+void Trace(TRACE t,void *v){
 
+	MYINFO("-------------------------NEW TRACE----------------------\n");
+
+}
 
 // - retrive the stack base address
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
@@ -257,6 +263,11 @@ int main(int argc, char * argv[]){
 	if (PIN_Init(argc, argv)) return Usage();
 
 	INS_AddInstrumentFunction(Instruction,0);
+	
+	TRACE_AddInstrumentFunction(Trace,0);
+
+
+
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageUnload to be called when an image is unloaded
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);

@@ -17,6 +17,10 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualProtect",VIRTUALPROTECT_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualQueryEx",VIRTUALQUERYEX_INDEX) );
 
+		this->functionsMap.insert( std::pair<string,int>("ZwSetInformationThread",SETINFOTHREAD_INDEX) );
+
+	
+
 	// DEBUGGING OBSIDIUM -----
 	/*
 	this->functionsMap.insert( std::pair<string,int>("CreateFileW",ANOTHERHOOK) );
@@ -217,6 +221,8 @@ VOID VirtualQueryExHook (W::HANDLE hProcess, W::LPCVOID baseAddress, W::PMEMORY_
 	if (hProcess == W::GetCurrentProcess())
 		VirtualQueryHook(baseAddress, mbi, numBytes);
 }
+
+
 //----------------------------- HOOKED DISPATCHER -----------------------------//
 
 //scan the image and try to hook all the function specified above
@@ -284,6 +290,7 @@ void HookFunctions::hookDispatcher(IMG img){
 				case(VIRTUALQUERYEX_INDEX):
 					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualQueryExHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCARG_ENTRYPOINT_VALUE, 2, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
+					break;
 				}			
 			RTN_Close(rtn);
 		}
