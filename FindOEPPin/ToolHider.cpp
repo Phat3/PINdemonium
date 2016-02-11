@@ -750,11 +750,6 @@ VOID MyPrintRegAQ16(CONTEXT *ctxt){
 		return;
 }
 
-VOID MyFucking(CONTEXT *ctxt){
-
-
-}
-
 
 VOID MyCallStrange(CONTEXT *ctxt){
 	
@@ -774,10 +769,43 @@ VOID MyCallStrange(CONTEXT *ctxt){
 
 VOID PrintFs(CONTEXT *ctxt){
 
+	unsigned int flags = PIN_GetContextReg(ctxt,REG_EFLAGS);
+
+	MYINFO("******FLAGS BEFORE are %08x\n" , flags);
+
+	MYINFO("******SETTING THE TRAP FLAG\n");
+
+	//flags = flags | 0x100;
+
+	MYINFO("******FLAGS AFTER are %08x\n" , flags);
+
 	unsigned int efs_value = PIN_GetContextReg(ctxt , REG_SEG_FS_BASE);
 	MYINFO("efs_value is %08x , address of next SEH is %08x, current SEH is %08x\n" , efs_value , *(unsigned int *)efs_value , *(unsigned int *)(efs_value + 4));
 
+	unsigned int next_record_address = *(unsigned int *)efs_value;
+
 	
+	MYINFO("----@#NEXT SEH RECORD#@\n---");
+	MYINFO("Next SEH %08x , SEH value %08x\n" , *(unsigned int *)next_record_address ,   *(unsigned int *)(next_record_address+4));
+	
+	/*
+	next_record_address = *(unsigned int *)next_record_address;
+	MYINFO("----@#NEXT SEH RECORD#@\n---");
+	MYINFO("Next SEH %08x , SEH value %08x\n" , *(unsigned int *)next_record_address ,   *(unsigned int *)(next_record_address+4));
+
+	
+	
+	next_record_address = *(unsigned int *)next_record_address;
+	MYINFO("----@#NEXT SEH RECORD#@\n---");
+	MYINFO("Next SEH %08x , SEH value %08x\n" , *(unsigned int *)next_record_address ,   *(unsigned int *)(next_record_address+4));
+	/*
+	next_record_address = *(unsigned int *)next_record_address;
+	MYINFO("----@#NEXT SEH RECORD#@\n---");
+	MYINFO("Next SEH %08x , SEH value %08x\n" , *(unsigned int *)next_record_address ,   *(unsigned int *)(next_record_address+4));
+	*/
+
+	PIN_SetContextReg(ctxt,REG_EIP,*(unsigned int *)(next_record_address+4));
+	PIN_ExecuteAt(ctxt);
 	
 }
 
@@ -1620,11 +1648,26 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"or byte ptr [esp+0x1], 0x1") == 0){
 		MYINFO("@@@@@@@@@@@@@@@@@@@@@@@@\n");
 		printf("Ecco una push OR\n");
 		
-		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyFucking, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
-		INS_Delete(ins);
+		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)PrintFs, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		//INS_Delete(ins);
   }	
 } // End if HEAP code 
 	//}
+
+if(strcmp( (INS_Disassemble(ins).c_str() ),"or dword ptr [esp+0x1], 0x1") == 0){
+
+		REGSET regsIn;
+		REGSET_AddAll(regsIn);
+		REGSET regsOut;
+		REGSET_AddAll(regsOut);
+
+		MYINFO("@@@@@@@@@@@@@@@@@@@@@@@@\n");
+		printf("Ecco una push OR\n");
+		
+		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)PrintFs, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		INS_Delete(ins);
+  }
+
 
 
 	//----------- MAIN MODULE--------------------
@@ -1634,6 +1677,9 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"or byte ptr [esp+0x1], 0x1") == 0){
 	if(curEip == 0x0041e000){
 		entry_point_passed = 1;
 	}
+
+	MYINFO("[DEBUG] THREAD: %08x %08x %08x RTN: %s EIP: %08x INS: %s\n", PIN_GetTid() , PIN_ThreadId , PIN_GetParentTid(),RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+
 
 	if(entry_point_passed == 1){
 	if(PIN_IsApplicationThread() == TRUE && pInfo->searchHeapMap(curEip)!=-1){

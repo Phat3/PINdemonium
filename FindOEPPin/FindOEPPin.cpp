@@ -232,7 +232,8 @@ EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInf
 	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	MYINFO("%s",PIN_ExceptionToString(pExceptInfo).c_str());
 	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-	return EHR_UNHANDLED ;
+	
+	return EHR_UNHANDLED;
 }
 
 /* ===================================================================== */
