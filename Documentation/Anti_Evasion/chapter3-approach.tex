@@ -3,6 +3,7 @@
 \thispagestyle{empty}
 
 \section{Approach overview}
+\paragraph{}
 We have classified the DBI-evasion techniques into six main areas:
 \begin{enumerate}
 \item real EIP leak: DBIs usually copy instrumented code in a code cache on the heap. Consequently the real EIP of the program is different from the EIP expected by the application inside the main module. This group of techniques employs a single instruction to leak the real EIP in the code cache and check it against the expected one. We deal with these techniques patching the return value with the expected address inside the main module address space
