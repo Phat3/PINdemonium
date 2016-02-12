@@ -50,20 +50,28 @@ We check each instruction, including writes, to see if it executes from one of t
 \label{Hooks of functions and syscalls}
 
 \subsection{Dumping module}
+\paragraph{}
 The dumping module takes care of creating the dumps and trying to reconstruct the \textit{Import directory}.\\
 When we find out that an instruction executes from one of the \textit{Write Intervals}, we have two options:
 \begin{itemize}
 \item this is the first instruction which executes from this \textit{Write Interval}. In this case we trigger the analysis on the entire block of memory and we mark it as \textit{broken}
 \item this is not the first instruction which executes from this \textit{Write Interval}, in other words the \textit{broken} flag has already been set. In this case, if the \textit{InterWriteSet} flag is enabled we proceed with the \textit{InterWriteSet} analysis
 \end{itemize}
+\paragraph{}
 In the first case the analysis goes through the following steps:
 \begin{enumerate}
 \item we call \textit{Scylla} as an external process. The reason why we do it is that we have noticed that if we call \textit{Scylla} inside the tool, a particular memory configuration may cause it to crash
 \item Scylla tries to create a dump with the current EIP as the OEP. The dump eventually created is inside a folder named \textit{NotWorking} because it is not runnable, since the \textit{Import directory} is not still reconstructed
 \item Scylla tries to find the IAT inside the current process
-\item if Scylla succeed in finding the IAT then is tries to reconstruct the \textit{Import directory} in the not working dump
-\item if it succeed then the dump is moved in the main folder, otherwise it is left inside the \textit{NotWorking} directory. In this way, even if the dump is not runnable, we can eventually access the code of the malware if we have correctly found the OEP
+\item if Scylla succeeds in finding the IAT then is tries to reconstruct the \textit{Import directory} in the not working dump
+\item if it succeeds then the dump is moved in the main folder, otherwise it is left inside the \textit{NotWorking} directory. In this way, even if the dump is not runnable, we can eventually access the code of the malware if we have correctly found the OEP
 \end{enumerate} 
+\paragraph{}
+In the other case we eventually have to proceed with the \textit{InterWriteSet} analysis. This kind of analysis is the same as the previous one except that it considers jumps inside the same \textit{Write Interval}: if the absolute value of the difference between the current EIP and the previous one is greater than a given threshold we consider the current EIP as a new candidate for the OEP and trigger the same analysis as before. This is also the reason why we do not remove broken \textit{Write Intervals} from the \textit{WriteSet} as soon as they become \textit{broken}.\\
+We did a survey to establish a reasonable threshold and we set it as 20\% of the current  \textit{Write Interval} length. The maximum number of jumps considered has to be set by command line.
+\paragraph{}
+In both cases the obtained dump, no matter if it working or not, is subject to the analysis of our heuristics (see Section \ref{Heuristics implementation}). Moreover we keep track of the number of dumps by incrementing a counter every time Scylla tries to dump the code, even if it does not succeed.\\
+During the development of our tool we noticed that some packers unpack code also on the heap. For this reason, along with the main executable image we dump also the heap, adding it as an additional section in the PE.
 \label{Dumping module}
 
 \subsection{Heuristics implementation}
