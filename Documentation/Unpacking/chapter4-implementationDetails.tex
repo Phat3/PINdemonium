@@ -50,6 +50,12 @@ We check each instruction, including writes, to see if it executes from one of t
 \label{Hooks of functions and syscalls}
 
 \subsection{Dumping module}
+The dumping module takes care of creating the dumps and trying to reconstruct the \textit{Import directory}.\\
+When we find out that an instruction executes from one of the \textit{Write Intervals}, we have two options:
+\begin{itemize}
+\item this is the first instruction which executes from this \textit{Write Interval}. In this case we trigger the analysis on the entire block of memory and we mark it as \textit{broken}.
+\item this is not the first instruction which executes from this \textit{Write Interval}, in other words the \textit{broken} flag has already been set. In this case, if the \textit{InterWriteSet} flag is enabled we proceed with the \textit{InterWriteSet} analysis.
+\end{itemize}
 \label{Dumping module}
 
 \subsection{Heuristics implementation}
