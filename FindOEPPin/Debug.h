@@ -21,7 +21,7 @@
 	do { if (LOG_BUILD){ fprintf(Config::getInstance()->getLogFile(),"[INFO](%s) "fmt"\n",__FILENAME__, __VA_ARGS__);fflush(Config::getInstance()->getLogFile()); } } while (0)
 
 #define MYPRINT(fmt, ...) \
-	do { if (LOG_BUILD){ fprintf(Config::getInstance()->getLogFile(),fmt"\n", __VA_ARGS__); } } while (0)
+	do { if (LOG_BUILD){ fprintf(Config::getInstance()->getLogFile(),fmt"\n", __VA_ARGS__); fflush(Config::getInstance()->getLogFile()); } } while (0)
 
 #define CLOSELOG()\
 	do { if (LOG_BUILD){ Config::getInstance()->closeLogFile();}}while (0)

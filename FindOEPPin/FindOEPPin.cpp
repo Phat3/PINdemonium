@@ -10,6 +10,7 @@
 #include "FilterHandler.h"
 #include "HookFunctions.h"
 #include "HookSyscalls.h"
+#include <regex>
 
 
 namespace W {
@@ -151,6 +152,10 @@ void imageLoadCallback(IMG img,void *){
 }
 
 
+
+static bool start_dump = false;
+static int dd_encountered = 0;
+
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if better than trace iteration)
 void Instruction(INS ins,void *v){
@@ -168,7 +173,9 @@ void Instruction(INS ins,void *v){
 		MYINFO("zzzzzzCur EIP:%08x name %s ",INS_Address(ins),RTN_FindNameByAddress(INS_Address(ins)).c_str());
 	}
 	*/
+	
 
+	
 	Config *config = Config::getInstance();
 	if(config->ANTIEVASION_MODE){
 		thider.avoidEvasion(ins);
@@ -179,6 +186,117 @@ void Instruction(INS ins,void *v){
 	}	
 	
 }
+
+static ADDRINT trace_head = 0x0;
+static ADDRINT trace_tail = 0x0;
+static ADDRINT first_written_address_in_trace = 0x0;
+
+VOID invalidateTrace()
+{    
+    UINT32 numRemoved = CODECACHE_InvalidateTraceAtProgramAddress(0x0041a0dd);
+	MYPRINT("NUMBER OF TRACE DELETED : %d", numRemoved);
+}
+
+VOID polimorficCodeHandler(ADDRINT eip, ADDRINT write_addr){
+	
+	MYPRINT("WRITE DETECTED!!! WRITE AT %08x \t IP : %08x", write_addr, eip);
+	if(write_addr >= trace_head && write_addr <= trace_tail){
+		MYPRINT("WRITE ON MY TRACE DETECTED!!! WRITE AT %08x", write_addr);
+		if(write_addr < first_written_address_in_trace || first_written_address_in_trace == 0x0){
+			first_written_address_in_trace = write_addr;
+		}
+	}
+	
+}
+
+VOID dumpCtx(ADDRINT eip, CONTEXT * ctxt){
+		UINT32 eax_value = PIN_GetContextReg(ctxt, REG_EAX);
+		UINT32 ebx_value = PIN_GetContextReg(ctxt, REG_EBX);
+		MYPRINT("analysis -- EIP : %08x\t FIRST WRITTEN ADDR : %08x", eip, first_written_address_in_trace);
+		if(eip == first_written_address_in_trace){
+			MYPRINT("I'M ABOUT TO EXECUTE A WRITTEN INSTRUCTION!! %08x", eip);
+			MYPRINT("REDIRECT TO %08x", first_written_address_in_trace);
+			PIN_SetContextReg(ctxt, REG_EIP, first_written_address_in_trace);
+			first_written_address_in_trace = 0x0;
+			PIN_ExecuteAt(ctxt);
+		}
+}
+
+
+VOID Trace(TRACE trace,void *v){
+
+	MYPRINT("----------- INSTRUMENTATION TRACE BEGIN ----------------");
+	trace_head = TRACE_Address(trace);
+	trace_tail = trace_head + TRACE_Size(trace);
+
+	MYPRINT("TRACE HEAD : %08x\t TRACE TAIL : %08x", trace_head, trace_tail);
+	for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl))
+    {
+        for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins))
+        {
+			bool ins_call = true;
+
+			//MYINFO("INSIDE CODE CACH %08x",  INS_Address(ins));
+			if(INS_Address(ins) == 0x0041A0D7){
+				//CODECACHE_InvalidateRange	(0x0041a0f0, 0x0041a0f6); 	
+				start_dump = true;
+				//INS_InsertDirectJump(ins, IPOINT_BEFORE, 0x0041a0dd);
+			}
+			/*
+			if(INS_Address(ins) == 0x0041A0f0){
+				INS_InsertDirectJump(ins, IPOINT_BEFORE, 0x0041a0dd);
+			}
+			*/
+			
+			if(start_dump && ins_call){
+					MYPRINT("%08x -- %s -- %s -- %0d", INS_Address(ins), INS_Disassemble(ins).c_str(), RTN_FindNameByAddress( INS_Address(ins)).c_str(), INS_MemoryOperandCount(ins));
+					INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(dumpCtx), IARG_INST_PTR, IARG_CONTEXT, IARG_END);
+					
+					for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
+						if(INS_MemoryOperandIsWritten(ins,op)){	
+							INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(polimorficCodeHandler),
+							IARG_INST_PTR,
+							IARG_MEMORYOP_EA, op,
+							IARG_END);
+							
+						}	
+					}
+					
+			}
+		
+
+        }
+    }
+	/*
+	if(TRACE_Address(trace) == 0x0041a0dd && dd_encountered == 0){
+		dd_encountered = 1;
+		MYPRINT("DELETE TrACE ADDRESS : %08x", TRACE_Address(trace));
+		TRACE_InsertCall(trace, IPOINT_BEFORE, (AFUNPTR) invalidateTrace, IARG_END);
+	}
+	*/
+	
+}
+
+void Trace2(TRACE trace,void *v){
+	MYPRINT("----------- CODECACHE TRACE BEGIN ----------------");
+	for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl))
+    {
+        for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins))
+        {
+
+			//MYINFO("INSIDE CODE CACH %08x",  INS_Address(ins));
+			if(INS_Address(ins) == 0x0041A0D7){
+				start_dump = true;
+			}
+
+			if(start_dump){
+				MYPRINT("%08x -- %s -- %s -- %08x", INS_Address(ins), INS_Disassemble(ins).c_str(), RTN_FindNameByAddress( INS_Address(ins)).c_str(), INS_CodeCacheAddress(ins));
+			}
+        }
+    }
+
+}
+
 
 
 
@@ -219,10 +337,11 @@ void ConfigureTool(){
 }
 
 EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInfo, PHYSICAL_CONTEXT *pPhysCtxt, VOID *v){
+	
 	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	MYINFO("%s",PIN_ExceptionToString(pExceptInfo).c_str());
 	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-	return EHR_UNHANDLED ;
+	return EHR_CONTINUE_SEARCH;
 }
 
 /* ===================================================================== */
@@ -252,10 +371,12 @@ int main(int argc, char * argv[]){
 
 	if (PIN_Init(argc, argv)) return Usage();
 
-	INS_AddInstrumentFunction(Instruction,0);
+	//INS_AddInstrumentFunction(Instruction,0);
+	TRACE_AddInstrumentFunction(Trace,0);
+
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	// Register ImageUnload to be called when an image is unloaded
-	IMG_AddInstrumentFunction(imageLoadCallback, 0);
+	//IMG_AddInstrumentFunction(imageLoadCallback, 0);
 
 	proc_info->addProcAddresses();
 
@@ -269,7 +390,7 @@ int main(int argc, char * argv[]){
 	ConfigureTool();
 
 	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
-
+	//CODECACHE_AddTraceInsertedFunction(Trace2, 0);
 	// Start the program, never returns
 	PIN_StartProgram();
 	
