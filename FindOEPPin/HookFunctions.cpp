@@ -17,9 +17,9 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualProtect",VIRTUALPROTECT_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualQueryEx",VIRTUALQUERYEX_INDEX) );
 
-	this->functionsMap.insert( std::pair<string,int>("ZwSetInformationThread",SETINFOTHREAD_INDEX) );
+	//this->functionsMap.insert( std::pair<string,int>("ZwSetInformationThread",SETINFOTHREAD_INDEX) );
 
-	this->functionsMap.insert( std::pair<string,int>("Process32NextW",PROCESS32NEXT_INDEX) );
+	this->functionsMap.insert( std::pair<string,int>("SetUnhandledExceptionFilter",UNHANDLED_INDEX) );
 
 	
 
@@ -222,7 +222,12 @@ VOID VirtualQueryExHook (W::HANDLE hProcess, W::LPCVOID baseAddress, W::PMEMORY_
 		VirtualQueryHook(baseAddress, mbi, numBytes);
 }
 
+VOID UnhandledHook(){
 
+	printf("#####CALLED THE SetUnhandledExceptionFilter\n");
+	fflush(stdout);
+
+}
 //----------------------------- HOOKED DISPATCHER -----------------------------//
 
 //scan the image and try to hook all the function specified above
@@ -288,8 +293,8 @@ void HookFunctions::hookDispatcher(IMG img){
 					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualQueryExHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCARG_ENTRYPOINT_VALUE, 2, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
 					break;
-				case(PROCESS32NEXT_INDEX):
-					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)Process32Hook,  IARG_END);	
+				case(UNHANDLED_INDEX):
+					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)UnhandledHook,  IARG_END);	
 				}			
 			RTN_Close(rtn);
 		}

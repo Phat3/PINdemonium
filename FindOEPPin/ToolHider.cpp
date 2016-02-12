@@ -25,6 +25,11 @@ ADDRINT handleRead(ADDRINT eip, ADDRINT read_addr,void *fake_mem_h){
 		MYINFO("xxxxxxxxxxxxxx %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr);
 	}
 
+	if(read_addr >= 0x76c0657c && read_addr <= 0x76c06580){
+		printf("Readed the field x kernel32!BasepCurrentTopLevelFilter\n");
+		fflush(stdout);
+	} 
+
 	if (fake_addr != read_addr){
 		MYINFO("ip : %08x in %s reading %08x and it has been redirected to : %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr, fake_addr);
 	}
@@ -38,6 +43,12 @@ ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 	FakeWriteHandler fakeWrite = *(FakeWriteHandler *)fakeWriteH;
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
 	ADDRINT fakeAddr = fakeWrite.getFakeWriteAddress(write_addr);
+
+	if(write_addr >= 0x76c0657c && write_addr <= 0x76c06580){
+		printf("Written the field x kernel32!BasepCurrentTopLevelFilter\n");
+		fflush(stdout);
+	} 
+
 
 	if(fakeAddr != write_addr){
 		MYINFO("wwwwwwwwwwwwwwww suspicious write from %08x in %s in %08x redirected to %08x", eip, RTN_FindNameByAddress(write_addr).c_str(), write_addr, fakeAddr);

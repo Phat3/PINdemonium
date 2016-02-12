@@ -138,7 +138,7 @@ void imageLoadCallback(IMG img,void *){
 
 		//*** If you need to protect other sections of other dll put them here ***
 
-		//hookFun.hookDispatcher(img);		
+		hookFun.hookDispatcher(img);		
 		
 		proc_info->addLibrary(name,startAddr,endAddr);
 
