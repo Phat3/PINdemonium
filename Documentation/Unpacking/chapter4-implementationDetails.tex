@@ -53,9 +53,17 @@ We check each instruction, including writes, to see if it executes from one of t
 The dumping module takes care of creating the dumps and trying to reconstruct the \textit{Import directory}.\\
 When we find out that an instruction executes from one of the \textit{Write Intervals}, we have two options:
 \begin{itemize}
-\item this is the first instruction which executes from this \textit{Write Interval}. In this case we trigger the analysis on the entire block of memory and we mark it as \textit{broken}.
-\item this is not the first instruction which executes from this \textit{Write Interval}, in other words the \textit{broken} flag has already been set. In this case, if the \textit{InterWriteSet} flag is enabled we proceed with the \textit{InterWriteSet} analysis.
+\item this is the first instruction which executes from this \textit{Write Interval}. In this case we trigger the analysis on the entire block of memory and we mark it as \textit{broken}
+\item this is not the first instruction which executes from this \textit{Write Interval}, in other words the \textit{broken} flag has already been set. In this case, if the \textit{InterWriteSet} flag is enabled we proceed with the \textit{InterWriteSet} analysis
 \end{itemize}
+In the first case the analysis goes through the following steps:
+\begin{enumerate}
+\item we call \textit{Scylla} as an external process. The reason why we do it is that we have noticed that if we call \textit{Scylla} inside the tool, a particular memory configuration may cause it to crash
+\item Scylla tries to create a dump with the current EIP as the OEP. The dump eventually created is inside a folder named \textit{NotWorking} because it is not runnable, since the \textit{Import directory} is not still reconstructed
+\item Scylla tries to find the IAT inside the current process
+\item if Scylla succeed in finding the IAT then is tries to reconstruct the \textit{Import directory} in the not working dump
+\item if it succeed then the dump is moved in the main folder, otherwise it is left inside the \textit{NotWorking} directory. In this way, even if the dump is not runnable, we can eventually access the code of the malware if we have correctly found the OEP
+\end{enumerate} 
 \label{Dumping module}
 
 \subsection{Heuristics implementation}
