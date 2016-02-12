@@ -199,9 +199,9 @@ VOID invalidateTrace()
 
 VOID polimorficCodeHandler(ADDRINT eip, ADDRINT write_addr){
 	
-	MYPRINT("WRITE DETECTED!!! WRITE AT %08x \t IP : %08x", write_addr, eip);
+	//MYPRINT("WRITE DETECTED!!! WRITE AT %08x \t IP : %08x", write_addr, eip);
 	if(write_addr >= trace_head && write_addr <= trace_tail){
-		MYPRINT("WRITE ON MY TRACE DETECTED!!! WRITE AT %08x", write_addr);
+		//MYPRINT("WRITE ON MY TRACE DETECTED!!! WRITE AT %08x", write_addr);
 		if(write_addr < first_written_address_in_trace || first_written_address_in_trace == 0x0){
 			first_written_address_in_trace = write_addr;
 		}
@@ -209,14 +209,14 @@ VOID polimorficCodeHandler(ADDRINT eip, ADDRINT write_addr){
 	
 }
 
-VOID dumpCtx(ADDRINT eip, CONTEXT * ctxt){
+VOID dumpCtx(ADDRINT eip, CONTEXT * ctxt, UINT32 ins_size){
 		UINT32 eax_value = PIN_GetContextReg(ctxt, REG_EAX);
 		UINT32 ebx_value = PIN_GetContextReg(ctxt, REG_EBX);
-		MYPRINT("analysis -- EIP : %08x\t FIRST WRITTEN ADDR : %08x", eip, first_written_address_in_trace);
-		if(eip == first_written_address_in_trace){
-			MYPRINT("I'M ABOUT TO EXECUTE A WRITTEN INSTRUCTION!! %08x", eip);
-			MYPRINT("REDIRECT TO %08x", first_written_address_in_trace);
-			PIN_SetContextReg(ctxt, REG_EIP, first_written_address_in_trace);
+		//MYPRINT("analysis -- EIP : %08x\t SIZE : %d \tFIRST WRITTEN ADDR : %08x", eip, ins_size, first_written_address_in_trace);
+		if(first_written_address_in_trace >= eip && first_written_address_in_trace <= eip + ins_size){
+			//MYPRINT("I'M ABOUT TO EXECUTE A WRITTEN INSTRUCTION!! %08x", eip);
+			//MYPRINT("REDIRECT TO %08x", eip);
+			PIN_SetContextReg(ctxt, REG_EIP, eip);
 			first_written_address_in_trace = 0x0;
 			PIN_ExecuteAt(ctxt);
 		}
@@ -225,11 +225,11 @@ VOID dumpCtx(ADDRINT eip, CONTEXT * ctxt){
 
 VOID Trace(TRACE trace,void *v){
 
-	MYPRINT("----------- INSTRUMENTATION TRACE BEGIN ----------------");
+	//MYPRINT("----------- INSTRUMENTATION TRACE BEGIN ----------------");
 	trace_head = TRACE_Address(trace);
 	trace_tail = trace_head + TRACE_Size(trace);
 
-	MYPRINT("TRACE HEAD : %08x\t TRACE TAIL : %08x", trace_head, trace_tail);
+	//MYPRINT("TRACE HEAD : %08x\t TRACE TAIL : %08x", trace_head, trace_tail);
 	for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl))
     {
         for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins))
@@ -249,8 +249,8 @@ VOID Trace(TRACE trace,void *v){
 			*/
 			
 			if(start_dump && ins_call){
-					MYPRINT("%08x -- %s -- %s -- %0d", INS_Address(ins), INS_Disassemble(ins).c_str(), RTN_FindNameByAddress( INS_Address(ins)).c_str(), INS_MemoryOperandCount(ins));
-					INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(dumpCtx), IARG_INST_PTR, IARG_CONTEXT, IARG_END);
+					//MYPRINT("%08x -- %s -- %s -- %0d", INS_Address(ins), INS_Disassemble(ins).c_str(), RTN_FindNameByAddress( INS_Address(ins)).c_str(), INS_MemoryOperandCount(ins));
+					INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(dumpCtx), IARG_INST_PTR, IARG_CONTEXT, IARG_UINT32, INS_Size(ins),IARG_END);
 					
 					for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
 						if(INS_MemoryOperandIsWritten(ins,op)){	
@@ -371,7 +371,7 @@ int main(int argc, char * argv[]){
 
 	if (PIN_Init(argc, argv)) return Usage();
 
-	//INS_AddInstrumentFunction(Instruction,0);
+	INS_AddInstrumentFunction(Instruction,0);
 	TRACE_AddInstrumentFunction(Trace,0);
 
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
