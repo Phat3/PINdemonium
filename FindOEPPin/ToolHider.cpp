@@ -1665,7 +1665,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov dword ptr [eax], 0x6") == 0){
 
 
 
-*/
+
 if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x11") == 0){
 
 		REGSET regsIn;
@@ -1677,7 +1677,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x11") == 0){
 			INS_InsertCall(ins,IPOINT_AFTER,(AFUNPTR)MyPrintFakeStack1, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
 		}
 }
-
+*/
 		
 
 if(strcmp( (INS_Disassemble(ins).c_str() ),"or byte ptr [esp+0x1], 0x1") == 0){
