@@ -22,6 +22,7 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("SetUnhandledExceptionFilter",UNHANDLED_INDEX) );
 
 	
+	//this->functionsMap.insert( std::pair<string,int>("RtlEncodePointer",UNHANDLED_INDEX) );
 
 
 	// DEBUGGING OBSIDIUM -----
@@ -168,12 +169,6 @@ VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProt
 		*oldProtection = NULL;
 	}
 	MYINFO("calling Virutalprotect at address %08x ->  %08x",(ADDRINT)baseAddress,size + (ADDRINT)baseAddress);
-}
-
-
-VOID Process32Hook(){
-
-	printf("###################CALLED PROCESS32HOOK\n");
 }
 
 /*

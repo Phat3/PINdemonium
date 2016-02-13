@@ -25,7 +25,11 @@ ADDRINT handleRead(ADDRINT eip, ADDRINT read_addr,void *fake_mem_h){
 		MYINFO("xxxxxxxxxxxxxx %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr);
 	}
 
-	if(read_addr >= 0x76c0657c && read_addr <= 0x76c06580){
+	if(read_addr == 0){
+		return read_addr; // let the program trigger its exception if it want
+	}
+
+	if(read_addr >= 0x7555657c && read_addr <= 0x75556580){
 		printf("Readed the field x kernel32!BasepCurrentTopLevelFilter\n");
 		fflush(stdout);
 	} 
@@ -39,16 +43,21 @@ ADDRINT handleRead(ADDRINT eip, ADDRINT read_addr,void *fake_mem_h){
 
 ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 	
+
+	if(write_addr >= 0x7555657c && write_addr <= 0x7555658f){
+		printf("Written the field kernel32!BasepCurrentTopLevelFilter\n");
+		fflush(stdout);
+	} 
+
 	//MYINFO("%0x8 %s Trying to  read %08x : res %d\n",ip,s.c_str(), read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
 	FakeWriteHandler fakeWrite = *(FakeWriteHandler *)fakeWriteH;
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
 	ADDRINT fakeAddr = fakeWrite.getFakeWriteAddress(write_addr);
 
-	if(write_addr >= 0x76c0657c && write_addr <= 0x76c06580){
-		printf("Written the field x kernel32!BasepCurrentTopLevelFilter\n");
-		fflush(stdout);
-	} 
 
+	if(write_addr == 0){
+		return write_addr; // let the program trigger its exception if it want
+	}
 
 	if(fakeAddr != write_addr){
 		MYINFO("wwwwwwwwwwwwwwww suspicious write from %08x in %s in %08x redirected to %08x", eip, RTN_FindNameByAddress(write_addr).c_str(), write_addr, fakeAddr);
@@ -815,8 +824,27 @@ VOID PrintFs(CONTEXT *ctxt){
 	MYINFO("Next SEH %08x , SEH value %08x\n" , *(unsigned int *)next_record_address ,   *(unsigned int *)(next_record_address+4));
 	*/
 
-	PIN_SetContextReg(ctxt,REG_EIP,*(unsigned int *)(next_record_address+4));
+	PIN_SetContextReg(ctxt,REG_EIP,*(unsigned int *)(efs_value+4));
 	PIN_ExecuteAt(ctxt);
+	
+}
+
+
+VOID PrintSEH(CONTEXT *ctxt){
+
+	unsigned int esp_value = PIN_GetContextReg(ctxt , REG_ESP);
+	unsigned int eax_value = PIN_GetContextReg(ctxt, REG_EAX);
+
+	MYINFO("EAX is %08x\n" , eax_value);
+	MYINFO("Loaded into fs:[0] the value %08x\n" , esp_value);
+
+
+}
+
+VOID MyPrintFakeStack1(CONTEXT *ctxt){
+
+		unsigned int esp_value = PIN_GetContextReg(ctxt , REG_ESP);
+		*(unsigned int *)esp_value = 11;
 	
 }
 
@@ -849,8 +877,9 @@ VOID MyJumpException(CONTEXT *ctxt){
 	MYINFO("----@#NEXT SEH RECORD#@\n---");
 	MYINFO("Next SEH %08x , SEH value %08x\n" , *(unsigned int *)next_record_address ,   *(unsigned int *)(next_record_address+4));
 	*/
-	//PIN_SetContextReg(ctxt,REG_EIP,*(unsigned int *)(efs_value + 4));
-	//PIN_ExecuteAt(ctxt);
+	
+	PIN_SetContextReg(ctxt,REG_EIP,*(unsigned int *)(efs_value + 4));
+	PIN_ExecuteAt(ctxt);
 	
 }
 
@@ -900,11 +929,11 @@ void ToolHider::avoidEvasion(INS ins){
 
 
 
-
+	
 	if(pInfo->searchHeapMap(curEip)!=-1){
 	   //printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@inside the heap code\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 
-
+/*
 	   //-------------- STUB AA---------------------
 	   if(strcmp( (INS_Disassemble(ins).c_str() ),"mov byte ptr [ebx], 0x36") == 0){
 
@@ -1634,7 +1663,9 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov dword ptr [eax], 0x6") == 0){
 
 //----------------------------------------------------------
 
-/*
+
+
+*/
 if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x11") == 0){
 
 		REGSET regsIn;
@@ -1647,21 +1678,32 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x11") == 0){
 		}
 }
 
-*/
-			
+		
+
 if(strcmp( (INS_Disassemble(ins).c_str() ),"or byte ptr [esp+0x1], 0x1") == 0){
+
+		MYINFO("@@@@@@@@@@@@@@@@@@@@@@@@\n");
+		printf("Ecco una push OR - OBSIDIUM \n");
+		
+		//a++;
+		
+		INS_Delete(ins);
+  }
+
+if(strcmp( (INS_Disassemble(ins).c_str() ),"mov dword ptr fs:[eax], esp") == 0){
 
 		REGSET regsIn;
 		REGSET_AddAll(regsIn);
 		REGSET regsOut;
 		REGSET_AddAll(regsOut);
 
-		MYINFO("@@@@@@@@@@@@@@@@@@@@@@@@\n");
-		printf("Ecco una push OR\n");
-		
-		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)PrintFs, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
-		//INS_Delete(ins);
-  }	
+		if(INS_HasFallThrough(ins)){
+			INS_InsertCall(ins,IPOINT_AFTER,(AFUNPTR)PrintSEH, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		}
+}
+
+
+
 } // End if HEAP code 
 	//}
 
@@ -1673,11 +1715,14 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"or dword ptr [esp+0x1], 0x1") == 0){
 		REGSET_AddAll(regsOut);
 
 		MYINFO("@@@@@@@@@@@@@@@@@@@@@@@@\n");
-		printf("Ecco una push OR\n");
+		printf("Ecco una push OR - POC \n");
 		
 		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)PrintFs, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
-		INS_Delete(ins);
+		//INS_Delete(ins);
   }
+
+
+
 
 
 
@@ -1689,7 +1734,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"or dword ptr [esp+0x1], 0x1") == 0){
 		entry_point_passed = 1;
 	}
 
-	MYINFO("[DEBUG] THREAD: %08x %08x %08x RTN: %s EIP: %08x INS: %s\n", PIN_GetTid() , PIN_ThreadId , PIN_GetParentTid(),RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	//MYINFO("[DEBUG] THREAD: %08x %08x %08x RTN: %s EIP: %08x INS: %s\n", PIN_GetTid() , PIN_ThreadId , PIN_GetParentTid(),RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 
 
 	if(entry_point_passed == 1){

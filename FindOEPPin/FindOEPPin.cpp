@@ -186,19 +186,113 @@ void Instruction(INS ins,void *v){
 
 }
 
-void Trace(TRACE t,void *v){
+/*
+static bool start_dump = false;
+static int dd_encountered = 0;
+static ADDRINT trace_head = 0x0;
+static ADDRINT trace_tail = 0x0;
+static ADDRINT first_written_address_in_trace = 0x0;
+
+VOID polimorficCodeHandler(ADDRINT eip, ADDRINT write_addr){
+	
+	MYPRINT("WRITE DETECTED!!! WRITE AT %08x \t IP : %08x", write_addr, eip);
+	if(write_addr >= trace_head && write_addr <= trace_tail){
+		MYPRINT("WRITE ON MY TRACE DETECTED!!! WRITE AT %08x", write_addr);
+		if(write_addr < first_written_address_in_trace || first_written_address_in_trace == 0x0){
+			first_written_address_in_trace = write_addr;
+		}
+	}
+	
+}
+
+VOID dumpCtx(ADDRINT eip, CONTEXT * ctxt , UINT32 ins_size){
+
+
+		MYPRINT("analysis -- EIP : %08x\t FIRST WRITTEN ADDR : %08x", eip, first_written_address_in_trace);
+		if(first_written_address_in_trace >= eip &&  first_written_address_in_trace <= eip + ins_size){
+			MYPRINT("I'M ABOUT TO EXECUTE A WRITTEN INSTRUCTION!! %08x", eip);
+			//MYPRINT("REDIRECT TO %08x", first_written_address_in_trace);
+			//PIN_SetContextReg(ctxt, REG_EIP, first_written_address_in_trace);
+			//first_written_address_in_trace = 0x0;
+			//PIN_ExecuteAt(ctxt);
+		}
+}
+
+void Trace(TRACE trace,void *v){
 
 	MYINFO("-------------------------NEW TRACE----------------------\n");
 
+
+		trace_head = TRACE_Address(trace);
+	trace_tail = trace_head + TRACE_Size(trace);
+
+	MYPRINT("TRACE HEAD : %08x\t TRACE TAIL : %08x", trace_head, trace_tail);
+	for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl))
+    {
+        for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins))
+        {
+			bool ins_call = true;
+
+			//MYINFO("INSIDE CODE CACH %08x",  INS_Address(ins));
+
+				ProcInfo *proc_info = ProcInfo::getInstance();
+
+				if(proc_info->searchHeapMap(INS_Address(ins))!=-1  ){
+					MYPRINT("%08x -- %s -- %s -- %0d", INS_Address(ins), INS_Disassemble(ins).c_str(), RTN_FindNameByAddress( INS_Address(ins)).c_str(), INS_MemoryOperandCount(ins));
+					INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(dumpCtx), IARG_INST_PTR, IARG_CONTEXT,IARG_UINT32 , INS_Size(ins), IARG_END);
+					
+					for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
+						if(INS_MemoryOperandIsWritten(ins,op)){	
+							INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(polimorficCodeHandler),
+							IARG_INST_PTR,
+							IARG_MEMORYOP_EA, op,
+							IARG_END);
+							
+						}	
+					}
+					
+			}
+		
+
+        }
+    }
+	
 }
+*/
+
+PIN_LOCK lock;
+INT32 numThreads = 0;
 
 // - retrive the stack base address
-static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
+static VOID OnThreadStart(THREADID thread_id , CONTEXT *ctxt, INT32 flags, VOID *v){
+
+
+	PIN_GetLock(&lock, thread_id+1);
+    numThreads++;
+    PIN_ReleaseLock(&lock);
+
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	pInfo->addThreadStackAddress(stackBase);
 	pInfo->addThreadTebAddress();
+
+	MYINFO("-----------------a NEW Thread: %d is started!--------------------\n",thread_id);
+
+    PIN_ReleaseLock(&lock);
+
+
 }
+
+static void ContextChanged(THREADID threadIndex, 
+                  CONTEXT_CHANGE_REASON reason, 
+                  const CONTEXT *ctxtFrom,
+                  CONTEXT *ctxtTo,
+                  INT32 info, 
+                  VOID *v)
+{
+    MYINFO("--------------CONTEXT CHANGED %d-------------\n" , threadIndex);
+}
+
 
 void initDebug(){
 	DEBUG_MODE mode;
@@ -265,11 +359,14 @@ int main(int argc, char * argv[]){
 
 	INS_AddInstrumentFunction(Instruction,0);
 	
-	TRACE_AddInstrumentFunction(Trace,0);
+	//TRACE_AddInstrumentFunction(Trace,0);
 
 
 
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
+
+	PIN_AddContextChangeFunction(ContextChanged,0);
+
 	// Register ImageUnload to be called when an image is unloaded
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 
