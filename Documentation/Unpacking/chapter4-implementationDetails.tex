@@ -50,6 +50,7 @@ We check each instruction, including writes, to see if it executes from one of t
 \label{Hooks of functions and syscalls}
 
 \subsection{Dumping module}
+\label{Dumping module}
 \paragraph{}
 The dumping module takes care of creating the dumps and trying to reconstruct the \textit{Import directory}.\\
 When we find out that an instruction executes from one of the \textit{Write Intervals}, we have two options:
@@ -70,9 +71,25 @@ In the first case the analysis goes through the following steps:
 In the other case we eventually have to proceed with the \textit{InterWriteSet} analysis. This kind of analysis is the same as the previous one except that it considers jumps inside the same \textit{Write Interval}: if the absolute value of the difference between the current EIP and the previous one is greater than a given threshold we consider the current EIP as a new candidate for the OEP and trigger the same analysis as before. This is also the reason why we do not remove broken \textit{Write Intervals} from the \textit{WriteSet} as soon as they become \textit{broken}.\\
 We did a survey to establish a reasonable threshold and we set it as 20\% of the current  \textit{Write Interval} length. The maximum number of jumps considered has to be set by command line.
 \paragraph{}
-In both cases the obtained dump, no matter if it working or not, is subject to the analysis of our heuristics (see Section \ref{Heuristics implementation}). Moreover we keep track of the number of dumps by incrementing a counter every time Scylla tries to dump the code, even if it does not succeed.\\
+In both cases the obtained dump, no matter if it is working or not, is subject to the analysis of our heuristics (see Section \ref{Heuristics implementation}). Moreover we keep track of the number of dumps by incrementing a counter every time Scylla tries to dump the code, even if it does not succeed.\\
 During the development of our tool we noticed that some packers unpack code also on the heap. For this reason, along with the main executable image we dump also the heap, adding it as an additional section in the PE.
-\label{Dumping module}
 
 \subsection{Heuristics implementation}
 \label{Heuristics implementation}
+\paragraph{}
+We use heuristics in our tool in order to evaluate the obtained dump: each heuristic can set a flag in the final report and all the flags contribute to identify the best dump, as explained later in this Section.\\
+We have implemented five heuristics:
+\begin{itemize}
+\item entropy heuristic: at the beginning of the analysis, when the main module of the binary is loaded, we get its original entropy value and save it in a variable. Each time a dump is created we compute again its current entropy and compare it with the initial one. The we use the following formula to compute the difference:
+\begin{equation}
+difference = \left|\frac{current\_entropy - initial\_entropy}{initial\_entropy}\right|
+\end{equation}
+If this value is above a given threshold we set the correspondent flag in the output report
+\item jump outer section heuristic: for each executed instruction we keep track of the EIP of the previous one. In this way we can retrieve the section in which the previous instruction was located and compare it to the section of the current one. If these two are not equal we set the \textit{jump outer section} flag
+\item long jump heuristic: as in the previous case we take advantage of tracking the previous instruction's EIP. In this case we simply compute the difference between the previous and the current EIP: 
+\begin{equation}
+difference = \left|current\_eip - previous\_eip\right|
+\end{equation}
+if this difference is above a given threshold we set the \textit{long jump} flag in the output report
+\item pushad popad heuristic: during the execution of the binary we have two flags indicating if we have encountered a \textit{pushad} or a \textit{popad}. For every instruction we check if it is one of the previous two and if so we set the corresponding flag. Then, when we produce a dump, if both flags are active, we set the \textit{pushad popad} flag in the output report
+\end{itemize} 
