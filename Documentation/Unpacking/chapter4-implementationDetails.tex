@@ -48,6 +48,9 @@ We check each instruction, including writes, to see if it executes from one of t
 
 \subsection{Hooks of functions and syscalls}
 \label{Hooks of functions and syscalls}
+\paragraph{}
+In order to make our tool properly work we had to hook some functions and system calls. We always tried to hook functions at the lowest possible level.\\
+When dumping code, we need to include also the code on the heap, because some packers unpack code in that memory area. In order to do this, we have to track all the heap allocations and deallocations in order to create an \textit{heapzone} in our tool.\\
 
 \subsection{Dumping module}
 \label{Dumping module}
