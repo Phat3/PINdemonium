@@ -23,6 +23,7 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 		
 	}
 
+
 	//fill the structure with the provided info
 	syscall_t *sc = &((syscall_t *) v)[thread_id];	
 	sc->syscall_number = syscall_number;
@@ -202,7 +203,7 @@ void HookSyscalls::NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , 
 
 	printf("The debug flag  BEFORE is %08x\n", *(unsigned int *)pdebug_flag);
 
-	memset(pdebug_flag,1,4);
+	memset(pdebug_flag,0x00000001,1);
 
 	printf("The debug flag  AFTER  is %08x\n", *(unsigned int *)pdebug_flag);
 	}
@@ -217,6 +218,18 @@ void HookSyscalls::NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCA
 	//proc_info->printMappedFileAddress();
 	proc_info->setCurrentMappedFiles();
 //	proc_info->printMappedFileAddress();
+}
+
+//hxxp://securityxploded.com/ntcreatethreadex.php
+void HookSyscalls::NtCreateThreadExHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
+	
+	MYINFO("<<<<<<<<Spawned a new Thread>>>>>>>>>\n");
+	MYINFO("CreateSuspended is %d\n", sc->arg6);
+
+	unsigned int thread_function = (unsigned int )sc->arg4;
+
+	MYINFO("Executing the function at %08x\n", thread_function);
+
 }
 
 
@@ -288,6 +301,7 @@ void HookSyscalls::initHooks(){
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));
 
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryInformationProcess_exit",&HookSyscalls::NtQueryInformationProcessHook));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtCreateThreadEx_exit",&HookSyscalls::NtCreateThreadExHook));
 
 	
 

@@ -596,6 +596,14 @@ VOID MyPrintRegAP1(CONTEXT *ctxt){
 		return;
 }
 
+VOID MyPrintEbxValue(CONTEXT *ctxt){
+
+	    unsigned int ebx_value = PIN_GetContextReg(ctxt, REG_EBX);
+		MYINFO("@@@@@@@@@@@@@@@@@This stub is writing to %08x, number of bytes written 0x29c\n", ebx_value);
+
+		return;
+}
+
 VOID MyPrintRegAQ1(CONTEXT *ctxt){
 
 	    unsigned int ebx_value = PIN_GetContextReg(ctxt, REG_EBX);
@@ -830,6 +838,20 @@ VOID PrintFs(CONTEXT *ctxt){
 }
 
 
+VOID PrintContext(CONTEXT *ctxt){
+
+	unsigned int esp_value = PIN_GetContextReg(ctxt , REG_ESP);
+	unsigned int ebx_value = PIN_GetContextReg(ctxt, REG_EBX);
+	unsigned int ecx_value = PIN_GetContextReg(ctxt, REG_ECX);
+	unsigned int edx_value = PIN_GetContextReg(ctxt, REG_EDX);
+	unsigned int eax_value = PIN_GetContextReg(ctxt, REG_EAX);
+	unsigned int ebp_value = PIN_GetContextReg(ctxt, REG_EBP);
+	unsigned int flags = PIN_GetContextReg(ctxt,REG_EFLAGS);
+
+	MYINFO("Context: EAX: %08x\nEBX: %08x\nECX: %08x\nEDX: %08x\n ESP: %08x\n EBP: %08x\n EFLAGS %08x\n" , eax_value , ebx_value,ecx_value,edx_value,esp_value,ebp_value,flags);
+
+}
+
 VOID PrintSEH(CONTEXT *ctxt){
 
 	unsigned int esp_value = PIN_GetContextReg(ctxt , REG_ESP);
@@ -837,8 +859,11 @@ VOID PrintSEH(CONTEXT *ctxt){
 
 	MYINFO("EAX is %08x\n" , eax_value);
 	MYINFO("Loaded into fs:[0] the value %08x\n" , esp_value);
+}
 
+VOID ZeroEax(CONTEXT *ctxt){
 
+	PIN_SetContextReg(ctxt,REG_EAX,0);
 }
 
 VOID MyPrintFakeStack1(CONTEXT *ctxt){
@@ -908,6 +933,55 @@ VOID MyPrintRegMM2(CONTEXT *ctxt){
 }
 
 
+BOOL ListProcessThreads(W::DWORD dwOwnerPID)
+{ 
+  W::HANDLE hThreadSnap = NULL;
+  W::THREADENTRY32 te32; 
+ 
+  // Take a snapshot of all running threads  
+  hThreadSnap = W::CreateToolhelp32Snapshot( TH32CS_SNAPTHREAD, 0 ); 
+  if( hThreadSnap == NULL ) 
+    return( FALSE ); 
+ 
+  // Fill in the size of the structure before using it. 
+  te32.dwSize = sizeof(W::THREADENTRY32 ); 
+ 
+  // Retrieve information about the first thread,
+  // and exit if unsuccessful
+  if( !Thread32First( hThreadSnap, &te32 ) ) 
+  {
+    return( FALSE );
+  }
+
+  // Now walk the thread list of the system,
+  // and display information about each thread
+  // associated with the specified process
+  do 
+  { 
+    if( te32.th32OwnerProcessID == dwOwnerPID )
+    {
+		if(te32.th32OwnerProcessID == PIN_ThreadId()){
+			MYINFO( TEXT("\n   PIN THREAD ID      = 0x%08X"), te32.th32ThreadID );
+		} 
+		else{
+			MYINFO( TEXT("\n   THREAD ID      = 0x%08X"), te32.th32ThreadID );
+		}
+    }
+  } while( Thread32Next(hThreadSnap, &te32 ) );
+
+  MYINFO( TEXT("\n"));
+
+//  Don't forget to clean up the snapshot object.
+  CloseHandle( hThreadSnap );
+  return( TRUE );
+}
+
+void printThreads(){
+
+  ListProcessThreads(W::GetCurrentProcessId() );
+
+}
+
 
 
 
@@ -935,6 +1009,8 @@ void ToolHider::avoidEvasion(INS ins){
 
 /*
 	   //-------------- STUB AA---------------------
+	   */
+
 	   if(strcmp( (INS_Disassemble(ins).c_str() ),"mov byte ptr [ebx], 0x36") == 0){
 
 		REGSET regsIn;
@@ -945,7 +1021,7 @@ void ToolHider::avoidEvasion(INS ins){
 
 		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyPrintRegEbx1, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END);
      }
-
+/*
 	//---------------------------------------------
 
 	//----------------- STUB AB -------------------
@@ -1013,6 +1089,7 @@ void ToolHider::avoidEvasion(INS ins){
 	//------------------------------------------------
 
 	//-------------- STUB AC -------------------------
+	*/
 
 	if(strcmp( (INS_Disassemble(ins).c_str() ),"mov byte ptr [edx], 0xb8") == 0){
 
@@ -1023,7 +1100,7 @@ void ToolHider::avoidEvasion(INS ins){
 
 		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyPrintRegEdx, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END);
      } 
-
+	/*
 	//------------------------------------------------
 
 
@@ -1169,6 +1246,8 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"call dword ptr [ebx+0x2b4]") == 0){
 //------------------------------------------
 
 //-------------- STUB AF -------------------
+*/
+
 if(strcmp( (INS_Disassemble(ins).c_str() ),"mov byte ptr [eax], 0x38") == 0){
 
 		REGSET regsIn;
@@ -1179,7 +1258,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov byte ptr [eax], 0x38") == 0){
 		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyPrintRegAF1, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
 }
 
-
+/*
 //------------- STUB AG -------------------
 if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x4552d021") == 0){
 
@@ -1218,6 +1297,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x19e65db6") == 0){
 //-----------------------------------------
 
 //------------ STUB AH --------------------
+*/
 
 if(strcmp( (INS_Disassemble(ins).c_str() ),"mov eax, 0xec") == 0){
 
@@ -1228,7 +1308,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov eax, 0xec") == 0){
 
 		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyPrintRegAH1, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
 }
-
+/*
 //----------------------------------------
 
 //----------- STUB AI --------------------
@@ -1297,6 +1377,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"push 0x10066f2f") == 0){
 //-------------------------------------
 
 //---------- STUB AL ------------------
+*/
 
 if(strcmp( (INS_Disassemble(ins).c_str() ),"mov esi, 0x254") == 0){
 
@@ -1307,7 +1388,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov esi, 0x254") == 0){
 
 		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyPrintRegAL1, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
 }
-
+/*
 //------------------------------------
 
 //------------- STUB AM -----------------
@@ -1398,7 +1479,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"pop dword ptr fs:[eax]") == 0){
 }
 
 //-------------------------------------------------
-
+*/
 //--------------- STUB AN ---------------------------
 
 if(strcmp( (INS_Disassemble(ins).c_str() ),"mov edx, 0x10c") == 0){
@@ -1410,7 +1491,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov edx, 0x10c") == 0){
 
 		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyPrintRegAN1, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
 }
-
+/*
 //-------------------------------------------------
 
 
@@ -1491,7 +1572,7 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"cmp byte ptr [esi-0x6], 0x0") == 0){
 //--------------------------------------------------------
 
 //------------ STUB AP -------------------------
-
+*/
 if(strcmp( (INS_Disassemble(ins).c_str() ),"mov eax, 0x7b0") == 0){
 
 		REGSET regsIn;
@@ -1502,6 +1583,19 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov eax, 0x7b0") == 0){
 		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyPrintRegAP1, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
 }
 
+
+if(strcmp((INS_Disassemble(ins).c_str()),"mov edx, 0x29c")==0){
+
+		REGSET regsIn;
+		REGSET_AddAll(regsIn);
+		REGSET regsOut;
+		REGSET_AddAll(regsOut);
+
+		INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)MyPrintEbxValue, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+
+}
+
+/*
 //---------------------------------------------
 
 //----------- STUB AQ --------------------------
@@ -1702,6 +1796,18 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"mov dword ptr fs:[eax], esp") == 0){
 		}
 }
 
+if(strcmp( (INS_Disassemble(ins).c_str() ),"and eax, 0x7") == 0){
+
+		REGSET regsIn;
+		REGSET_AddAll(regsIn);
+		REGSET regsOut;
+		REGSET_AddAll(regsOut);
+
+		if(INS_HasFallThrough(ins)){
+			INS_InsertCall(ins,IPOINT_AFTER,(AFUNPTR)ZeroEax, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		}
+}
+
 
 
 } // End if HEAP code 
@@ -1722,31 +1828,65 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"or dword ptr [esp+0x1], 0x1") == 0){
   }
 
 
-
-
-
-
 	//----------- MAIN MODULE--------------------
 	
 	static int entry_point_passed = 0;
+			
+	//INS_InsertCall(ins,IPOINT_BEFORE,(AFUNPTR)PrintContext, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		
+	//MYINFO("[DEBUG]  RTN: %s EIP: %08x INS: %s\n",RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 
-	if(curEip == 0x0041e000){
+	if (curEip == 0x0041e000){
 		entry_point_passed = 1;
 	}
+		
+	/*
+	static int  a = 0;
 
-	//MYINFO("[DEBUG] THREAD: %08x %08x %08x RTN: %s EIP: %08x INS: %s\n", PIN_GetTid() , PIN_ThreadId , PIN_GetParentTid(),RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	if(curEip == 0x00432ea1 && a == 0 ){
+		
+		printf("Eccoci qua %s\n" , INS_Disassemble(ins).c_str());
+		ADDRINT hardcoded =  0x00432ed6;
+		INS_InsertDirectJump(ins,IPOINT_BEFORE, hardcoded );
 
+		a = 1;  // only one time for now 
+	}
+
+	if(a == 1){
+		printf("Next EIP is %08x\n" , curEip);
+		a = 2;
+	}*/
+	/*
+	static int addr_counter = 0;
+	if(curEip == 0x00427a7e){
+	
+		addr_counter++;
+
+		if(addr_counter == 9){
+		ADDRINT hardcoded =  0x004277fd;
+
+		INS_InsertDirectJump(ins,IPOINT_BEFORE,hardcoded);
+		}
+	}
+
+	if(addr_counter == 10){
+		printf("Next ins %s\n" , INS_Disassemble(ins).c_str());
+		addr_counter = -100;
+	}
+	*/
+
+	//printThreads();
 
 	if(entry_point_passed == 1){
-	if(PIN_IsApplicationThread() == TRUE && pInfo->searchHeapMap(curEip)!=-1){
-	MYINFO("@heap->		[DEBUG] THREAD: %08x %08x %08x RTN: %s EIP: %08x INS: %s\n", PIN_GetTid() , PIN_ThreadId , PIN_GetParentTid(),RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	if( pInfo->searchHeapMap(curEip)!=-1){
+	MYINFO("@heap->		[DEBUG] Thread: %d  RTN: %s EIP: %08x INS: %s\n", W::GetCurrentThreadId(), RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 	}
 	else{
 		if(curEip >= 0x00401000 && curEip <= 0x00436000){
-			MYINFO("@MainModule->		[DEBUG] THREAD: %08x %08x %08x RTN: %s EIP: %08x INS: %s\n", PIN_GetTid() , PIN_ThreadId , PIN_GetParentTid(),RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+			MYINFO("@MainModule->	Thread: %d	[DEBUG]  RTN: %s EIP: %08x INS: %s\n", W::GetCurrentThreadId(), RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 		}
 		else{
-			MYINFO("[DEBUG] THREAD: %08x %08x %08x RTN: %s EIP: %08x INS: %s\n", PIN_GetTid() , PIN_ThreadId , PIN_GetParentTid(),RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+			MYINFO("[DEBUG] Thread: %d RTN: %s EIP: %08x INS: %s\n" , W::GetCurrentThreadId(), RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 		}
 	}
 	}
