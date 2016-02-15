@@ -94,3 +94,13 @@ if this difference is above a given threshold we set the \textit{long jump} flag
 \item pushad popad heuristic: during the execution of the binary we have two flags indicating if we have encountered a \textit{pushad} or a \textit{popad}. For every instruction we check if it is one of the previous two and if so we set the corresponding flag. Then, when we produce a dump, if both flags are active, we set the \textit{pushad popad} flag in the output report
 \item init function call heuristic: the aim of this heuristic is to search through the dumped code for calls to functions commonly used in the body of the malware and not in the unpacker stub. For example, registry manipulation or internet communication functions are generally used by the malware itself and not by the routine which cares for the unpacking. We achieve this result by using an IDAPython script: using IDA we are able to read the list of the imports of the dump and to confront it with a list of "suspicious" functions selected by us. Then we count the number of detected functions and write it in the output report
 \end{itemize} 
+
+\paragraph{}
+At the end of the execution of our tool we have a report which contains a line for each dump that lists the results of every heuristic, as well as the dump number, a string that says if the \textit{Import Directory} is probably reconstructed or not, the OEP, the begin and the end address of the \textit{Write Interval} considered for the dump. We use these information to choose the best dump as follow:
+\begin{itemize}
+\item first we check if the \textit{Import Directory} is probably reconstructed
+\item is so, we count the number of the "suspicious" functions detected and the number of active heuristics' flags
+\item if the previous numbers are the best result until this moment, we save this dump number, eventually rewriting another one saved before
+\item at the end of the procedure we choose the saved dump number as the one that has the greatest chance to work
+\end{itemize}
+If no dump has its \textit{Import Directory} reconstructed, we return the value "-1".
