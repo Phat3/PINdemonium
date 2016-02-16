@@ -10,7 +10,7 @@
 #include "FilterHandler.h"
 #include "HookFunctions.h"
 #include "HookSyscalls.h"
-#include <regex>
+#include "PolymorphicCodePatches.h"
 
 
 namespace W {
@@ -22,8 +22,8 @@ ToolHider thider;
 OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
-static int prova =0;
 ProcInfo *proc_info = ProcInfo::getInstance();
+PolymorphicCodePatches pcpatcher;
 
 
 
@@ -61,9 +61,6 @@ VOID Fini(INT32 code, VOID *v){
 	MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
 	//DEBUG --- get the execution time
 	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
-
-	//ProcInfo *proc_info = ProcInfo::getInstance();
-	//proc_info->PrintWhiteListedAddr();
 
 	CLOSELOG();
 	Config::getInstance()->closeReportFile();
@@ -187,117 +184,11 @@ void Instruction(INS ins,void *v){
 	
 }
 
-static ADDRINT trace_head = 0x0;
-static ADDRINT trace_tail = 0x0;
-static ADDRINT first_written_address_in_trace = 0x0;
-
-VOID invalidateTrace()
-{    
-    UINT32 numRemoved = CODECACHE_InvalidateTraceAtProgramAddress(0x0041a0dd);
-	MYPRINT("NUMBER OF TRACE DELETED : %d", numRemoved);
-}
-
-VOID polimorficCodeHandler(ADDRINT eip, ADDRINT write_addr){
-	
-	//MYPRINT("WRITE DETECTED!!! WRITE AT %08x \t IP : %08x", write_addr, eip);
-	if(write_addr >= trace_head && write_addr <= trace_tail){
-		//MYPRINT("WRITE ON MY TRACE DETECTED!!! WRITE AT %08x", write_addr);
-		if(write_addr < first_written_address_in_trace || first_written_address_in_trace == 0x0){
-			first_written_address_in_trace = write_addr;
-		}
-	}
-	
-}
-
-VOID dumpCtx(ADDRINT eip, CONTEXT * ctxt, UINT32 ins_size){
-		UINT32 eax_value = PIN_GetContextReg(ctxt, REG_EAX);
-		UINT32 ebx_value = PIN_GetContextReg(ctxt, REG_EBX);
-		//MYPRINT("analysis -- EIP : %08x\t SIZE : %d \tFIRST WRITTEN ADDR : %08x", eip, ins_size, first_written_address_in_trace);
-		if(first_written_address_in_trace >= eip && first_written_address_in_trace <= eip + ins_size){
-			//MYPRINT("I'M ABOUT TO EXECUTE A WRITTEN INSTRUCTION!! %08x", eip);
-			//MYPRINT("REDIRECT TO %08x", eip);
-			PIN_SetContextReg(ctxt, REG_EIP, eip);
-			first_written_address_in_trace = 0x0;
-			PIN_ExecuteAt(ctxt);
-		}
-}
 
 
 VOID Trace(TRACE trace,void *v){
-
-	//MYPRINT("----------- INSTRUMENTATION TRACE BEGIN ----------------");
-	trace_head = TRACE_Address(trace);
-	trace_tail = trace_head + TRACE_Size(trace);
-
-	//MYPRINT("TRACE HEAD : %08x\t TRACE TAIL : %08x", trace_head, trace_tail);
-	for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl))
-    {
-        for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins))
-        {
-			bool ins_call = true;
-
-			//MYINFO("INSIDE CODE CACH %08x",  INS_Address(ins));
-			if(INS_Address(ins) == 0x0041A0D7){
-				//CODECACHE_InvalidateRange	(0x0041a0f0, 0x0041a0f6); 	
-				start_dump = true;
-				//INS_InsertDirectJump(ins, IPOINT_BEFORE, 0x0041a0dd);
-			}
-			/*
-			if(INS_Address(ins) == 0x0041A0f0){
-				INS_InsertDirectJump(ins, IPOINT_BEFORE, 0x0041a0dd);
-			}
-			*/
-			
-			if(start_dump && ins_call){
-					//MYPRINT("%08x -- %s -- %s -- %0d", INS_Address(ins), INS_Disassemble(ins).c_str(), RTN_FindNameByAddress( INS_Address(ins)).c_str(), INS_MemoryOperandCount(ins));
-					INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(dumpCtx), IARG_INST_PTR, IARG_CONTEXT, IARG_UINT32, INS_Size(ins),IARG_END);
-					
-					for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
-						if(INS_MemoryOperandIsWritten(ins,op)){	
-							INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(polimorficCodeHandler),
-							IARG_INST_PTR,
-							IARG_MEMORYOP_EA, op,
-							IARG_END);
-							
-						}	
-					}
-					
-			}
-		
-
-        }
-    }
-	/*
-	if(TRACE_Address(trace) == 0x0041a0dd && dd_encountered == 0){
-		dd_encountered = 1;
-		MYPRINT("DELETE TrACE ADDRESS : %08x", TRACE_Address(trace));
-		TRACE_InsertCall(trace, IPOINT_BEFORE, (AFUNPTR) invalidateTrace, IARG_END);
-	}
-	*/
-	
+	pcpatcher.inspectTrace(trace);
 }
-
-void Trace2(TRACE trace,void *v){
-	MYPRINT("----------- CODECACHE TRACE BEGIN ----------------");
-	for (BBL bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl))
-    {
-        for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins))
-        {
-
-			//MYINFO("INSIDE CODE CACH %08x",  INS_Address(ins));
-			if(INS_Address(ins) == 0x0041A0D7){
-				start_dump = true;
-			}
-
-			if(start_dump){
-				MYPRINT("%08x -- %s -- %s -- %08x", INS_Address(ins), INS_Disassemble(ins).c_str(), RTN_FindNameByAddress( INS_Address(ins)).c_str(), INS_CodeCacheAddress(ins));
-			}
-        }
-    }
-
-}
-
-
 
 
 // - retrive the stack base address
@@ -357,12 +248,8 @@ int main(int argc, char * argv[]){
 
 
 	MYINFO("Starting prototype ins");
-	//W::DebugBreak();
-	FilterHandler *filterH = FilterHandler::getInstance();
-	//set the filters for the libraries
-	MYINFO("%s",Config::FILTER_WRITES_ENABLES.c_str());
-	//filterH->setFilters(Config::FILTER_WRITES_ENABLES);
-	
+
+
 	//get the start time of the execution (benchmark)
 	tStart = clock();
 	
@@ -371,27 +258,24 @@ int main(int argc, char * argv[]){
 
 	if (PIN_Init(argc, argv)) return Usage();
 
+	//Register PIN Callbacks
 	INS_AddInstrumentFunction(Instruction,0);
 	TRACE_AddInstrumentFunction(Trace,0);
-
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
-	// Register ImageUnload to be called when an image is unloaded
-	//IMG_AddInstrumentFunction(imageLoadCallback, 0);
+	IMG_AddInstrumentFunction(imageLoadCallback, 0);
+	PIN_AddFiniFunction(Fini, 0);
+	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
+
+	//get theknob args
+	ConfigureTool();
 
 	proc_info->addProcAddresses();
 
-	// Register Fini to be called when the application exits
-	PIN_AddFiniFunction(Fini, 0);
-	
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
-
-	ConfigureTool();
-
-	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
-	//CODECACHE_AddTraceInsertedFunction(Trace2, 0);
 	// Start the program, never returns
+
 	PIN_StartProgram();
 	
 	return 0;
