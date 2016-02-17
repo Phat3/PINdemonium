@@ -341,7 +341,7 @@ void displayModuleList(std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
 
 }
 
-void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportModuleThunk> moduleList){
+void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportModuleThunk> moduleList, unsigned int eip){
 	printf("Unresolved imports detected...\n");
 
 	PUNRESOLVED_IMPORT unresolvedImport = 0;
@@ -370,7 +370,6 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 		
 		for (j = 0; j <  1000; j++)
 		{
-			//DebugBreak();
 			//if we cannot query the invalidApiAddress then bypass the analysis of this address
 			SIZE_T result = VirtualQueryEx(ProcessAccessHelp::hProcess,(LPVOID)invalidApiAddress, &memBasic, sizeof(MEMORY_BASIC_INFORMATION));
 			if (!result || memBasic.State != MEM_COMMIT || memBasic.Protect == PAGE_NOACCESS)
@@ -385,7 +384,6 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			//instruction_size will contains the length of the disassembled instruction (0 if fails)
 			instruction_size = get_instruction(&inst, (BYTE *)instruction_buffer, MODE_32);
 			//if libdasm fails to recognize the insruction bypass this instruction
-			//WRONG!!
 			if(instruction_size == 0){
 				invalidApiAddress = invalidApiAddress + 1;
 				insDelta = insDelta + 1;
@@ -396,40 +394,47 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			if (strstr(buffer, "jmp"))
 			{				
 				//calculate the correct answer (add the invalidApiAddress to the destination of the jmp because it is a short jump)
-				unsigned int correct_address = ( (unsigned int)std::strtoul(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress - insDelta;
-				//ProcessAccessHelp::readMemoryFromProcess((DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), 0x4, debug_buffer);
+				unsigned int correct_address = ( (unsigned int)std::strtoul(strstr(buffer, "jmp") + 4 + 2, NULL, 16)) + invalidApiAddress;
+				/*	
 				printf("\n\n---------------- MINI REP --------------\n");
 				printf("INST %s: \n", buffer);
 				printf("INVALID API :  %08x \n", invalidApiAddress);
 				printf("INST DELTA %d \n", insDelta);
-				//printf("IAT POINTER : %p\n", debug_buffer);
+				printf("IAT POINTER : %p\n", unresolvedImport->ImportTableAddressPointer);
 				printf("CORRECT ADDR : %08x\n", correct_address);
-				printf("SIZE OF CORRECT ADDR: %d\n", sizeof(correct_address));
+				//printf("SIZE OF CORRECT ADDR: %d\n", sizeof(correct_address));
 				printf("---------------- END MINI REP --------------\n\n");
-				ProcessAccessHelp::writeMemoryToProcess( (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), sizeof(correct_address), &correct_address);
-				//*(DWORD*)(unresolvedImport->ImportTableAddressPointer) =  correct_address;
-				//unresolved import probably resolved
-				resolved = true;
-				break;
+				*/
+				//if the target address is in a memory space dedicated to dlls we have finished our check
+				if(correct_address >= 0x50000000 && correct_address <= 0x7f000000){
+					//subtract the stolen API executed
+					correct_address = correct_address - insDelta;
+					ProcessAccessHelp::writeMemoryToProcess( (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), sizeof(correct_address), &correct_address);
+					//unresolved import probably resolved
+					resolved = true;
+					break;
+				}
+				//follow the target address of the jmp and continue the search
+				//we don't have to increase the INSDelta beccause the jmp itself is not a stolen API (instruction belonging to the dll)
+				else{
+					invalidApiAddress = correct_address;
+					continue;
+				}
+				
 			}
 			//if not increment the delta for the next fix (es : if we have encountered 4 instruction before the correct jmp we have to decrement the correct_address by 16 byte)
 			insDelta = insDelta + instruction_size;
 			//check the next row inthe IAT
 			invalidApiAddress = invalidApiAddress + instruction_size;
 		}
-		//if we cannot resolve the import fix it with a dummy address so scylla isn't able to resolve the API and it will remove the unresolved import		
-		if(!resolved){
-			unsigned int correct_address = 0x0;
-			ProcessAccessHelp::writeMemoryToProcess( (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), sizeof(correct_address), &correct_address);
-			resolved = false;
-		}
+
 		unresolvedImport++; //next pointer to struct
 	}
 	
 }
 
 
-int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile,  DWORD advance_iat_fix_flag)
+int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile,  DWORD advance_iat_fix_flag, unsigned int eip)
 {
 	ApiReader apiReader;
 	ProcessLister processLister;
@@ -476,7 +481,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	
 		if (numberOfUnresolvedImports != 0){
 		
-			customFix(numberOfUnresolvedImports, moduleList);
+			customFix(numberOfUnresolvedImports, moduleList, eip);
 
 			apiReader.clearAll();
 

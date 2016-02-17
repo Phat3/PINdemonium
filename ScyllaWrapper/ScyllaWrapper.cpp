@@ -142,7 +142,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR * cur_path,
 	INFO("[SCYLLA SEARCH] iat_start : %08x\t iat_size : %08x\t pid : %d", iatStart,iatSize,pid,outputFile);
 	
 	//Fixing the IAT
-	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmp_dump,outputFile,1);
+	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmp_dump,outputFile,1,oep);
 	if(error){
 		INFO("[SCYLLA FIX] error %d",error);
 		return SCYLLA_ERROR_IAT_NOT_FIXED;

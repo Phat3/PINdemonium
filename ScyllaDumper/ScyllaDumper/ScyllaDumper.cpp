@@ -137,7 +137,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat
 	
 	//Fixing the IAT
 	//DebugBreak();
-	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile,advance_iat_fix_flag);
+	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile,advance_iat_fix_flag, oep);
 	if(error){
 		INFO("[SCYLLA FIX] error %d",error);
 		return SCYLLA_ERROR_IAT_NOT_FIXED;
