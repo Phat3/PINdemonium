@@ -3,12 +3,15 @@
 \thispagestyle{empty}
 
 \section{Problem statement}
+\paragraph{}
 Nowadays malwares employ different techniques to defeat analysis: evasion techniques are commonly used in order to detect analysis environments and to avoid triggering malicious behaviour when this checks succeed.\\
 PIN is a binary instrumentation framework developed by Intel and is the base of our tool. This paper focuses on defeating evasion techniques of PIN.
 \section{State of the art}
+\paragraph{}
 This is the first contribution to this research area.\\
 Previous works have focused on trying to detect binary instrumentation framework, like the eXait library or the work DynamoRIO.
 \section{Goals and challenges}
+\paragraph{}
 Our goal is to develop a framework which defeats some of the common evasion techniques against DBIs.\\
 Our work starts with defeating the library of eXait: a list of techniques that are able to detect if a program is instrumented by PIN. These techniques go from fingerprinting the environment, searching for strings or code patterns, to timing attacks.\\
 The final purpose is to produce a library that makes transparent a pintool.
