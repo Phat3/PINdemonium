@@ -39,7 +39,6 @@ Config* Config::instance = 0;
 
 //at the first time open the log file
 Config::Config(){
-
 	//set the initial dump number
 	this->dump_number = 0;
 	//build the path for this execution

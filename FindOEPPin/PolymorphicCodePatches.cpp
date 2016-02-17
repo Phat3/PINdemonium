@@ -58,16 +58,21 @@ VOID PolymorphicCodePatches::inspectTrace(TRACE trace){
         for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins))
         {	
 			// for ech instruction we have to check if it has been overwritten by a previous instruction of the current trace (polimiorfic code detection)
-			INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(checkIfWrittenAddress), IARG_INST_PTR, IARG_CONTEXT, IARG_UINT32, INS_Size(ins), IARG_PTR, this,IARG_END);
+			INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(checkIfWrittenAddress), 
+				IARG_INST_PTR, 
+				IARG_CONTEXT, 
+				IARG_UINT32, INS_Size(ins), 
+				IARG_PTR, this,
+				IARG_END);
 					
 			for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
 				if(INS_MemoryOperandIsWritten(ins,op)){	
 					// for each write operation we have to check if the traget address is inside the current trace (attempt to write polimorfic code)
 					INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(polimorficCodeHandler),
-					IARG_INST_PTR,
-					IARG_MEMORYOP_EA, op,
-					IARG_PTR, this,
-					IARG_END);
+						IARG_INST_PTR,
+						IARG_MEMORYOP_EA, op,
+						IARG_PTR, this,
+						IARG_END);
 							
 				}	
 			}					

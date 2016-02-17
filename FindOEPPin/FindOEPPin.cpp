@@ -50,6 +50,9 @@ KNOB <BOOL> KnobUnpacking(KNOB_MODE_WRITEONCE, "pintool",
 KNOB <BOOL> KnobAdvancedIATFixing(KNOB_MODE_WRITEONCE, "pintool",
     "adv-iatfix", "false" , "specify if you want or not to activate the advanced IAT fix technique");
 
+KNOB <BOOL> KnobPolymorphicCodePatch(KNOB_MODE_WRITEONCE, "pintool",
+    "poly-patch", "false" , "specify if you want or not to activate the patch in order to avoid crash during the instrumentation of polymorphic code");
+
 //------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
 
@@ -61,11 +64,9 @@ VOID Fini(INT32 code, VOID *v){
 	MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
 	//DEBUG --- get the execution time
 	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
-
 	CLOSELOG();
-	Config::getInstance()->closeReportFile();
-
-	
+	Config *config = Config::getInstance();
+	config->closeReportFile();
 }
 
 
@@ -149,10 +150,6 @@ void imageLoadCallback(IMG img,void *){
 }
 
 
-
-static bool start_dump = false;
-static int dd_encountered = 0;
-
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if better than trace iteration)
 void Instruction(INS ins,void *v){
@@ -170,9 +167,6 @@ void Instruction(INS ins,void *v){
 		MYINFO("zzzzzzCur EIP:%08x name %s ",INS_Address(ins),RTN_FindNameByAddress(INS_Address(ins)).c_str());
 	}
 	*/
-	
-
-	
 	Config *config = Config::getInstance();
 	if(config->ANTIEVASION_MODE){
 		thider.avoidEvasion(ins);
@@ -216,6 +210,8 @@ void ConfigureTool(){
 	config->ANTIEVASION_MODE_SWRITE = KnobAntiEvasionSuspiciousWrite.Value();
 	config->UNPACKING_MODE = KnobUnpacking.Value();
 	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
+	config->POLYMORPHIC_CODE_PATCH = KnobPolymorphicCodePatch.Value();
+
 
 	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= 10 ){
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
@@ -260,7 +256,6 @@ int main(int argc, char * argv[]){
 
 	//Register PIN Callbacks
 	INS_AddInstrumentFunction(Instruction,0);
-	TRACE_AddInstrumentFunction(Trace,0);
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 	PIN_AddFiniFunction(Fini, 0);
@@ -269,6 +264,9 @@ int main(int argc, char * argv[]){
 	//get theknob args
 	ConfigureTool();
 
+	if(Config::getInstance()->POLYMORPHIC_CODE_PATCH){
+		TRACE_AddInstrumentFunction(Trace,0);
+	}
 	proc_info->addProcAddresses();
 
 	//init the hooking system
