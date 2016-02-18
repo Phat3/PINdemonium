@@ -32,7 +32,7 @@ def getCurrentMalware():
   from_path = join(malware_folder,malwares[0])  
   to_path = join(work_folder,malwares[0])
   print("Moving malware " + from_path +" to " +to_path)
-  rename(from_path,to_path)
+  shutil.copy(from_path,to_path)
   return to_path
 
 def runWithTimeout(cmd,timeout):
@@ -68,8 +68,8 @@ def moveResults(cur_malware):
   print("Moving result directory from %s to %s "%(pin_res_dir,test_res_dir))
   shutil.move(pin_res_dir,test_res_dir)
   original_malware_path = join(test_res_dir, "original.exe")
-  malware = listdir(work_folder)
-  shutil.move(join(work_folder,malware[0]), original_malware_path)
+  malwares = listdir(malware_folder)
+  shutil.move(join(malware_folder,malwares[0]), original_malware_path)
 
 def main():
   cur_malware = getCurrentMalware()
