@@ -293,5 +293,6 @@ _Pvt_Extensions
 *.synctex(3).gz
 *.synctex(4).gz
 *.pdf
+*.pyc
 
 
