@@ -11,7 +11,7 @@ from FolderImportLister import generateImportsFile
 malware_folder = "C:\\Users\\phate\\Desktop\\Malware_Results\\"
 result_file_name = "results.txt"
 
-def getCurrentMalware():
+def analyseTests():
   #get the list of folders of results to analize
   malwares_results = [f for f in listdir(malware_folder)]
   length = len(malwares_results)
@@ -56,27 +56,6 @@ def getCurrentMalware():
     result_file.write("Malware: " + str(malwares_results[i]) + ", best_number_new_imports: " + str(best_number_new_imports) + ", best dump: " + str(best_dump) + "\n")
           
 def main():
-  getCurrentMalware()
+  analyseTests()
 
 main()
-
-  
-  
-
-"""report_file = open(complete_path,'r')
-      print "\n-------------MALWARE " + str(malwares_results[i]) + "-------------\n"
-      index_best_dump = -1
-      functions_detected_best = -1
-      for line in report_file:
-          new_dict = dict(json.loads(line).items())
-          print "Parsing dump number " + str(new_dict['dump number'])
-          if new_dict['runnable?'] == 'PROBABLY YES':
-                  functions_detected = new_dict['detected_functions'].split("/")[0]                                               #count the number of detected import funtions
-                  print "-> number of malicious imported functions detected: " + str(functions_detected)
-                  if functions_detected > functions_detected_best:
-                          functions_detected_best = functions_detected
-                          index_best_dump = new_dict['dump number']
-                  i = i + 1
-          else:
-                  print "-> dump not runnable"
-          print "-------------------------------------------------------" """

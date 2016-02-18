@@ -67,6 +67,9 @@ def moveResults(cur_malware):
   test_res_dir = join(test_results,cur_mal_folder)
   print("Moving result directory from %s to %s "%(pin_res_dir,test_res_dir))
   shutil.move(pin_res_dir,test_res_dir)
+  original_malware_path = join(test_res_dir, "original.exe")
+  malware = listdir(work_folder)
+  shutil.move(join(work_folder,malware[0]), original_malware_path)
 
 def main():
   cur_malware = getCurrentMalware()
