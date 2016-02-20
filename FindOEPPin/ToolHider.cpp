@@ -1,5 +1,6 @@
 #include "ToolHider.h"
 #include <regex>
+//#include "WxorXHandler.h"
 
 
 ToolHider::ToolHider(void)
@@ -199,6 +200,11 @@ if(strcmp( (INS_Disassemble(ins).c_str() ),"or dword ptr [esp+0x1], 0x1") == 0){
 	if (curEip == 0x0041e000){ // This is the MessageBoxOBS.exe entry point hardcoded 
 		entry_point_passed = 1;
 	}
+
+/*	if (curEip == 0x0041106e){ // This is the MessageBoxOBS.exe entry point hardcoded 
+		WxorXHandler* wxor = WxorXHandler::getInstance();
+		wxor->displayWriteSet();
+	}*/
 		
 
 	if(entry_point_passed == 1){
