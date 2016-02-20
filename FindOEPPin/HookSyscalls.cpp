@@ -220,19 +220,6 @@ void HookSyscalls::NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCA
 //	proc_info->printMappedFileAddress();
 }
 
-//hxxp://securityxploded.com/ntcreatethreadex.php
-void HookSyscalls::NtCreateThreadExHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
-	
-	MYINFO("<<<<<<<<Spawned a new Thread>>>>>>>>>\n");
-	MYINFO("CreateSuspended is %d\n", sc->arg6);
-
-	unsigned int thread_function = (unsigned int )sc->arg4;
-
-	MYINFO("Executing the function at %08x\n", thread_function);
-
-}
-
-
 
 //----------------------------- END HOOKS -----------------------------//
 
@@ -301,7 +288,6 @@ void HookSyscalls::initHooks(){
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));
 
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryInformationProcess_exit",&HookSyscalls::NtQueryInformationProcessHook));
-	syscallsHooks.insert(std::pair<string,syscall_hook>("NtCreateThreadEx_exit",&HookSyscalls::NtCreateThreadExHook));
 
 	
 
