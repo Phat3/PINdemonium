@@ -42,7 +42,6 @@ ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
 	ADDRINT fakeAddr = fakeWrite.getFakeWriteAddress(write_addr);
 
-
 	if(write_addr == 0){
 		return write_addr; // let the program trigger its exception if it want
 	}
@@ -74,7 +73,6 @@ static REG GetScratchReg(UINT32 index)
 
 // In order to avoid obsidium to take the path of the 'or byte ptr [esp+0x1],0x1' 
 VOID KillObsidiumDeadPath(CONTEXT *ctxt){
-
 	PIN_SetContextReg(ctxt,REG_EAX,0x7);
 }
 

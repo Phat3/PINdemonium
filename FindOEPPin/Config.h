@@ -58,6 +58,7 @@ public:
 	//Tunable from command line
 	bool INTER_WRITESET_ANALYSIS_ENABLE; //Trigger the analysis inside a WriteSet in which WxorX is already broken if a Long JMP is encontered (MPress packer)
 	UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
+	
 
 	//mode of operation
     bool UNPACKING_MODE;
@@ -78,6 +79,7 @@ public:
 	static const UINT32 RDTSC_DIVISOR;
 	static const UINT32 INTERRUPT_TIME_DIVISOR;
 	static const UINT32 SYSTEM_TIME_DIVISOR;
+	static const UINT32 MAX_JUMP_INTER_WRITE_SET_ANALYSIS;
 
 private:
 	Config::Config();

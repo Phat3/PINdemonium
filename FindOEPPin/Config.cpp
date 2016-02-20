@@ -19,6 +19,7 @@ const string Config::DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "du
 const bool Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
 const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
+const UINT32 Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS = 20;
 
 // Divisor of the timing 
 
