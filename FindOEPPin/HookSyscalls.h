@@ -98,7 +98,6 @@ private:
 	static void NtMapViewOfSectionHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
 	static void NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
 	static void NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std);
-	static void NtCreateThreadExHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
 
 
 	//Helpers

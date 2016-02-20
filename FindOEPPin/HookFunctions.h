@@ -20,7 +20,6 @@
 #define VIRTUALPROTECT_INDEX 10
 #define VIRTUALQUERYEX_INDEX 11
 #define SETINFOTHREAD_INDEX 12 
-#define UNHANDLED_INDEX 13 
 
 class HookFunctions
 {

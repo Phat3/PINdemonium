@@ -289,8 +289,6 @@ void HookSyscalls::initHooks(){
 
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryInformationProcess_exit",&HookSyscalls::NtQueryInformationProcessHook));
 
-	
-
 	static syscall_t sc[256] = {0};
 	PIN_AddSyscallEntryFunction(&HookSyscalls::syscallEntry,&sc);
     PIN_AddSyscallExitFunction(&HookSyscalls::syscallExit,&sc);
