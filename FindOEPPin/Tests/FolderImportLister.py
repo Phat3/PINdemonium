@@ -19,4 +19,3 @@ def generateImportsFile(mypath):
       except Exception as e:
         print "error "+str(e)+" processing "+importLister_command
         
-#generateImportsFile("C:\\Users\\phate\\Desktop\\be55f5db33ad80e12683b238872bb78bee2975270773069270cf1926a7de1d99\\")

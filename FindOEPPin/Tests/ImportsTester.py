@@ -8,6 +8,17 @@ import json
 import FolderImportLister
 from FolderImportLister import generateImportsFile
 
+"""
+    IN ORDER TO MAKE THE SCRIPT WORK FOLLOW THIS STEPS:
+    
+    1.  Run the analysis script MalTester.py (BE CAREFUL: this script also requires some configuration)
+    2.  Create a folder named Malware_Results in your desktop and put the results of the analysis in this folders
+    3.  Put this script, FolderImportLister.py and importLister.py in the same folder
+    4.  Eventually change che path in the FolderImportLister.py
+    5.  Now just rin this script and see the result in the results.txt file
+    
+"""
+
 malware_folder = "C:\\Users\\phate\\Desktop\\Malware_Results\\"
 result_file_name = "results.txt"
 
