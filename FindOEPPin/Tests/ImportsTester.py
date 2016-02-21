@@ -31,6 +31,9 @@ def analyseTests():
     best_number_new_imports = -1
 
     if isfile(original_imports_path):
+      #rename the malware sample to its SHA1
+      original_malware_path = join(folder_path, malwares_results[i]) + ".exe"
+      shutil.move(join(folder_path, "original.exe"), original_malware_path)
       #get the original imports of the malware
       original_imports_file = open(original_imports_path, "r")
       original_imports = original_imports_file.readlines()
