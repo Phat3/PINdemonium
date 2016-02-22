@@ -72,12 +72,13 @@ def moveResults(cur_malware):
   shutil.move(join(malware_folder,malwares[0]), original_malware_path)
 
 def main():
-  if not os.path.exists(malware_folder):
-  	os.makedirs(malware_folder)
   if not os.path.exists(work_folder):
   	os.makedirs(work_folder)
   if not os.path.exists(test_results):
   	os.makedirs(test_results)
+  for file in os.listdir(pin_results):
+  	print file
+  	shutil.rmtree(file)
 
   cur_malware = getCurrentMalware()
   if cur_malware != None:  
