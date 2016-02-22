@@ -299,7 +299,6 @@
     <ClInclude Include="OepFinder.h" />
     <ClInclude Include="PushadPopadHeuristic.h" />
     <ClInclude Include="ScyllaWrapperInterface.h" />
-    <ClInclude Include="TimeTracker.h" />
     <ClInclude Include="ToolHider.h" />
     <ClInclude Include="WriteInterval.h" />
     <ClInclude Include="LongJumpHeuristic.h" />

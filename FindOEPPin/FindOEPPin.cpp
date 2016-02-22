@@ -194,7 +194,7 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 	pInfo->addThreadStackAddress(stackBase);
 	pInfo->addThreadTebAddress();
 
-	MYINFO("-----------------a NEW Thread is started!--------------------\n");
+	MYINFO("-----------------a NEW Thread started!--------------------\n");
 }
 
 void initDebug(){
@@ -247,8 +247,7 @@ int main(int argc, char * argv[]){
 		initDebug();
 	}
 
-	MYINFO("Starting prototype ins");
-
+	MYINFO("->Configuring Pintool<-\n");
 
 	//get the start time of the execution (benchmark)
 	tStart = clock();
@@ -281,6 +280,9 @@ int main(int argc, char * argv[]){
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
 	// Start the program, never returns
+
+	MYINFO("->Starting instrumented program<-\n");
+
 
 	PIN_StartProgram();
 	

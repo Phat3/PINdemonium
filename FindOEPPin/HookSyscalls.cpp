@@ -87,37 +87,6 @@ void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx,
 			spi=(PSYSTEM_PROCESS_INFO)((W::LPBYTE)spi+spi->NextEntryOffset); // Calculate the address of the next entry.
 		} 
 	}
-
-	else{
-		if(sc->arg0 == SYSTEM_HANDLE_INFORMATION){
-			
-			MYINFO("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@Retreiving process's handle\n");
-
-			PSYSTEM_HANDLE_INFORMATION_STRUCT phi;
-			SYSTEM_HANDLE_INFORMATION_STRUCT fake_shis;  //shish the world 
-
-			phi = (PSYSTEM_HANDLE_INFORMATION_STRUCT)sc->arg1;
-
-			UINT32 pid = W::GetCurrentProcessId();
-			MYINFO("Pid is %d\n" , pid);
-
-			int handle_counter = 0;
-
-			fake_shis.HandleCount = phi->HandleCount;
-			MYINFO("#######Total number of handles returned are %d\n" , phi->HandleCount);
-			
-			int i=0;
-
-			for(i=0;i<phi->HandleCount;i++){
-				SYSTEM_HANDLE handle = phi->Handles[i];
-				if(handle.ProcessId == pid){
-					MYINFO("Handle %#x\n", handle.Handle);
-					 handle_counter++;
-				}
-			}
-			MYINFO("@@@@@Handle of the current process are %d\n");
-	    }
-	}
 }
 
 
@@ -201,11 +170,7 @@ void HookSyscalls::NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , 
 
 	unsigned int  * pdebug_flag = (unsigned int *)sc->arg2;
 
-	printf("The debug flag  BEFORE is %08x\n", *(unsigned int *)pdebug_flag);
-
 	memset(pdebug_flag,0x00000001,1);
-
-	printf("The debug flag  AFTER  is %08x\n", *(unsigned int *)pdebug_flag);
 	}
 
 
