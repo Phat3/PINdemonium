@@ -20,7 +20,7 @@ while 1:
 	p.wait() 
 	print "\nReset complete"
 
-	time.sleep(650)
+	time.sleep(540)
 
 	print "\nShutting down Virtual Machine"
 	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe controlvm Windows7Reverse_1 poweroff")
