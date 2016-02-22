@@ -19,13 +19,23 @@
 
 3. Clone this repository
 
-4. Open the file **PinUnpacker.sln** with Visual Studio 2010 ( **NB: The version is mandatory** )
+4. Extract the archive in FindOEPPin/ScyllaDependencies/diStorm.rar into FindOEPPin/Scylla/
 
-5. Set your IDAPro path in **Log.cpp** ( const **Log::IDA_PATH** )
+5. Extract the archive in FindOEPPin/ScyllaDependencies/tinyxml.rar into FindOEPPin/Scylla/
+
+6. Extract the archive in FindoEPPin/ScyllaDependencies/WTL.rar into FindoOEPPin/Scylla/WTL/ 
+
+5. Open the file **PinUnpacker.sln** with Visual Studio 2010 ( **NB: The version is mandatory** )
+
+5. Set your IDAPro path in **Config.cpp** ( const **Log::IDA_PATH** )
 
 6. Copy the folders **FindOEPPin\PinUnpackerDependencies** and **FindOEPPin\PinUnpackerResults** in **C:\pin\\**
 
-7. Compile the solution 
+7. Be sure that you are compiling in Release mode 
+
+8. Be sure that all the module inside the project are compiled using the platform toolset v100 ( you can see this with right click on the module -> Propreties -> platform toolset field )
+
+9. Compile the solution
 
 ```
 	\---C
@@ -44,8 +54,8 @@
 			   	|			              \---badImportsList.txt
 			   	|						  \---dumperSelector.py
 			   	|						  \---Scylla
-			   	|								\---ScyllaDLLx64.dll
-			   	|								\---ScyllaDLLx86.dll
+			   	|								\---ScyllaDLLRelease
+			   	|								\---ScyllaDLLDebug
 			   	|								\---ScyllaDumper.exe
 			   	|
 			   \+---FindOEPPin.dll
