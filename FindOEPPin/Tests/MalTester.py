@@ -20,11 +20,10 @@ pin_executable = "C:\\pin\\pin.exe "
 pin_tool ="C:\\pin\\FindOEPPin.dll"
 pin_results = "C:\\pin\\PinUnpackerResults\\"
 test_results = "E:\\Results\\"
-connect_network_folder = r'net use E: \\vboxsvr\VBoxFolder'
-disconnect_network_folder = r'net use E: /del'
+connect_network_folder = "net use E: \\\\vboxsvr\\SharedWindows"
+disconnect_network_folder = "net use E: /del"
 
 def getCurrentMalware():
-  subprocess32.call(connect_network_folder, shell=True)
   #get the list of malwares to analize
   malwares = [f for f in os.listdir(malware_folder) if isfile(join(malware_folder, f))]
   if len(malwares) == 0:
@@ -67,6 +66,7 @@ def moveResults(cur_malware):
   
 
 def main():
+  subprocess32.call(connect_network_folder, shell=True)
   if not os.path.exists(work_folder):
   	os.makedirs(work_folder)
   if not os.path.exists(test_results):
@@ -77,7 +77,10 @@ def main():
 
   cur_malware = getCurrentMalware()
   if cur_malware != None:  
-    executePin(cur_malware)
+    try:
+      executePin(cur_malware)
+    except Exception:
+      print "Timeout"
     malware_name = cur_malware.split("\\")[-1]
     moveResults(malware_name)
 
