@@ -1,5 +1,5 @@
 from os.path import isfile, isdir, join
-from os import listdir, rename
+import os
 import subprocess
 import time
 import sys
@@ -9,7 +9,7 @@ import shutil
 To use this script:
   1) Put the malwares in the malware_folder (E:\Malwares)
   2) Create a work_folder where the malwares will be copied to and run (C:\Users\phate\Desktop\MalwareTests)
-  3)Create a Result folder(test_results) where the results of the unpacking will be saved (E:\Results)
+  3) Create a Result folder(test_results) where the results of the unpacking will be saved (E:\Results)
   4) Run the tool from the pin directory to avoid Scyllax86.dll problem (dll not found) python C:\Users\phate\MalTester.py
 
 '''
@@ -23,7 +23,7 @@ test_results = "E:\\Results\\"
 
 def getCurrentMalware():
   #get the list of malwares to analize
-  malwares = [f for f in listdir(malware_folder) if isfile(join(malware_folder, f))]
+  malwares = [f for f in os.listdir(malware_folder) if isfile(join(malware_folder, f))]
   if len(malwares) == 0:
     print("Malware folder empty")
     return None
@@ -50,7 +50,7 @@ def runWithTimeout(cmd,timeout):
   return stdout, stderr, proc.returncode
 
 def executePin(cur_malware):
-  command = "%s -t %s -unp -antiev -antiev-ins -antiev-sread -antiev-swrite -adv-iatfix -iwae 3 -- %s "%(pin_executable,pin_tool, cur_malware)
+  command = "%s -t %s -unp -antiev -antiev-ins -adv-iatfix -iwae 3 -- %s "%(pin_executable,pin_tool, cur_malware)
   print("launching " + command)
   stdout,stderr,code =runWithTimeout(command,300)
   print("stdout: "+ stdout)
@@ -58,7 +58,7 @@ def executePin(cur_malware):
 
 
 def moveResults(cur_malware):
-  result = [f for f in listdir(pin_results) if isdir(join(pin_results, f))]
+  result = [f for f in os.listdir(pin_results) if isdir(join(pin_results, f))]
   if len(result) == None:
     print("No result folder created")
   pin_res_dir = join(pin_results,result[0])
@@ -68,10 +68,17 @@ def moveResults(cur_malware):
   print("Moving result directory from %s to %s "%(pin_res_dir,test_res_dir))
   shutil.move(pin_res_dir,test_res_dir)
   original_malware_path = join(test_res_dir, "original.exe")
-  malwares = listdir(malware_folder)
+  malwares = os.listdir(malware_folder)
   shutil.move(join(malware_folder,malwares[0]), original_malware_path)
 
 def main():
+  if not os.path.exists(malware_folder):
+  	os.makedirs(malware_folder)
+  if not os.path.exists(work_folder):
+  	os.makedirs(work_folder)
+  if not os.path.exists(test_results):
+  	os.makedirs(test_results)
+
   cur_malware = getCurrentMalware()
   if cur_malware != None:  
     executePin(cur_malware)
