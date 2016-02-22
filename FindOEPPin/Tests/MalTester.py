@@ -40,7 +40,7 @@ def getCurrentMalware():
 def executePin(cur_malware):
   command = "%s -t %s -unp -antiev -antiev-ins -adv-iatfix -iwae 3 -- %s "%(pin_executable,pin_tool, cur_malware)
   print("launching " + command)
-  proc = subprocess32.call(command, shell=True, timeout=100)
+  proc = subprocess32.call(command, shell=True, timeout=300)
 
 
 
