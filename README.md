@@ -55,6 +55,7 @@
 			   	|						  \---dumperSelector.py
 			   	|						  \---Scylla
 			   	|								\---ScyllaDLLRelease
+			   	|									\---ScyllaDLLx86.dll
 			   	|								\---ScyllaDLLDebug
 			   	|								\---ScyllaDumper.exe
 			   	|
