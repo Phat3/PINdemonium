@@ -1,6 +1,6 @@
 from os.path import isfile, isdir, join
 import os
-import subprocess
+import subprocess32
 import time
 import sys
 import shutil
@@ -30,31 +30,18 @@ def getCurrentMalware():
   print("Current malwares "+str(malwares))
   #move the malware to the work folder
   from_path = join(malware_folder,malwares[0])  
-  to_path = join(work_folder,malwares[0])
+  to_path = join(work_folder,malwares[0]+".exe")
   print("Moving malware " + from_path +" to " +to_path)
   shutil.copy(from_path,to_path)
   return to_path
 
-def runWithTimeout(cmd,timeout):
-  proc = subprocess.Popen(cmd, bufsize=0, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  poll_seconds = .250
-  deadline = time.time()+timeout
-  while time.time() < deadline and proc.poll() == None:
-    time.sleep(poll_seconds)
 
-  if proc.poll() == None:
-    #if float(sys.version[:3]) >= 2.6:
-      #proc.terminate()
-    subprocess.call(['taskkill', '/F', '/T', '/PID', str(proc.pid)])
-  stdout, stderr = proc.communicate()
-  return stdout, stderr, proc.returncode
 
 def executePin(cur_malware):
   command = "%s -t %s -unp -antiev -antiev-ins -adv-iatfix -iwae 3 -- %s "%(pin_executable,pin_tool, cur_malware)
   print("launching " + command)
-  stdout,stderr,code =runWithTimeout(command,300)
-  print("stdout: "+ stdout)
-  print("stderror: "+stderr)
+  proc = subprocess32.call(command, shell=True, timeout=100)
+
 
 
 def moveResults(cur_malware):
@@ -78,7 +65,7 @@ def main():
   	os.makedirs(test_results)
   for file in os.listdir(pin_results):
   	print file
-  	shutil.rmtree(file)
+  	shutil.rmtree(pin_results + file)
 
   cur_malware = getCurrentMalware()
   if cur_malware != None:  
