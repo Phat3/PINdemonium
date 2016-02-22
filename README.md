@@ -33,7 +33,7 @@
 
 7. Be sure that you are compiling in Release mode 
 
-8. Be sure that all the module inside the project are compiled using the platform toolset v100 ( you can see this with right click on the module -> Propreties -> platform toolset field )
+8. Be sure that all the module inside the project are compiled using the platform toolset v100 ( you can see this with right click on the module -> Properties -> platform toolset field )
 
 9. Compile the solution
 
