@@ -27,7 +27,7 @@
 
 5. Open the file **PinUnpacker.sln** with Visual Studio 2010 ( **NB: The version is mandatory** )
 
-5. Set your IDAPro path in **Config.cpp** ( const **Log::IDA_PATH** )
+5. Set your IDAPro (idaw.exe) path in **Config.cpp** ( const **Log::IDA_PATH** )
 
 6. Copy the folders **FindOEPPin\PinUnpackerDependencies** and **FindOEPPin\PinUnpackerResults** in **C:\pin\\**
 
