@@ -57,6 +57,7 @@
 			   	|								\---ScyllaDLLRelease
 			   	|									\---ScyllaDLLx86.dll
 			   	|								\---ScyllaDLLDebug
+			   	|									\---ScyllaDLLx86.dll
 			   	|								\---ScyllaDumper.exe
 			   	|
 			   \+---FindOEPPin.dll
