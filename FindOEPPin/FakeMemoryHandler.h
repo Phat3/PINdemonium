@@ -6,9 +6,15 @@
 
 #define TICK_MULTIPLIER_OFFSET 0x4
 #define TICK_MULTIPLIER_SIZE 0x3
-#define LOW_PART_KSYSTEM_OFFSET 0x8
-#define HIGH_1_KSYSTEM_OFFSET 0xc
-#define HIGH_2_KSYSTEM_OFFSET 0x10
+
+#define LOW_PART_INTERRUPT_TIME_OFFSET 0x8
+#define HIGH_1_INTERRUPT_TIME_OFFSET 0xc
+#define HIGH_2_INTERRUPT_TIME_OFFSET 0x10
+
+#define LOW_PART_SYSTEM_TIME_OFFSET 0x14
+#define HIGH_1_SYSTEM_TIME_OFFSET 0x18
+#define HIGH_2_SYSTEM_TIME_OFFSET 0x1c
+
 
 //string containing the current faked memory NB need to static because it need to survive and been accessible in the HandleRead callback inside ToolHider
 static string curFakeMemory;
@@ -55,7 +61,8 @@ private:
 	// fakeMemoryFunction to handle ntdll inspection
 	static ADDRINT ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFuncAddr);
 	static ADDRINT TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr);
-	static ADDRINT KSystemTimePatch(ADDRINT curReadAddr, ADDRINT addr);
+	static ADDRINT InterruptTimePatch(ADDRINT curReadAddr, ADDRINT addr);
+	static ADDRINT SystemTimePatch(ADDRINT curReadAddr, ADDRINT addr);
 	//attributes for the  load library psapi
 	MyEnumProcessModules enumProcessModules;
 	MyGetModuleInformation getModuleInformation;

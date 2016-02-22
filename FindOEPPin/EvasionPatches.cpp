@@ -27,6 +27,7 @@ VOID patchFsave(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
 
 //fake the result of an rdtsc operation by dividing it by RDTSC_DIVISOR
 VOID patchRtdsc(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
+
 	//get the two original values ()
 	UINT32 eax_value = PIN_GetContextReg(ctxt, REG_EAX);
 	UINT32 edx_value = PIN_GetContextReg(ctxt, REG_EDX);

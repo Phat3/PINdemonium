@@ -106,7 +106,8 @@ BOOL InitFunctionCall::launchIdaScript(string idaw,string idaPythonScript,string
 		return false;
 	}
 
-	W::WaitForSingleObject(pi.hProcess,INFINITE);
+	//Timeout 30 sec for the Ida Python script
+	W::WaitForSingleObject(pi.hProcess,30000);
 	W::CloseHandle(pi.hProcess);
 	W::CloseHandle(pi.hThread);
 	

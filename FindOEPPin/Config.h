@@ -58,6 +58,7 @@ public:
 	//Tunable from command line
 	bool INTER_WRITESET_ANALYSIS_ENABLE; //Trigger the analysis inside a WriteSet in which WxorX is already broken if a Long JMP is encontered (MPress packer)
 	UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
+	
 
 	//mode of operation
     bool UNPACKING_MODE;
@@ -76,6 +77,9 @@ public:
 	static const UINT32 CC_DIVISOR; // this is used in order to lower the microseconds returned from the QueryPerformanceCounter 
 	static const UINT32 KSYSTEM_TIME_DIVISOR; // this is used to lower the LONG lowpart returned from the timeGetTime in the struct _KSYSTEM_TIME inside kuser_shared_data
 	static const UINT32 RDTSC_DIVISOR;
+	static const UINT32 INTERRUPT_TIME_DIVISOR;
+	static const UINT32 SYSTEM_TIME_DIVISOR;
+	static const UINT32 MAX_JUMP_INTER_WRITE_SET_ANALYSIS;
 
 private:
 	Config::Config();

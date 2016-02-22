@@ -1,7 +1,6 @@
 #include "ToolHider.h"
 #include <regex>
 
-
 ToolHider::ToolHider(void)
 {
 	
@@ -25,6 +24,10 @@ ADDRINT handleRead(ADDRINT eip, ADDRINT read_addr,void *fake_mem_h){
 		MYINFO("xxxxxxxxxxxxxx %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr);
 	}
 
+	if(read_addr == 0){
+		return read_addr; // let the program trigger its exception if it want
+	}
+
 	if (fake_addr != read_addr){
 		MYINFO("ip : %08x in %s reading %08x and it has been redirected to : %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr, fake_addr);
 	}
@@ -39,14 +42,17 @@ ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
 	ADDRINT fakeAddr = fakeWrite.getFakeWriteAddress(write_addr);
 
+	if(write_addr == 0){
+		return write_addr; // let the program trigger its exception if it want
+	}
+
 	if(fakeAddr != write_addr){
 		MYINFO("wwwwwwwwwwwwwwww suspicious write from %08x in %s in %08x redirected to %08x", eip, RTN_FindNameByAddress(write_addr).c_str(), write_addr, fakeAddr);
-		MYINFO("Binary writes %08x %08x %08x %08x\n" , *(unsigned int *)(fakeAddr) , *(unsigned int *)(fakeAddr+4) , *(unsigned int *)(fakeAddr+8), *(unsigned int *)(fakeAddr+12));
+		MYINFO("Binary writes %08x\n" , *(unsigned int *)(fakeAddr));
 	}
 	
 	return fakeAddr;
 }
-
 
 
 //get the first scratch register available
@@ -65,6 +71,10 @@ static REG GetScratchReg(UINT32 index)
     return regs[index];
 }
 
+// In order to avoid obsidium to take the path of the 'or byte ptr [esp+0x1],0x1' 
+VOID KillObsidiumDeadPath(CONTEXT *ctxt){
+	PIN_SetContextReg(ctxt,REG_EAX,0x7);
+}
 
 void ToolHider::avoidEvasion(INS ins){
 
@@ -74,11 +84,30 @@ void ToolHider::avoidEvasion(INS ins){
    FilterHandler *filterHandler = FilterHandler::getInstance();
 
 	//Filter instructions inside a known library (only graphic dll)
-    //  pInfo->isKnownLibraryInstruction(curEip) 
    if(filterHandler->isFilteredLibraryInstruction(curEip)){
 		return;
 	}
 
+    // Pattern matching in order to avoid the dead path of obsidium
+	if(strcmp( (INS_Disassemble(ins).c_str() ),"xor eax, dword ptr [edx+ecx*8+0x4]") == 0){
+
+		REGSET regsIn;
+		REGSET_AddAll(regsIn);
+		REGSET regsOut;
+		REGSET_AddAll(regsOut);
+
+		if(INS_HasFallThrough(ins)){
+			INS_InsertCall(ins,IPOINT_AFTER,(AFUNPTR)KillObsidiumDeadPath, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		}
+	 }
+
+	if( pInfo->searchHeapMap(curEip)!=-1){
+		MYINFO("@heap->		[DEBUG] Thread: %d  RTN: %s EIP: %08x INS: %s\n", W::GetCurrentThreadId(), RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	}
+	else{
+		MYINFO("[DEBUG] Thread: %d RTN: %s EIP: %08x INS: %s\n" , W::GetCurrentThreadId(), RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
+	}
+	
 	// 1 - single instruction detection
 	if(config->ANTIEVASION_MODE_INS_PATCHING && this->evasionPatcher.patchDispatcher(ins, curEip)){
 		//MYINFO("Returned\n");

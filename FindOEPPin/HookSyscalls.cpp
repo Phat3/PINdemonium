@@ -17,10 +17,12 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 		return;
 	}
 
+
 	if(syscall_number == 0x12b){
 		MYINFO("Invoked WaitReply of syscall is %08x %d\n",PIN_GetContextReg(ctx,REG_EIP), syscall_number);
 		
 	}
+
 
 	//fill the structure with the provided info
 	syscall_t *sc = &((syscall_t *) v)[thread_id];	
@@ -121,6 +123,8 @@ void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx,
 
 void HookSyscalls::NtQueryPerformanceCounterHook(syscall_t *sc , CONTEXT *ctx, SYSCALL_STANDARD std){
 
+
+	MYINFO("################Calling QueryPerfCounter\n");
 	W::PLARGE_INTEGER p_li = (W::PLARGE_INTEGER)sc->arg0; //the first argument of the syscall is a pointer to the LARGE_INTEGER struct that will store the results ( hxxps://msdn.microsoft.com/en-us/library/bb432384(v=vs.85).aspx )
 
 	//MYINFO("QuadPart is %lld\n" , p_li->QuadPart);
@@ -190,6 +194,23 @@ void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL
 	proc_info->addMappedFilesAddress(base_address);
 }
 
+
+void HookSyscalls::NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
+
+	if( sc->arg1 == 0x1f){
+
+	unsigned int  * pdebug_flag = (unsigned int *)sc->arg2;
+
+	printf("The debug flag  BEFORE is %08x\n", *(unsigned int *)pdebug_flag);
+
+	memset(pdebug_flag,0x00000001,1);
+
+	printf("The debug flag  AFTER  is %08x\n", *(unsigned int *)pdebug_flag);
+	}
+
+
+}
+
 //The NtRequestWaitReplyPortHook allocates 4 memory pages of type MEM_MAPPED so we need to rescan the memory after it has been performed
 void HookSyscalls::NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
 	MYINFO("Found a NtRequestWaitReplyPort");
@@ -198,7 +219,6 @@ void HookSyscalls::NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCA
 	proc_info->setCurrentMappedFiles();
 //	proc_info->printMappedFileAddress();
 }
-
 
 
 //----------------------------- END HOOKS -----------------------------//
@@ -266,8 +286,8 @@ void HookSyscalls::initHooks(){
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtRequestWaitReplyPort_exit",&HookSyscalls::NtRequestWaitReplyPortHook));
 
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));
-	
 
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryInformationProcess_exit",&HookSyscalls::NtQueryInformationProcessHook));
 
 	static syscall_t sc[256] = {0};
 	PIN_AddSyscallEntryFunction(&HookSyscalls::syscallEntry,&sc);

@@ -25,8 +25,6 @@ clock_t tStart;
 ProcInfo *proc_info = ProcInfo::getInstance();
 PolymorphicCodePatches pcpatcher;
 
-
-
 //------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
 KNOB <UINT32> KnobInterWriteSetAnalysis(KNOB_MODE_WRITEONCE, "pintool",
@@ -69,7 +67,6 @@ VOID Fini(INT32 code, VOID *v){
 	config->closeReportFile();
 }
 
-
 //cc
 INT32 Usage(){
 	PIN_ERROR("This Pintool unpacks common packers\n" + KNOB_BASE::StringKnobSummary() + "\n");
@@ -80,13 +77,13 @@ INT32 Usage(){
 // - Get PE section data 
 // - Add filtered library
 void imageLoadCallback(IMG img,void *){
+
 	/*for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
 		for( RTN rtn= SEC_RtnHead(sec); RTN_Valid(rtn); rtn = RTN_Next(rtn) ){
 			MYINFO("Inside %s -> %s",IMG_Name(img).c_str(),RTN_Name(rtn).c_str());
 		}
 	}*/
 
-	
 	Section item;
 	static int va_hooked = 0;
 	ProcInfo *proc_info = ProcInfo::getInstance();
@@ -137,7 +134,7 @@ void imageLoadCallback(IMG img,void *){
 
 		//*** If you need to protect other sections of other dll put them here ***
 
-		//hookFun.hookDispatcher(img);		
+		hookFun.hookDispatcher(img);		
 		
 		proc_info->addLibrary(name,startAddr,endAddr);
 
@@ -149,6 +146,9 @@ void imageLoadCallback(IMG img,void *){
 	
 }
 
+void DetachFunc(){
+	PIN_Detach();
+}
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if better than trace iteration)
@@ -167,6 +167,7 @@ void Instruction(INS ins,void *v){
 		MYINFO("zzzzzzCur EIP:%08x name %s ",INS_Address(ins),RTN_FindNameByAddress(INS_Address(ins)).c_str());
 	}
 	*/
+
 	Config *config = Config::getInstance();
 	if(config->ANTIEVASION_MODE){
 		thider.avoidEvasion(ins);
@@ -176,8 +177,8 @@ void Instruction(INS ins,void *v){
 		oepf.IsCurrentInOEP(ins);
 	}	
 	
-}
 
+}
 
 
 VOID Trace(TRACE trace,void *v){
@@ -187,10 +188,13 @@ VOID Trace(TRACE trace,void *v){
 
 // - retrive the stack base address
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
+
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	pInfo->addThreadStackAddress(stackBase);
 	pInfo->addThreadTebAddress();
+
+	MYINFO("-----------------a NEW Thread is started!--------------------\n");
 }
 
 void initDebug(){
@@ -213,14 +217,13 @@ void ConfigureTool(){
 	config->POLYMORPHIC_CODE_PATCH = KnobPolymorphicCodePatch.Value();
 
 
-	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= 10 ){
+	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS ){
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
 	}
 	else{
 		MYWARN("Invalid number of jumps to track, se to default value: 2\n");
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have invalid value 
 	}
-
 }
 
 EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInfo, PHYSICAL_CONTEXT *pPhysCtxt, VOID *v){
@@ -228,7 +231,9 @@ EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInf
 	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	MYINFO("%s",PIN_ExceptionToString(pExceptInfo).c_str());
 	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
 	return EHR_CONTINUE_SEARCH;
+
 }
 
 /* ===================================================================== */
@@ -241,7 +246,6 @@ int main(int argc, char * argv[]){
 	if(Config::ATTACH_DEBUGGER){
 		initDebug();
 	}
-
 
 	MYINFO("Starting prototype ins");
 
@@ -256,7 +260,11 @@ int main(int argc, char * argv[]){
 
 	//Register PIN Callbacks
 	INS_AddInstrumentFunction(Instruction,0);
+	
+	//TRACE_AddInstrumentFunction(Trace,0);
+
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
+
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 	PIN_AddFiniFunction(Fini, 0);
 	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);

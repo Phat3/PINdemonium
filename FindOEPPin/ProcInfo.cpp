@@ -171,8 +171,7 @@ UINT32 ProcInfo::searchHeapMap(ADDRINT ip){
 	for(i=0; i<this->HeapMap.size();i++){
 	    
 		hz = this->HeapMap.at(i);
-		if(ip >= hz.begin){
-		   if(ip <= hz.end) 
+		if(ip >= hz.begin && ip <= hz.end){
 			   return i;
 		}
 	}

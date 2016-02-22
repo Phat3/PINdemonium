@@ -19,20 +19,24 @@ const string Config::DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "du
 const bool Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
 const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
+const UINT32 Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS = 20;
 
 // Divisor of the timing 
-const UINT32 Config::TICK_DIVISOR = 300;	//this value is based on exait technique (the time returned is equal to the time returned when the program is not instrumented)
-const UINT32 Config::CC_DIVISOR = 350;	//this value is based on exait technique (the time returned is equal to the time returned when the program is not instrumented)
+
 
 //if we divide high_1_part and high_2_part with two different values the timeGetTime() doesn't work
 //it doesn't work because high_1_part and high_2_part are used in order to understand if the value read for the low_part
 //is consistent ( high_1_part == high_2_part -> low_part consistent ) 
 const UINT32 Config::KSYSTEM_TIME_DIVISOR = 1;
+const UINT32 Config::TICK_DIVISOR = 3000;	//this value is based on exait technique (the time returned is equal to the time returned when the program is not instrumented)
+const UINT32 Config::CC_DIVISOR = 3500;	//this value is based on exait technique (the time returned is equal to the time returned when the program is not instrumented)
 
 //the rdtsc works like this :
 //store the least 32 significant bit of the returned value in EAX and the most 32 significant bit in EDX ( value = EDX:EAX )
 const UINT32 Config::RDTSC_DIVISOR = 400;
 
+const UINT32 Config::INTERRUPT_TIME_DIVISOR = 1000;
+const UINT32 Config::SYSTEM_TIME_DIVISOR = 100;
 
 Config* Config::instance = 0;
 
