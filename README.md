@@ -23,7 +23,7 @@
 
 5. Extract the archive in FindOEPPin/ScyllaDependencies/tinyxml.rar into FindOEPPin/Scylla/
 
-6. Extract the archive in FindoEPPin/ScyllaDependencies/WTL.rar into FindoOEPPin/Scylla/WTL/ 
+6. Extract the archive in FindoEPPin/ScyllaDependencies/WTL.rar into FindOEPPin/Scylla/WTL/ 
 
 5. Open the file **PinUnpacker.sln** with Visual Studio 2010 ( **NB: The version is mandatory** )
 
