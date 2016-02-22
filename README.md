@@ -72,27 +72,27 @@
 	```
 
 	**Flags :**
-	- **iwae number_of_jump_to_dump** : specify if you want or not to track the inter_write_set analysis dumps and how many jump
+	- **-iwae <number_of_jump_to_dump>** : specify if you want or not to track the inter_write_set analysis dumps and how many jump
 
 
-	- **antiev** : specify if you want or not to activate the anti evasion engine
+	- **-antiev** : specify if you want or not to activate the anti evasion engine
 
 
-	- **antiev-ins** : specify if you want or not to activate the single patching of evasive instruction as int2e, fsave...
+	- **-antiev-ins** : specify if you want or not to activate the single patching of evasive instruction as int2e, fsave...
 
 
-	- **antiev-sread** : specify if you want or not to activate the handling of suspicious reads
+	- **-antiev-sread** : specify if you want or not to activate the handling of suspicious reads
 
 
-	- **antiev-swrite** : specify if you want or not to activate the handling of suspicious writes
+	- **-antiev-swrite** : specify if you want or not to activate the handling of suspicious writes
 
 
-	- **unp** : specify if you want or not to activate the unpacking engine
+	- **-unp** : specify if you want or not to activate the unpacking engine
 
 
-	- **adv-iatfix** : specify if you want or not to activate the advanced IAT fix technique
+	- **-adv-iatfix** : specify if you want or not to activate the advanced IAT fix technique
 	
-	- **poly-patch**: if the binary you are analyzing has some kind of polymorphic behavior this activate the patch in order to avoid pin to execute the wrong trace.
+	- **-poly-patch**: if the binary you are analyzing has some kind of polymorphic behavior this activate the patch in order to avoid pin to execute the wrong trace.
 
 
 2. Check your result in **C:\pin\PinUnpackerResults\\< current_date_and_time >\\**
