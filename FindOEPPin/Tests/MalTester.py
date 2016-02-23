@@ -20,7 +20,7 @@ pin_executable = "C:\\pin\\pin.exe "
 pin_tool ="C:\\pin\\FindOEPPin.dll"
 pin_results = "C:\\pin\\PinUnpackerResults\\"
 test_results = "E:\\Results\\"
-connect_network_folder = "net use E: \\\\vboxsvr\\SharedWindows"
+connect_network_folder = "net use E: \\\\vboxsvr\\SharedVM"
 disconnect_network_folder = "net use E: /del"
 
 def getCurrentMalware():
@@ -33,7 +33,7 @@ def getCurrentMalware():
   #move the malware to the work folder
   from_path = join(malware_folder,malwares[0])  
   to_path = join(work_folder,malwares[0]+".exe")
-  print("Moving malware " + from_path +" to " +to_path)
+  print("Moving malware to " +to_path)
   shutil.copy(from_path,to_path)
   subprocess32.call(disconnect_network_folder, shell=True)
   return to_path
@@ -41,10 +41,17 @@ def getCurrentMalware():
 
 
 def executePin(cur_malware):
-  command = "%s -t %s -unp -antiev -antiev-ins -adv-iatfix -iwae 3 -- %s "%(pin_executable,pin_tool, cur_malware)
+  command = "%s -t %s -unp -antiev -antiev-ins -adv-iatfix -iwae 2 -- %s "%(pin_executable,pin_tool, cur_malware)
   print("launching " + command)
-  proc = subprocess32.call(command, shell=True, timeout=300)
-
+  proc = subprocess32.Popen(command, shell=True)
+  try:
+  	proc.wait(3)
+  except Exception:
+  	proc.terminate()
+  	time.sleep(10)
+  	malware_name = cur_malware.split("\\")[-1]
+  	moveResults(malware_name)
+  	sys.exit(0)
 
 
 def moveResults(cur_malware):
@@ -77,12 +84,10 @@ def main():
 
   cur_malware = getCurrentMalware()
   if cur_malware != None:  
-    try:
-      executePin(cur_malware)
-    except Exception:
-      print "Timeout"
+    executePin(cur_malware)
     malware_name = cur_malware.split("\\")[-1]
     moveResults(malware_name)
+    sys.exit(0)
 
 main()
 
