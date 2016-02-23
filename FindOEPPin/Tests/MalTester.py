@@ -45,7 +45,7 @@ def executePin(cur_malware):
   print("launching " + command)
   proc = subprocess32.Popen(command, shell=True)
   try:
-  	proc.wait(3)
+  	proc.wait(300)
   except Exception:
   	proc.terminate()
   	time.sleep(10)
