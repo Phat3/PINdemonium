@@ -101,13 +101,16 @@ void ToolHider::avoidEvasion(INS ins){
 		}
 	 }
 
+	/*
+	// This will print all the instruction in the traces 
 	if( pInfo->searchHeapMap(curEip)!=-1){
 		MYINFO("@heap->		[DEBUG] Thread: %d  RTN: %s EIP: %08x INS: %s\n", W::GetCurrentThreadId(), RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 	}
 	else{
 		MYINFO("[DEBUG] Thread: %d RTN: %s EIP: %08x INS: %s\n" , W::GetCurrentThreadId(), RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 	}
-	
+	*/
+
 	// 1 - single instruction detection
 	if(config->ANTIEVASION_MODE_INS_PATCHING && this->evasionPatcher.patchDispatcher(ins, curEip)){
 		//MYINFO("Returned\n");

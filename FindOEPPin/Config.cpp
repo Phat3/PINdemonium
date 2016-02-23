@@ -6,7 +6,9 @@ const string Config::PIN_DIRECTORY_PATH_OUTPUT = "C:\\pin\\PinUnpackerResults\\"
 const string Config::PIN_DIRECTORY_PATH_DEP = "C:\\pin\\PinUnpackerDependencies\\";
 const string Config::LOG_FILENAME = "log_FindOEPPin.txt";
 const string Config::REPORT_FILENAME = "report_FindOEPPin.txt";
+
 const string Config::IDA_PATH = "\"C:\\Program Files\\IDA 6.6\\idaw.exe\"";
+
 const string Config::IDAP_BAD_IMPORTS_CHECKER = PIN_DIRECTORY_PATH_DEP + "badImportsChecker.py";
 const string Config::BAD_IMPORTS_LIST = PIN_DIRECTORY_PATH_DEP + "badImportsList.txt";
 const string Config::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
