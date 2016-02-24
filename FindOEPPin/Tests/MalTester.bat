@@ -1,3 +1,2 @@
-cd C:\
-cd pin
-python MalTester.py
+START C:\Users\phate\Desktop\EnterForever.ahk
+python C:\pin\MalTester.py

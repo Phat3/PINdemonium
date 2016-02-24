@@ -1,29 +1,27 @@
-import subprocess, time
+import subprocess, time, sys, os
 
-print "\nScript Started"
+print("\nScript Started")
 
-time.sleep(10)
+malware_folder = "C:\\Users\\sebastiano\\Desktop\\vbox_shared\\Malwares"
 
 while 1:
 
-	print "\nRestoring Virtual Machine"
+	if len(os.listdir(malware_folder)) == 0:
+		print('Analysis completed')
+		sys.exit(1)
+
+	print("\nRestoring Virtual Machine")
 	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe snapshot Windows7Reverse restore Windows7ReverseOriginal")
 	p.wait()
 
-	print "\nStarting Virtual Machine"
+	print("\nStarting Virtual Machine")
 	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe startvm Windows7Reverse")
 	p.wait()
 
-	print "\nResetting Virtual Machine"
-	#In order to trigger the startup event that triggers the python script
-	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe controlvm Windows7Reverse reset")
-	p.wait() 
-	print "\nReset complete"
-
-	time.sleep(540)
-
-	print "\nShutting down Virtual Machine"
-	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe controlvm Windows7Reverse poweroff")
+	print("\nRun script")
+	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe guestcontrol Windows7Reverse run --username phate --password phate -- C:\\pin\\MalTester.bat")
 	p.wait()
 
-	time.sleep(10)
+	print("\nShutting down Virtual Machine")
+	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe controlvm Windows7Reverse poweroff")
+	p.wait()
