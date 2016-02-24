@@ -2,6 +2,16 @@
 \label{chapter3}
 \thispagestyle{empty}
 
+\section{Dymanic Binary Instrumentation}
+Dynamic Binary Instrumentation is a technique for analysing the behaviour of a binary application through the injection of instrumentation code. The instrumentation code can be developed in an high level programming language and is executed in the context of the analysed binary with a granularity up to the single assembly instruction. The injection of instrumentation of code is achieved by implementing a set of callback provided by the DBI framework. The most common and useful callbacks are:
+\begin{itemize}
+ \item Instruction callback: invoked for each instruction;
+ \item Image load callback: invoked each time an image (dll or Main image) is loaded into memory;
+  \item Thread start callback: invoked each time a thread is started;
+\end{itemize}
+Besides the callbacks the DBI framework allows to intercept and modify OS functions and system calls which is very useful to track some behaviours of the binary like the allocation of dynamic memory areas.
+
+
 \section{Approach overview}
 Our tool has an instruction-level granularity: each instruction is analysed and then goes trough the following steps:
 \begin{enumerate}
