@@ -10,6 +10,7 @@
 #include "FilterHandler.h"
 #include "HookFunctions.h"
 #include "HookSyscalls.h"
+#include "PolymorphicCodePatches.h"
 
 
 namespace W {
@@ -21,10 +22,8 @@ ToolHider thider;
 OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
-static int prova =0;
 ProcInfo *proc_info = ProcInfo::getInstance();
-
-
+PolymorphicCodePatches pcpatcher;
 
 //------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
@@ -49,6 +48,9 @@ KNOB <BOOL> KnobUnpacking(KNOB_MODE_WRITEONCE, "pintool",
 KNOB <BOOL> KnobAdvancedIATFixing(KNOB_MODE_WRITEONCE, "pintool",
     "adv-iatfix", "false" , "specify if you want or not to activate the advanced IAT fix technique");
 
+KNOB <BOOL> KnobPolymorphicCodePatch(KNOB_MODE_WRITEONCE, "pintool",
+    "poly-patch", "false" , "specify if you want or not to activate the patch in order to avoid crash during the instrumentation of polymorphic code");
+
 //------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
 
@@ -60,16 +62,10 @@ VOID Fini(INT32 code, VOID *v){
 	MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
 	//DEBUG --- get the execution time
 	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
-
-	//ProcInfo *proc_info = ProcInfo::getInstance();
-	//proc_info->PrintWhiteListedAddr();
-
 	CLOSELOG();
-	Config::getInstance()->closeReportFile();
-
-	
+	Config *config = Config::getInstance();
+	config->closeReportFile();
 }
-
 
 //cc
 INT32 Usage(){
@@ -81,13 +77,13 @@ INT32 Usage(){
 // - Get PE section data 
 // - Add filtered library
 void imageLoadCallback(IMG img,void *){
+
 	/*for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
 		for( RTN rtn= SEC_RtnHead(sec); RTN_Valid(rtn); rtn = RTN_Next(rtn) ){
 			MYINFO("Inside %s -> %s",IMG_Name(img).c_str(),RTN_Name(rtn).c_str());
 		}
 	}*/
 
-	
 	Section item;
 	static int va_hooked = 0;
 	ProcInfo *proc_info = ProcInfo::getInstance();
@@ -138,7 +134,7 @@ void imageLoadCallback(IMG img,void *){
 
 		//*** If you need to protect other sections of other dll put them here ***
 
-		//hookFun.hookDispatcher(img);		
+		hookFun.hookDispatcher(img);		
 		
 		proc_info->addLibrary(name,startAddr,endAddr);
 
@@ -150,6 +146,9 @@ void imageLoadCallback(IMG img,void *){
 	
 }
 
+void DetachFunc(){
+	PIN_Detach();
+}
 
 // Instruction callback Pin calls this function every time a new instruction is encountered
 // (Testing if better than trace iteration)
@@ -178,16 +177,24 @@ void Instruction(INS ins,void *v){
 		oepf.IsCurrentInOEP(ins);
 	}	
 	
+
 }
 
+
+VOID Trace(TRACE trace,void *v){
+	pcpatcher.inspectTrace(trace);
+}
 
 
 // - retrive the stack base address
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
+
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	pInfo->addThreadStackAddress(stackBase);
 	pInfo->addThreadTebAddress();
+
+	MYINFO("-----------------a NEW Thread started!--------------------\n");
 }
 
 void initDebug(){
@@ -207,22 +214,26 @@ void ConfigureTool(){
 	config->ANTIEVASION_MODE_SWRITE = KnobAntiEvasionSuspiciousWrite.Value();
 	config->UNPACKING_MODE = KnobUnpacking.Value();
 	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
+	config->POLYMORPHIC_CODE_PATCH = KnobPolymorphicCodePatch.Value();
 
-	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= 10 ){
+
+	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS ){
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
 	}
 	else{
 		MYWARN("Invalid number of jumps to track, se to default value: 2\n");
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have invalid value 
 	}
-
 }
 
 EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInfo, PHYSICAL_CONTEXT *pPhysCtxt, VOID *v){
+	
 	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	MYINFO("%s",PIN_ExceptionToString(pExceptInfo).c_str());
 	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-	return EHR_UNHANDLED ;
+
+	return EHR_CONTINUE_SEARCH;
+
 }
 
 /* ===================================================================== */
@@ -236,14 +247,8 @@ int main(int argc, char * argv[]){
 		initDebug();
 	}
 
+	MYINFO("->Configuring Pintool<-\n");
 
-	MYINFO("Starting prototype ins");
-	//W::DebugBreak();
-	FilterHandler *filterH = FilterHandler::getInstance();
-	//set the filters for the libraries
-	MYINFO("%s",Config::FILTER_WRITES_ENABLES.c_str());
-	//filterH->setFilters(Config::FILTER_WRITES_ENABLES);
-	
 	//get the start time of the execution (benchmark)
 	tStart = clock();
 	
@@ -252,25 +257,33 @@ int main(int argc, char * argv[]){
 
 	if (PIN_Init(argc, argv)) return Usage();
 
+	//Register PIN Callbacks
 	INS_AddInstrumentFunction(Instruction,0);
-	PIN_AddThreadStartFunction(OnThreadStart, 0);
-	// Register ImageUnload to be called when an image is unloaded
-	IMG_AddInstrumentFunction(imageLoadCallback, 0);
+	
+	//TRACE_AddInstrumentFunction(Trace,0);
 
+	PIN_AddThreadStartFunction(OnThreadStart, 0);
+
+	IMG_AddInstrumentFunction(imageLoadCallback, 0);
+	PIN_AddFiniFunction(Fini, 0);
+	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
+
+	//get theknob args
+	ConfigureTool();
+
+	if(Config::getInstance()->POLYMORPHIC_CODE_PATCH){
+		TRACE_AddInstrumentFunction(Trace,0);
+	}
 	proc_info->addProcAddresses();
 
-	// Register Fini to be called when the application exits
-	PIN_AddFiniFunction(Fini, 0);
-	
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
-
-	ConfigureTool();
-
-	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
-
 	// Start the program, never returns
+
+	MYINFO("->Starting instrumented program<-\n");
+
+
 	PIN_StartProgram();
 	
 	return 0;

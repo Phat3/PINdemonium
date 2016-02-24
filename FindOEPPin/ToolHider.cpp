@@ -1,7 +1,6 @@
 #include "ToolHider.h"
 #include <regex>
 
-
 ToolHider::ToolHider(void)
 {
 	
@@ -13,25 +12,27 @@ ToolHider::~ToolHider(void)
 }
 
 
-ADDRINT handleRead (ADDRINT eip, ADDRINT read_addr,void *fakeMemH){
+ADDRINT handleRead(ADDRINT eip, ADDRINT read_addr,void *fake_mem_h){
 	
 	//MYINFO("%0x8 %s Trying to  read %08x : res %d\n",ip,s.c_str(), read_addr,ProcInfo::getInstance()->isAddrInWhiteList(read_addr));
-	FakeMemoryHandler fakeMem = *(FakeMemoryHandler *)fakeMemH;
+	FakeMemoryHandler fake_mem = *(FakeMemoryHandler *)fake_mem_h;
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
-	ADDRINT fakeAddr = fakeMem.getFakeMemory(read_addr);
+	ADDRINT fake_addr = fake_mem.getFakeMemory(read_addr, eip);
 
-	ProcInfo *pInfo = ProcInfo::getInstance();
-
-	if(fakeAddr==NULL){
+	if(fake_addr==NULL){
 
 		MYINFO("xxxxxxxxxxxxxx %08x in %s reading %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr);
 	}
 
-	// OBSIDIUM INVESTIGATION 
+	if(read_addr == 0){
+		return read_addr; // let the program trigger its exception if it want
+	}
 
+	if (fake_addr != read_addr){
+		MYINFO("ip : %08x in %s reading %08x and it has been redirected to : %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr, fake_addr);
+	}
 
-
-	return fakeAddr;
+	return fake_addr;
 }
 
 ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
@@ -41,14 +42,17 @@ ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
 	ADDRINT fakeAddr = fakeWrite.getFakeWriteAddress(write_addr);
 
+	if(write_addr == 0){
+		return write_addr; // let the program trigger its exception if it want
+	}
+
 	if(fakeAddr != write_addr){
 		MYINFO("wwwwwwwwwwwwwwww suspicious write from %08x in %s in %08x redirected to %08x", eip, RTN_FindNameByAddress(write_addr).c_str(), write_addr, fakeAddr);
-		MYINFO("Binary writes %08x %08x %08x %08x\n" , *(unsigned int *)(fakeAddr) , *(unsigned int *)(fakeAddr+4) , *(unsigned int *)(fakeAddr+8), *(unsigned int *)(fakeAddr+12));
+		MYINFO("Binary writes %08x\n" , *(unsigned int *)(fakeAddr));
 	}
 	
 	return fakeAddr;
 }
-
 
 
 //get the first scratch register available
@@ -67,6 +71,10 @@ static REG GetScratchReg(UINT32 index)
     return regs[index];
 }
 
+// In order to avoid obsidium to take the path of the 'or byte ptr [esp+0x1],0x1' 
+VOID KillObsidiumDeadPath(CONTEXT *ctxt){
+	PIN_SetContextReg(ctxt,REG_EAX,0x7);
+}
 
 void ToolHider::avoidEvasion(INS ins){
 
@@ -76,39 +84,30 @@ void ToolHider::avoidEvasion(INS ins){
    FilterHandler *filterHandler = FilterHandler::getInstance();
 
 	//Filter instructions inside a known library (only graphic dll)
-    //  pInfo->isKnownLibraryInstruction(curEip) 
    if(filterHandler->isFilteredLibraryInstruction(curEip)){
-		//MYINFO("That's a GDI\n\n");
-		//MYINFO("Name of RTN is %s\n" , RTN_FindNameByAddress(curEip).c_str());
-	    //MYINFO("Skipping filtered library code\n");
 		return;
 	}
 
-    if(PIN_IsApplicationThread() == TRUE){
-	MYINFO("[DEBUG] THEAD: %08x RTN: %s EIP: %08x INS: %s\n", PIN_GetTid()  ,RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
-	}
+    // Pattern matching in order to avoid the dead path of obsidium
+	if(strcmp( (INS_Disassemble(ins).c_str() ),"xor eax, dword ptr [edx+ecx*8+0x4]") == 0){
+
+		REGSET regsIn;
+		REGSET_AddAll(regsIn);
+		REGSET regsOut;
+		REGSET_AddAll(regsOut);
+
+		if(INS_HasFallThrough(ins)){
+			INS_InsertCall(ins,IPOINT_AFTER,(AFUNPTR)KillObsidiumDeadPath, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut,IARG_END); 
+		}
+	 }
 
 	/*
-	std::string disass_instr = INS_Disassemble(ins);
-	//if we find an fsave instruction or similar we have to patch it immediately
-
-	if ( strcmp(disass_instr.c_str() ,"cmp dword ptr [ebp-0x14], 0x4" )==0){
-		printf("Ho beccato la cmp stronza\n");
-		ADDRINT hardcoded = 0x00434f0f;
-		INS_InsertDirectJump(ins,IPOINT_BEFORE,hardcoded);
-		INS_Delete(ins);	
-		return;
+	// This will print all the instruction in the traces 
+	if( pInfo->searchHeapMap(curEip)!=-1){
+		MYINFO("@heap->		[DEBUG] Thread: %d  RTN: %s EIP: %08x INS: %s\n", W::GetCurrentThreadId(), RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 	}
-	*/
-	/*
-	if(curEip == 0x00428197){
-	
-		printf("REDIRECTING\n");
-
-		ADDRINT hardcoded = 0x00428134;
-		INS_InsertDirectJump(ins,IPOINT_BEFORE,hardcoded);
-		INS_Delete(ins);
-
+	else{
+		MYINFO("[DEBUG] Thread: %d RTN: %s EIP: %08x INS: %s\n" , W::GetCurrentThreadId(), RTN_FindNameByAddress(curEip).c_str(), curEip , INS_Disassemble(ins).c_str());
 	}
 	*/
 
@@ -131,10 +130,6 @@ void ToolHider::avoidEvasion(INS ins){
 			}
 			
 			REG scratchReg = GetScratchReg(op);
-			//INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleRead,IARG_INST_PTR, IARG_MEMORYREAD_EA, op, IARG_PTR,&fakeMemH, IARG_RETURN_REGS, REG_INST_G0+op, IARG_END);
-			//INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)handleRead2,IARG_INST_PTR, IARG_CONTEXT, IARG_CALL_ORDER, CALL_ORDER_LAST, IARG_END);
-			//MYINFO("INST : %s", INS_Disassemble(ins).c_str());
-			//INS_RewriteMemoryOperand(ins, op, REG(REG_INST_G0+op));
 			
 			INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(handleRead),
 				IARG_INST_PTR,

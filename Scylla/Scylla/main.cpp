@@ -9,6 +9,7 @@ CAppModule _Module;
 #include "MainGui.h"
 #include "Scylla.h"
 
+
 MainGui* pMainGui = NULL; // for Logger
 HINSTANCE hDllModule = 0;
 bool IsDllMode = false;

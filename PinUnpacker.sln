@@ -2,8 +2,18 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FindOEPPin", "FindOEPPin\MyPinTool.vcxproj", "{639EF517-FCFC-408E-9500-71F0DC0458DB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{187A751B-B47D-4A95-9F24-55D3D7ABB570} = {187A751B-B47D-4A95-9F24-55D3D7ABB570}
+		{A963EFBD-C7EF-41CC-B6F7-1E15CDFBE4FB} = {A963EFBD-C7EF-41CC-B6F7-1E15CDFBE4FB}
+		{710434C9-FC4B-4F1D-B318-E10ADC78499F} = {710434C9-FC4B-4F1D-B318-E10ADC78499F}
+		{A4B94DE4-BE0E-4E7D-95E7-7B84E6F117A1} = {A4B94DE4-BE0E-4E7D-95E7-7B84E6F117A1}
+		{C9D83AE7-64DA-411D-BDAC-C60ABE35612C} = {C9D83AE7-64DA-411D-BDAC-C60ABE35612C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScyllaDumper", "ScyllaDumper\ScyllaDumper\ScyllaTest.vcxproj", "{C9D83AE7-64DA-411D-BDAC-C60ABE35612C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{710434C9-FC4B-4F1D-B318-E10ADC78499F} = {710434C9-FC4B-4F1D-B318-E10ADC78499F}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Scylla", "Scylla\Scylla\Scylla.vcxproj", "{710434C9-FC4B-4F1D-B318-E10ADC78499F}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -18,6 +28,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyxml", "Scylla\tinyxml\tinyxml.vcxproj", "{187A751B-B47D-4A95-9F24-55D3D7ABB570}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScyllaWrapper", "ScyllaWrapper\ScyllaWrapper.vcxproj", "{A963EFBD-C7EF-41CC-B6F7-1E15CDFBE4FB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{710434C9-FC4B-4F1D-B318-E10ADC78499F} = {710434C9-FC4B-4F1D-B318-E10ADC78499F}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

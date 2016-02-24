@@ -1,4 +1,3 @@
-net use E: \\vboxsvr\VBoxFolder
-cd C:\
-cd pin
+START C:\Users\phate\Desktop\EnterForever.ahk
+cd C:\pin\
 python MalTester.py

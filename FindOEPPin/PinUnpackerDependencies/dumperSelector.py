@@ -17,6 +17,7 @@ for line in report_file:
                 print "-> number of malicious imported functions detected: " + str(functions_detected)
                 if functions_detected > functions_detected_best and zero_count > zero_count_best:
                         zero_count_best = zero_count
+                        functions_detected_best = functions_detected
                         index_best_dump = new_dict['dump number']
                 i = i + 1
         else:

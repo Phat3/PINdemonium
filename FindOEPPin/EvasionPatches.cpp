@@ -25,20 +25,53 @@ VOID patchFsave(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
 	PIN_SetContextFPState(ctxt, &a);
 } 
 
-
+//fake the result of an rdtsc operation by dividing it by RDTSC_DIVISOR
 VOID patchRtdsc(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
 
-	unsigned int eax_value = PIN_GetContextReg(ctxt, REG_EAX);
-	unsigned int edx_value = PIN_GetContextReg(ctxt, REG_EDX);
-
-	unsigned int eax_new_value = eax_value/Config::RDTSC_DIVISOR_EAX;
-	unsigned int edx_new_value = edx_value/Config::RDTSC_DIVISOR_EDX;
-
-	MYINFO("Detected a rdtsc, EAX before = %08x , EAX after = %08x , EDX before: %08x , EDX after: %08x\n", eax_value,eax_new_value,edx_value, edx_new_value);
-
+	//get the two original values ()
+	UINT32 eax_value = PIN_GetContextReg(ctxt, REG_EAX);
+	UINT32 edx_value = PIN_GetContextReg(ctxt, REG_EDX);
+	//store the value of edx in a 64 bit data in order to shift this value correctly
+	UINT64 tmp_edx = edx_value;
+	//we have to compose the proper returned value (EDX:EAX) so let's shift the value of EDX by 32 bit on the left (tmp_edx00..0) and add to this value eax_value (tmp_edxeax_value) and divide the result by a proper divisor
+	UINT64 divided_time = ( (tmp_edx << 32) + eax_value ) / Config::RDTSC_DIVISOR;
+	//get the right parts 
+	UINT32 eax_new_value = divided_time; 
+	UINT32 edx_new_value = divided_time >> 32;	
+	//MYINFO("Detected a rdtsc, EAX before = %08x , EAX after = %08x , EDX before: %08x , EDX after: %08x\n", eax_value, eax_new_value, edx_value, edx_new_value);
+	//set the registerss
 	PIN_SetContextReg(ctxt, REG_EAX,eax_new_value);
 	PIN_SetContextReg(ctxt, REG_EDX,edx_new_value);
+} 
 
+//fake the result of an rdtsc operation by dividing it by RDTSC_DIVISOR
+VOID patchOut(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
+	MYINFO("OUT DETECTED!!");
+} 
+
+//fake the result of an rdtsc operation by dividing it by RDTSC_DIVISOR
+VOID patchIn(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
+	MYINFO("IN DETECTED!!");
+	UINT32 efs_value = PIN_GetContextReg(ctxt, REG_SEG_FS_BASE);
+	UINT32 * pointer_to_next_eh = (UINT32*)efs_value;
+	UINT32 * pointer_to_routine_eh = (UINT32*)(efs_value + 4);
+	int i = 0;
+	/*
+	MYINFO("EXCEPTON_RECORD NR : %d \tSEG_FS ADDR : %08x  VAL : %08x\t AL SEG_FS + 4 : %08x\t VAL : %08x", i, pointer_to_next_eh, *pointer_to_next_eh, pointer_to_routine_eh, *pointer_to_routine_eh);
+	while( *pointer_to_next_eh != 0xffffffff){
+		pointer_to_next_eh = (UINT32*)(*pointer_to_next_eh);
+		pointer_to_routine_eh = (UINT32*)(0x0012ffc4 + 4);
+		i++;
+		MYINFO("EXCEPTON_RECORD NR : %d \tSEG_FS ADDR : %08x  VAL : %08x\t AL SEG_FS + 4 : %08x\t VAL : %08x", i, pointer_to_next_eh, *pointer_to_next_eh, pointer_to_routine_eh, *pointer_to_routine_eh);
+
+	}
+	*/
+	MYINFO("EXCEPTON_RECORD NR : %d \tSEG_FS ADDR : %08x  VAL : %08x\t AL SEG_FS + 4 : %08x\t VAL : %08x", i, pointer_to_next_eh, *pointer_to_next_eh, pointer_to_routine_eh, *pointer_to_routine_eh);
+	MYINFO("EXECUTION REDIRECTED TO : %08x",  *pointer_to_routine_eh);
+	PIN_SetContextReg(ctxt, REG_EIP, *pointer_to_routine_eh);
+	PIN_ExecuteAt(ctxt);
+
+	//PIN_SetContextReg(ctxt, REG_EAX,);
 } 
 
 //----------------------------- END PATCH FUNCTIONS -----------------------------//
@@ -52,9 +85,9 @@ EvasionPatches::EvasionPatches(void)
 	//ex : if i find an int 2e instruction we have the functon pointer for the right patch 
 	this->patchesMap.insert( std::pair<string,AFUNPTR>("int 0x2e",(AFUNPTR)patchInt2e) );
 	this->patchesMap.insert( std::pair<string,AFUNPTR>("fsave",(AFUNPTR)patchFsave) );
-	this->patchesMap.insert( std::pair<string,AFUNPTR>("rdtsc ",(AFUNPTR)patchRtdsc) );
-
-	
+	this->patchesMap.insert( std::pair<string,AFUNPTR>("rdtsc ",(AFUNPTR)patchRtdsc) );	
+	this->patchesMap.insert( std::pair<string,AFUNPTR>("out",(AFUNPTR)patchOut) );	
+	this->patchesMap.insert( std::pair<string,AFUNPTR>("in",(AFUNPTR)patchIn) );	
 }
 
 
@@ -84,6 +117,7 @@ bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){
 	
 	//disasseble the instruction
 	std::string disass_instr = INS_Disassemble(ins);
+
 	//if we find an fsave instruction or similar we have to patch it immediately
 	std::regex rx("^f(.*)[save|env](.*)");	
 	if (std::regex_match(disass_instr.cbegin(), disass_instr.cend(), rx)){
@@ -96,7 +130,34 @@ bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){
 		INS_InsertCall(ins, IPOINT_BEFORE,  this->patchesMap.at("fsave"), IARG_INST_PTR, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_ADDRINT, curEip, IARG_END);
 		return true;
 	}
-
+	/*
+	std::regex rx2("^out(.*)");	
+	if (std::regex_match(disass_instr.cbegin(), disass_instr.cend(), rx2)){
+		//all the register in the context can be modified
+		REGSET regsIn;
+		REGSET_AddAll(regsIn);
+		REGSET regsOut;
+		REGSET_AddAll(regsOut);
+		//add the analysis rtoutine (the patch)
+		MYINFO("OUT FALL THROUGH %d address %08x", INS_HasFallThrough(ins), INS_Address(ins));
+		INS_InsertCall(ins, IPOINT_BEFORE,  this->patchesMap.at("in"), IARG_INST_PTR, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_ADDRINT, curEip, IARG_END);
+		return true;
+	}
+	
+	std::regex rx3("in al, 0x74");	
+	if (std::regex_match(disass_instr.cbegin(), disass_instr.cend(), rx3)){
+		//all the register in the context can be modified
+		REGSET regsIn;
+		REGSET_AddAll(regsIn);
+		REGSET regsOut;
+		REGSET_AddAll(regsOut);
+		//add the analysis rtoutine (the patch)
+		MYINFO("IN FALL THROUGH %d", INS_HasFallThrough(ins));
+		INS_InsertCall(ins, IPOINT_BEFORE,  this->patchesMap.at("in"), IARG_INST_PTR, IARG_PARTIAL_CONTEXT, &regsIn, &regsOut, IARG_ADDRINT, curEip, IARG_END);
+		
+		return true;
+	}
+	*/
 	//MYINFO("disass_instr is %s\n" , disass_instr.c_str());
 	//search if we have a patch foir this instruction
 	std::map<string, AFUNPTR>::iterator item = this->patchesMap.find(disass_instr);
