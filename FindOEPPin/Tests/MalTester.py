@@ -20,7 +20,7 @@ pin_executable = "C:\\pin\\pin.exe "
 pin_tool ="C:\\pin\\FindOEPPin.dll"
 pin_results = "C:\\pin\\PinUnpackerResults\\"
 test_results = "E:\\Results\\"
-connect_network_folder = "net use E: \\\\vboxsvr\\SharedVM"
+connect_network_folder = "net use E: \\\\vboxsvr\\vbox_shared"
 disconnect_network_folder = "net use E: /del"
 
 def getCurrentMalware():
@@ -47,6 +47,7 @@ def executePin(cur_malware):
   try:
   	proc.wait(300)
   except Exception:
+  	print("timer expired!!!") 
   	proc.terminate()
   	time.sleep(10)
   	malware_name = cur_malware.split("\\")[-1]
@@ -73,7 +74,7 @@ def moveResults(cur_malware):
   
 
 def main():
-  subprocess32.call(connect_network_folder, shell=True)
+  #subprocess32.call(connect_network_folder, shell=True)
   if not os.path.exists(work_folder):
   	os.makedirs(work_folder)
   if not os.path.exists(test_results):
