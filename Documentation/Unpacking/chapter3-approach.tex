@@ -2,12 +2,21 @@
 \label{chapter3}
 \thispagestyle{empty}
 
+\section{Dymanic Binary Instrumentation}
+Dynamic Binary Instrumentation is a technique for analysing the behaviour of a binary application through the injection of instrumentation code. The instrumentation code can be developed in an high level programming language and is executed in the context of the analysed binary with a granularity up to the single assembly instruction. The injection of instrumentation of code is achieved by implementing a set of callback provided by the DBI framework. The most common and useful callbacks are:
+\begin{itemize}
+ \item Instruction callback: invoked for each instruction;
+ \item Image load callback: invoked each time an image (dll or Main image) is loaded into memory;
+  \item Thread start callback: invoked each time a thread is started;
+\end{itemize}
+Besides the callbacks the DBI framework allows to intercept and modify operative system APIs and system calls which is very useful to track some behaviours of the binary like the allocation of dynamic memory areas.
+
+
 \section{Approach overview}
-\paragraph{}
 Our tool has an instruction-level granularity: each instruction is analysed and then goes trough the following steps:
 \begin{enumerate}
-\item check if it is a write instruction: we track the memory region in which the instruction writes, in order to create a list of memory blocks (we call them \textit{Write Intervals}) of contiguous writes.
-\item check if instruction executes from one of the \textit{Write Intervals}, including write instructions. If this is the case we do the following things:
+\item check if it is a write instruction: we track the memory region in which the instruction writes, in order to create a list of memory blocks (we call them "Write sets") of contiguous writes.
+\item check if instruction executes from one of the write sets, including write instructions. If this is the case we do the following things:
 	\begin{enumerate}
 	\item dump the code at this point of execution
 	\item reconstruct the IAT of the obtained dump
@@ -18,22 +27,21 @@ Our tool has an instruction-level granularity: each instruction is analysed and 
 In this way, at the end of the execution of the malware we have a series of dumps and a report which includes the results of each heuristic for every dump. With these information we can choose the best dump, that is the one that has the greatest chance of work.\\
 
 \section{Approach details}
-\paragraph{}
 During the development we have adapted our approach in order to increase speed and effectiveness of our tool. Following there is a detailed explanation of our improvements on the initial approach:
 \begin{enumerate}
 \item in the first step, we add the option of not to track writes of library instructions on the stack and in the teb
 \item in the second step we filter instructions of known libraries before dumping
 	\begin{enumerate}
-	\item when trying to reconstruct the IAT we added some code in order to deal with obfuscation techniques like \textit{IAT Redirection} and \textit{Stolen API}
+	\item when trying to reconstruct the IAT we added some code in order to deal with 			obfuscation techniques like \textit{IAT Redirection} and \textit{Stolen API}
 	\item our heuristics are:
 		\begin{itemize}
 		\item entropy: check if the value of the entropy is above a certain threshold
-		\item long jump: check if the "distance" between the current EIP and the previous one is above a certain threshold
-		\item jump outer section: check if the current EIP is a different section from the one of the previous EIP
+		\item long jump: check if the "distance" between the current EIP and the previous 			one is above a certain threshold
+		\item jump outer section: check if the current EIP is a different section from the 		one of the previous EIP
 		\item pushad popad: check is a pushad popad has been found in the trace
-		\item init function calls: check if the imports of the dump are function commonly used by the malware and not by the unpacking layers
+		\item init function calls: check if the imports of the dump are function commonly 			 used by the malware and not by the unpacking layers
 		\end{itemize}
 	\end{enumerate}
 \end{enumerate} 
 For the instructions that execute from the same write set we adopted the following approach: if the "distance" between the current EIP and the EIP of the previous instruction is above a given threshold then we do the same as if we were in the case 2, otherwise we jump to the next instruction.\\
-Finally, we have noticed that dumping only the main executable in memory is not enough because some packers dump the final payload on the heap. In order to deal with it, we track heap allocations and writes inside an heap interval. If necessary, we dump these intervals too.
+Finally, we are noticed that dumping only the main executable in memory is not enough because some packers dump the final payload on the heap. In order to deal with it, we track heap allocations and writes inside an heap interval. If necessary, we dump these intervals too.
