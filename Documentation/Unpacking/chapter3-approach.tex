@@ -3,7 +3,7 @@
 \thispagestyle{empty}
 
 \section{Dymanic Binary Instrumentation}
-Dynamic Binary Instrumentation is a technique for analysing the behaviour of a binary application through the injection of instrumentation code. The instrumentation code can be developed in an high level programming language and is executed in the context of the analysed binary with a granularity up to the single assembly instruction. The injection of instrumentation of code is achieved by implementing a set of callback provided by the DBI framework. The most common and useful callbacks are:
+Dynamic Binary Instrumentation is a technique for analysing the behaviour of a binary application through the injection of instrumentation code. The instrumentation code can be developed in an high level programming language and is executed in the context of the analysed binary with a granularity up to the single assembly instruction. The injection of instrumentation of code is achieved by implementing a set of callbacks provided by the DBI framework. The most common and useful callbacks are:
 \begin{itemize}
  \item Instruction callback: invoked for each instruction;
  \item Image load callback: invoked each time an image (dll or Main image) is loaded into memory;
@@ -13,20 +13,33 @@ Besides the callbacks the DBI framework allows to intercept and modify operative
 
 
 \section{Approach overview}
-Our tool has an instruction-level granularity: each instruction is analysed and then goes trough the following steps:
+Our tool exploits the functionalities provided by the Intel PIN Dynamic Binary Instrumentation frameworks to track the memory addresses which are written and then executed with an instruction level granularity.
+More in details for each instruction the following steps are performed:
 \begin{enumerate}
-\item check if it is a write instruction: we track the memory region in which the instruction writes, in order to create a list of memory blocks (we call them "Write sets") of contiguous writes.
-\item check if instruction executes from one of the write sets, including write instructions. If this is the case we do the following things:
+\item Instruction Filtering: ignore the effects of a particular set of instructions for performance reasons;
+\item Written addresses tracking: keep track of each memory address which is written in order to create a list of memory ranges of contiguous writes defined "Write Sets" .
+\item Write xor execution instructions tracking: check if the currently executed instruction belongs to a "Write Set". This is a typical behaviour in a packer that is executing the unpacked layer and for this reason we trigger a detailed analysis which consists of:
 	\begin{enumerate}
-	\item dump the code at this point of execution
-	\item reconstruct the IAT of the obtained dump
-	\item apply some heuristics to evaluate our dump 
+	\item Dumping the main image of the PE and a memory range on the heap depending on the address of the current instruction;
+	\item Reconstructing the IAT and generating the correct  Import Directory;
+	\item Applying some heuristics to evaluate if the current instruction is the Original Entry Point;
 	\end{enumerate}
-\item jump to the next instruction
 \end{enumerate}
-In this way, at the end of the execution of the malware we have a series of dumps and a report which includes the results of each heuristic for every dump. With these information we can choose the best dump, that is the one that has the greatest chance of work.\\
+The result of our tool is set of memory dumps or reconstructed PE depending on the result of the IAT fixing phase and a report which includes the values of each heuristics for every dump. Based on these information we can choose the best dump, that is the one that has the greatest chance of work.\\
 
 \section{Approach details}
+In this section we are going to describe in details the steps introduced in the previous section.
+
+\subsection{Instruction Filtering}
+Since our tool works with an instruction level granularity limiting our analysis to the relevant instruction of the program is a critical point. For this reason we have introduced some filters, based on the common behaviours showed by the packers, which make our tool ignore the effects of a set of instructions. More in detail two kind of instructions are not tracked by default:
+\begin{itemize}
+	\item Write instruction on the TEB and on the Stack;
+	\item Instruction executed by known Windows Libraries;
+\end{itemize}
+ The write instructions on the stack are ignored because unpacking code on the stack is not common compared to unpacking it on the heap or inside the main image. Moreover many instructions write on the stack and keeping track of all the written addresses would degradetes the performances gaining little advantages against a very small set of packers. The same considerations can be applied to the instructions which writes on the TEB since most of these writes are related to the creation of instruction handler and there is very little chance that a packer uses this addresses to unpack the encrypted payload.
+The instruction executed by known Windows Libraries are never considered when checking if the current instruction address is contained inside a \textit{Write Set } because this would mean that the packer writes the malicious payload in the address space of a know Windows Library. This behaviour has never been identified in the packer analysed moreover this could introduce some crashes if the application explicitly use one of the function which has been overwritten.
+
+
 During the development we have adapted our approach in order to increase speed and effectiveness of our tool. Following there is a detailed explanation of our improvements on the initial approach:
 \begin{enumerate}
 \item in the first step, we add the option of not to track writes of library instructions on the stack and in the teb
