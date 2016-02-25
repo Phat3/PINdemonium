@@ -2,7 +2,7 @@
 \label{chapter3}
 \thispagestyle{empty}
 
-\section{Dymanic Binary Instrumentation}
+\section{Dynamic Binary Instrumentation}
 \paragraph{}
 Dynamic Binary Instrumentation is a technique for analysing the behaviour of a binary application through the injection of instrumentation code. The instrumentation code can be developed in an high level programming language and is executed in the context of the analysed binary with a granularity up to the single assembly instruction. The injection of instrumentation code is achieved by implementing a set of callbacks provided by the DBI framework. The most common and useful callbacks are:
 \begin{itemize}
@@ -32,17 +32,6 @@ The result of our tool is set of memory dumps or reconstructed PE depending on t
 \section{Approach details}
 \paragraph{}
 In this section we are going to describe in details the steps introduced in the previous section.
-
-\subsection{Instruction Filtering}
-\paragraph{}
-Since our tool works with an instruction level granularity limiting our analysis to the relevant instruction of the program is a critical point. For this reason we have introduced some filters, based on the common behaviours showed by the packers, which make our tool ignore the effects of a set of instructions. More in detail two kind of instructions are not tracked by default:
-\begin{itemize}
-	\item Write instruction on the TEB and on the Stack;
-	\item Instruction executed by known Windows Libraries;
-\end{itemize}
-The write instructions on the stack are ignored because unpacking code on the stack is not common compared to unpacking it on the heap or inside the main image. Moreover many instructions write on the stack and keeping track of all the written addresses would downgrade the performances gaining little advantages against a very small set of packers.\\
-The same considerations can be applied to the instructions which write on the TEB, since most of these writes are related to the creation of instruction handlers and there is very little chance that a packer uses this addresses to unpack the encrypted payload.\\
-The instructions executed by known Windows Libraries are never considered when checking if the current instruction address is contained inside a \textit{Write Set} because this would mean that the packer writes the malicious payload in the address space of a know Windows Library. This behaviour has never been identified in the packer analysed; moreover, this could introduce some crashes if the application explicitly use one of the functions which have been overwritten.
 \paragraph{}
 During the development we have adapted our approach in order to increase speed and effectiveness of our tool. Following there is a detailed explanation of our improvements on the initial approach:
 \begin{enumerate}
@@ -62,3 +51,15 @@ During the development we have adapted our approach in order to increase speed a
 \end{enumerate} 
 For the instructions that execute from the same write set we adopted the following approach: if the "distance" between the current EIP and the EIP of the previous instruction is above a given threshold then we do the same as if we were in the case 2, otherwise we jump to the next instruction.\\
 Finally, we are noticed that dumping only the main executable in memory is not enough because some packers dump the final payload on the heap. In order to deal with it, we track heap allocations and writes inside an heap interval. If necessary, we dump these intervals too.
+
+\subsection{Instruction Filtering}
+\paragraph{}
+Since our tool works with an instruction level granularity limiting our analysis to the relevant instruction of the program is a critical point. For this reason we have introduced some filters, based on the common behaviours showed by the packers, which make our tool ignore the effects of a set of instructions. More in detail two kind of instructions are not tracked by default:
+\begin{itemize}
+	\item Write instruction on the TEB and on the Stack;
+	\item Instruction executed by known Windows Libraries;
+\end{itemize}
+The write instructions on the stack are ignored because unpacking code on the stack is not common compared to unpacking it on the heap or inside the main image. Moreover many instructions write on the stack and keeping track of all the written addresses would downgrade the performances gaining little advantages against a very small set of packers.\\
+The same considerations can be applied to the instructions which write on the TEB, since most of these writes are related to the creation of instruction handlers and there is very little chance that a packer uses this addresses to unpack the encrypted payload.\\
+The instructions executed by known Windows Libraries are never considered when checking if the current instruction address is contained inside a \textit{Write Set} because this would mean that the packer writes the malicious payload in the address space of a know Windows Library. This behaviour has never been identified in the packer analysed; moreover, this could introduce some crashes if the application explicitly use one of the functions which have been overwritten.
+
