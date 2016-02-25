@@ -3,16 +3,18 @@
 \thispagestyle{empty}
 
 \section{Dymanic Binary Instrumentation}
-Dynamic Binary Instrumentation is a technique for analysing the behaviour of a binary application through the injection of instrumentation code. The instrumentation code can be developed in an high level programming language and is executed in the context of the analysed binary with a granularity up to the single assembly instruction. The injection of instrumentation of code is achieved by implementing a set of callbacks provided by the DBI framework. The most common and useful callbacks are:
+\paragraph{}
+Dynamic Binary Instrumentation is a technique for analysing the behaviour of a binary application through the injection of instrumentation code. The instrumentation code can be developed in an high level programming language and is executed in the context of the analysed binary with a granularity up to the single assembly instruction. The injection of instrumentation code is achieved by implementing a set of callbacks provided by the DBI framework. The most common and useful callbacks are:
 \begin{itemize}
  \item Instruction callback: invoked for each instruction;
  \item Image load callback: invoked each time an image (dll or Main image) is loaded into memory;
   \item Thread start callback: invoked each time a thread is started;
 \end{itemize}
-Besides the callbacks the DBI framework allows to intercept and modify operative system APIs and system calls which is very useful to track some behaviours of the binary like the allocation of dynamic memory areas.
+Besides the callbacks the DBI framework allows to intercept and modify operative system APIs and system calls and this is very useful to track some behaviours of the binary, like the allocation of dynamic memory areas.
 
 
 \section{Approach overview}
+\paragraph{}
 Our tool exploits the functionalities provided by the Intel PIN Dynamic Binary Instrumentation frameworks to track the memory addresses which are written and then executed with an instruction level granularity.
 More in details for each instruction the following steps are performed:
 \begin{enumerate}
@@ -28,21 +30,23 @@ More in details for each instruction the following steps are performed:
 The result of our tool is set of memory dumps or reconstructed PE depending on the result of the IAT fixing phase and a report which includes the values of each heuristics for every dump. Based on these information we can choose the best dump, that is the one that has the greatest chance of work.\\
 
 \section{Approach details}
+\paragraph{}
 In this section we are going to describe in details the steps introduced in the previous section.
 
 \subsection{Instruction Filtering}
+\paragraph{}
 Since our tool works with an instruction level granularity limiting our analysis to the relevant instruction of the program is a critical point. For this reason we have introduced some filters, based on the common behaviours showed by the packers, which make our tool ignore the effects of a set of instructions. More in detail two kind of instructions are not tracked by default:
 \begin{itemize}
 	\item Write instruction on the TEB and on the Stack;
 	\item Instruction executed by known Windows Libraries;
 \end{itemize}
- The write instructions on the stack are ignored because unpacking code on the stack is not common compared to unpacking it on the heap or inside the main image. Moreover many instructions write on the stack and keeping track of all the written addresses would degradetes the performances gaining little advantages against a very small set of packers. The same considerations can be applied to the instructions which writes on the TEB since most of these writes are related to the creation of instruction handler and there is very little chance that a packer uses this addresses to unpack the encrypted payload.
-The instruction executed by known Windows Libraries are never considered when checking if the current instruction address is contained inside a \textit{Write Set } because this would mean that the packer writes the malicious payload in the address space of a know Windows Library. This behaviour has never been identified in the packer analysed moreover this could introduce some crashes if the application explicitly use one of the function which has been overwritten.
-
-
+The write instructions on the stack are ignored because unpacking code on the stack is not common compared to unpacking it on the heap or inside the main image. Moreover many instructions write on the stack and keeping track of all the written addresses would downgrade the performances gaining little advantages against a very small set of packers.\\
+The same considerations can be applied to the instructions which write on the TEB, since most of these writes are related to the creation of instruction handlers and there is very little chance that a packer uses this addresses to unpack the encrypted payload.\\
+The instructions executed by known Windows Libraries are never considered when checking if the current instruction address is contained inside a \textit{Write Set} because this would mean that the packer writes the malicious payload in the address space of a know Windows Library. This behaviour has never been identified in the packer analysed; moreover, this could introduce some crashes if the application explicitly use one of the functions which have been overwritten.
+\paragraph{}
 During the development we have adapted our approach in order to increase speed and effectiveness of our tool. Following there is a detailed explanation of our improvements on the initial approach:
 \begin{enumerate}
-\item in the first step, we add the option of not to track writes of library instructions on the stack and in the teb
+\item in the first step, we add the option of not to track writes of library instructions on the stack and in the TEB
 \item in the second step we filter instructions of known libraries before dumping
 	\begin{enumerate}
 	\item when trying to reconstruct the IAT we added some code in order to deal with 			obfuscation techniques like \textit{IAT Redirection} and \textit{Stolen API}
