@@ -49,7 +49,7 @@ def executePin(cur_malware):
   except Exception:
   	print("timer expired!!!") 
   	proc.terminate()
-  	time.sleep(10)
+  	time.sleep(60)
   	malware_name = cur_malware.split("\\")[-1]
   	moveResults(malware_name)
   	sys.exit(0)
