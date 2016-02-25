@@ -1,4 +1,4 @@
-\documentclass[]{report}
+\documentclass[]{book}
 %[dvips]
 \usepackage{graphicx}
 \usepackage{tabularx}
@@ -28,8 +28,6 @@
 
 \pagenumbering{Roman}
 \renewcommand{\headrulewidth}{0 pt} 
-\include{frontispiece}
-
 \normalfont \cleardoublepage
 \include{dedication}
 
@@ -39,13 +37,16 @@
 \include{thanks}
 
 \pagenumbering{arabic}
-\normalfont
 \renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}} 
-\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}         
-%\fancyhead[LE,RO]{\bfseries\thepage}    
-\fancyhead[RE]{\bfseries\leftmark}    
-\fancyhead[LO]{\bfseries\rightmark}     
-\renewcommand{\headrulewidth}{0.3 pt} 
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}  
+\fancyhf{} \fancyhead[LE,RO]{\bfseries\thepage}
+\fancyhead[LO]{\bfseries\rightmark}
+\fancyhead[RE]{\bfseries\leftmark}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0pt}
+ \fancypagestyle{plain}{
+\fancyhead{}
+\renewcommand{\headrulewidth}{0pt}}
 \include{chapter1-introduction}
 \include{chapter2-motivation}
 \include{chapter3-approach}
