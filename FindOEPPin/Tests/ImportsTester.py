@@ -19,7 +19,7 @@ from FolderImportLister import generateImportsFile
     
 """
 
-malware_folder = "C:\\Users\\phate\\Desktop\\Malware_Results\\"
+malware_folder = "E:\\Results"
 result_file_name = "results.txt"
 
 def analyseTests():
