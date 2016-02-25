@@ -27,6 +27,10 @@ while 1:
 	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe guestcontrol Windows7Reverse run --username phate --password phate -- C:\\pin\\MalTester.bat")
 	p.wait()
 
+	print("\nAnalyze imports")
+	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe guestcontrol Windows7Reverse run --username phate --password phate -- C:\\pin\\ImportsTester.bat")
+	p.wait()
+
 	print("\nMove results")
 	for f in os.listdir(test_results_guest):
 		print(f + " moved")
