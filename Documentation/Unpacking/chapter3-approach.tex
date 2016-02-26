@@ -50,7 +50,7 @@ During the development we have adapted our approach in order to increase speed a
 	\end{enumerate}
 \end{enumerate} 
 For the instructions that execute from the same write set we adopted the following approach: if the "distance" between the current EIP and the EIP of the previous instruction is above a given threshold then we do the same as if we were in the case 2, otherwise we jump to the next instruction.\\
-Finally, we are noticed that dumping only the main executable in memory is not enough because some packers dump the final payload on the heap. In order to deal with it, we track heap allocations and writes inside an heap interval. If necessary, we dump these intervals too.
+Finally, we have noticed that dumping only the main executable in memory is not enough because some packers dump the final payload on the heap. In order to deal with it, we track heap allocations and writes inside an heap interval. If necessary, we dump these intervals too.
 
 \subsection{Instructions Filtering}
 \paragraph{}
@@ -65,8 +65,11 @@ The instructions executed by known Windows Libraries are never considered when c
 
 \subsection{Heuristics description}
 \paragraph{}
-Our tool makes a dump each time the WxorX law is broken in a new \textit{Write Set} or in an existing one if \textit{InterWriteSet} analysis is enabled. Consequently, at the end of the execution we may have a lot of dumps and check them manually can be very time-consuming. Heuristics help in automatically identify the dumps that are most likely to work and also provide a "best dump", the one with the greatest chance to be the contain the original unpacked code.\\ 
-As described in \cite{Practical_Malware_Analysis}, entropy can be considered as a measure of the disorder of a program. For example, random data have the highest possible entropy. Since compressed or encrypted data more closely resembles random data, entropy can be used in detecting if an executable has been compressed, encrypted or both. Usually compressed files have less entropy that the original files, because the purpose of compression is to reduce the dimension of the file preserving some patterns used to recover the information. Encryption, on the opposite, has the goal of making unreadable a file, that is ideally changed in a random stream of bits. For example:\\
+Our tool makes a dump each time the WxorX law is broken in a new \textit{Write Set} or in an existing one if \textit{InterWriteSet} analysis is enabled. Consequently, at the end of the execution we may have a lot of dumps and check them manually can be very time-consuming. Heuristics help in automatically identify the dumps that are most likely to work and also provide a "best dump", the one with the greatest chance to be the contain the original unpacked code. All the heuristics except the last one are described in \cite{Practical_Malware_Analysis}.\\ 
+\paragraph{}
+Entropy can be considered as a measure of the disorder of a program. For example, random data have the highest possible entropy. Since compressed or encrypted data more closely resembles random data, entropy can be used in detecting if an executable has been compressed, encrypted or both. Usually compressed files have less entropy that the original files, because the purpose of compression is to reduce the dimension of the file preserving some patterns used to recover the information. Encryption, on the opposite, has the goal of making unreadable a file, that is ideally changed in a random stream of bits. For example:\\
 FFFFFFFFFFFFFFFFFFFF ---------\textgreater 20'F' (compressed)\\
 FFFFFFFFFFFFFFFFFFFF ---------\textgreater ;LAKSDFJA;WIEFEJ;AEJF (encrypted)\\
 As a result, while decompressing a file, its entropy slightly increase; while decrypting a file, its entropy slightly decrease. Consequently, in order to identify that a decompression or a decryption is finished, we have to take the absolute value of the difference between the initial and the current entropy.\\
+\paragraph{}
+Usually packers employ a technique called \textit{pushad-popad}. The \textit{pushad} function stores on the stack the values of all the registers and the \textit{popad} function restores them in the registers. After a \textit{pushad}, a packer can execute its unpacking routine and soon before the \textit{tail jump} it can restore all the registers with a \textit{popad}. In this way, the two instructions almost delimit the unpacking stub and help to identify the range of memory address in which the OEP is located.\\ 
