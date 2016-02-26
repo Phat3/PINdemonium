@@ -96,18 +96,27 @@ During the development of our tool we noticed that some packers unpack code also
 We use heuristics in our tool in order to evaluate the obtained dump: each heuristic can set a flag in the final report and all the flags contribute to identify the best dump, as explained later in this Section.\\
 We have implemented five heuristics:
 \begin{itemize}
-\item entropy heuristic: at the beginning of the analysis, when the main module of the binary is loaded, we get its original entropy value and save it in a variable. Each time a dump is created we compute again its current entropy and compare it with the initial one. The we use the following formula to compute the difference:
+\item entropy heuristic: at the beginning of the analysis, when the main module of the binary is loaded, we get its original entropy value. Each time a dump is created we compute again its current entropy and compare it with the initial one. Then we use the following formula to compute the difference:
 \begin{equation}
 difference = \left|\frac{current\_entropy - initial\_entropy}{initial\_entropy}\right|
 \end{equation}
-If this value is above a given threshold we set the correspondent flag in the output report
+If this value is above a given threshold we set the correspondent flag in the output report.\\
+In order to estimate the threshold we created a simple program which executes some writes and then we packed it with the most common packers. We then calculated the entropy before and after the packing process and their difference. The histogram in Figure \ref{Entropy Threshold Survey Results} shows the result.
+\begin{figure}[!ht]
+	\begin{center}
+   		\includegraphics [width=\textwidth]{./pictures/Entropy Threshold Survey Results.jpg}
+	\end{center}
+	\caption{Entropy Threshold Survey Results}
+	\label{Entropy Threshold Survey Results}
+\end{figure}
+A threshold of 0.6 is sufficient.
 \item jump outer section heuristic: for each executed instruction we keep track of the EIP of the previous one. In this way we can retrieve the section in which the previous instruction was located and compare it to the section of the current one. If these two are not equal we set the \textit{jump outer section} flag
 \item long jump heuristic: as in the previous case we take advantage of tracking the previous instruction's EIP. In this case we simply compute the difference between the previous and the current EIP: 
 \begin{equation}
 difference = \left|current\_eip - previous\_eip\right|
 \end{equation}
-if this difference is above a given threshold we set the \textit{long jump} flag in the output report
-\item pushad popad heuristic: during the execution of the binary we have two flags indicating if we have encountered a \textit{pushad} or a \textit{popad}. For every instruction we check if it is one of the previous two and if so we set the corresponding flag. Then, when we produce a dump, if both flags are active, we set the \textit{pushad popad} flag in the output report
+If this difference is above a given threshold we set the \textit{long jump} flag in the output report
+ \item pushad popad heuristic: during the execution of the binary we have two flags indicating if we have encountered a \textit{pushad} or a \textit{popad}. For every instruction we check if it is one of the previous two and if so we set the corresponding flag. Then, when we produce a dump, if both flags are active, we set the \textit{pushad popad} flag in the output report
 \item init function call heuristic: the aim of this heuristic is to search through the dumped code for calls to functions commonly used in the body of the malware and not in the unpacker stub. For example, registry manipulation or internet communication functions are generally used by the malware itself and not by the routine which cares for the unpacking. We achieve this result by using an IDAPython script: using IDA we are able to read the list of the imports of the dump and to confront it with a list of "suspicious" functions selected by us. Then we count the number of detected functions and write it in the output report
 \end{itemize} 
 
