@@ -63,3 +63,15 @@ The write instructions on the stack are ignored because unpacking code on the st
 The same considerations can be applied to the instructions which write on the TEB, since most of these writes are related to the creation of instruction handlers and there is very little chance that a packer uses this addresses to unpack the encrypted payload.\\
 The instructions executed by known Windows Libraries are never considered when checking if the current instruction address is contained inside a \textit{Write Set} because this would mean that the packer writes the malicious payload in the address space of a know Windows Library. This behaviour has never been identified in the packer analysed; moreover, this could introduce some crashes if the application explicitly use one of the functions which have been overwritten.
 
+\subsection{Track WxorX instructions}
+\paragraph{}
+All packers, in order to work correctly, have to present a common behaviour: they must write the original program in memory and then they must execute the written code. We have defined an instruction that is first written by the packer and then executed as a \textit{WxorX instruction}.
+Our tool tracks each write operation made by the program and build a set of memory ranges which identify contiguously written memory addresses. A memory range is dentified by a starting address and an end address and it is managed in order to take into account the memory operation that overlaps the it (The starting address and the end address are decreased or increased 
+respectively when an overlapping writes is detected).
+
+\begin{figure}[H]
+ \makebox[\textwidth][c]{\includegraphics[width=1.0\textwidth]{./pictures/wxorx_tracking.jpg}}%
+\caption{Memory range management}
+\end{figure} 
+
+The first time we detect that the instruction pointer is inside one of our memory ranges, all the analysis and dumping routines (explained in the next chapters) are triggered and the memory range is marked as \textit{broken}. It is easy to deduct that the definition of a broken memory range is : A memory range in which the execution has been redirected to. 
