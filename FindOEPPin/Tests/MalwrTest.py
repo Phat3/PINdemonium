@@ -16,7 +16,7 @@ while 1:
 		sys.exit(1)
 
 	print("\nRestoring Virtual Machine")
-	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe snapshot Windows7Reverse restore Windows7ReverseOriginal")
+	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe snapshot Windows7Reverse restore Windows7RevereseOriginal")
 	p.wait()
 
 	print("\nStarting Virtual Machine")

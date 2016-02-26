@@ -8,7 +8,7 @@ Dynamic Binary Instrumentation is a technique for analysing the behaviour of a b
 \begin{itemize}
  \item Instruction callback: invoked for each instruction
  \item Image load callback: invoked each time an image (dll or Main image) is loaded into memory
-  \item Thread start callback: invoked each time a thread is started
+ \item Thread start callback: invoked each time a thread is started
 \end{itemize}
 Besides the callbacks the DBI framework allows to intercept and modify operative system APIs and system calls and this is very useful to track some behaviours of the binary, like the allocation of dynamic memory areas.
 
@@ -66,4 +66,4 @@ The instructions executed by known Windows Libraries are never considered when c
 \subsection{Heuristics description}
 \paragraph{}
 Our tool makes a dump each time the WxorX law is broken in a new \textit{Write Set} or in an existing one if \textit{InterWriteSet} analysis is enabled. Consequently, at the end of the execution we may have a lot of dumps and check them manually can be very time-consuming. Heuristics help in automatically identify the dumps that are most likely to work and also provide a "best dump", the one with the greatest chance to be the contain the original unpacked code.\\ 
-As described in \cite{Practical_Malware_Analysis}, entropy can be considered as a measure of the disorder of a program. For example, random data have the highest possible entropy. Since compressed or encrypted data more closely resembles random data, entropy can be used in detecting if an executable has been compressed, encrypted or both.
+As described in \cite{Practical_Malware_Analysis}, entropy can be considered as a measure of the disorder of a program. For example, random data have the highest possible entropy. Since compressed or encrypted data more closely resembles random data, entropy can be used in detecting if an executable has been compressed, encrypted or both. Usually
