@@ -12,22 +12,21 @@ Dynamic Binary Instrumentation is a technique for analysing the behaviour of a b
 \end{itemize}
 Besides the callbacks the DBI framework allows to intercept and modify operative system APIs and system calls and this is very useful to track some behaviours of the binary, like the allocation of dynamic memory areas.
 
-
 \section{Approach overview}
 \paragraph{}
 Our tool exploits the functionalities provided by the Intel PIN Dynamic Binary Instrumentation frameworks to track the memory addresses which are written and then executed with an instruction level granularity.
 More in details for each instruction the following steps are performed:
 \begin{enumerate}
-\item Instruction Filtering: ignore the effects of a particular set of instructions for performance reasons;
-\item Written addresses tracking: keep track of each memory address which is written in order to create a list of memory ranges of contiguous writes defined \textit{Write Intervals} .
+\item Instruction Filtering: ignore the effects of a particular set of instructions for performance reasons
+\item Written addresses tracking: keep track of each memory address which is written in order to create a list of memory ranges of contiguous writes defined \textit{Write Intervals} 
 \item \textit{Write xor execution} instructions tracking: check if the currently executed instruction belongs to a \textit{Write Interval}. This is a typical behaviour in a packer that is executing the unpacked layer and for this reason we trigger a detailed analysis which consists of:
 	\begin{enumerate}
-	\item Dumping the main image of the PE and a memory range on the heap depending on the address of the current instruction;
-	\item Reconstructing the IAT and generating the correct Import Directory;
-	\item Applying some heuristics to evaluate if the current instruction is the OEP;
+	\item Dumping the main image of the PE and a memory range on the heap depending on the address of the current instruction
+	\item Reconstructing the \ac{IAT} and generating the correct Import Directory
+	\item Applying some heuristics to evaluate if the current instruction is the \ac{OEP}
 	\end{enumerate}
 \end{enumerate}
-The result of our tool is a set of memory dumps or reconstructed PE depending on the result of the IAT fixing phase and a report which includes the values of each heuristics for every dump. Based on these information we can choose the best dump, that is the one that has the greatest chance of work.\\
+The result of our tool is a set of memory dumps or reconstructed PE depending on the result of the \ac{IAT} fixing phase and a report which includes the values of each heuristics for every dump. Based on these information we can choose the best dump, that is the one that has the greatest chance of work.
 
 \section{Approach details}
 \paragraph{}
@@ -38,21 +37,21 @@ During the development we have adapted our approach in order to increase speed a
 \item in the first step, we add the option of not to track writes of library instructions on the stack and in the TEB
 \item in the second step we filter instructions of known libraries before dumping
 	\begin{enumerate}
-	\item when trying to reconstruct the IAT we added some code in order to deal with 			obfuscation techniques like \textit{IAT Redirection} and \textit{Stolen API}
+	\item when trying to reconstruct the \ac{IAT} we added some code in order to deal with 			obfuscation techniques like \textit{\ac{IAT} Redirection} and \textit{Stolen API}
 	\item we implemented five heuristics:
 		\begin{itemize}
 		\item entropy: check if the value of the entropy is above a certain threshold
 		\item long jump: check if the "distance" between the current EIP and the previous 			one is above a certain threshold
 		\item jump outer section: check if the current EIP is a different section from the 		one of the previous EIP
 		\item pushad popad: check is a pushad popad has been found in the trace
-		\item init function calls: check if the imports of the dump are function commonly 			 used by the malware and not by the unpacking layers
+		\item init function calls: check if the imports of the dump are functions commonly 			 used by the malware and not by the unpacking layers
 		\end{itemize}
 	\end{enumerate}
 \end{enumerate} 
 For the instructions that execute from the same write set we adopted the following approach: if the "distance" between the current EIP and the EIP of the previous instruction is above a given threshold then we do the same as if we were in the case 2, otherwise we jump to the next instruction.\\
 Finally, we have noticed that dumping only the main executable in memory is not enough because some packers dump the final payload on the heap. In order to deal with it, we track heap allocations and writes inside an heap interval. If necessary, we dump these intervals too.
 
-\subsection{Instructions Filtering}
+\subsection{Instructions filtering}
 \paragraph{}
 Since our tool works with an instruction level granularity, limiting our analysis to the relevant instruction of the program is a critical point. For this reason we have introduced some filters, based on the common behaviours showed by the packers, which make our tool ignore the effects of a set of instructions. More in detail two kind of instructions are not tracked by default:
 \begin{itemize}
@@ -65,11 +64,28 @@ The instructions executed by known Windows Libraries are never considered when c
 
 \subsection{Heuristics description}
 \paragraph{}
-Our tool makes a dump each time the WxorX law is broken in a new \textit{Write Set} or in an existing one if \textit{InterWriteSet} analysis is enabled. Consequently, at the end of the execution we may have a lot of dumps and check them manually can be very time-consuming. Heuristics help in automatically identify the dumps that are most likely to work and also provide a "best dump", the one with the greatest chance to be the contain the original unpacked code. All the heuristics except the last one are described in \cite{Practical_Malware_Analysis}.\\ 
+Our tool makes a dump each time the WxorX law is broken in a new \textit{Write Set} or in an existing one if \textit{InterWriteSet} analysis is enabled. Consequently, at the end of the execution we may have a lot of dumps and check them manually can be very time-consuming. Heuristics help in automatically identify the dumps that are most likely to work and also provide a "best dump", the one with the greatest chance to be the contain the original unpacked code. All the heuristics except the last one are described in \cite{Practical_Malware_Analysis}.
 \paragraph{}
 Entropy can be considered as a measure of the disorder of a program. For example, random data have the highest possible entropy. Since compressed or encrypted data more closely resembles random data, entropy can be used in detecting if an executable has been compressed, encrypted or both. Usually compressed files have less entropy that the original files, because the purpose of compression is to reduce the dimension of the file preserving some patterns used to recover the information. Encryption, on the opposite, has the goal of making unreadable a file, that is ideally changed in a random stream of bits. For example:\\
-FFFFFFFFFFFFFFFFFFFF ---------\textgreater 20'F' (compressed)\\
-FFFFFFFFFFFFFFFFFFFF ---------\textgreater ;LAKSDFJA;WIEFEJ;AEJF (encrypted)\\
-As a result, while decompressing a file, its entropy slightly increase; while decrypting a file, its entropy slightly decrease. Consequently, in order to identify that a decompression or a decryption is finished, we have to take the absolute value of the difference between the initial and the current entropy.\\
+FFFFFFFFFFFFFFFFFFFF --------\textgreater 20'F' (compressed)\\
+FFFFFFFFFFFFFFFFFFFF --------\textgreater ;LAKSDFJA;WIEFEJ;AEJF (encrypted)\\
+As a result, while decompressing a file, its entropy slightly increase; while decrypting a file, its entropy slightly decrease. Consequently, in order to identify that a decompression or a decryption stage is finished, we have to check the absolute value of the difference between the initial and the current entropy.
 \paragraph{}
-Usually packers employ a technique called \textit{pushad-popad}. The \textit{pushad} function stores on the stack the values of all the registers and the \textit{popad} function restores them in the registers. After a \textit{pushad}, a packer can execute its unpacking routine and soon before the \textit{tail jump} it can restore all the registers with a \textit{popad}. In this way, the two instructions almost delimit the unpacking stub and help to identify the range of memory address in which the OEP is located.\\ 
+It is very uncommon that the unpacking stub is located just under or above the \ac{OEP}. Instead, once the original code is fully unpacked, there is a long jump from the unpacking stub to the \ac{OEP} of the unpacked code. Sometimes, this jump has the target address is in a completely different section from the start address. This technique is called \textit{tail jump} and may be a sign of the completion of an unpacking stage. 
+\begin{figure}[!ht]
+	\begin{center}
+   		\includegraphics [width=\textwidth]{./pictures/Original Code And Unpacking Stub.jpg}
+	\end{center}
+	\caption{Different jumps from the unpacking stub to the original code}
+	\label{Original Code And Unpacking Stub}
+\end{figure}
+In Figure \ref{Original Code And Unpacking Stub}, the cases (a) and (b) are extremely rare, while case (c) is the most common.\\
+We base on these considerations the \textit{long jump} and \textit{jump outer section} heuristics.
+\paragraph{}
+Usually packers employ a technique called \textit{pushad-popad}. The \textit{pushad} function stores on the stack the values of all the registers and the \textit{popad} function restores them in the registers. After a \textit{pushad}, a packer can execute its unpacking routine and soon before the \textit{tail jump} it can restore all the registers with a \textit{popad}. In this way, the two instructions almost delimit the unpacking stub and help to identify the range of memory addresses in which the \ac{OEP} is located. As an example, a commercial packer like ASPack employ this technique.
+\paragraph{}
+When a malware is packed, it usually exhibits very few or false imports. This is a technique of obfuscation used by some packers in order to hide the real behaviour of the malware. Of course, it is a job of the packer to fully reconstruct the \ac{IAT} in order to make the binary runnable.\\
+The purpose of the \textit{init function calls} heuristic is to search in the \ac{IAT} for functions commonly used by the malware and not by the unpacking stub. For example, if a malware has to contact an Internet domain to download some malicious code, it will have in its imports some internet communication APIs like \textit{connect} and \textit{send}. Since the unpacking stub does not need them to perform its job, when packed the binary will not have these APIs in its \ac{IAT}, but the packer will take care of inserting them among the imports during the unpacking stage. In some extreme cases, the packed binary may have as imports only the \textit{GetProcAddress} and \textit{LoadLibrary} functions, because these two are used to dynamically load libraries and functions.\\
+Consequently, once identified some "interesting" APIs for the malware but not for the packer, we check how many of them a dump has among its imports. Usually, the more of them, the higher the probability of being the correct dump.
+
+\subsection{Evaluation of \textit{InterWriteSet} analysis}

@@ -6,7 +6,9 @@
 \paragraph{}
 In order to avoid Anti-Virus (AV) detection and harden the process of reverse engineering usually malware hide their code employing different techniques. This process, called \textit{packing}, makes the static analysis of a binary almost completely useless.\\
 A \textit{packer} is the tool that implements the previously described functions: it receives in input a PE file that represent a Windows program, transforms and obfuscates its code/resources and then appends new codes, called \textit{stub}, that will \textit{unpack} the original one runtime once the program is executed.\\\\
-\includegraphics[width=1.0\textwidth]{pictures/packer_general.png} \\\\
+
+\includegraphics[width=1.1\textwidth]{pictures/packer_general.png} \\\\
+
 The complexity of \textit{packers} can be very different: from those which write and execute directly the original code, to others that employ multiple unpacking routines and obfuscation techniques such as runtime repacking of previously unpacked code.\\
 This process has different consequences both in the AV detection and manual analysis of malicious binary:
 \begin{itemize}
