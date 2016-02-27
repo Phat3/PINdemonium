@@ -5,36 +5,40 @@
 \section{Problem statement}
 \paragraph{}
 In order to avoid Anti-Virus (AV) detection and harden the process of reverse engineering usually malware hide their code employing different techniques. This process, called \textit{packing}, makes the static analysis of a binary almost completely useless.\\
-A \textit{packer} is the tool that implements the previously described functions: it receives in input a binary, transforms and obfuscates its code/resources and then appends new codes that will \textit{unpack} the original one runtime once the program is executed.\\
-The complexity of \textit{packers} can be very different: from those which write and execute directly the original code, to others that employ multiple unpacking routines and obfuscation techniques such as runtime repacking of previously unpacked code.\\ A comprehensive study and a taxonomy of these levels of complexity have been made in a previous work. 
+A \textit{packer} is the tool that implements the previously described functions: it receives in input a PE file that represent a Windows program, transforms and obfuscates its code/resources and then appends new codes, called \textit{stub}, that will \textit{unpack} the original one runtime once the program is executed.\\\\
+\includegraphics[width=1.0\textwidth]{pictures/packer_general.png} \\\\
+The complexity of \textit{packers} can be very different: from those which write and execute directly the original code, to others that employ multiple unpacking routines and obfuscation techniques such as runtime repacking of previously unpacked code.\\
 This process has different consequences both in the AV detection and manual analysis of malicious binary:
 \begin{itemize}
-\item Usually AV employ different static analysis techniques in order to understand if a file is malicious or not, but packing a binary destroys any possibility to understand what the program will do on the system without executing it.
-\item The process of reverse engineering a packed malware can be very time consuming and since lots of malware is pushed every day on internet there is the necessity of fast analysis and fast updating of AV software.
+\item Usually AV employ different static analysis techniques in order to understand if a file is malicious or not, but packing a binary destroys any possibility to understand what the program will do on the system without executing it, and so void any effort from the point of view of a static analysis.
+\item The process of reverse engineering a packed malware can be very time consuming and since lots of malware is pushed every day on the internet there is the necessity of fast analysis and fast updating of AV software.
 \end{itemize}
 \paragraph{}
 These problems inspired different works in building an automatic generic unpacker aimed to extract the original code from the packed one. Some of them are more oriented in detection of malicious packed program helping an AV software on end users PCs, others are instead proposed as tools for speed up the work of professional malware analysts.
-
+\paragraph{}
+A comprehensive study and a taxonomy of the levels of complexity of nowadays packers have been presented by Ugarte-Pedrero et al\cite{sokpacker}. 
 In order to clarify better what a packer is and how it operates we will discuss in the next capther the main points of the previously mentioned research.
 
 \subsection{Packer taxonomy}
 \paragraph{}
-As previously explained a packer can implements different obfuscation techniques in order to harden the analysis of a program. In this paragraph we are going to analyze the proposed taxonomy in order to better understand the goals of our work and its limitation against the current packing methods.
+As previously explained a packer can implements different obfuscation techniques in order to harden the analysis of a program. In this capther we are going to analyze the proposed taxonomy in order to better understand the goals of our work and its limitation against the current packing methods.
 
 Before starting to present the techniques we need to define some terms that are essential in order to understand how a packer works: 
 \begin{itemize}
-\item \textit{Layer}: a layer is a set of contiguous memory addresses that are executed after being written. A layer can unpack another layer or the original program code.
+\item \textit{Layer}: a layer is a set of contiguous memory addresses that are executed after being written.A layer can unpack another unpacking-layer or layer that contains the original program code.
 \item \textit{Transition}: a transition is a control transfer from a layer to another layer, it can be a \textit{forward transition} if the execution is going from a previously unpacked layer to a newer layer, or a \textit{backward transition} if the execution is going from a newer layer to an older one. From this definition we can derive the concept of \textit{linear unpacking} in which all the transition are \textit{forward transition}, and {cyclic unpacking} in which there are some \textit{forward transition} and some \textit{backward transition}. 
-\item \textit{Tailed/Interleaved}: We say that a packer is tailed if there is soon or later a transition from the unpacker code to the original program code and then the execution never returns to the unpacker code, contrary we say that the unpacking is \textit{interleaved} if the execution bounce between the unpacker code and the original program code. 
+\item \textit{Tailed/Interleaved}: We say that a packer is tailed if there is soon or later a transition from the unpacking layers to the original program code and then the execution never returns to the unpacking layers, contrary we say that the unpacking is \textit{interleaved} if the execution bounce between the unpacking layers and the original program code. 
+\item \textit{Frame}: a frame is a portion of original program code, if a packer is \textit{mono frame} that means that the unpacking routine will reveal all the original code before jumping and executing it; contrary a \textit{multi frame} packer unpack only a slice of the original program code, execute it and then unpack another slice of original program code and so on. A \textit{multi frame} behavior can be \textit{incremental} if the slices of original program are revelead in order following the original program execution and never re-encrypted again, contrary a \textit{shifted frames} policy reveal only one slices at times and re-encrypt the slice once executed.
 \end{itemize}
 
-We are going to identify the complexity of a packer by using a scale from 1 to 6.
+As proposed by Ugarte-Pedrero et al\cite{sokpacker} we are going to identify the complexity of a packer by using a scale from 1 to 6.
 
 \subsubsection{Type 1}
 
-The simplest form of packer is the one that runtime unpack the original binary using only one layer and then jumps to it with a tail jump. 
+The simplest form of packer is the one that runtime unpack the original binary using 
+only one layer and then jumps to it with a tail jump. \\
 
-<figura>
+\includegraphics[width=0.7\textwidth]{pictures/packer_type_1.png} 
 
 This scheme is typical of packers like UPX,FSG,EXEpacker.
 
@@ -42,15 +46,40 @@ This scheme is typical of packers like UPX,FSG,EXEpacker.
 
 The packer in this category are defined as \textit{multi-layer} and \textit{linear}. This means that they employ different layer and the transition between them is always from the older to the newer. Also this kind of packers are defined as \textit{tailed} since the last jump redirect the execution at the original program code.
 
+\includegraphics[width=1.2\textwidth]{pictures/packer_type_2.png}
+
 \subsubsection{Type 3}
 
-Type 3 packers are defined as \textit{multi-layer}, \textit{cyclic} and \textbf{tailed}. This means that they employ different layers and the transitions are both \textit{forward transition} and \textit{backward transition}. 
+Type 3 packers are defined as \textit{multi-layer}, \textit{cyclic} and \textbf{tailed}. This means that they employ different layers and the transitions are both \textit{forward transition} and \textit{backward transition}.  
+
+\includegraphics[width=1\textwidth]{pictures/packer_type_3.png} 
 
 \subsubsection{Type 4}
 
-These packers are \textit{multi-layer}, \textit{cyclic} and \textbf{interleaved}. This means that they use different layers with both forward and backward transitions, and during the execution of the original program the control is redirected in some way to the packer code.
+These packers are \textit{multi-layer}, \textit{cyclic} and \textit{interleaved}. This means that they use different layers with both \textit{forward and backward transitions}, and during the execution of the original program the control is redirected in some way to the packer code.
+
+\includegraphics[width=1.07\textwidth]{pictures/packer_type_4.png} 
 
 \subsubsection{Type 5}
+
+Packers of this type are \textit{multi-layer}, \textit{cyclic},\textit{interleaved} and \textit{multi frame} with an \textit{incremental frames} behavior. This means that they use different layers with both \textit{forward and backward transitions}, during the execution of the original program the control is redirected in some way to the packer code and the original program code is revelead slice by slice when need to execute; also for this packers there is a moment in which all the original program code is in memory, so dumping at the original entry point doesn't permit to dump all the original program code since it is still encrypted in memory, but a theoretical dump nearly the end of execution can dump the entire program's code.
+
+\includegraphics[width=1\textwidth]{pictures/packer_type_5-1.png}
+
+\includegraphics[width=1.1\textwidth]{pictures/packer_type_5-2.png}
+
+\includegraphics[width=1.1\textwidth]{pictures/packer_type_5-3.png}
+
+
+\subsubsection{Type 6}
+
+Packers of this type are \textit{multi-layer}, \textit{cyclic},\textit{interleaved} and \textit{multi frame} with a \textit{shifted frames} behavior. This means that they use different layers with both \textit{forward and backward transitions}, during the execution of the original program the control is redirected in some way to the packer code and the original program code is revelead slice by slice and re-encrypted once executed; packers with such complexity never let all the program code to live in memory, so a dump that encompass the entire original program's code doesn't exists.
+
+\includegraphics[width=1\textwidth]{pictures/packer_type_5-1.png}
+
+\includegraphics[width=1.05\textwidth]{pictures/packer_type_6-1.png}
+
+\includegraphics[width=1.05\textwidth]{pictures/packer_type_6-2.png}
 
 \section{State of the art}
 \paragraph{}
