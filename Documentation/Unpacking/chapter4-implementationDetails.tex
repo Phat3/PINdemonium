@@ -5,7 +5,7 @@
 \section{System architecture}
 \paragraph{}
 Our tool is entirely based on PIN, a binary instrumentation framework developed by Intel. It lets us to have the instruction-level granularity useful to track memory writes on a finer grain. In this way we are able, for example, to see where a single assembly write instruction is going to write and consequently create the write sets.\\
-We have integrated Scylla, an external open source program, to dump the code and reconstruct the IAT. Moreover we have extended it in order to deal with \textit{IAT Redirection} and \textit{Stolen API} techniques.\\
+We have integrated Scylla, an external open source program, to dump the code and reconstruct the \ac{IAT}. Moreover we have extended it in order to deal with \textit{\ac{IAT} Redirection} and \textit{Stolen \ac{API}} techniques.\\
 Finally we use the IDA Pro disassembler and an IDAPython script in the \textit{Init function calls} heuristic. The script calls IDA which reads the imports of the dump and compare them to a list of functions commonly used by the malware and not by the packer (registry manipulation, internet communication).
 
 \section{System details}
@@ -34,7 +34,7 @@ For more information about heuristic see Section \ref{Heuristics implementation}
 The following steps explain how \textit{WriteIntervals} are created and updated:
 \begin{enumerate}
 \item for each instruction we check if it is a write
-\item if so, we insert a \textit{callback} function before it. A \textit{callback} is a feature of PIN: it allows to instrument the code by inserting some code that will be executed before or after the original instruction. In our case, we intercept the write instruction and before the execution we retrieve its EIP, the address where it will write and the size of the memory that will be written. With these information we compute the start and end addresses of the write
+\item if so, we insert a \textit{callback} function before it. A \textit{callback} is a feature of PIN: it allows to instrument the code by inserting some code that will be executed before or after the original instruction. In our case, we intercept the write instruction and before the execution we retrieve its \ac{EIP}, the address where it will write and the size of the memory that will be written. With these information we compute the start and end addresses of the write
 \item Now we proceed to the construction or the update of the \textit{WriteInterval}. We have five cases:
 	\begin{enumerate}
 	\item the memory written by the instruction neither is contained nor overlaps with another \textit{WriteInterval}. In this case we create a new one and add it to the \textit{WritesSet} vector
@@ -78,17 +78,17 @@ When we find out that an instruction executes from one of the \textit{Write Inte
 In the first case the analysis goes through the following steps:
 \begin{enumerate}
 \item we call \textit{Scylla} as an external process. The reason why we do it is that we have noticed that if we call \textit{Scylla} inside the tool, a particular memory configuration may cause it to crash
-\item Scylla tries to create a dump with the current EIP as the OEP. The dump eventually created is inside a folder named \textit{NotWorking} because it is not runnable, since the \textit{Import directory} is not still reconstructed
-\item Scylla tries to find the IAT inside the current process
-\item if Scylla succeeds in finding the IAT then is tries to reconstruct the \textit{Import directory} in the not working dump
-\item if it succeeds then the dump is moved in the main folder, otherwise it is left inside the \textit{NotWorking} directory. In this way, even if the dump is not runnable, we can eventually access the code of the malware if we have correctly found the OEP
+\item Scylla tries to create a dump with the current \ac{EIP} as the \ac{OEP}. The dump eventually created is inside a folder named \textit{NotWorking} because it is not runnable, since the \textit{Import directory} is not still reconstructed
+\item Scylla tries to find the \ac{IAT} inside the current process
+\item if Scylla succeeds in finding the \ac{IAT} then is tries to reconstruct the \textit{Import directory} in the not working dump
+\item if it succeeds then the dump is moved in the main folder, otherwise it is left inside the \textit{NotWorking} directory. In this way, even if the dump is not runnable, we can eventually access the code of the malware if we have correctly found the \ac{OEP}
 \end{enumerate} 
 \paragraph{}
-In the other case we eventually have to proceed with the \textit{InterWriteSet} analysis. This kind of analysis is the same as the previous one except that it considers jumps inside the same \textit{Write Interval}: if the absolute value of the difference between the current EIP and the previous one is greater than a given threshold and if the maximum number of jump in the \textit{Write Interval} has not been reached, we consider the current EIP as a new candidate for the OEP and trigger the same analysis as before. This is also the reason why we do not remove broken \textit{Write Intervals} from the \textit{WriteSet} as soon as they become \textit{broken}.\\
-We did a survey to establish a reasonable threshold and we set it as 20\% of the current  \textit{Write Interval} length. The maximum number of considered jumps has to be set by command line.
+In the other case we eventually have to proceed with the \textit{InterWriteSet} analysis. This kind of analysis is the same as the previous one except that it considers jumps inside the same \textit{Write Interval}: if the absolute value of the difference between the current \ac{EIP} and the previous one is greater than a given threshold and if the maximum number of jump in the \textit{Write Interval} has not been reached, we consider the current \ac{EIP} as a new candidate for the \ac{OEP} and trigger the same analysis as before. This is also the reason why we do not remove broken \textit{Write Intervals} from the \textit{WriteSet} as soon as they become \textit{broken}.\\
+We did a survey to establish a reasonable threshold and we set it as 20\% of the current  \textit{Write Interval} length. The maximum number of considered jumps has to be set by command line, as well as the flag that enables the \textit{InterWriteSet} analysis.
 \paragraph{}
 In both cases the obtained dump, no matter if it is working or not, is subject to the analysis of our heuristics (see Section \ref{Heuristics implementation}). Moreover we keep track of the number of dumps by incrementing a counter every time Scylla tries to dump the code, even if it does not succeed.\\
-During the development of our tool we noticed that some packers unpack code also on the heap. For this reason, along with the main executable image we dump also the heap, adding it as an additional section in the PE.
+During the development of our tool we noticed that some packers unpack code also on the heap. For this reason, along with the main executable image we dump also the heap, adding it as an additional section in the \ac{PE}.
 
 \subsection{Heuristics implementation}
 \label{Heuristics implementation}
@@ -109,9 +109,9 @@ In order to estimate the threshold we created a simple program which executes so
 	\caption{Entropy Threshold Survey Results}
 	\label{Entropy Threshold Survey Results}
 \end{figure}
-A threshold of 0.6 is sufficient.
-\item jump outer section heuristic: for each executed instruction we keep track of the EIP of the previous one. In this way we can retrieve the section in which the previous instruction was located and compare it to the section of the current one. If these two are not equal we set the \textit{jump outer section} flag
-\item long jump heuristic: as in the previous case we take advantage of tracking the previous instruction's EIP. In this case we simply compute the difference between the previous and the current EIP: 
+A threshold of 0.6 is sufficient to cover almost all the packers
+\item jump outer section heuristic: for each executed instruction we keep track of the \ac{EIP} of the previous one. In this way we can retrieve the section in which the previous instruction was located and compare it to the section of the current one. If these two are not equal we set the \textit{jump outer section} flag
+\item long jump heuristic: as in the previous case we take advantage of tracking the previous instruction's \ac{EIP}. In this case we simply compute the difference between the previous and the current \ac{EIP}: 
 \begin{equation}
 difference = \left|current\_eip - previous\_eip\right|
 \end{equation}
@@ -121,7 +121,7 @@ If this difference is above a given threshold we set the \textit{long jump} flag
 \end{itemize} 
 
 \paragraph{}
-At the end of the execution of our tool we have a report which contains a line for each dump that lists the results of every heuristic, as well as the dump number, a string that says if the \textit{Import Directory} is probably reconstructed or not, the OEP, the begin and the end address of the \textit{Write Interval} considered for the dump. We use these information to choose the best dump as follow:
+At the end of the execution of our tool we have a report which contains a line for each dump that lists the results of every heuristic, as well as the dump number, a string that says if the \textit{Import Directory} is probably reconstructed or not, the \ac{OEP}, the begin and the end addresses of the \textit{Write Interval} considered for the dump. We use these information to choose the best dump as follow:
 \begin{itemize}
 \item first we check if the \textit{Import Directory} is probably reconstructed
 \item is so, we count the number of the "suspicious" functions detected and the number of active heuristics' flags
