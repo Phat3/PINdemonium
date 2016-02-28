@@ -38,7 +38,7 @@ Since our tool works with an instruction level granularity limiting our analysis
 \end{itemize}
  The write instructions on the stack are ignored because unpacking code on the stack is not common compared to unpacking it on the heap or inside the main image. Moreover many instructions write on the stack and keeping track of all the written addresses would degradetes the performances gaining little advantages against a very small set of packers. The same considerations can be applied to the instructions which writes on the TEB since most of these writes are related to the creation of instruction handler and there is very little chance that a packer uses this addresses to unpack the encrypted payload.
 The instruction executed by known Windows Libraries are never considered when checking if the current instruction address is contained inside a \textit{Write Set } because this would mean that the packer writes the malicious payload in the address space of a know Windows Library. This behaviour has never been identified in the packer analysed moreover this could introduce some crashes if the application explicitly use one of the function which has been overwritten.
-
+\subsection{Written Address Tracking}
 
 During the development we have adapted our approach in order to increase speed and effectiveness of our tool. Following there is a detailed explanation of our improvements on the initial approach:
 \begin{enumerate}
