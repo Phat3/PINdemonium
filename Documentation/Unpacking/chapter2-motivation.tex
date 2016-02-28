@@ -4,7 +4,16 @@
 
 \section{Problem statement}
 \paragraph{}
-In order to avoid Anti-Virus (AV) detection and harden the process of reverse engineering usually malware hide their code employing different techniques. This process, called \textit{packing}, makes the static analysis of a binary almost completely useless.\\
+In order to avoid Anti-Virus (AV) detection and harden the process of reverse engineering usually malware hide and protect their code employing different techniques and tools. This process, generally called \textit{packing}, makes the static analysis of a binary almost completely useless.\\There are lots of different run-time tools available in order to compress/encrypt/protect both good and malicious software, the main categories in which this tools fall are:
+\begin{itemize}
+\item \emph{Packer}: a packer usually tries to reduce the size of a binary by using different compression algorithms.
+\item \emph{Crypter}: the goal of a crypter is to encrypt the executable and hardening the disassembly.
+\item \emph{Protector}: a protector implements different anti-debugging and generally anti-reversing techniques in order to protect the binary's copyright in the case of a good program, or hide the malicious code in case of a malware.
+\item \emph{Virtualizer}: a virtualizer basically translates the instructions of an original program in new particulars instruction and it interprets in runtime executing finally the intended program.
+\end{itemize}
+
+All this tools change deeply the original PE file by modifing the OEP, the Import directory table and many other resources and fields. Usually they are mixed together in order to obtain a more advanced protection tool that in this work we will refer generally as \textit{packer}.
+
 A \textit{packer} is the tool that implements the previously described functions: it receives in input a PE file that represent a Windows program, transforms and obfuscates its code/resources and then appends new codes, called \textit{stub}, that will \textit{unpack} the original one runtime once the program is executed.\\\\
 
 \includegraphics[width=1.1\textwidth]{pictures/packer_general.png} \\\\
@@ -171,7 +180,7 @@ Interpreting the data we can derive that:
 \item In both cases of an off-the-shelf/custom packer we can see that the preferred complexity seems to be a Type 3 packer. This could be an indication that a complexity of that level is enough to defeat the nowadays AV solutions.
 \item The use of a complexity greater than IV is rarely used.
 
-
+As presented, the complexity of a packer can escalate really quickly and building a generic unpacker that can cover all these schemes is a big challenge.
 
 \section{State of the art}
 \paragraph{}
