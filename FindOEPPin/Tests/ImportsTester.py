@@ -19,7 +19,7 @@ from FolderImportLister import generateImportsFile
     
 """
 
-malware_folder = "C:\\Users\\phate\\Desktop\\Malware_Results\\"
+malware_folder = "E:\\Results"
 result_file_name = "results.txt"
 
 def analyseTests():
@@ -65,7 +65,7 @@ def analyseTests():
             best_number_new_imports = len(new_dump_imports)
 
     #save the results for the current malware
-    result_file_path = join(malware_folder, result_file_name)
+    result_file_path = malware_folder + "\\" + malwares_results[i] + "\\" + result_file_name
     result_file = open(result_file_path, "a")
     result_file.write("Malware: " + str(malwares_results[i]) + ", best_number_new_imports: " + str(best_number_new_imports) + ", best dump: " + str(best_dump) + "\n")
           

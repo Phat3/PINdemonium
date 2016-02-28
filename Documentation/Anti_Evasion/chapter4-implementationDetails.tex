@@ -35,7 +35,7 @@ If the counter becomes bigger than a threshold the pin tool has been detected. W
 \item Intercepted the \textit{rtdsc} assembly instruction and fake the value returned in the registers EAX and EDX.
 \end{itemize}
 
-\item Based on a survey \cite{Controlling-Windows-process-list} of the most frequent techniques employed to discover the parent process we implemented some countermeasures in order to fake the list of processes :
+\item Based on a survey \cite{Controlling-Windows-process-list} of the most frequent techniques employed to discover the parent process we implemented some countermeasures in order to fake the list of processes:
 
 \begin{itemize}
 \item Hook the system call \textit{NtQueryProcessInformationSystem} in order to modify the returned process list changing the name \textit{pin.exe} in \textit{cmd.exe}

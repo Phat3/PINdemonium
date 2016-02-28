@@ -16,7 +16,7 @@ while 1:
 		sys.exit(1)
 
 	print("\nRestoring Virtual Machine")
-	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe snapshot Windows7Reverse restore Windows7ReverseOriginal")
+	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe snapshot Windows7Reverse restore Windows7RevereseOriginal")
 	p.wait()
 
 	print("\nStarting Virtual Machine")
@@ -25,6 +25,10 @@ while 1:
 
 	print("\nRun script")
 	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe guestcontrol Windows7Reverse run --username phate --password phate -- C:\\pin\\MalTester.bat")
+	p.wait()
+
+	print("\nAnalyze imports")
+	p = subprocess.Popen("C:\Program Files\Oracle\VirtualBox\VBoxManage.exe guestcontrol Windows7Reverse run --username phate --password phate -- C:\\pin\\ImportsTester.bat")
 	p.wait()
 
 	print("\nMove results")

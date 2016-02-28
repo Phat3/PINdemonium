@@ -49,7 +49,7 @@ def executePin(cur_malware):
   except Exception:
   	print("timer expired!!!") 
   	proc.terminate()
-  	time.sleep(10)
+  	time.sleep(60)
   	malware_name = cur_malware.split("\\")[-1]
   	moveResults(malware_name)
   	sys.exit(0)
@@ -65,7 +65,9 @@ def moveResults(cur_malware):
   print("malware folder "+ cur_mal_folder)
   test_res_dir = join(test_results,cur_mal_folder)
   print("Moving result directory from %s to %s "%(pin_res_dir,test_res_dir))
-  shutil.move(pin_res_dir,test_res_dir)
+  os.makedirs(test_res_dir)
+  for f in os.listdir(pin_res_dir):
+  	shutil.move(pin_res_dir + "\\" + f, test_res_dir + "\\" + f)
   original_malware_path = join(test_res_dir, "original.exe")
   malwares = os.listdir(malware_folder)
   shutil.move(join(malware_folder,malwares[0]), original_malware_path)

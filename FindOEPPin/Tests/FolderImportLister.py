@@ -13,9 +13,9 @@ def generateImportsFile(mypath):
     if cur_file.split(".")[-1] == "exe":
       out_file = "".join(cur_file.split(".")[:-1]) + "_imports.txt"
       importLister_command = "\"" + ida_path + "\"" + " -A -S"+"\""+importLister_script + " " + join(mypath, out_file)  + "\""+ " " + "\"" + join(mypath, cur_file) + "\""
-      print importLister_command
+      print(importLister_command)
       try:
         check_output(importLister_command,shell=True)
       except Exception as e:
-        print "error "+str(e)+" processing "+importLister_command
+        print("error "+str(e)+" processing "+importLister_command)
         
