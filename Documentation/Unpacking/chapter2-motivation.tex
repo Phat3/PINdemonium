@@ -212,8 +212,10 @@ These tools merely collect dumps of the binary while unpacking and they don't re
 
 \section{Goals and challenges}
 \paragraph{}
-Since our work is born as a component of a bigger malware analysis platform (Jackdaw), our tool is oriented to help malware analyst during the reversing process of a packed binary. 
+Since our work is a component of a bigger malware analysis platform\cite{jackdaw}, our tool is oriented to help malware analyst during the reversing process of a packed binary. 
 Our approach aims not only to unpack the malware, but also to reconstruct a fully working unpacked binary. To do so, we not only have to identify the original entry point (OEP) and dump the code at that moment, but we have to find the IAT inside the process and reconstruct a correct import directory in the final PE file.\\
+According to the discussion about packer's complexity our aim is to unpack untill Type 4 since, as presented by Ugarte-Pedrero et al\cite{sokpacker} in their packer's complexity distribution, more than 90\% of the binary packed with both an off-the-shelf/custom packer use a complexity that range from 1 to a maximum of 4.
+\paragraph{•}
 The first thing we have to deal with are the unpacking routines of the packers: every time the execution of the malware comes from a previously written memory area, then it could be a sign that the unpacking stage has finished or that a new unpacking layer has started.\\
 We have also to deal with techniques of IAT obfuscation: some malwares can do this in order to make difficult to statically analyse them to understand what they are doing.
 
