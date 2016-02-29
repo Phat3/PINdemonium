@@ -4,30 +4,30 @@
 
 \section{Packed malware problem}
 \paragraph{}
-In order to avoid \ac{AV} detection and harden the process of reverse engineering usually malware hide and protect their code employing different techniques and tools. This process, generally called \textit{packing}, makes the static analysis of a binary almost completely useless.\\There are lots of different run-time tools available in order to compress,encrypt,protect both good and malicious software, the main categories in which this tools fall are:
+In order to avoid \ac{AV} detection and harden the process of reverse engineering usually malware hide and protect their code employing different techniques and tools. This process, generally called \textit{packing}, makes the static analysis of a binary almost completely useless.\\
+There are lots of different run-time tools available in order to compress, encrypt, protect both good and malicious software, the main categories in which this tools fall are:
 \begin{itemize}
 \item \emph{Packer}: a packer usually tries to reduce the size of a binary by using different compression algorithms.
 \item \emph{Crypter}: the goal of a crypter is to encrypt the executable and hardening the disassembly.
 \item \emph{Protector}: a protector implements different anti-debugging and generally anti-reversing techniques in order to protect the binary's copyright in the case of a good program, or hide the malicious code in case of a malware.
 \item \emph{Virtualizer}: a virtualizer translates the code of the original program into a new  instruction set and  interprets it at runtime.
 \end{itemize}
-
-All these tools change deeply the original PE file by modifing the OEP, the Import directory table and many other resources and fields. Usually they are mixed together in order to obtain a more advanced protection tool that in this work we will refer generally as \textit{packer}.
-
-A \textit{packer} is the tool that implements the previously described functions: it receives in input a PE file that represent a Windows program, transforms and obfuscates its code/resources and then appends new codes, called \textit{stub}, that will \textit{unpack} the original one runtime once the program is executed.\\\\
-
-\includegraphics[width=1.1\textwidth]{pictures/packer_general.png} \\\\
-
-Malware writers can decide to use an \textit{off-the-shelf} packer ( commercial or free ) or to implements their own solution with a \textit{custom packer}.
-
-The complexity of \textit{packers} can be very different: from those which write and execute directly the original code, to others that employ multiple unpacking routines and obfuscation techniques such as runtime repacking of previously unpacked code.\\
-This process has different consequences both in the AV detection and manual analysis of malicious binary:
+All these tools change deeply the original \ac{PE} file by modifying the \ac{OEP}, the \textit{Import directory} table and many other resources and fields. Usually they are mixed together in order to obtain a more advanced protection tool that in this work we will refer generally as \textit{packer}.\\
+A \textit{packer} is the tool that implements the previously described functions: it receives in input a \ac{PE} file that represent a Windows program, transforms and obfuscates its code/resources and then appends new codes, called \textit{stub}, that will \textit{unpack} the original one runtime once the program is executed.
+\begin{figure}[!ht]
+	\begin{center}
+   		\includegraphics[width=\textwidth]{pictures/packer_general.png}
+	\end{center}
+	\caption{A general packer}
+\end{figure}
+Malware writers can decide to use an \textit{off-the-shelf} packer (commercial or free) or to implement their own solution with a \textit{custom packer}. The complexity of \textit{packers} can be very different: from those which write and execute directly the original code, to others that employ multiple unpacking routines and obfuscation techniques such as runtime repacking of previously unpacked code.\\
+This process has different consequences both in the \ac{AV} detection and manual analysis of malicious binary:
 \begin{itemize}
-\item Usually AV employ different static analysis techniques in order to understand if a file is malicious or not, but packing a binary destroys any possibility to understand what the program will do on the system without executing it, and so void any effort from the point of view of a static analysis.
-\item The process of reverse engineering a packed malware can be very time consuming and since lots of malware is pushed every day on the internet there is the necessity of fast analysis and fast updating of AV software.
+\item Usually \acp{AV} employ different static analysis techniques in order to understand if a file is malicious or not, but packing a binary destroys any possibility to understand what the program will do on the system without executing it, and so voids any effort from the point of view of a static analysis.
+\item The process of reverse engineering a packed malware can be very time consuming and since lots of malware is pushed every day on the internet there is the necessity of fast analysis and fast updating of \ac{AV} software.
 \end{itemize}
 \paragraph{}
-These problems inspired different works in building an automatic generic unpacker aimed to extract the original code from the packed one. Some of them are more oriented in detection of malicious packed program helping an AV software on end users PCs, others are instead proposed as tools for speed up the work of professional malware analysts.
+These problems inspired different works in building an automatic generic unpacker aimed to extract the original code from the packed one. Some of them are more oriented in detection of malicious packed program helping an \ac{AV} software on end users PCs, others are instead proposed as tools for speed up the work of professional malware analysts.
 \paragraph{}
 A comprehensive study and a taxonomy of the levels of complexity of nowadays packers have been presented by Ugarte-Pedrero et al\cite{sokpacker}. 
 In order to clarify better what a packer is and how it operates we will discuss in the next chapter the main points of the previously mentioned research.
@@ -42,50 +42,57 @@ Before starting to present the techniques we need to define some terms that are 
 \item \textit{Tailed/Interleaved}: we say that a packer is tailed if there is soon or later a transition from the unpacking layers to the original program code and then the execution never returns to the unpacking layers. Contrary we say that the unpacking is \textit{interleaved} if the execution bounces between the unpacking layers and the original program code
 \item \textit{Frame}: a frame is a portion of original program code unpacked and executed. A \textit{mono frame} packer means that the unpacking routine will reveal all the original code before jumping and executing it; contrary a \textit{multi frame} packer unpacks only a slice of the original program code, executes it and then unpacks another slice of original program code and so on. A \textit{multi frame} behavior can be \textit{incremental} if the slices of original program are revelead in order following the original program execution and never re-encrypted again, contrary a \textit{shifted frames} policy reveal only one slices at times and re-encrypt the slice once executed
 \end{itemize}
-
 \paragraph{}
 As proposed by Ugarte-Pedrero et al\cite{sokpacker} we are going to identify the complexity of a packer by using a scale from 1 to 6.
 
 \subsubsection{Type 1 packer}
-
 The simplest form of packers are \textit{single layer} packers: they runtime unpack the original binary using a single stub and then jump to it with a \textit{tail jump}. 
-
-\includegraphics[width=0.7\textwidth]{pictures/packer_type_1.png} 
-
+\begin{figure}[!ht]
+	\begin{center}
+   		\includegraphics[width=0.7\textwidth]{pictures/packer_type_1.png} 
+	\end{center}
+	\caption{Type 1 packer}
+\end{figure}
 This scheme is typical of packers like UPX, EXEpacker.
 
 \subsubsection{Type 2 packer}
-
-The packers in this category are defined as \textit{multi-layer} and \textit{linear}. This means that they employ different layers and the transitions between them are always from the older to the newer. Also this kind of packers are defined as \textit{tailed} since the last jump redirects the execution at the original program code.
-
-\includegraphics[width=1\textwidth]{pictures/packer_type_2.png}
-
-We can see from the picture that the layer 0 unpacks and jumps to the layer 1, then the scheme is repeated untill the layer(n-1) that decrypts and finally jumps to the original code. All the layer from 0 to n-1 are part of the packer stub.
+The packers in this category are defined as \textit{multi-layer} and \textit{linear}. This means that they employ different layers and the transitions between them are always from the older to the newer. Also this kind of packers are defined as \textit{tailed} since the last jump redirects the execution at the original program code.\\
+\begin{figure}[!ht]
+	\begin{center}
+   		\includegraphics[width=\textwidth]{pictures/packer_type_2.png}
+	\end{center}
+	\caption{Type 2 packer}
+	\label{Type 2 packer}
+\end{figure}
+We can see from Figure \ref{Type 2 packer} that the layer 0 unpacks and jumps to the layer 1, then the scheme is repeated until the layer (n-1), which decrypts and finally jumps to the original code. All the layers from 0 to n-1 are part of the packer stub.
 
 \subsubsection{Type 3 packer}
-
-These packers are defined as \textit{multi-layer}, \textit{cyclic} and \textit{tailed}. This means that they employ different layers and the transitions are both \textit{forward transition} and \textit{backward transition}.  
-
-\includegraphics[width=0.9\textwidth]{pictures/packer_type_3.png} 
-
-Following the numbers reported on the picture let's explain briefly how the process of the packer's stub works in this example of packer type 3. Keep in mind that the scheme can change but the properties for this kind of packers remains the ones described previously.
-
+These packers are defined as \textit{multi-layer}, \textit{cyclic} and \textit{tailed}. This means that they employ different layers and the transitions are both \textit{forward transition} and \textit{backward transition}.\\
+\begin{figure}[!ht]
+	\begin{center}
+   		\includegraphics[width=0.9\textwidth]{pictures/packer_type_3.png} 
+	\end{center}
+	\caption{Type 3 packer}
+	\label{Type 3 packer}
+\end{figure}
+Following the numbers reported in Figure \ref{Type 3 packer} let's explain briefly how the process of the packer's stub works in this example. Keep in mind that the scheme can change but the properties for this kind of packers remains the ones described previously.
 \begin{itemize}
 \item (1) The first layer decrypts and finally jumps to the layer 1
 \item (2) The layer 1 does the same thing, unpacking and jumping to the layer 2
-\item (3) Then the layer 2 decrypts a piece of original program code, and then (4)re-jumps with a backward transition to the layer 0
+\item (3) Then the layer 2 decrypts a piece of original program code, and then (4) re-jumps with a backward transition to the layer 0
 \item (5) Now the layer 0 decrypts another piece of the original program code and then (6) re-jumps to layer 1
-\item (7)Finally layer 1 decrypts the last piece (Layer X) of original code and jumps to the \ac{OEP} of the program
+\item (7) Finally layer 1 decrypts the last piece (Layer X) of original code and jumps to the \ac{OEP} of the program
 \end{itemize}
-
 A scheme of this type is implemented by PE-Compact, Aspack, FSG, ASprotect, NSPack, WinUpack, UPolyX and Obsidium.
 
 \subsubsection{Type 4 packer}
-
 These packers are \textit{multi-layer}, \textit{cyclic} and \textit{interleaved}. This means that they use different layers with both \textit{forward and backward transitions}, and during the execution of the original program the control is redirected in some way to the packer code.
-
-\includegraphics[width=1.07\textwidth]{pictures/packer_type_4.png} 
-
+\begin{figure}[!ht]
+	\begin{center}
+   		\includegraphics[width=\textwidth]{pictures/packer_type_4.png} 
+	\end{center}
+	\caption{Type 4 packer}
+\end{figure}
 \begin{itemize}
 \item (1) The first layer decrypts and finally jumps to the layer 1
 \item (2) The layer 1 does the same thing, unpacking and jumping to the layer 2
@@ -95,68 +102,74 @@ These packers are \textit{multi-layer}, \textit{cyclic} and \textit{interleaved}
 \item (8) During program execution the packer re-gains control executing the evasion routines; this is usually implemented by hijacking the \ac{API} called by original program
 \item (9) After the evasion code has been executed the execution can resume to the original program code or into other location based on the results of the evasion checks implemented
 \end{itemize}
-
 A scheme of this type is implemented by ACProtect.
 
-
 \subsubsection{Type 5 packer}
-
 Packers of this type are \textit{multi-layer}, \textit{cyclic}, \textit{interleaved} and \textit{multi frame} with an \textit{incremental frames} behaviour. This means that they use different layers with both \textit{forward and backward transitions}, during the execution of the original program the control is redirected in some way to the packer code and the original program code is revealed slice by slice when needed to execute. Like the previous packer's type also here exists a moment in which all the original program code is unpacked in memory, but differently in this case dumping at the \ac{OEP} does not permit to dump all the original program code, since it is still encrypted in memory; nonetheless, a theoretical dump nearly the end of execution can dump the entire program's code.
-
-\includegraphics[width=1\textwidth]{pictures/packer_type_5-1.png}
-
+\begin{figure}[!ht]
+	\begin{center}
+   		\includegraphics[width=\textwidth]{pictures/packer_type_5-1.png}
+	\end{center}
+	\caption{Type 5 packer (I)}
+\end{figure}
 \begin{itemize}
-\item (1) The layer 0 unpacks and jumps to layer 1.
-\item (2) The layer 1 unpacks and jumps to layer 2.
-\item (3a+3b) Layer 2 unpacks two additional layers that will implement some kind of evasion techniques. Finally (3c) it unpacks a slice of original program's code at the \ac{OEP} and redirects the execution there, (4) starting to execute the original program.
-\item (5) The execution reaches the end of the unpacked original program's code and supposedly an exception will be launched. The packer catches this exception and redirects the execution to layer 0.
+\item (1) The layer 0 unpacks and jumps to layer 1
+\item (2) The layer 1 unpacks and jumps to layer 2
+\item (3a+3b) Layer 2 unpacks two additional layers that will implement some kind of evasion techniques. Finally (3c) it unpacks a slice of original program's code at the \ac{OEP} and redirects the execution there, (4) starting to execute the original program
+\item (5) The execution reaches the end of the unpacked original program's code and supposedly an exception will be launched. The packer catches this exception and redirects the execution to layer 0
 \end{itemize}
-
-\includegraphics[width=1.1\textwidth]{pictures/packer_type_5-2.png}
-
+\begin{figure}[!ht]
+	\begin{center}
+   		\includegraphics[width=\textwidth]{pictures/packer_type_5-2.png}
+	\end{center}
+	\caption{Type 5 packer (II)}
+\end{figure}
 \begin{itemize}
-\item (5) Layer 0 decrypts on demand a new slice of original program's code and then jumps to it.
-\item (6) The same things as before happen when execution reaches again the end of the previously unpacked code, and now the layer 2 take control.
-\end{itemize}
-
-\includegraphics[width=1.1\textwidth]{pictures/packer_type_5-3.png}
-
-\begin{itemize}
+\item (5) Layer 0 decrypts on demand a new slice of original program's code and then jumps to it
+\item (6) The same things as before happen when execution reaches again the end of the previously unpacked code, and now the layer 2 take control
 \item (7) Layer 2 decrypts the last slice of original program's code and finally jumps to it. As before in (8) there is a redirection to an evasion layer that can decide to (9) resume the execution to the original program's code or to abort the execution depending on its checks.
 \end{itemize}
+\begin{figure}[!ht]
+	\begin{center}
+   		\includegraphics[width=\textwidth]{pictures/packer_type_5-3.png}
+	\end{center}
+	\caption{Type 5 packer (III)}
+\end{figure}
 
 \subsubsection{Type 6 packer}
 
-Packers of this type are \textit{multi-layer}, \textit{cyclic}, \textit{interleaved} and \textit{multi frame} with a \textit{shifted frames} behavior. This means that they use different layers with both \textit{forward} and \textit{backward transitions}, during the execution of the original program the control is redirected in some way to the packer's code and the original program code is revealed slice by slice and re-encrypted once executed; packers with such complexity never let all the program code to live in memory, so a dump that encompass the entire original program's code does not exists.
-
+Packers of this type are \textit{multi-layer}, \textit{cyclic}, \textit{interleaved} and \textit{multi frame} with a \textit{shifted frames} behaviour. This means that they use different layers with both \textit{forward} and \textit{backward transitions}, during the execution of the original program the control is redirected in some way to the packer's code and the original program code is revealed slice by slice and re-encrypted once executed; packers with such complexity never let all the program code to live in memory, so a dump that encompass the entire original program's code does not exists.
 \begin{figure}[!ht]
-\begin{center}
-\includegraphics[width=1\textwidth]{pictures/packer_type_5-1.png}
-\end{center}
+	\begin{center}
+		\includegraphics[width=\textwidth]{pictures/packer_type_5-1.png}
+	\end{center}
+	\caption{Type 6 packer (I)}
 \end{figure}
-
-
 \begin{itemize}
-\item (1) The layer 0 unpacks and jumps to layer 1.
-\item (2) The layer 1 unpacks and jumps to layer 2.
-\item (3a+3b) Layer 2 unpacks two additional layers that will implements some kind of evasion techniques. Finally (3c) it unpacks a slice of original program's code at the \ac{OEP} and redirects the execution there,(4) starting to execute the original program.
-\item (5) The execution reaches the end of the unpacked original program's code and supposedly an exception will be launched. The packer catches this exception and redirects the execution to layer 0.
+\item (1) The layer 0 unpacks and jumps to layer 1
+\item (2) The layer 1 unpacks and jumps to layer 2
+\item (3a+3b) Layer 2 unpacks two additional layers that will implements some kind of evasion techniques. Finally (3c) it unpacks a slice of original program's code at the \ac{OEP} and redirects the execution there, (4) starting to execute the original program
+\item (5) The execution reaches the end of the unpacked original program's code and supposedly an exception will be launched. The packer catches this exception and redirects the execution to layer 0
 \end{itemize}
-
-
-\includegraphics[width=1.05\textwidth]{pictures/packer_type_6-1.png}
-
+\begin{figure}[!ht]
+	\begin{center}
+		\includegraphics[width=\textwidth]{pictures/packer_type_6-1.png}
+	\end{center}
+	\caption{Type 6 packer (II)}
+\end{figure}
 \begin{itemize}
-\item (5a) Layer 0 re-encrypts the previous slice of original program's code, and (5b) decrypts on demand a new slice of original program's code; finally it jumps to the new unpacked slice.
-\item (6) The same things as before happen when execution reaches again the end of the previously unpacked code, and now the layer 2 takes control.
+\item (5a) Layer 0 re-encrypts the previous slice of original program's code, and (5b) decrypts on demand a new slice of original program's code; finally it jumps to the new unpacked slice
+\item (6) The same things as before happen when execution reaches again the end of the previously unpacked code, and now the layer 2 takes control
 \end{itemize}
-
-\includegraphics[width=1.05\textwidth]{pictures/packer_type_6-2.png}
-
+\begin{figure}[!ht]
+	\begin{center}
+		\includegraphics[width=\textwidth]{pictures/packer_type_6-2.png}
+	\end{center}
+	\caption{Type 6 packer (III)}
+\end{figure}
 \begin{itemize}
-\item (7) Layer 2 re-encrypts the previous slice of original program's code and decrypts the last slice, jumping to it at the end. As before, in (8) there is a redirection to an evasion layer that can decide to (9) resume the execution to the original program's code or to abort the execution depending on its checks.
+\item (7) Layer 2 re-encrypts the previous slice of original program's code and decrypts the last slice, jumping to it at the end. As before, in (8) there is a redirection to an evasion layer that can decide to (9) resume the execution to the original program's code or to abort the execution depending on its checks
 \end{itemize}
-
 A scheme of this type is implemented by Armadillo.
 
 \subsubsection{Packer complexity distribution}
