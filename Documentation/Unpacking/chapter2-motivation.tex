@@ -2,14 +2,14 @@
 \label{chapter2}
 \thispagestyle{empty}
 
-\section{Packed malware problem}
+\section{Problem statement}
 \paragraph{}
 In order to avoid \ac{AV} detection and harden the process of reverse engineering usually malware hide and protect their code employing different techniques and tools. This process, generally called \textit{packing}, makes the static analysis of a binary almost completely useless.\\
 There are lots of different run-time tools available in order to compress, encrypt, protect both good and malicious software, the main categories in which this tools fall are:
 \begin{itemize}
 \item \emph{Packer}: a packer usually tries to reduce the size of a binary by using different compression algorithms.
-\item \emph{Crypter}: the goal of a crypter is to encrypt the executable and hardening the disassembly.
-\item \emph{Protector}: a protector implements different anti-debugging and generally anti-reversing techniques in order to protect the binary's copyright in the case of a good program, or hide the malicious code in case of a malware.
+\item \emph{Crypter}: the goal of a crypter is to encrypt the executable and hindering the disassembly.
+\item \emph{Protector}: a protector implements different anti-debugging and generally anti-reversing techniques in order to protect the binary copyright in the case of a good program, or hide the malicious code in case of a malware.
 \item \emph{Virtualizer}: a virtualizer translates the code of the original program into a new  instruction set and  interprets it at runtime.
 \end{itemize}
 All these tools change deeply the original \ac{PE} file by modifying the \ac{OEP}, the \textit{Import directory} table and many other resources and fields. Usually they are mixed together in order to obtain a more advanced protection tool that in this work we will refer generally as \textit{packer}.\\
@@ -21,10 +21,10 @@ A \textit{packer} is the tool that implements the previously described functions
 	\caption{A general packer}
 \end{figure}
 Malware writers can decide to use an \textit{off-the-shelf} packer (commercial or free) or to implement their own solution with a \textit{custom packer}. The complexity of \textit{packers} can be very different: from those which write and execute directly the original code, to others that employ multiple unpacking routines and obfuscation techniques such as runtime repacking of previously unpacked code.\\
-This process has different consequences both in the \ac{AV} detection and manual analysis of malicious binary:
+The growing trend of packing malwares has different consequences both in the \ac{AV} detection and manual analysis of malicious binary:
 \begin{itemize}
-\item Usually \acp{AV} employ different static analysis techniques in order to understand if a file is malicious or not, but packing a binary destroys any possibility to understand what the program will do on the system without executing it, and so voids any effort from the point of view of a static analysis.
-\item The process of reverse engineering a packed malware can be very time consuming and since lots of malware is pushed every day on the internet there is the necessity of fast analysis and fast updating of \ac{AV} software.
+\item Usually \acp{AV} employ different static analysis techniques in order to understand if a file is malicious or not, but packing a binary destroys any possibility to understand what the program will do on the system without executing it, and so voids any effort from the point of view of a static analysi
+\item The process of reverse engineering a packed malware can be very time consuming and a lot of time is wasted trying to extract the original payload instead of focusing on its behaviour
 \end{itemize}
 \paragraph{}
 These problems inspired different works in building an automatic generic unpacker aimed to extract the original code from the packed one. Some of them are more oriented in detection of malicious packed program helping an \ac{AV} software on end users PCs, others are instead proposed as tools for speed up the work of professional malware analysts.
