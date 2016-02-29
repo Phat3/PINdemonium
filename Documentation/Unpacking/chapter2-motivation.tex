@@ -156,7 +156,7 @@ A scheme of this type is implemented by Armadillo.
 
 \subsubsection{Packer complexity distribution}
 
-According to Ugarte-Pedrero et al\cite{sokpacker}, the distribution of packer complexity resulted from the analysis of 6088 malware binaries is the following:
+According to Ugarte-Pedrero et al\cite{sokpacker}, the distribution of packer complexity resulted from the analysis of 6088 packed malware binaries is the following:
 
 \begin{table}[H]
 \begin{center}
@@ -187,7 +187,7 @@ As presented, the complexity of a packer can escalate really quickly and buildin
 Lots of different tools using different approaches and techniques have been proposed. 
 The approaches for automatic unpacking can be very different:
 \begin{itemize}
-\item \textit{Static unpacking}: this can sound counterintuitive, but some works proposed to identify unpacking routines inside the binary and reconstruct an ad hoc unpacker for the binary starting from these routines. This approach has got numerous limitation but can lead to interesting result in some case as demonstrated by Caballero et al.
+\item \textit{Static unpacking}: this can sound counterintuitive, but some works proposed to identify unpacking routines inside the binary and reconstruct an ad hoc unpacker for the binary starting from these routines. This approach has got numerous limitation but can lead to interesting result in some case as demonstrated by Coogan et al.\cite{coogan}
 \item \textit{Hybrid unpacking}: this mixes some static heuristics with dynamic analysis.
 \item \textit{Dynamic unpacking}: these techniques follow the idea to let the unpacker do its work and then try to extract runtime the unpacked code. 
 \end{itemize}
