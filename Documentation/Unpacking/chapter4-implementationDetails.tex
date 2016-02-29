@@ -90,6 +90,11 @@ We did a survey to establish a reasonable threshold and we set it as 20\% of the
 In both cases the obtained dump, no matter if it is working or not, is subject to the analysis of our heuristics (see Section \ref{Heuristics implementation}). Moreover we keep track of the number of dumps by incrementing a counter every time Scylla tries to dump the code, even if it does not succeed.\\
 During the development of our tool we noticed that some packers unpack code also on the heap. For this reason, along with the main executable image we dump also the heap, adding it as an additional section in the \ac{PE}.
 
+\subsection{IAT Fixing Module}
+\label{IAT Fixing Module}
+\paragraph{}
+
+
 \subsection{Heuristics implementation}
 \label{Heuristics implementation}
 \paragraph{}

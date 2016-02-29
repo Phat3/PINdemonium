@@ -9,10 +9,10 @@ In order to avoid Anti-Virus (AV) detection and harden the process of reverse en
 \item \emph{Packer}: a packer usually tries to reduce the size of a binary by using different compression algorithms.
 \item \emph{Crypter}: the goal of a crypter is to encrypt the executable and hardening the disassembly.
 \item \emph{Protector}: a protector implements different anti-debugging and generally anti-reversing techniques in order to protect the binary's copyright in the case of a good program, or hide the malicious code in case of a malware.
-\item \emph{Virtualizer}: a virtualizer basically translates the instructions of an original program in new particulars instruction and it interprets in runtime executing finally the intended program.
+\item \emph{Virtualizer}: a virtualizer translates the code of the original program into a new  instruction set and  interprets it at runtime.
 \end{itemize}
 
-All this tools change deeply the original PE file by modifing the OEP, the Import directory table and many other resources and fields. Usually they are mixed together in order to obtain a more advanced protection tool that in this work we will refer generally as \textit{packer}.
+All these tools change deeply the original PE file by modifing the OEP, the Import directory table and many other resources and fields. Usually they are mixed together in order to obtain a more advanced protection tool that in this work we will refer generally as \textit{packer}.
 
 A \textit{packer} is the tool that implements the previously described functions: it receives in input a PE file that represent a Windows program, transforms and obfuscates its code/resources and then appends new codes, called \textit{stub}, that will \textit{unpack} the original one runtime once the program is executed.\\\\
 
