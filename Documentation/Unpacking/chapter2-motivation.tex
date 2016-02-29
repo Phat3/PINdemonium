@@ -2,9 +2,9 @@
 \label{chapter2}
 \thispagestyle{empty}
 
-\section{Problem statement}
+\section{Packed malware problem}
 \paragraph{}
-In order to avoid Anti-Virus (AV) detection and harden the process of reverse engineering usually malware hide and protect their code employing different techniques and tools. This process, generally called \textit{packing}, makes the static analysis of a binary almost completely useless.\\There are lots of different run-time tools available in order to compress/encrypt/protect both good and malicious software, the main categories in which this tools fall are:
+In order to avoid Anti-Virus (AV) detection and harden the process of reverse engineering usually malware hide and protect their code employing different techniques and tools. This process, generally called \textit{packing}, makes the static analysis of a binary almost completely useless.\\There are lots of different run-time tools available in order to compress,encrypt,protect both good and malicious software, the main categories in which this tools fall are:
 \begin{itemize}
 \item \emph{Packer}: a packer usually tries to reduce the size of a binary by using different compression algorithms.
 \item \emph{Crypter}: the goal of a crypter is to encrypt the executable and hardening the disassembly.
@@ -129,7 +129,12 @@ Packers of this type are \textit{multi-layer}, \textit{cyclic},\textit{interleav
 
 Packers of this type are \textit{multi-layer}, \textit{cyclic}, \textit{interleaved} and \textit{multi frame} with a \textit{shifted frames} behavior. This means that they use different layers with both \textit{forward and backward transitions}, during the execution of the original program the control is redirected in some way to the packer code and the original program code is revelead slice by slice and re-encrypted once executed; packers with such complexity never let all the program code to live in memory, so a dump that encompass the entire original program's code doesn't exists.
 
+\begin{figure}[!ht]
+\begin{center}
 \includegraphics[width=1\textwidth]{pictures/packer_type_5-1.png}
+\end{center}
+\end{figure}
+
 
 \begin{itemize}
 \item (1) The layer 0 unpacks and jumps to layer 1.
@@ -182,7 +187,7 @@ Interpreting the data we can derive that:
 \end{itemize}
 As presented, the complexity of a packer can escalate really quickly and building a generic unpacker that can cover all these schemes is a big challenge.
 
-\section{State of the art}
+\section{State of art}
 \paragraph{}
 Lots of different tools using different approaches and techniques have been proposed. 
 The approaches for automatic unpacking can be very different:
@@ -210,7 +215,11 @@ In this category have been developed tools like PolyUnpack, Ether, Eureka, Renov
 These tools merely collect dumps of the binary while unpacking and they don't reconstruct a fully runnable binary given a packed one.
 
 
-\section{Goals and challenges}
+\section{Challenges}
+\subsection{Determine the Original Entry Point of the malware}
+
+\subsection{Reconstruct the Import Table despite IAT obfuscation}
+
 \paragraph{}
 Since our work is a component of a bigger malware analysis platform\cite{jackdaw}, our tool is oriented to help malware analyst during the reversing process of a packed binary. 
 Our approach aims not only to unpack the malware, but also to reconstruct a fully working unpacked binary. To do so, we not only have to identify the original entry point (OEP) and dump the code at that moment, but we have to find the IAT inside the process and reconstruct a correct import directory in the final PE file.\\
@@ -219,3 +228,6 @@ According to the discussion about packer's complexity our aim is to unpack until
 The first thing we have to deal with are the unpacking routines of the packers: every time the execution of the malware comes from a previously written memory area, then it could be a sign that the unpacking stage has finished or that a new unpacking layer has started.\\
 We have also to deal with techniques of IAT obfuscation: some malwares can do this in order to make difficult to statically analyse them to understand what they are doing.
 
+\section{Goals}
+\subsection{Develop a generic automatic unpacker}
+\subsection{Obtain a reconstructed and working PE}
