@@ -85,7 +85,29 @@ In the first case the analysis goes through the following steps:
 \end{enumerate} 
 \paragraph{}
 In the other case we eventually have to proceed with the \textit{InterWriteSet} analysis. This kind of analysis is the same as the previous one except that it considers jumps inside the same \textit{Write Interval}: if the absolute value of the difference between the current \ac{EIP} and the previous one is greater than a given threshold and if the maximum number of jump in the \textit{Write Interval} has not been reached, we consider the current \ac{EIP} as a new candidate for the \ac{OEP} and trigger the same analysis as before. This is also the reason why we do not remove broken \textit{Write Intervals} from the \textit{WriteSet} as soon as they become \textit{broken}.\\
-We did a survey to establish a reasonable threshold and we set it as 20\% of the current  \textit{Write Interval} length. The maximum number of considered jumps has to be set by command line, as well as the flag that enables the \textit{InterWriteSet} analysis.
+We did a survey to establish a reasonable threshold: we packed test programs with the most common packers and compared the length of the jump to the \ac{OEP} to the \ac{WI} size. the result are summarized in the  and we set it as 5\% of the current  \textit{Write Interval} length. The maximum number of considered jumps has to be set by command line, as well as the flag that enables the \textit{InterWriteSet} analysis.
+\begin{center}
+    \begin{tabular}[width=\textwidth]{| c | c | c | c | c |}
+    \hline
+    \textbf{Packer} & \textbf{Binary} & \textbf{$\frac{\ac{OEP}_jump}{\ac{WI}}$} & \textbf{\ac{WI}} & \textbf{\ac{OEP} jump} \\ \hline
+    UPX & write\_test &	100 \% & 21192 & 26387 \\ \hline
+    UPX & MessageBox & 100 \% & 103804 & 43658 \\ \hline
+    UPX & 7Zip & 42 \% & 443723 & 182186 \\ \hline
+    UPX & WinRAR & 53 \% & 2162409 & 1204971 \\ \hline
+    UPX & Solitaire & 46 \% & 10099141 & 4589740 \\ \hline
+    FSG & write\_test & 100 \% & 102400 & 69443 \\ \hline
+    Mew & write\_test & 100 \% & 2304 & 4144 \\ \hline
+    mpress & write\_test & 13 \% & 18258 & 2301 \\ \hline
+	mpress & MessageBox & 16 \% & 95106 & 14321 \\ \hline
+	mpress & 7Zip & 12 \% & 142260-296018 & 33515 \\ \hline
+	mpress & WinRAR & 6 \% & 1596762 & 84207 \\ \hline
+	EXEPacker & write\_test & 100 \% & 21192 & 26387 \\ \hline
+	WinUpack & write\_test & 100 \% & 28852-20243 & 26243 \\ \hline
+	YodaC & write\_test & 100 \% & 2923-2924-2560 & 22262 \\ \hline
+	Xcomp & write\_test & 100 \% & 17044 & 20304 \\ \hline
+	PeCompact & write\_test & 100 \% & 5-4-7840-22 & 22282 \\ \hline
+    \end{tabular}
+\end{center}
 \paragraph{}
 In both cases the obtained dump, no matter if it is working or not, is subject to the analysis of our heuristics (see Section \ref{Heuristics implementation}). Moreover we keep track of the number of dumps by incrementing a counter every time Scylla tries to dump the code, even if it does not succeed.\\
 During the development of our tool we noticed that some packers unpack code also on the heap. For this reason, along with the main executable image we dump also the heap, adding it as an additional section in the \ac{PE}.

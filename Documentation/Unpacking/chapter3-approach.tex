@@ -23,7 +23,14 @@ More in details for each instruction the following steps are performed:
 	\begin{enumerate}
 	\item Dumping the main image of the \ac{PE} and a memory range on the heap depending on the address of the current instruction
 	\item Reconstructing the \ac{IAT} and generating the correct Import Directory
-	\item Applying some heuristics to evaluate if the current instruction is the \ac{OEP}
+	\item Applying a set of heuristics to evaluate if the current instruction is the \ac{OEP}:
+		\begin{itemize}
+			\item entropy: check if the delta between the current value of the entropy and the starting one is above a certain threshold
+			\item long jump: check if the difference between the address of the current EIP and the previous one is above a certain threshold
+			\item jump outer section: check if the current EIP is a different section from the 		one of the previous EIP
+			\item pushad popad: check is a \textit{pushad-popad} pattern has been found in the trace
+			\item init function calls: check if the imports of the dump are functions commonly used by the malware and not by the unpacking layers
+		\end{itemize}
 	\end{enumerate}
 \end{enumerate}
 The result of our tool is a set of memory dumps or reconstructed \acp{PE} depending on the result of the \ac{IAT} fixing phase and a report which includes the values of each heuristic for every dump. Based on these information we can choose the best dump, that is the one that has the greatest chance of work.
@@ -31,25 +38,6 @@ The result of our tool is a set of memory dumps or reconstructed \acp{PE} depend
 \section{Approach details}
 \paragraph{}
 In this section we are going to describe in details the steps introduced in the previous section.
-\paragraph{}
-During the development we have adapted our approach in order to increase speed and effectiveness of our tool. Following there is a detailed explanation of our improvements on the initial approach:
-\begin{enumerate}
-\item in the first step, we add the option of not to track writes of library instructions on the stack and in the \ac{TEB}
-\item in the second step we filter instructions of known libraries before dumping
-	\begin{enumerate}
-	\item when trying to reconstruct the \ac{IAT} we added some code in order to deal with 			obfuscation techniques like \textit{\ac{IAT} Redirection} and \textit{Stolen \ac{API}}
-	\item we implemented five heuristics:
-		\begin{itemize}
-		\item entropy: check if the value of the entropy is above a certain threshold
-		\item long jump: check if the "distance" between the current EIP and the previous 			one is above a certain threshold
-		\item jump outer section: check if the current EIP is a different section from the 		one of the previous EIP
-		\item pushad popad: check is a \textit{pushad-popad} pattern has been found in the trace
-		\item init function calls: check if the imports of the dump are functions commonly 			 used by the malware and not by the unpacking layers
-		\end{itemize}
-	\end{enumerate}
-\end{enumerate} 
-For the instructions that execute from the same write set we adopted the following approach: if the "distance" between the current EIP and the EIP of the previous instruction is above a given threshold then we do the same as if we were in the case 2, otherwise we jump to the next instruction.\\
-Finally, we have noticed that dumping only the main executable in memory is not enough because some packers dump the final payload on the heap. In order to deal with it, we track heap allocations and writes inside an heap interval. If necessary, we dump these intervals too.
 
 \subsection{Instructions filtering}
 \paragraph{}
@@ -62,18 +50,36 @@ The write instructions on the stack are ignored because unpacking code on the st
 The same considerations can be applied to the instructions which write on the \ac{TEB}, since most of these writes are related to the creation of instruction handlers and there is very little chance that a packer uses this addresses to unpack the encrypted payload.\\
 The instructions executed by known Windows Libraries are never considered when checking if the current instruction address is contained inside a \textit{Write Interval} because this would mean that the packer writes the malicious payload in the address space of a know Windows Library. This behaviour has never been identified in the packer analysed; moreover, this could introduce some crashes if the application explicitly use one of the functions which have been overwritten.
 
-\subsection{Track WxorX instructions}
+\subsection{Written addresses tracking}
 \paragraph{}
-All packers, in order to work correctly, have to present a common behaviour: they must write the original program in memory and then they must execute the written code. We have defined an instruction that is first written by the packer and then executed as a \textit{WxorX instruction}.
-Our tool tracks each write operation made by the program and build a set of memory ranges which identify contiguously written memory addresses. A memory range is dentified by a starting address and an end address and it is managed in order to take into account the memory operation that overlaps it (The starting address and the end address are decreased or increased 
-respectively when an overlapping writes is detected).
+...TODO...
 
-\begin{figure}[H]
- \makebox[\textwidth][c]{\includegraphics[width=1.0\textwidth]{./pictures/wxorx_tracking.jpg}}%
-\caption{Memory range management}
-\end{figure} 
 
-The first time we detect that the instruction pointer is inside one of our memory ranges, all the analysis and dumping routines (explained in the next chapters) are triggered and the memory range is marked as \textit{broken}. It is easy to deduct that the definition of a broken memory range is : A memory range in which the execution has been redirected to. 
+
+\subsection{WxorX instructions tracking}
+\paragraph{}
+...TOFINISH..
+
+The initial approach was to dump the code and trigger the analysis of if once the \ac{WxorX} law was broken in a \textit{Write Interval} for the first time and then ignore all the subsequent instructions from the same \textit{Write Interval}. However, when analysing a binary packed with \textit{mpress}, we noticed the behaviour in Figure \ref{mpress behaviour} that forced us to slightly modify the initial approach.\\
+\begin{figure}[!ht]
+	\begin{center}
+   		\includegraphics [width=\textwidth]{./pictures/InterWriteSet Analysis - mpress.jpg}
+	\end{center}
+	\caption{Mpress behaviour}
+	\label{mpress behaviour}
+\end{figure}
+When \textit{mpress} enters for the first time the \textit{Write Interval} which contains the original code (a), it jumps in an area of memory that contains a small stub that reconstructs the \ac{IAT} and then jumps to the original code (b), that resides in the same \textit{Write Interval}. With the original approach we were able to dump the code in (a), but we ignored the jump in (b) and so we were unable to recreate a running \ac{PE}.\\
+Consequently, we adapted our approach to deal with this behaviour: we consider jumps inside the same \textit{Write Interval} only if they are longer than a given threshold. If this is the case, we trigger the analysis as if it was the first time the \ac{WxorX} law is broken. However, this improvement may potentially generate too many dumps, making the analysis very slow and difficult. For this reason there is a maximum number of jumps that are considered inside the same \textit{Write Interval}.
+
+
+\subsection{Dumping process}
+\paragraph{}
+....TODO...
+
+\subsection{IAT Fixing and Import Directory Reconstruction}
+\paragraph{}
+....TODO...
+
 
 \subsection{Heuristics description}
 \paragraph{}
@@ -101,15 +107,3 @@ When a malware is packed, it usually exhibits very few or false imports. This is
 The purpose of the \textit{init function calls} heuristic is to search in the \ac{IAT} for functions commonly used by the malware and not by the unpacking stub. For example, if a malware has to contact an Internet domain to download some malicious code, it will have in its imports some internet communication \acp{API} like \textit{connect} and \textit{send}. Since the unpacking stub does not need them to perform its job, when packed the binary will not have these \acp{API} in its \ac{IAT}, but the packer will take care of inserting them among the imports during the unpacking stage. In some extreme cases, the packed binary may have as imports only the \textit{GetProcAddress} and \textit{LoadLibrary} functions, because these two are used to dynamically load libraries and functions.\\
 Consequently, once identified some "interesting" \acp{API} for the malware but not for the packer, we check how many of them a dump has among its imports. Usually, the more of them, the higher the probability of being the correct dump.
 \paragraph{}
-\subsection{Evaluation of \textit{InterWriteSet} analysis}
-\paragraph{}
-The initial approach was to dump the code and trigger the analysis of if once the \ac{WxorX} law was broken in a \textit{Write Interval} for the first time and then ignore all the subsequent instructions from the same \textit{Write Interval}. However, when analysing a binary packed with \textit{mpress}, we noticed the behaviour in Figure \ref{mpress behaviour} that forced us to slightly modify the initial approach.\\
-\begin{figure}[!ht]
-	\begin{center}
-   		\includegraphics [width=\textwidth]{./pictures/InterWriteSet Analysis - mpress.jpg}
-	\end{center}
-	\caption{Mpress behaviour}
-	\label{mpress behaviour}
-\end{figure}
-When \textit{mpress} enters for the first time the \textit{Write Interval} which contains the original code (a), it jumps in an area of memory that contains a small stub that reconstructs the \ac{IAT} and then jumps to the original code (b), that resides in the same \textit{Write Interval}. With the original approach we were able to dump the code in (a), but we ignored the jump in (b) and so we were unable to recreate a running \ac{PE}.\\
-Consequently, we adapted our approach to deal with this behaviour: we consider jumps inside the same \textit{Write Interval} only if they are longer than a given threshold. If this is the case, we trigger the analysis as if it was the first time the \ac{WxorX} law is broken. However, this improvement may potentially generate too many dumps, making the analysis very slow and difficult. For this reason there is a maximum number of jumps that are considered inside the same \textit{Write Interval}.
