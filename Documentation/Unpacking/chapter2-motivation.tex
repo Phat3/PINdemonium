@@ -137,7 +137,6 @@ Packers of this type are \textit{multi-layer}, \textit{cyclic}, \textit{interlea
 \end{figure}
 
 \subsubsection{Type 6 packer}
-
 Packers of this type are \textit{multi-layer}, \textit{cyclic}, \textit{interleaved} and \textit{multi frame} with a \textit{shifted frames} behaviour. This means that they use different layers with both \textit{forward} and \textit{backward transitions}, during the execution of the original program the control is redirected in some way to the packer's code and the original program code is revealed slice by slice and re-encrypted once executed; packers with such complexity never let all the program code to live in memory, so a dump that encompass the entire original program's code does not exists.
 \begin{figure}[!ht]
 	\begin{center}
@@ -193,7 +192,7 @@ Type 6 &       12 (1.8\%) & 11 (0.2\%) \\
 
 Interpreting the data we can derive that:
 \begin{itemize}
-\item Malware writers seems to prefer using a custom packer rather than relying on an existing ones
+\item Malware writers seem to prefer using a custom packer rather than relying on an existing ones
 \item more than 90\% of the binary packed with both an off-the-shelf/custom packer use a complexity that ranges from 1 to a maximum of 4. This suggests that a generic unpacker that can handle such complexities can cover a good number of cases
 \item In both cases of an off-the-shelf/custom packer we can see that the preferred complexity seems to be a Type 3 packer. This could be an indication that a complexity of that level is enough to defeat the nowadays \ac{AV} solutions
 \item The use of a complexity greater than Type 4 is rarely used
@@ -205,15 +204,15 @@ As presented, the complexity of a packer can escalate really quickly and buildin
 Lots of different tools using different approaches and techniques have been proposed. 
 The approaches for automatic unpacking can be very different:
 \begin{itemize}
-\item \textit{Static unpacking}: this can sound counterintuitive, but some works proposed to identify unpacking routines inside the binary and reconstruct an ad hoc unpacker for the binary starting from these routines. This approach has got numerous limitation but can lead to interesting result in some case as demonstrated by Coogan et al.\cite{coogan}
-\item \textit{Hybrid unpacking}: this mixes some static heuristics with dynamic analysis.
-\item \textit{Dynamic unpacking}: these techniques follow the idea to let the unpacker do its work and then try to extract runtime the unpacked code. 
+\item \textit{Static unpacking}: this can sound counterintuitive, but some works proposed to identify unpacking routines inside the binary and reconstruct an ad hoc unpacker for the binary starting from these routines. This approach has got numerous limitations but can lead to interesting results in some cases, as demonstrated by Coogan et al.\cite{coogan}
+\item \textit{Hybrid unpacking}: this mixes some static heuristics with dynamic analysis
+\item \textit{Dynamic unpacking}: these techniques follow the idea to let the unpacker do its work and then try to extract runtime the unpacked code
 \end{itemize}
 \paragraph{}
-Depending on the purpose of the tool there are different requirements that a generic unpacker must respect. If the aim is to help the AV on end users' PCs:
+Depending on the purpose of the tool there are different requirements that a generic unpacker must respect. If the aim is to help the \ac{AV} on end users' PCs:
 \begin{itemize}
-\item Safety: try to recognize the malicious behaviour as fast as possible and block the execution. 
-\item Performance: it should not slow down too much the execution of AV scans.
+\item Safety: try to recognize the malicious behaviour as fast as possible and block the execution.
+\item Performance: it should not slow down too much the execution of ac{AV} scans
 \end{itemize}
 Note that in these cases, the scope is not to reconstruct a binary from a packed one, but rather to stop malicious behaviours when they manifest. \\
 In this area have been done works such as OmniUnpack and JustIn.
@@ -225,7 +224,7 @@ On the other side if the aim is to help the analysis in a laboratory:
 \end{itemize}
 In this case we do not care so much about safety because usually analysis is performed inside a controlled environment and the analysts want to observe the complete execution of malware. Also the performances are not a critical feature here because we are not constrained by user experience needs.\\
 In this category have been developed tools like PolyUnpack, Ether, Eureka, Renovo, Lynx.
-These tools merely collect dumps of the binary while unpacking and they don't reconstruct a fully runnable binary given a packed one.
+These tools merely collect dumps of the binary while unpacking and they do not reconstruct a fully runnable binary given a packed one.
 
 
 \section{Challenges}
