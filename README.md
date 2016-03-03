@@ -92,7 +92,11 @@
 
 	- **-adv-iatfix** : specify if you want or not to activate the advanced IAT fix technique
 	
+
 	- **-poly-patch**: if the binary you are analyzing has some kind of polymorphic behavior this activate the patch in order to avoid pin to execute the wrong trace.
+
+
+	- **-nullify-unk-iat**: specify if you want or not to nullify the IAT entry not detected as correct API by the tool. NB: THIS OPTION WORKS ONLY IF THE OPTION adv-iatfix IS ACTIVE!
 
 
 2. Check your result in **C:\pin\PinUnpackerResults\\< current_date_and_time >\\**

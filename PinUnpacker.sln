@@ -28,9 +28,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyxml", "Scylla\tinyxml\tinyxml.vcxproj", "{187A751B-B47D-4A95-9F24-55D3D7ABB570}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScyllaWrapper", "ScyllaWrapper\ScyllaWrapper.vcxproj", "{A963EFBD-C7EF-41CC-B6F7-1E15CDFBE4FB}"
-	ProjectSection(ProjectDependencies) = postProject
-		{710434C9-FC4B-4F1D-B318-E10ADC78499F} = {710434C9-FC4B-4F1D-B318-E10ADC78499F}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -341,7 +341,7 @@ void displayModuleList(std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
 
 }
 
-void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportModuleThunk> moduleList, unsigned int eip){
+void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportModuleThunk> moduleList, unsigned int eip, DWORD nullify_unknown_iat_entry_flag){
 	printf("Unresolved imports detected...\n");
 
 	PUNRESOLVED_IMPORT unresolvedImport = 0;
@@ -427,14 +427,20 @@ void customFix(DWORD_PTR numberOfUnresolvedImports, std::map<DWORD_PTR, ImportMo
 			//check the next row inthe IAT
 			invalidApiAddress = invalidApiAddress + instruction_size;
 		}
-
+		//if we cannot resolve the import fix it with a dummy address so scylla isn't able to resolve the API and it will remove the unresolved import
+		// this functionality is optional (set the flag nullify_unknown_iat_entry_flag as true with command line) because it can break the program
+ 		if(!resolved && nullify_unknown_iat_entry_flag){
+			unsigned int correct_address = 0x0;
+			ProcessAccessHelp::writeMemoryToProcess( (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), sizeof(correct_address), &correct_address);
+ 			resolved = false;
+ 		}
 		unresolvedImport++; //next pointer to struct
 	}
 	
 }
 
 
-int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile,  DWORD advance_iat_fix_flag, unsigned int eip)
+int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile,  DWORD advance_iat_fix_flag, DWORD nullify_unknown_iat_entry_flag, unsigned int eip)
 {
 	ApiReader apiReader;
 	ProcessLister processLister;
@@ -481,7 +487,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	
 		if (numberOfUnresolvedImports != 0){
 		
-			customFix(numberOfUnresolvedImports, moduleList, eip);
+			customFix(numberOfUnresolvedImports, moduleList, eip, nullify_unknown_iat_entry_flag);
 
 			apiReader.clearAll();
 

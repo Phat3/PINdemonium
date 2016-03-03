@@ -15,7 +15,7 @@
 #define SCYLLA_SUCCESS_FIX 0
 
 
-UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag, WCHAR* tmpDumpFile);
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag, WCHAR* tmpDumpFile, DWORD nullify_unknown_iat_entry_flag);
 BOOL GetFilePathFromPID(DWORD dwProcessId, WCHAR *filename);
 DWORD_PTR GetExeModuleBase(DWORD dwProcessId);
 
@@ -28,19 +28,19 @@ HMODULE hScylla = 0;
 int wmain(int argc, wchar_t *argv[]){
 
 	
-	if(argc < 4){
-		INFO("ScyllaTest.exe <pid> <oep> <output_file> <advance_iat_fix_flag> <tmp_dump");
+	if(argc < 6){
+		INFO("ScyllaTest.exe <pid> <oep> <output_file> <advance_iat_fix_flag> <tmp_dump> <nullify_unknown_iat_entry_flag>");
 		return -1;
 	}
-	INFO("argv0 %S argv1 %S argv2 %S argv3 %S argv4 %S", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]);
+	INFO("argv0 %S argv1 %S argv2 %S argv3 %S argv4 %S argv5 %S argv6 %S", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
 	DWORD pid = _wtoi(argv[1]);
-	// DWORD_PTR oep  = _wtoi(argv[2]);// Works if passed and integer base 10 value
 	DWORD_PTR oep = wcstoul(argv[2],NULL,16);
 	WCHAR *outputFile = argv[3];
 	DWORD advance_iat_fix_flag = _wtoi(argv[4]);
 	WCHAR *tmpDumpFile = argv[5];
-	//DebugBreak();
-	return IATAutoFix(pid, oep, outputFile, advance_iat_fix_flag, tmpDumpFile);
+	DWORD nullify_unknown_iat_entry_flag = _wtoi(argv[6]);
+
+	return IATAutoFix(pid, oep, outputFile, advance_iat_fix_flag, tmpDumpFile, nullify_unknown_iat_entry_flag);
 	
 }
 
@@ -67,7 +67,7 @@ BOOL isMemoryReadable(DWORD pid, void *ptr, size_t byteCount)
 
 
 
-UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag, WCHAR *tmpDumpFile)
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag, WCHAR *tmpDumpFile, DWORD nullify_unknown_iat_entry_flag)
 {
 
 	DWORD_PTR iatStart = 0;
@@ -137,7 +137,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat
 	
 	//Fixing the IAT
 	//DebugBreak();
-	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile,advance_iat_fix_flag, oep);
+	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile,advance_iat_fix_flag, nullify_unknown_iat_entry_flag, oep);
 	if(error){
 		INFO("[SCYLLA FIX] error %d",error);
 		return SCYLLA_ERROR_IAT_NOT_FIXED;

@@ -68,6 +68,7 @@ public:
 	bool ANTIEVASION_MODE_SWRITE;
 	bool ADVANCED_IAT_FIX;
 	bool POLYMORPHIC_CODE_PATCH;
+	bool NULLIFY_UNK_IAT_ENTRY;
 
 	//--------------------------Command line Tuning Flags----------------------------
 

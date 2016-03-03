@@ -51,6 +51,9 @@ KNOB <BOOL> KnobAdvancedIATFixing(KNOB_MODE_WRITEONCE, "pintool",
 KNOB <BOOL> KnobPolymorphicCodePatch(KNOB_MODE_WRITEONCE, "pintool",
     "poly-patch", "false" , "specify if you want or not to activate the patch in order to avoid crash during the instrumentation of polymorphic code");
 
+KNOB <BOOL> KnobNullyfyUnknownIATEntry(KNOB_MODE_WRITEONCE, "pintool",
+    "nullify-unk-iat", "false" , "specify if you want or not to nullify the IAT entry not detected as correct API by the tool\n NB: THIS OPTION WORKS ONLY IF THE OPTION adv-iatfix IS ACTIVE!");
+
 //------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
 
@@ -215,7 +218,7 @@ void ConfigureTool(){
 	config->UNPACKING_MODE = KnobUnpacking.Value();
 	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
 	config->POLYMORPHIC_CODE_PATCH = KnobPolymorphicCodePatch.Value();
-
+	config->NULLIFY_UNK_IAT_ENTRY = KnobNullyfyUnknownIATEntry.Value();
 
 	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS ){
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();

@@ -290,7 +290,7 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 
 	// -------- Scylla launched as an exe --------	
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();	
-	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, Config::getInstance()->ADVANCED_IAT_FIX, tmpDump);
+	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, Config::getInstance()->ADVANCED_IAT_FIX, tmpDump, Config::getInstance()->NULLIFY_UNK_IAT_ENTRY);
 	
 	if(result != SCYLLA_SUCCESS_FIX){
 		MYERRORE("Scylla execution Failed error %d ",result);
