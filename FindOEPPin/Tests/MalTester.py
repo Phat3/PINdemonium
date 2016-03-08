@@ -4,6 +4,10 @@ import subprocess32
 import time
 import sys
 import shutil
+import wmi
+import signal
+
+# install https://sourceforge.net/projects/pywin32/?source=typ_redirect
 
 '''
 To use this script:
@@ -22,6 +26,8 @@ pin_results = "C:\\pin\\PinUnpackerResults\\"
 test_results = "E:\\Results\\"
 connect_network_folder = "net use E: \\\\vboxsvr\\vbox_shared"
 disconnect_network_folder = "net use E: /del"
+
+c = wmi.WMI ()
 
 def getCurrentMalware():
   #get the list of malwares to analize
@@ -44,12 +50,14 @@ def executePin(cur_malware):
   command = "%s -t %s -unp -antiev -antiev-ins -adv-iatfix -iwae 2 -- %s "%(pin_executable,pin_tool, cur_malware)
   print("launching " + command)
   proc = subprocess32.Popen(command, shell=True)
+  print(proc.pid)
+  pid_malware = 0
+  malware_name = cur_malware.split("\\")[-1]
   try:
   	proc.wait(300)
   except Exception:
   	print("timer expired!!!") 
-  	proc.terminate()
-  	time.sleep(60)
+  	os.system("taskkill /F /IM " + malware_name)
   	malware_name = cur_malware.split("\\")[-1]
   	moveResults(malware_name)
   	sys.exit(0)
@@ -67,7 +75,7 @@ def moveResults(cur_malware):
   print("Moving result directory from %s to %s "%(pin_res_dir,test_res_dir))
   os.makedirs(test_res_dir)
   for f in os.listdir(pin_res_dir):
-  	shutil.move(pin_res_dir + "\\" + f, test_res_dir + "\\" + f)
+  	shutil.cptree(pin_res_dir + "\\" + f, test_res_dir + "\\" + f)
   original_malware_path = join(test_res_dir, "original.exe")
   malwares = os.listdir(malware_folder)
   shutil.move(join(malware_folder,malwares[0]), original_malware_path)
@@ -84,7 +92,6 @@ def main():
   for file in os.listdir(pin_results):
   	print file
   	shutil.rmtree(pin_results + file)
-
   cur_malware = getCurrentMalware()
   if cur_malware != None:  
     executePin(cur_malware)
@@ -93,6 +100,3 @@ def main():
     sys.exit(0)
 
 main()
-
-
-  
