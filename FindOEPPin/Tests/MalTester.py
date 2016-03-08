@@ -36,7 +36,7 @@ def getCurrentMalware():
   from_path = join(malware_folder,malwares[0])  
   to_path = join(work_folder,malwares[0]+".exe")
   print("Moving malware to " +to_path)
-  shutil.copy(from_path,to_path)
+  shutil.move(from_path,to_path)
   #subprocess32.call(disconnect_network_folder, shell=True)
   return to_path
 
@@ -60,22 +60,26 @@ def executePin(cur_malware):
 
 
 def moveResults(cur_malware):
-  #subprocess32.call(connect_network_folder, shell=True)
   result = [f for f in os.listdir(pin_results) if isdir(join(pin_results, f))]
   if len(result) == None:
     print("No result folder created")
     return
+  # C:\\pin\PinUnpackerResults\\date\..
   pin_res_dir = join(pin_results,result[0])
+  # name of the malware
   cur_mal_folder = cur_malware.split(".")[0]
   print("malware folder "+ cur_mal_folder)
+  # E:\\Results\\malware_name
   test_res_dir = join(test_results,cur_mal_folder)
   print("Moving result directory from %s to %s "%(pin_res_dir,test_res_dir))
   os.makedirs(test_res_dir)
+  # move all folders into E:\\Results
   for f in os.listdir(pin_res_dir):
   	shutil.move(pin_res_dir + "\\" + f, test_res_dir + "\\" + f)
+  # E:\\Results\\malware_name\\original.exe
   original_malware_path = join(test_res_dir, "original.exe")
-  malwares = os.listdir(malware_folder)
-  shutil.move(join(malware_folder,malwares[0]), original_malware_path)
+
+  shutil.move(join(work_folder,cur_malware), original_malware_path)
   #subprocess32.call(disconnect_network_folder, shell=True)
 
   
