@@ -4,10 +4,8 @@ import subprocess32
 import time
 import sys
 import shutil
-import wmi
 import signal
 
-# install https://sourceforge.net/projects/pywin32/?source=typ_redirect
 
 '''
 To use this script:
@@ -26,8 +24,6 @@ pin_results = "C:\\pin\\PinUnpackerResults\\"
 test_results = "E:\\Results\\"
 connect_network_folder = "net use E: \\\\vboxsvr\\vbox_shared"
 disconnect_network_folder = "net use E: /del"
-
-c = wmi.WMI ()
 
 def getCurrentMalware():
   #get the list of malwares to analize
@@ -68,6 +64,7 @@ def moveResults(cur_malware):
   result = [f for f in os.listdir(pin_results) if isdir(join(pin_results, f))]
   if len(result) == None:
     print("No result folder created")
+    return
   pin_res_dir = join(pin_results,result[0])
   cur_mal_folder = cur_malware.split(".")[0]
   print("malware folder "+ cur_mal_folder)
@@ -75,7 +72,7 @@ def moveResults(cur_malware):
   print("Moving result directory from %s to %s "%(pin_res_dir,test_res_dir))
   os.makedirs(test_res_dir)
   for f in os.listdir(pin_res_dir):
-  	shutil.cptree(pin_res_dir + "\\" + f, test_res_dir + "\\" + f)
+  	shutil.move(pin_res_dir + "\\" + f, test_res_dir + "\\" + f)
   original_malware_path = join(test_res_dir, "original.exe")
   malwares = os.listdir(malware_folder)
   shutil.move(join(malware_folder,malwares[0]), original_malware_path)
