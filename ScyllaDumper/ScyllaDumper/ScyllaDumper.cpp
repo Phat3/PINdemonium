@@ -66,7 +66,6 @@ BOOL isMemoryReadable(DWORD pid, void *ptr, size_t byteCount)
 
 
 
-
 UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag, WCHAR *tmpDumpFile, DWORD nullify_unknown_iat_entry_flag)
 {
 
@@ -95,52 +94,58 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat
 		return SCYLLA_ERROR_DUMP;
 	}
 	INFO("[SCYLLA DUMP] Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,tmpDumpFile);
-		
-	//DebugBreak();
+
+	INFO("[SCYLLA SEARCH] Trying advanced IAT search\n");
 	//Searching the IAT
-	int error = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, TRUE);
-
-	//check if ScyllaIATSearch failed and if the result IAT address is readable
-	
-	if(error || !isMemoryReadable(pid, (void *) iatStart,iatSize)){
-
-		/*Display why the Scylla IAT Search failed: 
-			- error in IAT search
-			- address found not readable */
-		if(error){  
-			ERRORE("[SCYLLA ADVANCED SEARCH] error %d  ",error); 
+	int basic_iat_search_error = 0;
+	int adv_iat_search_error = ScyllaIatSearch(pid, &iatStart, &iatSize, oep, TRUE);
+	int iat_fix_error = 0;
+	//check if ScyllaIATSearch failed and if the result IAT address is readable	
+	if(adv_iat_search_error || !isMemoryReadable(pid, (void *) iatStart, iatSize)){
+		// display error 
+		if(adv_iat_search_error){  
+			ERRORE("[SCYLLA ADVANCED SEARCH] error %d \n", adv_iat_search_error); 
 		}
 		else{
-			ERRORE("[SCYLLA ADVANCED SEARCH] IAT address not readable/mapped iat_start : %08x\t iat_size : %08x\t  ",iatStart,iatSize);
+			ERRORE("[SCYLLA ADVANCED SEARCH] IAT address not readable/mapped iat_start : %08x\t iat_size : %08x\n", iatStart, iatSize);
 		}
-		
 		INFO("[SCYLLA SEARCH] Trying basic IAT search");
-
 		//Trying  Basic IAT search
-		int error2 = ScyllaIatSearch(pid, &iatStart, &iatSize, hMod + 0x00001028, FALSE);
-		if(error2 || !isMemoryReadable(pid, (void *) iatStart,iatSize)){
-
-			/*Display why the Scylla IAT Search failed: 
-			 - error in IAT search
-			 - address found not readable */
-			if(error2){  
-				ERRORE("[SCYLLA BASIC SEARCH] error %d  ",error2); 
+		basic_iat_search_error = ScyllaIatSearch(pid, &iatStart, &iatSize, oep, FALSE);
+		if(basic_iat_search_error || !isMemoryReadable(pid, (void *) iatStart,iatSize)){
+			if(basic_iat_search_error){  
+				ERRORE("[SCYLLA BASIC SEARCH] error %d\n",basic_iat_search_error); 
 			}
 			else{
-				ERRORE("[SCYLLA BASIC SEARCH] IAT address  not readable/mapped iat_start : %08x\t iat_size : %08x\t ",iatStart,iatSize);
+				ERRORE("[SCYLLA BASIC SEARCH] IAT address  not readable/mapped iat_start : %08x\t iat_size : %08x\n",iatStart,iatSize);
 			}
 			return SCYLLA_ERROR_IAT_NOT_FOUND;
 		}
 	}
-
-	INFO("[SCYLLA SEARCH] iat_start : %08x\t iat_size : %08x\t pid : %d", iatStart,iatSize,pid,outputFile);
-	
+	INFO("[SCYLLA SEARCH] iat_start : %08x\t iat_size : %08x\t pid : %d\n", iatStart,iatSize,pid,outputFile);	
 	//Fixing the IAT
-	//DebugBreak();
-	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile,advance_iat_fix_flag, nullify_unknown_iat_entry_flag, oep);
-	if(error){
-		INFO("[SCYLLA FIX] error %d",error);
-		return SCYLLA_ERROR_IAT_NOT_FIXED;
+	iat_fix_error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile,advance_iat_fix_flag, nullify_unknown_iat_entry_flag, oep);
+	if(iat_fix_error){
+		INFO("[SCYLLA FIX] error %d\n",iat_fix_error);
+		INFO("[SCYLLA SEARCH] Trying basic IAT search");
+		//Trying  Basic IAT search
+		basic_iat_search_error = ScyllaIatSearch(pid, &iatStart, &iatSize, oep, FALSE);
+		if(basic_iat_search_error || !isMemoryReadable(pid, (void *) iatStart,iatSize)){
+			if(basic_iat_search_error){  
+				ERRORE("[SCYLLA BASIC SEARCH] error %d\n",basic_iat_search_error); 
+			}
+			else{
+				ERRORE("[SCYLLA BASIC SEARCH] IAT address  not readable/mapped iat_start : %08x\t iat_size : %08x\n",iatStart,iatSize);
+			}
+			return SCYLLA_ERROR_IAT_NOT_FOUND;
+		}
+		else{
+			iat_fix_error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile,advance_iat_fix_flag, nullify_unknown_iat_entry_flag, oep);
+			if(iat_fix_error){
+				INFO("[SCYLLA FIX] error %d\n",iat_fix_error);
+				return SCYLLA_ERROR_IAT_NOT_FIXED;
+			}
+		}
 	}
 
 	//Removing the correct dump from the not working directory

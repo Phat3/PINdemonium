@@ -479,15 +479,15 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 	//if we want the advanced iat fix technique
 	if(advance_iat_fix_flag){
 		//get the number of unresolved immports based on the current module list
-		DWORD_PTR numberOfUnresolvedImports = getNumberOfUnresolvedImports(moduleList);
-		printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImports);
+		DWORD_PTR numberOfUnresolvedImportsBefore = getNumberOfUnresolvedImports(moduleList);
+		printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImportsBefore);
 		//if we have some unresolved imports (IAT entry not resolved)
 		printf("\n-------BEFORE:-------------\n");
 		displayModuleList(moduleList);
 	
-		if (numberOfUnresolvedImports != 0){
+		if (numberOfUnresolvedImportsBefore != 0){
 		
-			customFix(numberOfUnresolvedImports, moduleList, eip, nullify_unknown_iat_entry_flag);
+			customFix(numberOfUnresolvedImportsBefore, moduleList, eip, nullify_unknown_iat_entry_flag);
 
 			apiReader.clearAll();
 
@@ -500,9 +500,15 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 			apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 		
 		}
-	
+
 		printf("\n-------AFTER:-------------\n");
+		DWORD_PTR numberOfUnresolvedImportsAfter = getNumberOfUnresolvedImports(moduleList);
+		printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImportsAfter);
 		displayModuleList(moduleList);
+		if(numberOfUnresolvedImportsBefore == numberOfUnresolvedImportsAfter && numberOfUnresolvedImportsBefore != 0){
+			return SCY_ERROR_IATWRITE;
+		}
+	
 	}
 
 	//add IAT section to dump
