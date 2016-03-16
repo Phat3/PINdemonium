@@ -69,13 +69,6 @@ def analyseTests():
               dump_imports.remove(f)
           #compare the dump imports with the original ones and the zero count with the previously saved value and eventually update the best results
           print final_report_lines[int(dump_number)]
-          #final_report_fields = final_report_lines[int(dump_number)].split(",");
-          #zero_count = 0
-          #for f in final_report_fields:
-          #  if f.split(":")[1] == '"0"':
-          #    zero_count += 1
-          #  print f.split(":")[1]
-          #print "\n" + str(zero_count)
           zero_count = len( dict((key, val) for key, val in json.loads(final_report_lines[int(dump_number)]).items() if all(x == '0' for x in val)) )
           new_dump_imports = list(set(dump_imports) - set(original_imports))
           if (len(new_dump_imports) > best_number_new_imports and zero_count > best_zero_count):
