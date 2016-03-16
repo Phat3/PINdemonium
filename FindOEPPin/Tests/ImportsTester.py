@@ -58,8 +58,8 @@ def analyseTests():
       #get the imports of each dump
       for cur_file in listdir(folder_path):
         splitted_name = cur_file.split("_")
-        if len(splitted_name) == 4:
-          dump_number = cur_file.split("_")[2]
+        if len(splitted_name) == 3:
+          dump_number = cur_file.split("_")[1]
         if any("imports.txt" in s for s in splitted_name) and not(any("original" in s for s in splitted_name)):
           dump_import_path = join(folder_path, cur_file)
           dump_imports_file = open(dump_import_path, "r")
@@ -70,7 +70,7 @@ def analyseTests():
           #compare the dump imports with the original ones and the zero count with the previously saved value and eventually update the best results
           zero_count = len( dict((key, val) for key, val in json.loads(final_report_lines[int(dump_number)]).items() if (all(x == '0' for x in val) and key != 'dump number')) )
           new_dump_imports = list(set(dump_imports) - set(original_imports))
-          if (len(new_dump_imports) > best_number_new_imports and zero_count > best_zero_count):
+          if (len(new_dump_imports) >= best_number_new_imports and zero_count >= best_zero_count):
             best_zero_count = zero_count
             best_dump = cur_file
             best_number_new_imports = len(new_dump_imports)
