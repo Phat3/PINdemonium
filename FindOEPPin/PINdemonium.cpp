@@ -6,21 +6,21 @@
 #include <time.h>
 #include  "Debug.h"
 #include "Config.h"
-#include "ToolHider.h"
+#include "PINshield.h"
 #include "FilterHandler.h"
 #include "HookFunctions.h"
 #include "HookSyscalls.h"
-#include "PolymorphicCodePatches.h"
+#include "PolymorphicCodeHandlerModule.h"
 namespace W {
 	#include <windows.h>
 }
 
-ToolHider thider;
+PINshield thider;
 OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
 ProcInfo *proc_info = ProcInfo::getInstance();
-PolymorphicCodePatches pcpatcher;
+PolymorphicCodeHandlerModule pcpatcher;
 
 //------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 

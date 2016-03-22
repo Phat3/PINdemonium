@@ -1,18 +1,18 @@
-#include "ToolHider.h"
+#include "PINshield.h"
 #include <regex>
 
-ToolHider::ToolHider(void)
+PINshield::PINshield(void)
 {
 }
 
 
-ToolHider::~ToolHider(void)
+PINshield::~PINshield(void)
 {
 }
 
 
 ADDRINT handleRead(ADDRINT eip, ADDRINT read_addr,void *fake_mem_h){
-	FakeMemoryHandler fake_mem = *(FakeMemoryHandler *)fake_mem_h;
+	FakeReadHandler fake_mem = *(FakeReadHandler *)fake_mem_h;
 	//get the new address of the memory operand (same as before if it is inside the whitelist otherwise a NULL poiter)
 	ADDRINT fake_addr = fake_mem.getFakeMemory(read_addr, eip);
 	if(fake_addr == NULL){
@@ -59,7 +59,7 @@ VOID KillObsidiumDeadPath(CONTEXT *ctxt){
 	PIN_SetContextReg(ctxt,REG_EAX,0x7);
 }
 
-void ToolHider::avoidEvasion(INS ins){
+void PINshield::avoidEvasion(INS ins){
 	ADDRINT curEip = INS_Address(ins);
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	Config *config = Config::getInstance();
@@ -87,7 +87,7 @@ void ToolHider::avoidEvasion(INS ins){
 	if(config->ANTIEVASION_MODE_SREAD){
 		for (UINT32 op = 0; op<INS_MemoryOperandCount(ins); op++) {
 			if (INS_MemoryOperandIsRead(ins,op)) {
-				//if first read initialize the FakeMemoryHandler		
+				//if first read initialize the FakeReadHandler		
 				if(firstRead == 0){
 					fakeMemH.initFakeMemory();
 					firstRead=1;

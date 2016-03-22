@@ -96,7 +96,7 @@ bool * IsDebuggerPresentHook(){
 }
 
 VOID VirtualQueryHook (W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi, W::SIZE_T *numBytes) {
-	FakeMemoryHandler* fake_memory_handler = new FakeMemoryHandler();
+	FakeReadHandler* fake_memory_handler = new FakeReadHandler();
 	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress) && numBytes && mbi) {
 		*numBytes = 0;
 		mbi->State = MEM_FREE;
@@ -105,7 +105,7 @@ VOID VirtualQueryHook (W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi,
 
 VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProtection, BOOL* success) {
 	MYINFO("calling Virutalprotect at address %08x ->  %08x",(ADDRINT)baseAddress,size + (ADDRINT)baseAddress);
-	FakeMemoryHandler* fake_memory_handler = new FakeMemoryHandler();
+	FakeReadHandler* fake_memory_handler = new FakeReadHandler();
 	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress) && success && *success && oldProtection) {
 		*success = 0;
 		*oldProtection = NULL;

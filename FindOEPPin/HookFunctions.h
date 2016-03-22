@@ -2,7 +2,7 @@
 #include <map>
 #include "pin.H"
 #include "ProcInfo.h"
-#include "FakeMemoryHandler.h"
+#include "FakeReadHandler.h"
 
 #define VIRTUALALLOC_INDEX 0
 #define RTLALLOCATEHEAP_INDEX 1

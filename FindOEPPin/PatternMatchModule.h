@@ -10,11 +10,11 @@ namespace W{
 	#include <Windows.h>
 }
 
-class EvasionPatches
+class PatternMatchModule
 {
 public:
-	EvasionPatches(void);
-	~EvasionPatches(void);
+	PatternMatchModule(void);
+	~PatternMatchModule(void);
 	bool patchDispatcher(INS ins,  ADDRINT curEip);
 
 private:

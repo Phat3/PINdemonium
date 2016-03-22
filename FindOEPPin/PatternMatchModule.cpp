@@ -1,4 +1,4 @@
-#include "EvasionPatches.h"
+#include "PatternMatchModule.h"
 
 
 //----------------------------- PATCH FUNCTIONS -----------------------------//
@@ -41,7 +41,7 @@ VOID patchRtdsc(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
 //----------------------------- END PATCH FUNCTIONS -----------------------------//
 
 
-EvasionPatches::EvasionPatches(void)
+PatternMatchModule::PatternMatchModule(void)
 {
 	//set the initial patch pointer to zero (an invalid address) 
 	this->curPatchPointer = 0x0;
@@ -53,12 +53,12 @@ EvasionPatches::EvasionPatches(void)
 }
 
 
-EvasionPatches::~EvasionPatches(void)
+PatternMatchModule::~PatternMatchModule(void)
 {
 }
 
 //search if we have a patch for the current instruction and if yes insert the patch in the next round
-bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){	
+bool PatternMatchModule::patchDispatcher(INS ins, ADDRINT curEip){	
 	//if we have found an instruction that has to be patched in the previous round then we have a correct function pointer end we can instrument the code
 	//we have to use this trick because some instructions, such as int 2e, don't have a fall throug and is not possible to insert an analysis routine with the IPOINT_AFTER attribute
 	if(this->curPatchPointer){
@@ -94,7 +94,7 @@ bool EvasionPatches::patchDispatcher(INS ins, ADDRINT curEip){
 		this->curPatchPointer = this->patchesMap.at(disass_instr);
 		return true;
 	}
-	//otherwiae continue the analysis in the class ToolHider
+	//otherwiae continue the analysis in the class PINshield
 	return false;
 
 }

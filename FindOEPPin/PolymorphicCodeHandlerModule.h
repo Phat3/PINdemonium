@@ -21,11 +21,11 @@
 *	4. in the analysis routine, if the current instructin has the eip marked, then break the trace and force PIN to build a new one starting from the current eip
 *	5. continue the execution fropm the new trace
 */
-class PolymorphicCodePatches
+class PolymorphicCodeHandlerModule
 {
 public:
-	PolymorphicCodePatches(void);
-	~PolymorphicCodePatches(void);
+	PolymorphicCodeHandlerModule(void);
+	~PolymorphicCodeHandlerModule(void);
 	VOID inspectTrace(TRACE trace);
 	// --- getter and setter --- //
 	ADDRINT getTraceHead();

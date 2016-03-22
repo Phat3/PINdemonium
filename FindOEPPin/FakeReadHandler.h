@@ -13,7 +13,7 @@
 #define HIGH_1_SYSTEM_TIME_OFFSET 0x18
 #define HIGH_2_SYSTEM_TIME_OFFSET 0x1c
 
-//string containing the current faked memory NB need to static because it need to survive and been accessible in the HandleRead callback inside ToolHider
+//string containing the current faked memory NB need to static because it need to survive and been accessible in the HandleRead callback inside PINshield
 static string curFakeMemory;
 //ntdll map associate the name of the function to hook with the patch value
 //<"KiUserApcDispatcher","\x8b..">
@@ -46,7 +46,7 @@ typedef struct FakeMemoryItem{
 }FakeMemoryItem;
 
 
-class FakeMemoryHandler
+class FakeReadHandler
 {
 private:
 	//list containig the MemoryAddress which needs to me faked
@@ -63,8 +63,8 @@ private:
 	W::HINSTANCE hPsapi;
 
 public:
-	FakeMemoryHandler(void);
-	~FakeMemoryHandler(void);
+	FakeReadHandler(void);
+	~FakeReadHandler(void);
 	VOID initFakeMemory();
 	BOOL isAddrInWhiteList(ADDRINT address);
 	BOOL CheckInCurrentDlls(UINT32 address_to_check);

@@ -3,24 +3,24 @@
 #include "Debug.h"
 #include "Log.h"
 #include "FilterHandler.h"
-#include "EvasionPatches.h"
-#include "FakeMemoryHandler.h"
+#include "PatternMatchModule.h"
+#include "FakeReadHandler.h"
 #include "FakeWriteHandler.h"
 #include "FilterHandler.h"
 namespace W {
 	#include <Windows.h>
 }
 
-class ToolHider
+class PINshield
 {
 public:
-	ToolHider(void);
-	~ToolHider(void);
+	PINshield(void);
+	~PINshield(void);
 	void avoidEvasion(INS ins);
 
 private:
-	EvasionPatches evasionPatcher;
-	FakeMemoryHandler fakeMemH;
+	PatternMatchModule evasionPatcher;
+	FakeReadHandler fakeMemH;
 	FakeWriteHandler fakeWriteH;
 	BOOL firstRead;
 	void ScanForMappedFiles();	

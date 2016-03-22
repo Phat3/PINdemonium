@@ -90,6 +90,7 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PINdemonium</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -254,25 +255,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="EvasionPatches.cpp" />
-    <ClCompile Include="FakeMemoryHandler.cpp" />
+    <ClCompile Include="PatternMatchModule.cpp" />
+    <ClCompile Include="FakeReadHandler.cpp" />
     <ClCompile Include="FakeWriteHandler.cpp" />
     <ClCompile Include="GdbDebugger.cpp" />
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="HookFunctions.cpp" />
     <ClCompile Include="HookSyscalls.cpp" />
     <ClCompile Include="InitFunctionCallHeuristic.cpp" />
-    <ClCompile Include="PolymorphicCodePatches.cpp" />
+    <ClCompile Include="PolymorphicCodeHandlerModule.cpp" />
     <ClCompile Include="ProcInfo.cpp" />
     <ClCompile Include="EntropyHeuristic.cpp" />
     <ClCompile Include="FilterHandler.cpp" />
-    <ClCompile Include="FindOEPPin.cpp" />
+    <ClCompile Include="PINdemonium.cpp" />
     <ClCompile Include="JumpOuterSectionHeuristic.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="PushadPopadHeuristic.cpp" />
     <ClCompile Include="ScyllaWrapperInterface.cpp" />
-    <ClCompile Include="ToolHider.cpp" />
+    <ClCompile Include="PINshield.cpp" />
     <ClCompile Include="WriteInterval.cpp" />
     <ClCompile Include="LongJumpHeuristic.cpp" />
     <ClCompile Include="WxorXHandler.cpp" />
@@ -282,13 +283,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="EvasionPatches.h" />
-    <ClInclude Include="FakeMemoryHandler.h" />
+    <ClInclude Include="PatternMatchModule.h" />
+    <ClInclude Include="FakeReadHandler.h" />
     <ClInclude Include="FakeWriteHandler.h" />
     <ClInclude Include="GdbDebugger.h" />
     <ClInclude Include="HookFunctions.h" />
     <ClInclude Include="HookSyscalls.h" />
-    <ClInclude Include="PolymorphicCodePatches.h" />
+    <ClInclude Include="PolymorphicCodeHandlerModule.h" />
     <ClInclude Include="ProcInfo.h" />
     <ClInclude Include="InitFunctionCallHeuristic.h" />
     <ClInclude Include="Heuristics.h" />
@@ -299,7 +300,7 @@
     <ClInclude Include="OepFinder.h" />
     <ClInclude Include="PushadPopadHeuristic.h" />
     <ClInclude Include="ScyllaWrapperInterface.h" />
-    <ClInclude Include="ToolHider.h" />
+    <ClInclude Include="PINshield.h" />
     <ClInclude Include="WriteInterval.h" />
     <ClInclude Include="LongJumpHeuristic.h" />
     <ClInclude Include="WxorXHandler.h" />

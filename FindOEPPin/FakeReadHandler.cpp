@@ -1,6 +1,6 @@
-#include "FakeMemoryHandler.h"
+#include "FakeReadHandler.h"
 
-FakeMemoryHandler::FakeMemoryHandler(void)
+FakeReadHandler::FakeReadHandler(void)
 {
 	pInfo = ProcInfo::getInstance();
 	//Populating the ntdll function patch  table
@@ -15,11 +15,11 @@ FakeMemoryHandler::FakeMemoryHandler(void)
 	
 }
 
-FakeMemoryHandler::~FakeMemoryHandler(void)
+FakeReadHandler::~FakeReadHandler(void)
 {
 }
 
-ADDRINT FakeMemoryHandler::ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFuncAddr){
+ADDRINT FakeReadHandler::ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFuncAddr){
 	string patch = ntdllHooksAddrPatch.at(ntdllFuncAddr);
 	int delta = curReadAddr - ntdllFuncAddr;
 	curFakeMemory = patch.substr(delta,string::npos);
@@ -28,7 +28,7 @@ ADDRINT FakeMemoryHandler::ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFunc
 	return patchAddr;
 }
 
-ADDRINT FakeMemoryHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr){
+ADDRINT FakeReadHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr){
 	int tick_multiplier; 
 	ADDRINT kuser = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET; //from 0x7ffe0000 to 0x7ffe0004
 	memcpy(&tick_multiplier,(const void *)kuser,sizeof(int));
@@ -38,7 +38,7 @@ ADDRINT FakeMemoryHandler::TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr
 	return patchAddr;
 }
 
-ADDRINT FakeMemoryHandler::InterruptTimePatch(ADDRINT curReadAddr, ADDRINT addr){
+ADDRINT FakeReadHandler::InterruptTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 	UINT32 low_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + LOW_PART_INTERRUPT_TIME_OFFSET);
 	UINT32 high_1_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_1_INTERRUPT_TIME_OFFSET);
 	UINT32 high_2_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_2_INTERRUPT_TIME_OFFSET);
@@ -72,7 +72,7 @@ ADDRINT FakeMemoryHandler::InterruptTimePatch(ADDRINT curReadAddr, ADDRINT addr)
 }
 
 
-ADDRINT FakeMemoryHandler::SystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
+ADDRINT FakeReadHandler::SystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 	UINT32 low_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + LOW_PART_SYSTEM_TIME_OFFSET);
 	UINT32 high_1_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_1_SYSTEM_TIME_OFFSET);
 	UINT32 high_2_part = *(UINT32 *)(KUSER_SHARED_DATA_ADDRESS + HIGH_2_SYSTEM_TIME_OFFSET);	
@@ -106,7 +106,7 @@ ADDRINT FakeMemoryHandler::SystemTimePatch(ADDRINT curReadAddr, ADDRINT addr){
 }
 
 
-VOID FakeMemoryHandler::initFakeMemory(){	
+VOID FakeReadHandler::initFakeMemory(){	
 	//Hide the ntdll hooks
 	for(map<string,string>::iterator it = ntdllHooksNamesPatch.begin(); it != ntdllHooksNamesPatch.end();++it){
 		const char  *funcName = it->first.c_str();
@@ -116,7 +116,7 @@ VOID FakeMemoryHandler::initFakeMemory(){
 		FakeMemoryItem fakeMem;
 		fakeMem.StartAddress = address;
 		fakeMem.EndAddress = address + patch.length()-1; //-1 beacuse need to exclude the trailing 0x00
-		fakeMem.func = &FakeMemoryHandler::ntdllFuncPatch;
+		fakeMem.func = &FakeReadHandler::ntdllFuncPatch;
 		fakeMemory.push_back(fakeMem);
 		MYINFO("Add FakeMemory ntdll %s addr  %08x -> %08x",funcName,fakeMem.StartAddress,fakeMem.EndAddress);
 	}
@@ -124,19 +124,19 @@ VOID FakeMemoryHandler::initFakeMemory(){
 	FakeMemoryItem fakeGetTickCount;
 	fakeGetTickCount.StartAddress = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET;  
 	fakeGetTickCount.EndAddress = KUSER_SHARED_DATA_ADDRESS + TICK_MULTIPLIER_OFFSET + TICK_MULTIPLIER_SIZE; // the end of the TickMultiplier field 
-	fakeGetTickCount.func = &FakeMemoryHandler::TickMultiplierPatch;
+	fakeGetTickCount.func = &FakeReadHandler::TickMultiplierPatch;
 	fakeMemory.push_back(fakeGetTickCount);
 	//add FakeMemoryItem in order to fake TimeGetTime value retreived from the InterruptTime structure in KUSER_SHARED_DATA 
 	FakeMemoryItem fakeTimeGetTime;
 	fakeTimeGetTime.StartAddress = KUSER_SHARED_DATA_ADDRESS + LOW_PART_INTERRUPT_TIME_OFFSET;
 	fakeTimeGetTime.EndAddress = KUSER_SHARED_DATA_ADDRESS + HIGH_2_INTERRUPT_TIME_OFFSET;
-	fakeTimeGetTime.func = &FakeMemoryHandler::InterruptTimePatch;
+	fakeTimeGetTime.func = &FakeReadHandler::InterruptTimePatch;
 	fakeMemory.push_back(fakeTimeGetTime);
 	// Faking the SystemTime structure 
 	FakeMemoryItem fakeSystemTime;
 	fakeSystemTime.StartAddress = KUSER_SHARED_DATA_ADDRESS + LOW_PART_SYSTEM_TIME_OFFSET ; // start addr of systemtime structure 
 	fakeSystemTime.EndAddress = KUSER_SHARED_DATA_ADDRESS + HIGH_2_SYSTEM_TIME_OFFSET;
-	fakeSystemTime.func = &FakeMemoryHandler::SystemTimePatch;
+	fakeSystemTime.func = &FakeReadHandler::SystemTimePatch;
 	fakeMemory.push_back(fakeSystemTime);
 }
 
@@ -162,7 +162,7 @@ BOOL getMemoryRange(ADDRINT address, MemoryRange& range){
 	}		
 }
 
-BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
+BOOL FakeReadHandler::CheckInCurrentDlls(UINT32 address_to_check){
 	W::HMODULE hMods[1024];
 	char Buffer[2048];
 	W::LPTSTR pBuffer = Buffer;
@@ -199,7 +199,7 @@ BOOL FakeMemoryHandler::CheckInCurrentDlls(UINT32 address_to_check){
 	return TRUE;
 }
 
-ADDRINT FakeMemoryHandler::getFakeMemory(ADDRINT address, ADDRINT eip){
+ADDRINT FakeReadHandler::getFakeMemory(ADDRINT address, ADDRINT eip){
 	//Check if address is inside the FakeMemory array (need to modify the result of the read)
 	for(std::vector<FakeMemoryItem>::iterator it = fakeMemory.begin(); it != fakeMemory.end(); ++it){
 		if(it->StartAddress <= address && address <= it->EndAddress){
@@ -243,7 +243,7 @@ Check if address is inside:
 	- Peb
 	- generic memory region (SharedMemory pContextData..)
 **/
-BOOL FakeMemoryHandler::isAddrInWhiteList(ADDRINT address){
+BOOL FakeReadHandler::isAddrInWhiteList(ADDRINT address){
 	//Main IMG
 	if(pInfo->isInsideMainIMG(address)){
 		return TRUE;
