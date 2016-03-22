@@ -24,5 +24,4 @@ UINT32 Heuristics::initFunctionCallHeuristic(ADDRINT curEip, WriteInterval* wi){
 UINT32 Heuristics::pushadPopadHeuristic(){
 	PushadPopadheuristic heu = PushadPopadheuristic();
 	return heu.run();
-
 }

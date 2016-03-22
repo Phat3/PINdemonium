@@ -12,7 +12,6 @@ WriteInterval::WriteInterval(ADDRINT addr_begin, ADDRINT addr_end, BOOL heap_fla
 	this->detectedFunctions = 0;
 }
 
-
 WriteInterval::~WriteInterval(void)
 {
 }

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "pin.H"
 #include "Debug.h"
 #include "Config.h"
@@ -21,7 +20,6 @@ public:
 	static UINT32 jmpOuterSectionHeuristic(INS ins, ADDRINT prev_ip);
 	static UINT32 initFunctionCallHeuristic(ADDRINT curEip, WriteInterval* wi);
 	static UINT32 pushadPopadHeuristic();
-
 };
 
 

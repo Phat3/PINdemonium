@@ -13,23 +13,20 @@ namespace W {
 	#include <windows.h>
 }
 
-#define LOG_WRITE_TO_FILE 1 //if it is uncommented the result will be saved on file otherwise they'll be printed to stdout
+//if it is uncommented the result will be saved on file otherwise they'll be printed to stdout
+#define LOG_WRITE_TO_FILE 1
 
 class Config
 {
-
 public:
 	static Config* getInstance();
-	
 	FILE* Config::getLogFile();
-
 	//getter
 	string getBasePath();
 	string getCurrentDumpFilePath();
 	string getCurrentDetectedListPath();
 	string getNotWorkingPath();
 	long double getDumpNumber();
-
 	//utils
 	void incrementDumpNumber();
 	void Config::closeLogFile();
@@ -37,7 +34,6 @@ public:
 	void writeOnReport(ADDRINT ip, WriteInterval wi);
 	void Config::writeOnTimeLog(string s);
 	void setWorking (int working);
-
 	//files and paths
 	static const string PIN_DIRECTORY_PATH_DEP;
 	static const string PIN_DIRECTORY_PATH_OUTPUT;
@@ -51,15 +47,11 @@ public:
 	static const string PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING;
 	static const string DUMPER_SELECTOR_PATH;
 
-
 	//--------------------------Command line Tuning Flags----------------------------
 	static const bool  ATTACH_DEBUGGER;
-	
 	//Tunable from command line
 	bool INTER_WRITESET_ANALYSIS_ENABLE; //Trigger the analysis inside a WriteSet in which WxorX is already broken if a Long JMP is encontered (MPress packer)
 	UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
-	
-
 	//mode of operation
     bool UNPACKING_MODE;
     bool ANTIEVASION_MODE;
@@ -71,7 +63,6 @@ public:
 	bool NULLIFY_UNK_IAT_ENTRY;
 
 	//--------------------------Command line Tuning Flags----------------------------
-
 	static const string FILTER_WRITES_ENABLES;        //Which write instructions are filtered(possible values: 'stack teb')
 	static const UINT32 TIMEOUT_TIMER_SECONDS;
 	static const UINT32 TICK_DIVISOR; //this is used in order to lowe the ticks returnedd from GetTickCount and timeGetTime 
@@ -96,6 +87,5 @@ private:
 	int numberOfBadImports;
 	int calculateNumberOfBadImports();
 	int working;
-
 };
 

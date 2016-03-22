@@ -29,7 +29,6 @@ public:
 private:
 	static FilterHandler* instance;
 	ProcInfo *pInfo;
-									//TEB base address
 	std::map<std::string,int> filterMap;			//Hashmap containing the association between the 
 	int filterExecutionFlag;						//flag which keeps track of the enabled filters
 	FilterHandler();

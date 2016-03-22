@@ -1,7 +1,5 @@
 #pragma once
-
 #include "pin.H"
-
 
 /**
 * This class provides a patch for PIN in order to avoid crashes during the instrumentation of polymorphic code
@@ -28,9 +26,7 @@ class PolymorphicCodePatches
 public:
 	PolymorphicCodePatches(void);
 	~PolymorphicCodePatches(void);
-
 	VOID inspectTrace(TRACE trace);
-
 	// --- getter and setter --- //
 	ADDRINT getTraceHead();
 	ADDRINT getTraceTail();

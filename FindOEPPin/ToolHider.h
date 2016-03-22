@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Pin.h"
 #include "Debug.h"
 #include "Log.h"
@@ -8,12 +7,9 @@
 #include "FakeMemoryHandler.h"
 #include "FakeWriteHandler.h"
 #include "FilterHandler.h"
-
 namespace W {
-#include <Windows.h>
+	#include <Windows.h>
 }
-
-
 
 class ToolHider
 {
@@ -22,14 +18,11 @@ public:
 	~ToolHider(void);
 	void avoidEvasion(INS ins);
 
-
 private:
 	EvasionPatches evasionPatcher;
 	FakeMemoryHandler fakeMemH;
 	FakeWriteHandler fakeWriteH;
 	BOOL firstRead;
-	void ScanForMappedFiles();
-
-	
+	void ScanForMappedFiles();	
 };
 

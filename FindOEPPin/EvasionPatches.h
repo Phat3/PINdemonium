@@ -3,7 +3,8 @@
 #include "pin.h"
 #include <map>
 #include <string>
-
+#include "Config.h"
+#include <regex>
 
 namespace W{
 	#include <Windows.h>

@@ -1,21 +1,17 @@
 #include "Config.h"
 
-
 //constanth path and variable for our logging system
 const string Config::PIN_DIRECTORY_PATH_OUTPUT = "C:\\pin\\PinUnpackerResults\\";
 const string Config::PIN_DIRECTORY_PATH_DEP = "C:\\pin\\PinUnpackerDependencies\\";
 const string Config::LOG_FILENAME = "log_FindOEPPin.txt";
 const string Config::REPORT_FILENAME = "report_FindOEPPin.txt";
-
 const string Config::IDA_PATH = "\"C:\\Program Files\\IDA 6.6\\idaw.exe\"";
-
 const string Config::IDAP_BAD_IMPORTS_CHECKER = PIN_DIRECTORY_PATH_DEP + "badImportsChecker.py";
 const string Config::BAD_IMPORTS_LIST = PIN_DIRECTORY_PATH_DEP + "badImportsList.txt";
 const string Config::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
 const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
 const string Config::PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING = "NotWorking\\";
 const string Config::DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "dumperSelector.py";
-
 
 //Tuning Flags
 const bool Config::ATTACH_DEBUGGER = false;
@@ -24,8 +20,6 @@ const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
 const UINT32 Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS = 20;
 
 // Divisor of the timing 
-
-
 //if we divide high_1_part and high_2_part with two different values the timeGetTime() doesn't work
 //it doesn't work because high_1_part and high_2_part are used in order to understand if the value read for the low_part
 //is consistent ( high_1_part == high_2_part -> low_part consistent ) 
@@ -36,12 +30,19 @@ const UINT32 Config::CC_DIVISOR = 3500;	//this value is based on exait technique
 //the rdtsc works like this :
 //store the least 32 significant bit of the returned value in EAX and the most 32 significant bit in EDX ( value = EDX:EAX )
 const UINT32 Config::RDTSC_DIVISOR = 400;
-
 const UINT32 Config::INTERRUPT_TIME_DIVISOR = 1000;
 const UINT32 Config::SYSTEM_TIME_DIVISOR = 100;
 
+// singleton
 Config* Config::instance = 0;
 
+//singleton
+Config* Config::getInstance()
+{
+	if (instance == 0)
+		instance = new Config();
+	return instance;
+}
 
 //at the first time open the log file
 Config::Config(){
@@ -56,23 +57,12 @@ Config::Config(){
 	//create the log and report files
 	string log_file_path = this->base_path + LOG_FILENAME;
 	string report_file_path = this->base_path + REPORT_FILENAME;
-
 	this->log_file = fopen(log_file_path.c_str(),"w");
 	this->report_file = fopen(report_file_path.c_str(),"w");
-
 	this->numberOfBadImports = calculateNumberOfBadImports();
-	//initialize the path of the ScyllaWrapperLog
 	this->working = -1;
 	//move the dumper selector in the directory of the current execution
 	W::CopyFile(DUMPER_SELECTOR_PATH.c_str(), (this->base_path + "dumperSelector.py").c_str(), FALSE);
-}
-
-//singleton
-Config* Config::getInstance()
-{
-	if (instance == 0)
-		instance = new Config();
-	return instance;
 }
 
 /* ----------------------------- GETTER -----------------------------*/
@@ -136,7 +126,7 @@ void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 	char * works = "NO";
 	if(this->working == 1)
 		works = "PROBABLY YES";
-	
+	//write the report entry	
 	fprintf(this->report_file,"{\"dump number\" : \"%d\", \"runnable?\" : \"%s\", \"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_outer_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n", (int)this->getDumpNumber(), works, ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
 	fflush(this->report_file);
 }
@@ -153,10 +143,8 @@ string Config::getCurDateAndTime(){
   time_t rawtime;
   struct tm * timeinfo;
   char buffer[80];
-
   time (&rawtime);
   timeinfo = localtime(&rawtime);
-
   strftime(buffer,80,"%Y_%m_%d_%I_%M_%S",timeinfo);
   return string(buffer);
 }
@@ -167,14 +155,11 @@ void Config::incrementDumpNumber(){
 }
 
 int Config::calculateNumberOfBadImports(){
-
 	int numberOfLines = 0;
 	string line;
-
 	std::ifstream myfile(BAD_IMPORTS_LIST.c_str());
 	while (getline(myfile, line))
-        ++numberOfLines;
-	
+        ++numberOfLines;	
 	return numberOfLines;	
 }
 

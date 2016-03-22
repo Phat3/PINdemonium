@@ -16,7 +16,6 @@ UINT32 LongJumpHeuristic::run(INS ins, ADDRINT prev_ip){
 			return OEPFINDER_FOUND_OEP
 		}
 	}
-
 	return OEPFINDER_HEURISTIC_FAIL;
 
 }

@@ -3,10 +3,10 @@
 namespace W{
 	#include <windows.h>
 }
-
 #include <string>
 #include "Debug.h"
 #include <sstream>
+#include "Config.h"
 
 //Scylla Wrapper defined constants
 #define SCYLLA_ERROR_FILE_FROM_PID -4
@@ -17,8 +17,6 @@ namespace W{
 
 typedef UINT32 (* def_ScyllaDumpAndFix)(int pid, int oep, W::WCHAR * output_file,W::WCHAR * base_path, W::WCHAR * tmp_dump);
 typedef UINT32 (* def_ScyllaWrapAddSection)(const W::WCHAR * dump_path , const W::CHAR * sectionName, W::DWORD sectionSize, UINT32 offset , W::BYTE * sectionData);
-
-
 
 class ScyllaWrapperInterface
 {
@@ -37,9 +35,6 @@ private:
 	ScyllaWrapperInterface::ScyllaWrapperInterface();
 	static ScyllaWrapperInterface* instance;
 	void * hScyllaWrapper;
-
-	
 	BOOL existFile (std::string name);
-
 };
 

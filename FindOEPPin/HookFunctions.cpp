@@ -3,90 +3,63 @@
 
 HookFunctions::HookFunctions(void)
 {
-	//this->functionsMap.insert( std::pair<string,int>("VirtualAlloc",VIRTUALALLOC_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualFree",VIRTUALFREE_INDEX) );
-
 	this->functionsMap.insert( std::pair<string,int>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );
-
 	this->functionsMap.insert( std::pair<string,int>("RtlReAllocateHeap",RTLREALLOCATEHEAP_INDEX) );
-
-	//this->functionsMap.insert( std::pair<string,int>("MapViewOfFile",MAPVIEWOFFILE_INDEX) );   //hookata la syscall NtMapViewOfSection 
-
 	this->functionsMap.insert( std::pair<string,int>("VirtualQuery",VIRTUALQUERY_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualProtect",VIRTUALPROTECT_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualQueryEx",VIRTUALQUERYEX_INDEX) );
-
-	//this->functionsMap.insert( std::pair<string,int>("ZwSetInformationThread",SETINFOTHREAD_INDEX) );
 }
-
 
 HookFunctions::~HookFunctions(void)
-{
-	
+{	
 }
-
 
 
 //----------------------------- HOOKED FUNCTIONS -----------------------------//
 
 // hook the VirtualAlloc() in order to retrieve the memory range allocated and build ours data structures
 // NOT USED ANYMORE, WE HOOKED THE NtAllocateVirtualMemory syscall in order to be more generic ( see HookSyscalls.cpp row 126 )
-VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
-  
+VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){  
 	ProcInfo *proc_info = ProcInfo::getInstance();
-
 	HeapZone hz;
 	hz.begin = ret_heap_address;
 	hz.size = virtual_alloc_size;
-	hz.end = ret_heap_address + virtual_alloc_size;
-  
+	hz.end = ret_heap_address + virtual_alloc_size;  
 	MYINFO("Virtualloc insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
-
 	//saving this heap zone in the map inside ProcInfo
 	proc_info->insertHeapZone(hz); 
-
 }
 
 //hook the  HeapAllocHook() in order to retrieve the memory range allocated and build ours data structures
 static HeapZone prev_heap_alloc;
-VOID RtlAllocateHeapHook(int heap_alloc_size , UINT32 ret_heap_address ){
-	 
+VOID RtlAllocateHeapHook(int heap_alloc_size , UINT32 ret_heap_address ){	 
 	if (heap_alloc_size == 0 ){
 		return;
 	}
-	
 	ProcInfo *proc_info = ProcInfo::getInstance();
 	//need this code because sometimes RTLAllocHeap is invoked twice (because of the IPOINT_AFTER insert)and the second time is the correct one
 	if (prev_heap_alloc.begin == ret_heap_address){
 		proc_info->removeLastHeapZone();
 	
 	}
-
 	HeapZone hz;
 	hz.begin = ret_heap_address;
 	hz.size = heap_alloc_size;
 	hz.end = ret_heap_address + heap_alloc_size;
 	prev_heap_alloc =hz;
-	
-	//MYINFO("AllocateHeap insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
 	//saving this heap zone in the map inside ProcInfo
 	proc_info->insertHeapZone(hz); 
 
 }
 
-
-
-VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){
-	
+VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){	
 	ProcInfo *proc_info = ProcInfo::getInstance();
-
 	HeapZone hz;
 	hz.begin = heap_address;
 	hz.size = size;
 	hz.end = heap_address + size;
-	//MYINFO("ReAllocateHeap insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
-
 	//saving this heap zone in the map inside ProcInfo
 	proc_info->insertHeapZone(hz); 
 }
@@ -99,30 +72,20 @@ VOID MapViewOfFileHookAfter(W::DWORD dwDesiredAccess,W::DWORD dwFileOffsetHigh, 
 }
 
 VOID VirtualFreeHook(UINT32 address_to_free){
-
 	MYINFO("Have to free the address %08x\n" , address_to_free);
-
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	std::vector<HeapZone> HeapMap = pInfo->getHeapMap();
-
 	int index_to_remove = -1;
-
 	MYINFO("HeapZone before free");
-	//pInfo->printHeapList();
-
 	for(unsigned index=0; index <  HeapMap.size(); index++) {
 		if(address_to_free == pInfo->getHeapZoneByIndex(index)->begin){
 			index_to_remove = index;
 		}
 	}
-
 	if(index_to_remove != -1){
 		pInfo->deleteHeapZone(index_to_remove);
 	}
-
 	MYINFO("HeapZone after free");
-	//pInfo->printHeapList();
-
 }
 
 //REMEMBER!!! : PIN wants a function pointer in the AFUNCPTR agument!!!
@@ -155,7 +118,7 @@ VOID VirtualQueryExHook (W::HANDLE hProcess, W::LPCVOID baseAddress, W::PMEMORY_
 		VirtualQueryHook(baseAddress, mbi, numBytes);
 }
 
-//----------------------------- HOOKED DISPATCHER -----------------------------//
+//----------------------------- HOOK DISPATCHER -----------------------------//
 
 //scan the image and try to hook all the function specified above
 void HookFunctions::hookDispatcher(IMG img){
@@ -165,14 +128,11 @@ void HookFunctions::hookDispatcher(IMG img){
 		const char * func_name = item->first.c_str();
 		RTN rtn = RTN_FindByName(img, func_name);
 		//if we found a valid routine
-		if(rtn != RTN_Invalid()){
-			
+		if(rtn != RTN_Invalid()){		
 			ADDRINT va_address = RTN_Address(rtn);
 			MYINFO("Inside %s Address of %s: %08x" ,IMG_Name(img).c_str(),func_name, va_address);
-
 			RTN_Open(rtn); 	
 			int index = item->second;
-
 			//decide what to do based on the function hooked
 			//Different arguments are passed to the hooking routine based on the function
 			switch(index){
@@ -201,10 +161,6 @@ void HookFunctions::hookDispatcher(IMG img){
 					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualQueryHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0, IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
 					break;
-					/*	case(VIRTUALPROTECT_INDEX):
-					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
-					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualProtectHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCARG_ENTRYPOINT_VALUE, 3, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
-					*/
 				case(VIRTUALQUERYEX_INDEX):
 					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualQueryExHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCARG_ENTRYPOINT_VALUE, 2, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);

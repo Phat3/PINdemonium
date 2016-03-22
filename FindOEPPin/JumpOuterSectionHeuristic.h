@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Heuristics.h"
 
 class JumpOuterSection

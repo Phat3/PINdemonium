@@ -1,7 +1,6 @@
 #pragma once
 
 #define VERBOSE 1 
-
 #define DEBUG_BUILD 1
 #define INFO_BUILD  1
 #define WARN_BUILD  1
@@ -40,8 +39,6 @@
 #else
 #defone MYPRINT(fmt,...)
 #endif
-
-
 
 #define CLOSELOG()\
 	do { if (LOG_BUILD){ Config::getInstance()->closeLogFile();}}while (0)

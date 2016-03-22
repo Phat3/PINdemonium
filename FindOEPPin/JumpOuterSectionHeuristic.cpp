@@ -8,7 +8,6 @@ UINT32 JumpOuterSection::run(INS ins, ADDRINT prev_ip){
 		//get the name of the current section and teh previos section
 		string sec_current = this->getSectionName(ip);
 		string sec_prev = this->getSectionName(prev_ip);
-
 		//if they are different then i have detected a jmp outer section
 		if(sec_current.compare(sec_prev) && (sec_current.compare("") != 0) && (sec_prev.compare("") != 0)){
 			MYWARN("[JMP OUTER SECTION DETECTED!!] FROM : %s	TO : %s", sec_current.c_str(), sec_prev.c_str());
@@ -20,7 +19,6 @@ UINT32 JumpOuterSection::run(INS ins, ADDRINT prev_ip){
 
 //retrieve the name of the current section
 string JumpOuterSection::getSectionName(ADDRINT ip){
-	//POC --- we have to change iut with the ProcInfo object
 	ProcInfo *proc_info = ProcInfo::getInstance();	
 	return proc_info->getSectionNameByIp(ip);
 }

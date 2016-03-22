@@ -1,11 +1,8 @@
 #pragma once
-
-
 #include <windows.h>
 #include <sstream>
 
 typedef void *HANDLE;
-
 
 class GdbDebugger
 

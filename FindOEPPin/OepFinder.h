@@ -10,14 +10,15 @@
 namespace W {
 	#include <windows.h>
 }
+#include "GdbDebugger.h"
+#include "ScyllaWrapperInterface.h"
+#include "TimeTracker.h"
 
 //return value for IsCurrentInOEP function
 #define OEPFINDER_INS_FILTERED -3;
 #define OEPFINDER_HEURISTIC_FAIL -2;
 #define OEPFINDER_NOT_WXORX_INST -1;
 #define OEPFINDER_FOUND_OEP 0;
-
-
 
 class OepFinder
 {
@@ -37,6 +38,5 @@ private:
 	void getCurrentDlls();
 	WxorXHandler *wxorxHandler;
 	UINT32 DumpAndFixIAT(ADDRINT curEip);
-
 };
 

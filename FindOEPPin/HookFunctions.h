@@ -1,11 +1,8 @@
 #pragma once
-
 #include <map>
 #include "pin.H"
 #include "ProcInfo.h"
 #include "FakeMemoryHandler.h"
-
-
 
 #define VIRTUALALLOC_INDEX 0
 #define RTLALLOCATEHEAP_INDEX 1
@@ -30,6 +27,5 @@ public:
 
 private:
 	std::map<string, int> functionsMap;
-
 };
 

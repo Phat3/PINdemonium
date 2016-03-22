@@ -1,5 +1,4 @@
 #pragma once
-
 #include "pin.H"
 
 class WriteInterval
@@ -35,7 +34,6 @@ public:
 	void setBrokenFlag(BOOL flag);
 	void incrementCurrNumberJMP();
 	void setDetectedFunctions(UINT32 numberOfFunctions);
-
 
 private:
 	ADDRINT addr_begin;

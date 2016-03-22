@@ -11,11 +11,8 @@
 #include "HookFunctions.h"
 #include "HookSyscalls.h"
 #include "PolymorphicCodePatches.h"
-
-
 namespace W {
 	#include <windows.h>
-
 }
 
 ToolHider thider;
@@ -57,20 +54,20 @@ KNOB <BOOL> KnobNullyfyUnknownIATEntry(KNOB_MODE_WRITEONCE, "pintool",
 //------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
 
-
 // This function is called when the application exits
+// - print out the information relative to the current run
 VOID Fini(INT32 code, VOID *v){
-	//DEBUG --- inspect the write set at the end of the execution
+	//inspect the write set at the end of the execution
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
 	MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
-	//DEBUG --- get the execution time
+	//get the execution time
 	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 	CLOSELOG();
 	Config *config = Config::getInstance();
 	config->closeReportFile();
 }
 
-//cc
+// - usage 
 INT32 Usage(){
 	PIN_ERROR("This Pintool unpacks common packers\n" + KNOB_BASE::StringKnobSummary() + "\n");
 	return -1;
@@ -79,23 +76,15 @@ INT32 Usage(){
 // - Get initial entropy
 // - Get PE section data 
 // - Add filtered library
+// - Add protected libraries 
 void imageLoadCallback(IMG img,void *){
-
-	/*for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
-		for( RTN rtn= SEC_RtnHead(sec); RTN_Valid(rtn); rtn = RTN_Next(rtn) ){
-			MYINFO("Inside %s -> %s",IMG_Name(img).c_str(),RTN_Name(rtn).c_str());
-		}
-	}*/
-
 	Section item;
 	static int va_hooked = 0;
 	ProcInfo *proc_info = ProcInfo::getInstance();
 	FilterHandler *filterHandler = FilterHandler::getInstance();
-
 	//get the initial entropy of the PE
 	//we have to consder only the main executable and avìvoid the libraries
-	if(IMG_IsMainExecutable(img)){
-		
+	if(IMG_IsMainExecutable(img)){		
 		ADDRINT startAddr = IMG_LowAddress(img);
 		ADDRINT endAddr = IMG_HighAddress(img);
 		proc_info->setMainIMGAddress(startAddr, endAddr);
@@ -115,62 +104,36 @@ void imageLoadCallback(IMG img,void *){
 			item.end = item.begin + SEC_Size(sec);
 			proc_info->insertSection(item);
 		}
-		//DEBUG
 		proc_info->PrintSections();
 	}
 	//build the filtered libtrary list
 	ADDRINT startAddr = IMG_LowAddress(img);
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
-	
-	if(!IMG_IsMainExecutable(img)){	
-		
-		if(name.find("ntdll")!= std::string::npos){
-		
+	if(!IMG_IsMainExecutable(img)){
+		// set the .text section of the ntdll as protected
+		if(name.find("ntdll")!= std::string::npos){		
 		  for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
-
 			if(strcmp(SEC_Name(sec).c_str(),".text")==0){
 				proc_info->addProtectedSection(SEC_Address(sec),SEC_Address(sec)+SEC_Size(sec));
 			}
 	      }
 		}
-
 		//*** If you need to protect other sections of other dll put them here ***
-
-		hookFun.hookDispatcher(img);		
-		
+		// check if there are some fuction that has top be hooked in this DLL
+		hookFun.hookDispatcher(img);
+		// check if we have to filter this library during thwe instrumentation
 		proc_info->addLibrary(name,startAddr,endAddr);
-
 		if(filterHandler->IsNameInFilteredArray(name)){
 			filterHandler->addToFilteredLibrary(name,startAddr,endAddr);
 			MYINFO("Added to the filtered array the module %s\n" , name);
 		}
 	}
-	
 }
 
-void DetachFunc(){
-	PIN_Detach();
-}
-
-// Instruction callback Pin calls this function every time a new instruction is encountered
-// (Testing if better than trace iteration)
+// trigger the instrumentation routine for each instruction
 void Instruction(INS ins,void *v){
-
-	//printf("ADDR %08x - INS %s\n" , INS_Address(ins), INS_Disassemble(ins).c_str());
-	/*
-	MemoryRange mem;
-	
-	ProcInfo::getInstance()->getMemoryRange(0x75e714a4 ,mem);
-
-	if(mem.StartAddress <= 0x75e714a4  &&  0x75e714a4  <= mem.EndAddress){
-		MYINFO("yyyyyyyyyyyyyyyyyNow the address has been mapped EIP:%08x  mapped from %08x -> %08x name %s",INS_Address(ins),mem.StartAddress,mem.EndAddress,RTN_FindNameByAddress(INS_Address(ins)).c_str());
-	}
-	else{ 
-		MYINFO("zzzzzzCur EIP:%08x name %s ",INS_Address(ins),RTN_FindNameByAddress(INS_Address(ins)).c_str());
-	}
-	*/
-
+	// check the current mode of operation
 	Config *config = Config::getInstance();
 	if(config->ANTIEVASION_MODE){
 		thider.avoidEvasion(ins);
@@ -179,27 +142,25 @@ void Instruction(INS ins,void *v){
 	if(config->UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
 	}	
-	
-
 }
 
-
+// trigger the instrumentation routine for each trace collected (useful in order to spiot polymorphic code on the current trace)
 VOID Trace(TRACE trace,void *v){
+	// polymorphic code handler
 	pcpatcher.inspectTrace(trace);
 }
 
 
 // - retrive the stack base address
 static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
-
 	ADDRINT stackBase = PIN_GetContextReg(ctxt, REG_STACK_PTR);
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	pInfo->addThreadStackAddress(stackBase);
 	pInfo->addThreadTebAddress();
-
 	MYINFO("-----------------a NEW Thread started!--------------------\n");
 }
 
+// - if the flag is pecified start pin as launched with the flag appdebug
 void initDebug(){
 	DEBUG_MODE mode;
 	mode._type = DEBUG_CONNECTION_TYPE_TCP_SERVER;
@@ -207,8 +168,8 @@ void initDebug(){
 	PIN_SetDebugMode(&mode);
 }
 
-void ConfigureTool(){
-	
+// - set the option for the current run
+void ConfigureTool(){	
 	Config *config = Config::getInstance();
 	config->INTER_WRITESET_ANALYSIS_ENABLE = KnobInterWriteSetAnalysis.Value();	
 	config->ANTIEVASION_MODE = KnobAntiEvasion.Value();
@@ -219,7 +180,6 @@ void ConfigureTool(){
 	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
 	config->POLYMORPHIC_CODE_PATCH = KnobPolymorphicCodePatch.Value();
 	config->NULLIFY_UNK_IAT_ENTRY = KnobNullyfyUnknownIATEntry.Value();
-
 	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS ){
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
 	}
@@ -229,14 +189,12 @@ void ConfigureTool(){
 	}
 }
 
-EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInfo, PHYSICAL_CONTEXT *pPhysCtxt, VOID *v){
-	
+// - if an exception is found returns all the information about it (DEBUG purposes)
+EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInfo, PHYSICAL_CONTEXT *pPhysCtxt, VOID *v){	
 	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 	MYINFO("%s",PIN_ExceptionToString(pExceptInfo).c_str());
 	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
 	return EHR_CONTINUE_SEARCH;
-
 }
 
 /* ===================================================================== */
@@ -249,46 +207,29 @@ int main(int argc, char * argv[]){
 	if(Config::ATTACH_DEBUGGER){
 		initDebug();
 	}
-
 	MYINFO("->Configuring Pintool<-\n");
-
 	//get the start time of the execution (benchmark)
-	tStart = clock();
-	
+	tStart = clock();	
 	// Initialize pin
 	PIN_InitSymbols();
-
 	if (PIN_Init(argc, argv)) return Usage();
-
 	//Register PIN Callbacks
 	INS_AddInstrumentFunction(Instruction,0);
-	
-	//TRACE_AddInstrumentFunction(Trace,0);
-
 	PIN_AddThreadStartFunction(OnThreadStart, 0);
-
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 	PIN_AddFiniFunction(Fini, 0);
 	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
-
 	//get theknob args
 	ConfigureTool();
-
 	if(Config::getInstance()->POLYMORPHIC_CODE_PATCH){
 		TRACE_AddInstrumentFunction(Trace,0);
 	}
 	proc_info->addProcAddresses();
-
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
-	// Start the program, never returns
-
 	MYINFO("->Starting instrumented program<-\n");
-
-
-	PIN_StartProgram();
-	
+	PIN_StartProgram();	
 	return 0;
 	
 }

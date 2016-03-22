@@ -26,11 +26,9 @@ public:
 	VOID displayWriteSet();
 	VOID setBrokenFlag(int writeItemIndex);
 	VOID incrementCurrJMPNumber(int writeItemIndex);
-	 std::vector<WriteInterval> WritesSet;
+	std::vector<WriteInterval> WritesSet;
 
 private: 
-	//set of the write inteval
-	
 	 static WxorXHandler* instance;
 	 WxorXHandler(){};
 

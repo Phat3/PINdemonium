@@ -76,7 +76,6 @@ public:
 	static ProcInfo* getInstance();
 	//distruptor
 	~ProcInfo(void);
-
 	/* getter */
 	ADDRINT getFirstINSaddress();
 	ADDRINT getPrevIp();
@@ -91,8 +90,6 @@ public:
 	ADDRINT getPINVMStart();
 	ADDRINT getPINVMEnd();
 	std::vector<HeapZone> getHeapMap();
-	
-
 	/* setter */
 	void addProcAddresses();
 	void setFirstINSaddress(ADDRINT address);
@@ -102,14 +99,13 @@ public:
 	void setPopadFlag(BOOL flag);
 	void setProcName(string name);
 	void setStartTimer(clock_t t);
-	void setMainIMGAddress(ADDRINT startAddress,ADDRINT endAddr);
-	
+	void setMainIMGAddress(ADDRINT startAddress,ADDRINT endAddr);	
 	/* debug */
 	void PrintStartContext();
 	void PrintCurrContext();
 	void PrintSections();
-
-
+	void printHeapList();
+	void PrintAllMemory();
 	/* helper */
 	void insertSection(Section section);
 	string getSectionNameByIp(ADDRINT ip);
@@ -153,43 +149,28 @@ public:
 	VOID PrintWhiteListedAddr();
 	VOID PrintDebugProcessAddr();
 	VOID enumerateDebugProcessMemory();
-	BOOL getMemoryRange(ADDRINT address, MemoryRange& range);
-
-	
-	//Debug
-	void printHeapList();
-	void PrintAllMemory();
+	BOOL getMemoryRange(ADDRINT address, MemoryRange& range);	
 	BOOL addProcessHeapsAndCheckAddress(ADDRINT address);
 
-	
-
-	
 private:
-	
 	static ProcInfo* instance;
 	ProcInfo::ProcInfo();
 	ADDRINT first_instruction;
 	ADDRINT prev_ip;
-	
-
-	std::vector<MemoryRange>  stacks;				//Set of Stack one for each thread
+	std::vector<MemoryRange>  stacks;				   //Set of Stack one for each thread
 	MemoryRange mainImg;
-	std::vector<MemoryRange> tebs;                                //Teb Base Address
+	std::vector<MemoryRange> tebs;                     //Teb Base Address
 	PEB *peb;
 	std::vector<MemoryRange>  mappedFiles;
 	std::vector<MemoryRange>  genericMemoryRanges;
 	std::vector<MemoryRange>  whiteListMemory;
-	std::vector<MemoryRange>  currentMemory;
-	
+	std::vector<MemoryRange>  currentMemory;	
 	std::vector<Section> Sections;
 	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
-	std::vector<LibraryItem> knownLibraries;			//vector of know library loaded
-	std::vector<LibraryItem> unknownLibraries;			//vector of unknow library loaded	
-	std::vector<Section> protected_section;			//vector of protected section ( for example the .text of ntdll is protected ( write on these memory range are redirected to other heap's zone ) )
-	
-
-
+	std::vector<LibraryItem> knownLibraries;		   //vector of know library loaded
+	std::vector<LibraryItem> unknownLibraries;		   //vector of unknow library loaded	
+	std::vector<Section> protected_section;			   //vector of protected section ( for example the .text of ntdll is protected ( write on these memory range are redirected to other heap's zone ) )
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad
 	//this is a common technique to restore the initial register status after the unpacking routine
@@ -201,16 +182,12 @@ private:
 	//processes to be monitored set 
 	std::unordered_set<string> interresting_processes_name; 
 	std::unordered_set<unsigned int> interresting_processes_pid;  
-
-	void retrieveInterestingPidFromNames();
-	
+	void retrieveInterestingPidFromNames();	
 	//Enumerate Whitelisted Memory Helpers	
 	//return the MemoryRange in which the address is mapped
-
 	VOID addWhitelistAddress(ADDRINT baseAddr,ADDRINT endAddress);
 	VOID mergeMemoryAddresses();
 	VOID mergeCurrentMemory();
-	
 	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID addPebAddress();
 	VOID addContextDataAddress();
@@ -219,22 +196,11 @@ private:
 	VOID addpShimDataAddress();
 	VOID addpApiSetMapAddress();
 	VOID addKUserSharedDataAddress();
-
-
-	//Enumerate current  Memory Helpers
 	VOID addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize);
-
-	//Enumerate Debug process Memory Helpers
 	VOID addDebugProcessAddresses(ADDRINT baseAddr,ADDRINT regionSize);
 	VOID enumerateProcessMemory(W::HANDLE hProc);
-
-
-	
 	//Library Helpers
 	string libToString(LibraryItem lib);
-
-	
 	long long FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard);
-
 };
 
