@@ -1,4 +1,5 @@
 #include "PolymorphicCodeHandlerModule.h"
+#include "ProcInfo.h"
 
 
 PolymorphicCodeHandlerModule::PolymorphicCodeHandlerModule(void)
@@ -35,6 +36,7 @@ VOID checkIfWrittenAddress(ADDRINT eip, CONTEXT * ctxt, UINT32 ins_size, void *p
 	// sometime can happen that only part of the original instruction is written
 	// ES : push 0x20 -> push 0x30 (only the operand is written)
 	if(pcpatches->getFirstWrittenAddressInMesmory() >= eip && pcpatches->getFirstWrittenAddressInMesmory() <= eip + ins_size){
+		MYTEST("Polymophic_evasion");
 		PIN_SetContextReg(ctxt, REG_EIP, eip);
 		//reset the address
 		pcpatches->setFirstWrittenAddressInMesmory(0x0);

@@ -5,6 +5,7 @@
 
 //avoid the leak of the modified ip by pin
 VOID patchInt2e(ADDRINT ip, CONTEXT *ctxt, ADDRINT cur_eip ){
+	MYTEST("Int2e_evasion");
 	//set the return value of the int2e (stored in edx) as the current ip
 	PIN_SetContextReg(ctxt, REG_EDX, cur_eip);	
 } 

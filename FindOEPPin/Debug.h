@@ -40,6 +40,9 @@
 #defone MYPRINT(fmt,...)
 #endif
 
+#define MYTEST(fmt, ...) \
+	do { if (LOG_BUILD){ fprintf(Config::getInstance()->getTestFile(),fmt"\n", __VA_ARGS__); fflush(Config::getInstance()->getTestFile());exit(0); } } while (0)
+
 #define CLOSELOG()\
 	do { if (LOG_BUILD){ Config::getInstance()->closeLogFile();}}while (0)
 

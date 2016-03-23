@@ -21,12 +21,14 @@ class Config
 public:
 	static Config* getInstance();
 	FILE* Config::getLogFile();
+	FILE* Config::getTestFile();
 	//getter
 	string getBasePath();
 	string getCurrentDumpFilePath();
 	string getCurrentDetectedListPath();
 	string getNotWorkingPath();
 	long double getDumpNumber();
+	
 	//utils
 	void incrementDumpNumber();
 	void Config::closeLogFile();
@@ -78,6 +80,7 @@ private:
 	static Config* instance;
 	FILE *log_file;
 	FILE *report_file;
+	FILE *test_file;
 	string base_path;
 	string not_working_path;
 	string cur_dump_path;        //Path of the final (IAT fixed) Dump

@@ -58,6 +58,10 @@ Config::Config(){
 	string log_file_path = this->base_path + LOG_FILENAME;
 	string report_file_path = this->base_path + REPORT_FILENAME;
 	this->log_file = fopen(log_file_path.c_str(),"w");
+	
+	string test_filename = this->base_path + "testEvasion.txt";
+	this->test_file = fopen(test_filename.c_str(),"w");
+	
 	this->report_file = fopen(report_file_path.c_str(),"w");
 	this->numberOfBadImports = calculateNumberOfBadImports();
 	this->working = -1;
@@ -118,6 +122,14 @@ FILE* Config::getLogFile()
 	#else
 		return stdout;
 	#endif
+}
+
+//return the file pointer
+FILE* Config::getTestFile()
+{
+	
+	return this->test_file;
+	
 }
 
 //write the JSON resulted by the analysis for this write set

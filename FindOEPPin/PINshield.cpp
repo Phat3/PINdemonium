@@ -1,6 +1,9 @@
 #include "PINshield.h"
 #include <regex>
 
+#define KUSER_SHARED_DATA_ADDRESS 0x7ffe0000
+#define KUSER_SHARED_DATA_SIZE 0x3e0 
+
 PINshield::PINshield(void)
 {
 }
@@ -22,6 +25,9 @@ ADDRINT handleRead(ADDRINT eip, ADDRINT read_addr,void *fake_mem_h){
 		return read_addr; // let the program trigger its exception if it want
 	}
 	if (fake_addr != read_addr){
+		if(read_addr < KUSER_SHARED_DATA_ADDRESS  || read_addr > KUSER_SHARED_DATA_ADDRESS + KUSER_SHARED_DATA_SIZE){
+			MYTEST("handleRead_evasion %08x read at %08x",eip,read_addr);
+		}
 		MYINFO("ip : %08x in %s reading %08x and it has been redirected to : %08x",eip, RTN_FindNameByAddress(eip).c_str() , read_addr, fake_addr);
 	}
 	return fake_addr;
@@ -35,6 +41,7 @@ ADDRINT handleWrite(ADDRINT eip, ADDRINT write_addr,void *fakeWriteH){
 		return write_addr; // let the program trigger its exception if it want
 	}
 	if(fakeAddr != write_addr){
+		MYTEST("handleWrite_evasion %08x",write_addr);
 		MYINFO("suspicious write from %08x in %s in %08x redirected to %08x", eip, RTN_FindNameByAddress(write_addr).c_str(), write_addr, fakeAddr);
 		MYINFO("Binary writes %08x\n" , *(unsigned int *)(fakeAddr));
 	}
@@ -60,6 +67,7 @@ VOID KillObsidiumDeadPath(CONTEXT *ctxt){
 }
 
 void PINshield::avoidEvasion(INS ins){
+	
 	ADDRINT curEip = INS_Address(ins);
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	Config *config = Config::getInstance();
@@ -70,6 +78,7 @@ void PINshield::avoidEvasion(INS ins){
 	}
 	// Pattern matching in order to avoid the dead path of obsidium
 	if(strcmp( (INS_Disassemble(ins).c_str() ),"xor eax, dword ptr [edx+ecx*8+0x4]") == 0){
+		MYTEST("Obsidium_evasion");
 		REGSET regsIn;
 		REGSET_AddAll(regsIn);
 		REGSET regsOut;
