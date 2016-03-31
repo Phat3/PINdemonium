@@ -144,6 +144,36 @@ void HookSyscalls::NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCA
 	proc_info->setCurrentMappedFiles();
 }
 
+//static int counter;
+//The NtRequestWaitReplyPortHook allocates 4 memory pages of type MEM_MAPPED so we need to rescan the memory after it has been performed
+void HookSyscalls::NtQueryVirtualMemoryHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
+	W::HANDLE hProcess = (W::HANDLE) sc->arg0;
+	ADDRINT baseAddress = sc->arg1;
+	W::PMEMORY_BASIC_INFORMATION mbi = (W::PMEMORY_BASIC_INFORMATION)sc->arg3;
+	UINT32 numBytes = sc->arg5;
+	
+	if (hProcess == W::GetCurrentProcess()){
+		//MYINFO("Found  NTQueryVirtualMemoryHook process %08x baseAddress %08x current state memory %08x protection %08x size %08x",hProcess,baseAddress,mbi->State,mbi->Protect,numBytes);
+		//+0x1 to exclude the addresses on the edge of the whitelist
+		if (!FakeReadHandler::isAddrInWhiteList((ADDRINT)baseAddress+0x1)  && numBytes && mbi) {
+		
+		numBytes = 0;
+		mbi->State = MEM_FREE;
+		MYINFO("NtQueryVirtualMemory in not whitelisted memory at %08x ",baseAddress);
+		}
+		/*DEBUG
+		else{
+			if(mbi->Protect == PAGE_EXECUTE_READWRITE){
+				counter++;
+				//MYINFO("Bypass count %d\n",counter);
+			}			
+		}*/
+	}
+
+
+
+}
+
 //----------------------------- END HOOKS -----------------------------//
 
 
@@ -191,6 +221,8 @@ void HookSyscalls::initHooks(){
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtRequestWaitReplyPort_exit",&HookSyscalls::NtRequestWaitReplyPortHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryInformationProcess_exit",&HookSyscalls::NtQueryInformationProcessHook));
+	
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryVirtualMemory_exit",&HookSyscalls::NtQueryVirtualMemoryHook));
 	// allocate syscall information struct
 	static syscall_t sc[256] = {0};
 	PIN_AddSyscallEntryFunction(&HookSyscalls::syscallEntry,&sc);

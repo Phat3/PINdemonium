@@ -380,6 +380,7 @@ VOID ProcInfo::addPebAddress(){
 	MyZwQueryInformationProcess = (ZwQueryInformationProcess)W::GetProcAddress(hMod,"ZwQueryInformationProcess"); 
 	MyZwQueryInformationProcess(W::GetCurrentProcess(),0,&tmppeb,sizeof(W::PROCESS_BASIC_INFORMATION),&tmp);
 	peb = (PEB *) tmppeb.PebBaseAddress;
+	MYINFO("PEB added from %08x -> %08x",peb,peb+sizeof(PEB));
 }
 
 BOOL ProcInfo::isPebAddress(ADDRINT addr) {

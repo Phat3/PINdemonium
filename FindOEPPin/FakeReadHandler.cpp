@@ -245,35 +245,44 @@ Check if address is inside:
 **/
 BOOL FakeReadHandler::isAddrInWhiteList(ADDRINT address){
 	//Main IMG
-	if(pInfo->isInsideMainIMG(address)){
+	ProcInfo  *myProcInfo = ProcInfo::getInstance();
+	if(myProcInfo->isInsideMainIMG(address)){
+		//MYINFO("Inside Main IMG");
 		return TRUE;
 	}
 	//Stack
-	if(pInfo->isStackAddress(address)){
+	if(myProcInfo->isStackAddress(address)){
+		//MYINFO("Inside Stack");
 		return TRUE;
 	}
 	//Dynamic Allocation
-	if(pInfo->searchHeapMap(address)!= -1){
+	if(myProcInfo->searchHeapMap(address)!= -1){
+		//MYINFO("Inside Heaps");
 		return TRUE;
 	}
 	//Library Addresses
-	if (pInfo->isLibraryInstruction(address)){
+	if (myProcInfo->isLibraryInstruction(address)){
+		//MYINFO("Inside Library");
 		return TRUE;
 	}
 	//Teb Addresses
-	if(pInfo->isTebAddress(address)){
+	if(myProcInfo->isTebAddress(address)){
+		//MYINFO("Inside TEB");
 		return TRUE;
 	}
 	//Peb Addresses
-	if(pInfo->isPebAddress(address)){
+	if(myProcInfo->isPebAddress(address)){
+		//MYINFO("Inside Generic");
 		return TRUE;
 	}
 	//Mapped file addresses
-	if(pInfo->isMappedFileAddress(address)){
+	if(myProcInfo->isMappedFileAddress(address)){
+		//MYINFO("Inside PEB");
 		return TRUE;
 	}
 	//Generic memory addresses (pContextData ..)
-	if(pInfo->isGenericMemoryAddress(address)){
+	if(myProcInfo->isGenericMemoryAddress(address)){
+	//	MYINFO("Inside Generic");
 		return TRUE;
 	}
 	return FALSE;	

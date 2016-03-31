@@ -51,7 +51,7 @@ class FakeReadHandler
 private:
 	//list containig the MemoryAddress which needs to me faked
 	std::vector<FakeMemoryItem> fakeMemory;
-	ProcInfo *pInfo;
+	ProcInfo  *pInfo;
 	// fakeMemoryFunction to handle ntdll inspection
 	static ADDRINT ntdllFuncPatch(ADDRINT curReadAddr, ADDRINT ntdllFuncAddr);
 	static ADDRINT TickMultiplierPatch(ADDRINT curReadAddr, ADDRINT addr);
@@ -66,7 +66,7 @@ public:
 	FakeReadHandler(void);
 	~FakeReadHandler(void);
 	VOID initFakeMemory();
-	BOOL isAddrInWhiteList(ADDRINT address);
+	static BOOL isAddrInWhiteList(ADDRINT address);
 	BOOL CheckInCurrentDlls(UINT32 address_to_check);
 	ADDRINT getFakeMemory(ADDRINT address, ADDRINT eip);
 };

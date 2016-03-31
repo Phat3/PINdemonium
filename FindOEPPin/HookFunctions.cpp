@@ -95,13 +95,6 @@ bool * IsDebuggerPresentHook(){
 	return false;
 }
 
-VOID VirtualQueryHook (W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi, W::SIZE_T *numBytes) {
-	FakeReadHandler* fake_memory_handler = new FakeReadHandler();
-	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress) && numBytes && mbi) {
-		*numBytes = 0;
-		mbi->State = MEM_FREE;
-	}
-}
 
 VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProtection, BOOL* success) {
 	MYINFO("calling Virutalprotect at address %08x ->  %08x",(ADDRINT)baseAddress,size + (ADDRINT)baseAddress);
@@ -113,10 +106,7 @@ VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProt
 	MYINFO("calling Virutalprotect at address %08x ->  %08x",(ADDRINT)baseAddress,size + (ADDRINT)baseAddress);
 }
 
-VOID VirtualQueryExHook (W::HANDLE hProcess, W::LPCVOID baseAddress, W::PMEMORY_BASIC_INFORMATION mbi, W::SIZE_T *numBytes) {
-	if (hProcess == W::GetCurrentProcess())
-		VirtualQueryHook(baseAddress, mbi, numBytes);
-}
+
 
 //----------------------------- HOOK DISPATCHER -----------------------------//
 
@@ -156,14 +146,6 @@ void HookFunctions::hookDispatcher(IMG img){
 					break;
 				case(VIRTUALFREE_INDEX):
 					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)VirtualFreeHook , IARG_FUNCARG_ENTRYPOINT_VALUE,0, IARG_END);
-					break;
-				case(VIRTUALQUERY_INDEX):
-					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
-					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualQueryHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0, IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
-					break;
-				case(VIRTUALQUERYEX_INDEX):
-					//IPOINT_AFTER because we have to check if the query is on a whitelisted address
-					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualQueryExHook, IARG_FUNCARG_ENTRYPOINT_VALUE, 0,  IARG_FUNCARG_ENTRYPOINT_VALUE, 1, IARG_FUNCARG_ENTRYPOINT_VALUE, 2, IARG_FUNCRET_EXITPOINT_REFERENCE, IARG_END);
 					break;
 				}			
 			RTN_Close(rtn);
