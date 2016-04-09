@@ -60,7 +60,7 @@
 			   	|									\---ScyllaDLLx86.dll
 			   	|								\---ScyllaDumper.exe
 			   	|
-			   \+---FindOEPPin.dll
+			   \+---PinDemonium.dll
 ```
 
 ## Usage
@@ -68,7 +68,7 @@
 1. Run this command from the directory **C:\pin\\**
 
 	```
-	pin -t FindOEPPin.dll [-flags] -- <path_to_the_exe_to_be_instrumented>
+	pin -t PinDemonium.dll [-flags] -- <path_to_the_exe_to_be_instrumented>
 	```
 
 	**Flags :**
