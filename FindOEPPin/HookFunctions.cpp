@@ -68,7 +68,6 @@ VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){
 VOID MapViewOfFileHookAfter(W::DWORD dwDesiredAccess,W::DWORD dwFileOffsetHigh, W::DWORD dwFileOffsetLow, UINT32 size,ADDRINT file_view_addr ){
 	MYINFO("Found After mapViewOfFile Access %08x OffsetHigh %08x OffsetLow %08x  at %08x of size %08x ",dwDesiredAccess,dwFileOffsetHigh,dwFileOffsetLow,file_view_addr,size);
 	ProcInfo *proc_info = ProcInfo::getInstance();
-	proc_info->addMappedFilesAddress(file_view_addr);
 }
 
 VOID VirtualFreeHook(UINT32 address_to_free){
@@ -98,11 +97,6 @@ bool * IsDebuggerPresentHook(){
 
 VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProtection, BOOL* success) {
 	MYINFO("calling Virutalprotect at address %08x ->  %08x",(ADDRINT)baseAddress,size + (ADDRINT)baseAddress);
-	FakeReadHandler* fake_memory_handler = new FakeReadHandler();
-	if (!fake_memory_handler->isAddrInWhiteList((ADDRINT)baseAddress) && success && *success && oldProtection) {
-		*success = 0;
-		*oldProtection = NULL;
-	}
 	MYINFO("calling Virutalprotect at address %08x ->  %08x",(ADDRINT)baseAddress,size + (ADDRINT)baseAddress);
 }
 

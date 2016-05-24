@@ -90,20 +90,13 @@ void HookSyscalls::NtQueryPerformanceCounterHook(syscall_t *sc , CONTEXT *ctx, S
 //we have to use this trick because we aren't able to change the return value of the syscall yet... (the value in EAX)
 void HookSyscalls::NtOpenProcessEntry(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
 	PCLIENT_ID cid = (PCLIENT_ID)sc->arg3;
-	//if the id of the process is one of interest return an error
-	if(ProcInfo::getInstance()->isInterestingProcess((unsigned int)cid->UniqueProcess)){
-		cid->UniqueProcess = (W::HANDLE)66666;
-	}
+
 }
 
 
 void HookSyscalls::NtWriteVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx, SYSCALL_STANDARD std){
 	W::PVOID address_to_write = (W::PVOID)sc->arg1; // get the address where the syscall is writing 
 	W::ULONG number_of_bytes_to_write = (W::ULONG)sc->arg3; // get how many bytes it is trying to write 
-	if(ProcInfo::getInstance()->isInsideProtectedSection((ADDRINT)address_to_write)){
-		ADDRINT new_address = (ADDRINT)malloc(number_of_bytes_to_write);		
-		PIN_SetSyscallArgument(ctx,SYSCALL_STANDARD_IA32_WINDOWS_FAST,1,new_address);
-	} 
 }
 
 void HookSyscalls::NtAllocateVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
@@ -125,7 +118,6 @@ void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL
 	W::PVOID base_address_pointer = (W::PVOID) sc->arg2;
 	ADDRINT base_address =  *(ADDRINT *) base_address_pointer;
 	ProcInfo *proc_info = ProcInfo::getInstance();
-	proc_info->addMappedFilesAddress(base_address);
 }
 
 
@@ -141,7 +133,6 @@ void HookSyscalls::NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , 
 void HookSyscalls::NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
 	MYINFO("Found a NtRequestWaitReplyPort");
 	ProcInfo *proc_info = ProcInfo::getInstance();
-	proc_info->setCurrentMappedFiles();
 }
 
 //static int counter;
@@ -151,26 +142,6 @@ void HookSyscalls::NtQueryVirtualMemoryHook(syscall_t *sc, CONTEXT *ctx, SYSCALL
 	ADDRINT baseAddress = sc->arg1;
 	W::PMEMORY_BASIC_INFORMATION mbi = (W::PMEMORY_BASIC_INFORMATION)sc->arg3;
 	UINT32 numBytes = sc->arg5;
-	
-	if (hProcess == W::GetCurrentProcess()){
-		//MYINFO("Found  NTQueryVirtualMemoryHook process %08x baseAddress %08x current state memory %08x protection %08x size %08x",hProcess,baseAddress,mbi->State,mbi->Protect,numBytes);
-		//+0x1 to exclude the addresses on the edge of the whitelist
-		if (!FakeReadHandler::isAddrInWhiteList((ADDRINT)baseAddress+0x1)  && numBytes && mbi) {
-		
-		numBytes = 0;
-		mbi->State = MEM_FREE;
-		MYINFO("NtQueryVirtualMemory in not whitelisted memory at %08x ",baseAddress);
-		}
-		/*DEBUG
-		else{
-			if(mbi->Protect == PAGE_EXECUTE_READWRITE){
-				counter++;
-				//MYINFO("Bypass count %d\n",counter);
-			}			
-		}*/
-	}
-
-
 
 }
 

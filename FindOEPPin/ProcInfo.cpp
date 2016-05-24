@@ -17,9 +17,6 @@ ProcInfo::ProcInfo()
 	this->popad_flag = FALSE;
 	this->pushad_flag = FALSE;
 	this->start_timer = -1;
-	this->interresting_processes_name.insert("pin.exe");
-	this->interresting_processes_name.insert("csrss.exe");
-	this->retrieveInterestingPidFromNames();
 }
 
 ProcInfo::~ProcInfo(void)
@@ -214,9 +211,6 @@ BOOL ProcInfo::isInsideJmpBlacklist(ADDRINT ip){
 	return this->addr_jmp_blacklist.find(ip) != this->addr_jmp_blacklist.end();
 }
 
-BOOL ProcInfo::isInterestingProcess(unsigned int pid){
-	return this->interresting_processes_pid.find(pid) != this->interresting_processes_pid.end();
-}
 
 
 void ProcInfo::printHeapList(){
@@ -235,35 +229,7 @@ VOID ProcInfo::setMainIMGAddress(ADDRINT startAddr,ADDRINT endAddr){
 	mainImg.EndAddress = endAddr;
 }
 
-//retrieve the PID of the processes marked as interesting
-//for example : csrss.exe is interesting because we have to block Aall the openProcess to its PID
-void ProcInfo::retrieveInterestingPidFromNames(){
-  W::HANDLE hProcessSnap;
-  W::HANDLE hProcess;
-  W::PROCESSENTRY32 pe32;
-  W::DWORD dwPriorityClass;
-  // Take a snapshot of all processes in the system.
-  hProcessSnap = W::CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
-  // Set the size of the structure before using it.
-  pe32.dwSize = sizeof( W::PROCESSENTRY32 );
-  if( !Process32First( hProcessSnap, &pe32 ) )
-  {
-    printf("Process32First failed"); // show cause of failure
-    CloseHandle( hProcessSnap );     // clean the snapshot object
-	return;
-  }
-  // Now walk the snapshot of processes, and
-  // display information about each process in turn
-  do
-  {
-	  //if the name of the process is one of interest
-	if( this->interresting_processes_name.find(pe32.szExeFile) != this->interresting_processes_name.end()){
-		//add its pid to the set of the interesting PID
-	  	this->interresting_processes_pid.insert(pe32.th32ProcessID);
-	}
-  } while( Process32Next( hProcessSnap, &pe32 ) );
-  CloseHandle( hProcessSnap );
-}
+
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++ Memory layout information +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -358,15 +324,7 @@ BOOL ProcInfo::isKnownLibraryInstruction(ADDRINT address){
 
 // bootstrap memory information
 void ProcInfo::addProcAddresses(){
-	setCurrentMappedFiles();
 	addPebAddress();
-	addContextDataAddress();
-	addCodePageDataAddress();
-	addSharedMemoryAddress();
-	addProcessHeapsAndCheckAddress(NULL);
-	addpShimDataAddress();
-	addpApiSetMapAddress();
-	addKUserSharedDataAddress();
 }
 
 //------------------------------------------------------------PEB------------------------------------------------------------
@@ -448,65 +406,6 @@ VOID ProcInfo::addThreadStackAddress(ADDRINT addr){
 	stacks.push_back(stack);
 }
 
-
-//------------------------------------------------------------ Memory Mapped Files------------------------------------------------------------
-
-//Add to the mapped files list the region marked as mapped when the application starts
-VOID ProcInfo::setCurrentMappedFiles(){
-	W::MEMORY_BASIC_INFORMATION mbi;
-	W::SIZE_T numBytes;
-	W::DWORD MyAddress = 0;	
-	//delete old elements
-	mappedFiles.clear();	
-	do{
-		numBytes = W::VirtualQuery((W::LPCVOID)MyAddress, &mbi, sizeof(mbi));
-		if(mbi.Type == MEM_MAPPED){
-			MemoryRange range;
-			range.StartAddress = (ADDRINT)mbi.BaseAddress;
-			range.EndAddress = (ADDRINT)mbi.BaseAddress+mbi.RegionSize;
-			mappedFiles.push_back(range);
-		}
-		MyAddress += mbi.RegionSize;
-	}
-	while(numBytes);
-}
-
-BOOL ProcInfo::isMappedFileAddress(ADDRINT addr){
-	for(std::vector<MemoryRange>::iterator item = mappedFiles.begin(); item != mappedFiles.end(); ++item) {
-		if(item->StartAddress <= addr && addr <= item->EndAddress){
-			return true;
-		}			
-	}
-	return false;
-}
-
-VOID  ProcInfo::printMappedFileAddress(){
-	for(std::vector<MemoryRange>::iterator item = mappedFiles.begin(); item != mappedFiles.end(); ++item) {
-		MYINFO("Mapped file %08x -> %08x ",item->StartAddress , item->EndAddress);
-	}
-}
-
-//Add dynamically created mapped files to the mapped files list
-VOID ProcInfo::addMappedFilesAddress(ADDRINT startAddr){
-	MemoryRange mappedFile;
-	if(getMemoryRange((ADDRINT)startAddr,mappedFile)){
-		MYINFO("Adding mappedFile base address  %08x -> %08x ",mappedFile.StartAddress,mappedFile.EndAddress);
-		mappedFiles.push_back(mappedFile);
-	}
-}
-
-
-//------------------------------------------------------------ Other Memory Location ------------------------------------------------------------
-
-BOOL ProcInfo::isGenericMemoryAddress(ADDRINT address){
-	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {
-		if(item->StartAddress <= address && address <= item->EndAddress){
-			return true;
-		}			
-	}
-	return false;
-}
-
 /**
 Fill the MemoryRange passed as parameter with the startAddress and EndAddress of the memory location in which the address is contained
 ADDRINT address:  address of which we want to retrieve the memory region
@@ -536,71 +435,7 @@ BOOL ProcInfo::getMemoryRange(ADDRINT address, MemoryRange& range){
 	}		
 }
 
-//Adding the ContextData to the generic Memory Ranges
-VOID ProcInfo::addContextDataAddress(){
-	MemoryRange activationContextData;  
-	MemoryRange systemDefaultActivationContextData ;
-	MemoryRange pContextData;
-	if(getMemoryRange((ADDRINT)peb->ActivationContextData,activationContextData)){
-		MYINFO("Init activationContextData base address  %08x -> %08x ",activationContextData.StartAddress,activationContextData.EndAddress);
-		genericMemoryRanges.push_back(activationContextData);
 
-	}
-	if (getMemoryRange((ADDRINT)peb->SystemDefaultActivationContextData,systemDefaultActivationContextData)){
-		MYINFO("Init systemDefaultActivationContextData base address  %08x -> %08x",systemDefaultActivationContextData.StartAddress,systemDefaultActivationContextData.EndAddress);
-		genericMemoryRanges.push_back(systemDefaultActivationContextData);
-	} 
-	if(getMemoryRange((ADDRINT)peb->pContextData,pContextData)){
-		MYINFO("Init pContextData base address  %08x -> %08x",pContextData.StartAddress,pContextData.EndAddress);
-		genericMemoryRanges.push_back(pContextData);
-	}
-}
-
-//Adding the SharedMemoryAddress to the generic Memory Ranges
-VOID ProcInfo::addSharedMemoryAddress(){
-	MemoryRange readOnlySharedMemoryBase;
-	if(getMemoryRange((ADDRINT) peb->ReadOnlySharedMemoryBase,readOnlySharedMemoryBase)){
-		MYINFO("Init readOnlySharedMemoryBase base address  %08x -> %08x",readOnlySharedMemoryBase.StartAddress,readOnlySharedMemoryBase.EndAddress);
-		genericMemoryRanges.push_back(readOnlySharedMemoryBase);
-	}
-}
-
-
-//Adding the CodePageDataAddress to the generic Memory Ranges
-VOID ProcInfo::addCodePageDataAddress(){
-	MemoryRange ansiCodePageData;
-	if(getMemoryRange((ADDRINT) peb->AnsiCodePageData,ansiCodePageData)){
-		MYINFO("Init ansiCodePageData base address  %08x -> %08x",ansiCodePageData.StartAddress,ansiCodePageData.EndAddress);
-		genericMemoryRanges.push_back(ansiCodePageData);
-	}
-}
-
-
-//Adding the pShimDataAddress to the generic Memory Ranges
-VOID ProcInfo::addpShimDataAddress(){
-	MemoryRange pShimData;
-	if(getMemoryRange((ADDRINT) peb->pShimData,pShimData)){
-		genericMemoryRanges.push_back(pShimData);
-	}
-}
-
-//Adding the pShimDataAddress to the generic Memory Ranges
-VOID ProcInfo::addpApiSetMapAddress(){
-	MemoryRange ApiSetMap;
-	if(getMemoryRange((ADDRINT) peb->ApiSetMap,ApiSetMap)){
-		//MYINFO("Init ApiSetMap base address  %08x -> %08x",ApiSetMap.StartAddress,ApiSetMap.EndAddress);
-		genericMemoryRanges.push_back(ApiSetMap);
-	}
-}
-
-//Add to the generic memory ranges the KUserShareData structure
-VOID ProcInfo::addKUserSharedDataAddress(){
-	MemoryRange KUserSharedData;
-	KUserSharedData.StartAddress = KUSER_SHARED_DATA_ADDRESS;
-	KUserSharedData.EndAddress =KUSER_SHARED_DATA_ADDRESS +KUSER_SHARED_DATA_SIZE;
-	genericMemoryRanges.push_back(KUserSharedData);
-	
-}
 //Adding the ProcessHeaps to the generic Memory Ranges
 BOOL ProcInfo::addProcessHeapsAndCheckAddress(ADDRINT eip){
 	BOOL isEipDiscoveredHere = FALSE;
@@ -635,163 +470,6 @@ BOOL ProcInfo::addProcessHeapsAndCheckAddress(ADDRINT eip){
 }
 
 
-/*
-	Add a section of a module ( for example the .text of the NTDLL ) in order to catch
-	writes/reads inside this area
-*/
-VOID ProcInfo::addProtectedSection(ADDRINT startAddr,ADDRINT endAddr){
-	Section s;
-	s.begin = startAddr;
-	s.end = endAddr;
-	s.name = ".text";
-	MYINFO("Protected section size is %d\n" , this->protected_section.size());
-	protected_section.push_back(s);
-	MYINFO("Protected section size is %d\n" , this->protected_section.size());
-}
-
-/*
-	Check if an address is inside a protected section 
-*/
-BOOL ProcInfo::isInsideProtectedSection(ADDRINT address){
-	for(std::vector<Section>::iterator it = protected_section.begin(); it != protected_section.end(); ++it){
-		if(it->begin <= address && address <= it->end){
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-//------------------------------------------------------------ Current Memory Functions ------------------------------------------------------------
-
-//all memory of the program with pin in its
-VOID ProcInfo::enumerateCurrentMemory(){
-	W::MEMORY_BASIC_INFORMATION mbi;
-	W::SIZE_T numBytes;
-	W::DWORD MyAddress = 0;
-	int match_string =0;
-	do{
-		numBytes = W::VirtualQuery((W::LPCVOID)MyAddress, &mbi, sizeof(mbi));
-		if((mbi.State == MEM_COMMIT || mbi.State == MEM_MAPPED || mbi.State == MEM_IMAGE) ){
-			addCurrentMemoryAddress((ADDRINT)mbi.BaseAddress,mbi.RegionSize);
-		}
-		MyAddress += mbi.RegionSize;
-	}
-	while(numBytes);
-
-	return;
-}
-
-VOID ProcInfo::addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize){
-	MemoryRange libItem;
-	libItem.StartAddress = baseAddr;
-	libItem.EndAddress = baseAddr + regionSize;
-	currentMemory.push_back(libItem);
-}
-
-void ProcInfo::PrintCurrentMemorydAddr(){
-	//Iterate through the already whitelisted memory addresses
-	for(std::vector<MemoryRange>::iterator item = currentMemory.begin(); item != currentMemory.end(); ++item) {
-		MYPRINT("Current Memory  %08x  ->  %08x",item->StartAddress,item->EndAddress)		;				
-	}	
-}
 
 
-//----------------------------------------------- Whitelist Memory Functions -----------------------------------------------
 
-//Add to the the Whitelist array the memory ranges which the process is authorized to read
-//NB need to be called AFTER addPebAddress
-VOID ProcInfo::enumerateWhiteListMemory(){
-	//add stacks to the whitelist
-	for(std::vector<MemoryRange>::iterator it = stacks.begin(); it != stacks.end(); ++it){
-		addWhitelistAddress(it->StartAddress,it->EndAddress);
-	}
-	//Add Generic Memory ranges(Shared Memory pages pContextData..)
-	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {
-		addWhitelistAddress(item->StartAddress,item->EndAddress);	
-	}
-	//add mainIMG address to the whitelist
-	whiteListMemory.push_back(mainImg);
-	//add Libraries address to the whitelist
-	for(std::vector<LibraryItem>::iterator lib = knownLibraries.begin(); lib != knownLibraries.end(); ++lib) {
-		addWhitelistAddress(lib->StartAddress,lib->EndAddress);
-	}
-	for(std::vector<LibraryItem>::iterator lib = unknownLibraries.begin(); lib != unknownLibraries.end(); ++lib) {
-		addWhitelistAddress(lib->StartAddress,lib->EndAddress);
-	}
-	//add teb
-	for(std::vector<MemoryRange>::iterator it = tebs.begin(); it != tebs.end(); ++it){
-		addWhitelistAddress(it->StartAddress,it->EndAddress);
-	}
-}
-
-VOID ProcInfo::addWhitelistAddress(ADDRINT baseAddr,ADDRINT endAddress){
-	MemoryRange item;
-	item.StartAddress = baseAddr;
-	item.EndAddress = endAddress;
-	whiteListMemory.push_back(item);
-
-}
-
-//merge interval algorithm
-//IP1 : the set of intervals is sorted in ascending order
-//IP2 : the intervals never overlaps each other (at most the end of the previous is equals at the start of the current)
-VOID ProcInfo::mergeMemoryAddresses(){	
-	//get the first element
-	std::vector<MemoryRange>::iterator prev_item = whiteListMemory.begin();
-	//start from the second till the end
-	for(std::vector<MemoryRange>::iterator item = whiteListMemory.begin() + 1; item != whiteListMemory.end(); item++) {
-		//if the end of the previous is equal to the start of the current we have tu merge the two interval and delete the previous
-		if(item->StartAddress == prev_item->EndAddress){
-			item->StartAddress = prev_item->StartAddress;
-			//get the new iterator because we have erased an elemment and the old one is broken
-			item = whiteListMemory.erase(prev_item);
-		}
-		prev_item = item;
-	}
-}
-
-VOID ProcInfo::mergeCurrentMemory(){	
-	//get the first element
-	std::vector<MemoryRange>::iterator prev_item = currentMemory.begin();
-	//start from the second till the end
-	for(std::vector<MemoryRange>::iterator item = currentMemory.begin() + 1; item != currentMemory.end(); item++) {
-		//if the end of the previous is equal to the start of the current we have tu merge the two interval and delete the previous
-		if(item->StartAddress == prev_item->EndAddress){
-			item->StartAddress = prev_item->StartAddress;
-			//get the new iterator because we have erased an elemment and the old one is broken
-			item = currentMemory.erase(prev_item);
-		}
-		prev_item = item;
-	}
-}
-
-// print the whitelisted memory in a fancy way
-void ProcInfo::PrintWhiteListedAddr(){
-	//Iterate through the already whitelisted memory addresses
-	for(std::vector<MemoryRange>::iterator item = genericMemoryRanges.begin(); item != genericMemoryRanges.end(); ++item) {
-		MYINFO("[MEMORY RANGE]Whitelisted  %08x  ->  %08x\n",item->StartAddress,item->EndAddress);				
-	}
-	for(std::vector<HeapZone>::iterator item = this->HeapMap.begin(); item != this->HeapMap.end(); ++item) {
-			MYINFO("[HEAPZONES]Whitelisted  %08x  ->  %08x\n",item->begin,item->end);				
-	}
-	for(std::vector<LibraryItem>::iterator item = this->unknownLibraries.begin(); item != this->unknownLibraries.end(); ++item) {
-		MYINFO("[UNKNOWN LIBRARY ITEM]Whitelisted  %08x  ->  %08x\n",item->StartAddress,item->EndAddress);				
-	}
-	for(std::vector<LibraryItem>::iterator item = this->knownLibraries.begin(); item != this->knownLibraries.end(); ++item) {
-		MYINFO("[KNOWN LIBRARY ITEM]Whitelisted  %08x  ->  %08x\n",item->StartAddress,item->EndAddress);				
-	}
-	for(std::vector<MemoryRange>::iterator item = this->mappedFiles.begin(); item != this->mappedFiles.end(); ++item) {
-		MYINFO("[MAPPED FILES]Whitelisted  %08x  ->  %08x\n",item->StartAddress,item->EndAddress);				
-	}
-}
-
-// print all the memory layout of the process
-void ProcInfo::PrintAllMemory(){
-	MYPRINT("\nCurrent Memory:");
-	this->enumerateCurrentMemory();
-	this->mergeCurrentMemory();
-	this->PrintCurrentMemorydAddr();
-	MYPRINT("\nWhitelist:");
-	this->enumerateWhiteListMemory();
-	this->PrintWhiteListedAddr();
-}

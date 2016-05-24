@@ -22,14 +22,8 @@
     <Filter Include="Source Files\Hooks">
       <UniqueIdentifier>{1a6e6e16-052d-4b06-9b2b-be475cd02bed}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\PinShield">
-      <UniqueIdentifier>{6177bbce-1d6f-4b58-9b03-42e074a74cfd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Hooks">
       <UniqueIdentifier>{73b16fc3-10e8-4f1a-8d90-d120e993a640}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\PinShield">
-      <UniqueIdentifier>{4cd742f9-ea1b-4a2c-a515-d5dbcefcca74}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\PINdemonium">
       <UniqueIdentifier>{d44ca324-388e-4cc3-a1c6-c611bde6f446}</UniqueIdentifier>
@@ -78,9 +72,6 @@
     <ClCompile Include="HookFunctions.cpp">
       <Filter>Source Files\Hooks</Filter>
     </ClCompile>
-    <ClCompile Include="FakeWriteHandler.cpp">
-      <Filter>Source Files\PinShield</Filter>
-    </ClCompile>
     <ClCompile Include="FilterHandler.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
@@ -96,20 +87,11 @@
     <ClCompile Include="OepFinder.cpp">
       <Filter>Source Files\PINdemonium</Filter>
     </ClCompile>
-    <ClCompile Include="FakeReadHandler.cpp">
-      <Filter>Source Files\PinShield</Filter>
-    </ClCompile>
-    <ClCompile Include="PatternMatchModule.cpp">
-      <Filter>Source Files\PinShield</Filter>
-    </ClCompile>
-    <ClCompile Include="PolymorphicCodeHandlerModule.cpp">
-      <Filter>Source Files\PinShield</Filter>
-    </ClCompile>
-    <ClCompile Include="PINshield.cpp">
-      <Filter>Source Files\PinShield</Filter>
-    </ClCompile>
     <ClCompile Include="PINdemonium.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PolymorphicCodeHandlerModule.cpp">
+      <Filter>Source Files\PINdemonium</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -148,9 +130,6 @@
     <ClInclude Include="ScyllaWrapperInterface.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="FakeWriteHandler.h">
-      <Filter>Header Files\PinShield</Filter>
-    </ClInclude>
     <ClInclude Include="Debug.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
@@ -175,17 +154,8 @@
     <ClInclude Include="WxorXHandler.h">
       <Filter>Header Files\PINdemonium</Filter>
     </ClInclude>
-    <ClInclude Include="FakeReadHandler.h">
-      <Filter>Header Files\PinShield</Filter>
-    </ClInclude>
-    <ClInclude Include="PatternMatchModule.h">
-      <Filter>Header Files\PinShield</Filter>
-    </ClInclude>
     <ClInclude Include="PolymorphicCodeHandlerModule.h">
-      <Filter>Header Files\PinShield</Filter>
-    </ClInclude>
-    <ClInclude Include="PINshield.h">
-      <Filter>Header Files\PinShield</Filter>
+      <Filter>Header Files\PINdemonium</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

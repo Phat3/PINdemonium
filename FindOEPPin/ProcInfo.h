@@ -16,8 +16,7 @@ namespace W{
 
 #define MAX_STACK_SIZE 0x100000    //Used to define the memory range of the stack
 #define TEB_SIZE 0xfe0 	
-#define KUSER_SHARED_DATA_ADDRESS 0x7ffe0000
-#define KUSER_SHARED_DATA_SIZE 0x3e0 
+
 
 typedef struct PEB {
 	W::BYTE padding1[2];
@@ -105,7 +104,6 @@ public:
 	void PrintCurrContext();
 	void PrintSections();
 	void printHeapList();
-	void PrintAllMemory();
 	/* helper */
 	void insertSection(Section section);
 	string getSectionNameByIp(ADDRINT ip);
@@ -118,7 +116,6 @@ public:
 	void insertInJmpBlacklist(ADDRINT ip);
 	BOOL isInsideJmpBlacklist(ADDRINT ip);
 	BOOL isInsideMainIMG(ADDRINT address);
-	BOOL isInterestingProcess(unsigned int pid);
 	//PEB
 	BOOL isPebAddress(ADDRINT addr);
 	//TEB
@@ -127,28 +124,12 @@ public:
 	//Stack
 	BOOL isStackAddress(ADDRINT addr);
 	VOID addThreadStackAddress(ADDRINT addr);
-	//Memory Mapped Files
-	BOOL isMappedFileAddress(ADDRINT addr);
-	VOID addMappedFilesAddress(ADDRINT startAddr);
-	VOID setCurrentMappedFiles();
-	VOID printMappedFileAddress();
 	//Library
 	BOOL isLibraryInstruction(ADDRINT address);
 	BOOL isKnownLibraryInstruction(ADDRINT address);
-	BOOL isInsideProtectedSection(ADDRINT address);
 	VOID addLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	BOOL isLibItemDuplicate(UINT32 address , std::vector<LibraryItem> Libraries);
-	VOID addProtectedSection(ADDRINT startAddr,ADDRINT endAddr);
-	//Generic Address (pContexData, SharedMemory..)
-	BOOL isGenericMemoryAddress(ADDRINT address);
-	//Whitelist Memory
-	BOOL isAddrInWhiteList(ADDRINT address);
-	VOID enumerateWhiteListMemory();
-	VOID enumerateCurrentMemory();
-	VOID PrintCurrentMemorydAddr();
-	VOID PrintWhiteListedAddr();
-	VOID PrintDebugProcessAddr();
-	VOID enumerateDebugProcessMemory();
+
 	BOOL getMemoryRange(ADDRINT address, MemoryRange& range);	
 	BOOL addProcessHeapsAndCheckAddress(ADDRINT address);
 
@@ -160,11 +141,8 @@ private:
 	std::vector<MemoryRange>  stacks;				   //Set of Stack one for each thread
 	MemoryRange mainImg;
 	std::vector<MemoryRange> tebs;                     //Teb Base Address
+	std::vector<MemoryRange> genericMemoryRanges;
 	PEB *peb;
-	std::vector<MemoryRange>  mappedFiles;
-	std::vector<MemoryRange>  genericMemoryRanges;
-	std::vector<MemoryRange>  whiteListMemory;
-	std::vector<MemoryRange>  currentMemory;	
 	std::vector<Section> Sections;
 	std::vector<HeapZone> HeapMap;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
@@ -178,27 +156,11 @@ private:
 	BOOL popad_flag;
 	string full_proc_name;
 	string proc_name;
-	clock_t start_timer;
-	//processes to be monitored set 
-	std::unordered_set<string> interresting_processes_name; 
-	std::unordered_set<unsigned int> interresting_processes_pid;  
-	void retrieveInterestingPidFromNames();	
+	clock_t start_timer; 
 	//Enumerate Whitelisted Memory Helpers	
 	//return the MemoryRange in which the address is mapped
-	VOID addWhitelistAddress(ADDRINT baseAddr,ADDRINT endAddress);
-	VOID mergeMemoryAddresses();
-	VOID mergeCurrentMemory();
 	BOOL isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr);
 	VOID addPebAddress();
-	VOID addContextDataAddress();
-	VOID addSharedMemoryAddress();
-	VOID addCodePageDataAddress();
-	VOID addpShimDataAddress();
-	VOID addpApiSetMapAddress();
-	VOID addKUserSharedDataAddress();
-	VOID addCurrentMemoryAddress(ADDRINT baseAddr,ADDRINT regionSize);
-	VOID addDebugProcessAddresses(ADDRINT baseAddr,ADDRINT regionSize);
-	VOID enumerateProcessMemory(W::HANDLE hProc);
 	//Library Helpers
 	string libToString(LibraryItem lib);
 	long long FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard);

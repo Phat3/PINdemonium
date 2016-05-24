@@ -55,11 +55,6 @@ public:
 	bool INTER_WRITESET_ANALYSIS_ENABLE; //Trigger the analysis inside a WriteSet in which WxorX is already broken if a Long JMP is encontered (MPress packer)
 	UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
 	//mode of operation
-    bool UNPACKING_MODE;
-    bool ANTIEVASION_MODE;
-	bool ANTIEVASION_MODE_INS_PATCHING;
-	bool ANTIEVASION_MODE_SREAD;
-	bool ANTIEVASION_MODE_SWRITE;
 	bool ADVANCED_IAT_FIX;
 	bool POLYMORPHIC_CODE_PATCH;
 	bool NULLIFY_UNK_IAT_ENTRY;

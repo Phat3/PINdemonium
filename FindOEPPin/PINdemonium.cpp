@@ -6,7 +6,6 @@
 #include <time.h>
 #include  "Debug.h"
 #include "Config.h"
-#include "PINshield.h"
 #include "FilterHandler.h"
 #include "HookFunctions.h"
 #include "HookSyscalls.h"
@@ -15,7 +14,7 @@ namespace W {
 	#include <windows.h>
 }
 
-PINshield thider;
+
 OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
@@ -26,21 +25,6 @@ PolymorphicCodeHandlerModule pcpatcher;
 
 KNOB <UINT32> KnobInterWriteSetAnalysis(KNOB_MODE_WRITEONCE, "pintool",
     "iwae", "0" , "specify if you want or not to track the inter_write_set analysis dumps and how many jump");
-
-KNOB <BOOL> KnobAntiEvasion(KNOB_MODE_WRITEONCE, "pintool",
-    "antiev", "false" , "specify if you want or not to activate the anti evasion engine");
-
-KNOB <BOOL> KnobAntiEvasionINSpatcher(KNOB_MODE_WRITEONCE, "pintool",
-    "antiev-ins", "false" , "specify if you want or not to activate the single patching of evasive instruction as int2e, fsave...");
-
-KNOB <BOOL> KnobAntiEvasionSuspiciousRead(KNOB_MODE_WRITEONCE, "pintool",
-    "antiev-sread", "false" , "specify if you want or not to activate the handling of suspicious reads");
-
-KNOB <BOOL> KnobAntiEvasionSuspiciousWrite(KNOB_MODE_WRITEONCE, "pintool",
-    "antiev-swrite", "false" , "specify if you want or not to activate the handling of suspicious writes");
-
-KNOB <BOOL> KnobUnpacking(KNOB_MODE_WRITEONCE, "pintool",
-    "unp", "false" , "specify if you want or not to activate the unpacking engine");
 
 KNOB <BOOL> KnobAdvancedIATFixing(KNOB_MODE_WRITEONCE, "pintool",
     "adv-iatfix", "false" , "specify if you want or not to activate the advanced IAT fix technique");
@@ -111,14 +95,7 @@ void imageLoadCallback(IMG img,void *){
 	ADDRINT endAddr = IMG_HighAddress(img);
 	const string name = IMG_Name(img); 
 	if(!IMG_IsMainExecutable(img)){
-		// set the .text section of the ntdll as protected
-		if(name.find("ntdll")!= std::string::npos){		
-		  for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
-			if(strcmp(SEC_Name(sec).c_str(),".text")==0){
-				proc_info->addProtectedSection(SEC_Address(sec),SEC_Address(sec)+SEC_Size(sec));
-			}
-	      }
-		}
+		
 		//*** If you need to protect other sections of other dll put them here ***
 		// check if there are some fuction that has top be hooked in this DLL
 		hookFun.hookDispatcher(img);
@@ -133,15 +110,9 @@ void imageLoadCallback(IMG img,void *){
 
 // trigger the instrumentation routine for each instruction
 void Instruction(INS ins,void *v){
-	// check the current mode of operation
-	Config *config = Config::getInstance();
-	if(config->ANTIEVASION_MODE){
-		thider.avoidEvasion(ins);
-	}
 	
-	if(config->UNPACKING_MODE){
 		oepf.IsCurrentInOEP(ins);
-	}	
+	
 }
 
 // trigger the instrumentation routine for each trace collected (useful in order to spiot polymorphic code on the current trace)
@@ -172,11 +143,6 @@ void initDebug(){
 void ConfigureTool(){	
 	Config *config = Config::getInstance();
 	config->INTER_WRITESET_ANALYSIS_ENABLE = KnobInterWriteSetAnalysis.Value();	
-	config->ANTIEVASION_MODE = KnobAntiEvasion.Value();
-	config->ANTIEVASION_MODE_INS_PATCHING = KnobAntiEvasionINSpatcher.Value();
-	config->ANTIEVASION_MODE_SREAD = KnobAntiEvasionSuspiciousRead.Value();
-	config->ANTIEVASION_MODE_SWRITE = KnobAntiEvasionSuspiciousWrite.Value();
-	config->UNPACKING_MODE = KnobUnpacking.Value();
 	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
 	config->POLYMORPHIC_CODE_PATCH = KnobPolymorphicCodePatch.Value();
 	config->NULLIFY_UNK_IAT_ENTRY = KnobNullyfyUnknownIATEntry.Value();
