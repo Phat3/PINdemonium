@@ -1,7 +1,0 @@
-MessageBoxA
-MessageBoxW
-Casa
-ExitProcess
-memcpy
-fflush
-GetModuleFileNameW

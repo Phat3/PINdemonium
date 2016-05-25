@@ -1,4 +1,5 @@
-# Pin unpacking and anti-evasion
+# PINdemonium
+An unpacker for windows executables exploiting the capabilities of PIN.
 
 ## Dependencies
 

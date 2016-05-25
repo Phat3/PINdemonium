@@ -36,11 +36,10 @@ VOID checkIfWrittenAddress(ADDRINT eip, CONTEXT * ctxt, UINT32 ins_size, void *p
 	// sometime can happen that only part of the original instruction is written
 	// ES : push 0x20 -> push 0x30 (only the operand is written)
 	if(pcpatches->getFirstWrittenAddressInMesmory() >= eip && pcpatches->getFirstWrittenAddressInMesmory() <= eip + ins_size){
-		MYTEST("Polymophic_evasion");
 		PIN_SetContextReg(ctxt, REG_EIP, eip);
 		//reset the address
 		pcpatches->setFirstWrittenAddressInMesmory(0x0);
-		// break the terace
+		// break the trace
 		PIN_ExecuteAt(ctxt);
 	}
 }
@@ -55,7 +54,7 @@ VOID PolymorphicCodeHandlerModule::inspectTrace(TRACE trace){
     {
         for (INS ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins))
         {	
-			// for ech instruction we have to check if it has been overwritten by a previous instruction of the current trace (polimiorfic code detection)
+			// for each instruction we have to check if it has been overwritten by a previous instruction of the current trace (polimiorfic code detection)
 			INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(checkIfWrittenAddress), 
 				IARG_INST_PTR, 
 				IARG_CONTEXT, 

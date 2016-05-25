@@ -161,6 +161,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
 	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
 	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
+	/*
 	if( item.getHeapFlag() && dumpAndFixResult != SCYLLA_ERROR_FILE_FROM_PID  && dumpAndFixResult != SCYLLA_ERROR_DUMP ){
 		MYINFO("-----DUMPING HEAP-----\n");
 		unsigned char * Buffer;
@@ -191,6 +192,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		scylla_wrapper->unloadScyllaLibrary();
 		free(Buffer);
 	}
+	*/
 	//write the heuristic results on ile
 	Config::getInstance()->writeOnReport(curEip, item);
 	return OEPFINDER_HEURISTIC_FAIL;
