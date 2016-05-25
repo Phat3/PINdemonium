@@ -46,6 +46,7 @@ public:
 	static const string BAD_IMPORTS_LIST;
 	static const string DETECTED_BAD_IMPORTS_LIST;
 	static const string SCYLLA_DUMPER_PATH;
+	static const string SCYLLA_WRAPPER_PATH;
 	static const string PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING;
 	static const string DUMPER_SELECTOR_PATH;
 

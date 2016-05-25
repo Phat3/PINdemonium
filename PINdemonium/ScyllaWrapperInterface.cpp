@@ -82,8 +82,8 @@ void ScyllaWrapperInterface::loadScyllaLibary(){
 	//init
 	this->hScyllaWrapper = 0;
 	//load library
-	this->hScyllaWrapper = W::LoadLibraryEx("C:\\pin\\PinUnpackerDependencies\\Scylla\\ScyllaWrapper.dll", NULL, NULL);
-	W::HANDLE scyh = W::GetModuleHandle("C:\\pin\\PinUnpackerDependencies\\Scylla\\ScyllaWrapper.dll");
+	this->hScyllaWrapper = W::LoadLibraryEx((W::LPCSTR)Config::SCYLLA_WRAPPER_PATH.c_str(), NULL, NULL);
+	W::HANDLE scyh = W::GetModuleHandle((W::LPCSTR)Config::SCYLLA_WRAPPER_PATH.c_str());
 	//MYINFO("Address in which scylla is mapped: %08x\n" , scyh);
 	//get proc address
 	if (this->hScyllaWrapper)
