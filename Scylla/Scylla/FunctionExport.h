@@ -2,6 +2,7 @@
 
 #include <windows.h>
 
+
 const int SCY_ERROR_SUCCESS = 0;
 const int SCY_ERROR_PROCOPEN = -1;
 const int SCY_ERROR_IATWRITE = -2;

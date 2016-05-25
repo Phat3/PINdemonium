@@ -1,0 +1,10 @@
+
+Fix or add the following shit:
+==============================
+
+- Add all missing undocumented opcodes
+
+- Support for other platforms
+
+- Fix all other bugs :-)
+
