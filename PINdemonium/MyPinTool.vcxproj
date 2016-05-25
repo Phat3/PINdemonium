@@ -116,7 +116,7 @@
     <Link>
       <AdditionalOptions>/export:main %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>pin.lib;libxed.lib;libcpmt.lib;libcmt.lib;pinvm.lib;kernel32.lib;ntdll-32.lib;ScyllaDLLx86.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllDebug;C:\pin\ia32\lib;C:\pin\ia32\lib-ext;C:\pin\extras\xed-ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\pin\PINdemoniumDependencies\Scylla\ScyllaDllDebug;C:\pin\ia32\lib;C:\pin\ia32\lib-ext;C:\pin\extras\xed-ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -196,7 +196,7 @@
     <Link>
       <AdditionalOptions>/export:main %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>pin.lib;libxed.lib;libcpmt.lib;libcmt.lib;pinvm.lib;kernel32.lib;ntdll-32.lib;ScyllaDLLx86.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllRelease;C:\pin\ia32\lib;C:\pin\ia32\lib-ext;C:\pin\extras\xed-ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\pin\PINdemoniumDependencies\Scylla\ScyllaDllRelease;C:\pin\ia32\lib;C:\pin\ia32\lib-ext;C:\pin\extras\xed-ia32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>

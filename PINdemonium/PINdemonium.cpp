@@ -110,9 +110,7 @@ void imageLoadCallback(IMG img,void *){
 
 // trigger the instrumentation routine for each instruction
 void Instruction(INS ins,void *v){
-	
 		oepf.IsCurrentInOEP(ins);
-	
 }
 
 // trigger the instrumentation routine for each trace collected (useful in order to spiot polymorphic code on the current trace)

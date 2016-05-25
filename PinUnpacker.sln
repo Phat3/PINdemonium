@@ -1,15 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FindOEPPin", "FindOEPPin\MyPinTool.vcxproj", "{639EF517-FCFC-408E-9500-71F0DC0458DB}"
-	ProjectSection(ProjectDependencies) = postProject
-		{187A751B-B47D-4A95-9F24-55D3D7ABB570} = {187A751B-B47D-4A95-9F24-55D3D7ABB570}
-		{A963EFBD-C7EF-41CC-B6F7-1E15CDFBE4FB} = {A963EFBD-C7EF-41CC-B6F7-1E15CDFBE4FB}
-		{710434C9-FC4B-4F1D-B318-E10ADC78499F} = {710434C9-FC4B-4F1D-B318-E10ADC78499F}
-		{A4B94DE4-BE0E-4E7D-95E7-7B84E6F117A1} = {A4B94DE4-BE0E-4E7D-95E7-7B84E6F117A1}
-		{C9D83AE7-64DA-411D-BDAC-C60ABE35612C} = {C9D83AE7-64DA-411D-BDAC-C60ABE35612C}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScyllaDumper", "ScyllaDumper\ScyllaDumper\ScyllaTest.vcxproj", "{C9D83AE7-64DA-411D-BDAC-C60ABE35612C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{710434C9-FC4B-4F1D-B318-E10ADC78499F} = {710434C9-FC4B-4F1D-B318-E10ADC78499F}
@@ -29,6 +20,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyxml", "Scylla\tinyxml\t
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScyllaWrapper", "ScyllaWrapper\ScyllaWrapper.vcxproj", "{A963EFBD-C7EF-41CC-B6F7-1E15CDFBE4FB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PINdemonium", "PINdemonium\MyPinTool.vcxproj", "{639EF517-FCFC-408E-9500-71F0DC0458DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -37,14 +30,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Debug|Win32.ActiveCfg = Debug|Win32
-		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Debug|Win32.Build.0 = Debug|Win32
-		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Debug|x64.ActiveCfg = Debug|x64
-		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Debug|x64.Build.0 = Debug|x64
-		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Release|Win32.ActiveCfg = Release|Win32
-		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Release|Win32.Build.0 = Release|Win32
-		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Release|x64.ActiveCfg = Release|x64
-		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Release|x64.Build.0 = Release|x64
 		{C9D83AE7-64DA-411D-BDAC-C60ABE35612C}.Debug|Win32.ActiveCfg = Debug|Win32
 		{C9D83AE7-64DA-411D-BDAC-C60ABE35612C}.Debug|Win32.Build.0 = Debug|Win32
 		{C9D83AE7-64DA-411D-BDAC-C60ABE35612C}.Debug|x64.ActiveCfg = Debug|Win32
@@ -81,6 +66,14 @@ Global
 		{A963EFBD-C7EF-41CC-B6F7-1E15CDFBE4FB}.Release|Win32.ActiveCfg = Release|Win32
 		{A963EFBD-C7EF-41CC-B6F7-1E15CDFBE4FB}.Release|Win32.Build.0 = Release|Win32
 		{A963EFBD-C7EF-41CC-B6F7-1E15CDFBE4FB}.Release|x64.ActiveCfg = Release|Win32
+		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Debug|Win32.Build.0 = Debug|Win32
+		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Debug|x64.ActiveCfg = Debug|x64
+		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Debug|x64.Build.0 = Debug|x64
+		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Release|Win32.ActiveCfg = Release|Win32
+		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Release|Win32.Build.0 = Release|Win32
+		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Release|x64.ActiveCfg = Release|x64
+		{639EF517-FCFC-408E-9500-71F0DC0458DB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

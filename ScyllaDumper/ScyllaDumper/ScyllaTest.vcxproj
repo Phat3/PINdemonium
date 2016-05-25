@@ -40,11 +40,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>C:\pin\PinUnpackerDependencies\Scylla\</OutDir>
+    <OutDir>C:\pin\PINdemoniumDependencies\Scylla\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>C:\pin\PinUnpackerDependencies\Scylla\</OutDir>
+    <OutDir>C:\pin\PINdemoniumDependencies\Scylla\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -59,7 +59,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>ScyllaDLLx86.lib;psapi.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllDebug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\pin\PINdemoniumDependencies\Scylla\ScyllaDllDebug</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>
@@ -82,7 +82,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>ScyllaDLLx86.lib;psapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\pin\PinUnpackerDependencies\Scylla\ScyllaDllRelease</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\pin\PINdemoniumDependencies\Scylla\ScyllaDllRelease</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>
