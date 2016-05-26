@@ -38,6 +38,8 @@ An unpacker for windows executables exploiting the capabilities of PIN.
 
 9. Compile the solution
 
+10. **Optional** : Create a folder called **PINdemoniumPlugins** in **C:\pin\\**
+
 ```
 	\---C
 	    \---pin
@@ -61,6 +63,13 @@ An unpacker for windows executables exploiting the capabilities of PIN.
 			   	|									\---ScyllaDLLx86.dll
 			   	|								\---ScyllaDumper.exe
 			   	|
+			   	|
+			   	|
+			   \+---PINdemoniumPlugins
+			   	|
+			   	|
+			   	|
+			   	|
 			   \+---PINdemonium.dll
 ```
 
@@ -74,15 +83,34 @@ An unpacker for windows executables exploiting the capabilities of PIN.
 
 	**Flags :**
 	- **-iwae <number_of_jump_to_dump>** : specify if you want or not to track the inter_write_set analysis dumps and how many jump
-	
-
-	- **-adv-iatfix** : specify if you want or not to activate the advanced IAT fix technique
-	
+		
 
 	- **-poly-patch**: if the binary you are analyzing has some kind of polymorphic behavior this activate the patch in order to avoid pin to execute the wrong trace.
 
 
-	- **-nullify-unk-iat**: specify if you want or not to nullify the IAT entry not detected as correct API by the tool. NB: THIS OPTION WORKS ONLY IF THE OPTION adv-iatfix IS ACTIVE!
-
+	- **-plugin <name_of_the_plugin>**: specify if you want to call a custom plugin if the IAT-fix fails (more information on in the Plugin system section).
 
 2. Check your result in **C:\pin\PINdemoniumResults\\< current_date_and_time >\\**
+
+## Plugin System
+PINdemonium provides a plugin system in order to extend the functionalities of the IAT fixing module.
+
+To write your own plugin you have to:
+
+1. Copy the sample project called **PINdemoniumPluginTemplate** located in **PINdemonium\PINdemoniumPlugins\\**  wherever you want.
+
+2. Change the name of the project with a name of your choice
+
+3. Implement the function **runPlugin**
+
+4. Compile the project
+
+5. Copy the compiled Dll in **C:\pin\PINdemoniumPlugins
+
+6. Launch PINdemonium with the flag **plugin** active followed by your plugin name (EX : -plugin PINdemoniumStolenAPIPlugin.dll)
+
+Inside the template two helper function are provided:
+
+- **readMemoryFromProcess** : this function reads the memory from the specified process, at the specified address and copies the read bytes into a buffer
+
+- **writeMemoryToProcess** : this function writes the bytes contained inside a specified buffer into the process memory starting from a specified address
