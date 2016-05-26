@@ -9,7 +9,6 @@
 #include "IATSearch.h"
 #include "ImportRebuilder.h"
 #include "DllInjectionPlugin.h"
-#include  "libdasm.h"
 
 
 extern HINSTANCE hDllModule;
