@@ -39,7 +39,7 @@ DWORD WINAPI ScyllaVersionInformationDword();
 int WINAPI ScyllaStartGui(DWORD dwProcessId, HINSTANCE mod);
 
 int WINAPI ScyllaIatSearch(DWORD dwProcessId, DWORD_PTR * iatStart, DWORD * iatSize, DWORD_PTR searchStart, BOOL advancedSearch);
-int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile,  DWORD advance_iat_fix_flag, DWORD nullify_unknown_iat_entry_flag, unsigned int eip);
+int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile, unsigned int eip, DWORD call_plugin_flag, const WCHAR * plugin_full_path);
 
 
 /* ADDED FROM OUR TEAM */

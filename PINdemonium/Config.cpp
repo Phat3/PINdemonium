@@ -3,6 +3,7 @@
 //constanth path and variable for our logging system
 const string Config::PIN_DIRECTORY_PATH_OUTPUT = "C:\\pin\\PINdemoniumResults\\";
 const string Config::PIN_DIRECTORY_PATH_DEP = "C:\\pin\\PINdemoniumDependencies\\";
+const string Config::PINDEMONIUM_PLUGIN_PATH = "C:\\pin\\PINdemoniumPlugins\\";
 const string Config::LOG_FILENAME = "log_PINdemonium.txt";
 const string Config::REPORT_FILENAME = "report_PINdemonium.txt";
 const string Config::IDA_PATH = "\"C:\\Program Files\\IDA 6.6\\idaw.exe\"";
@@ -104,6 +105,7 @@ string Config::getCurrentDetectedListPath(){
 	this->cur_list_path = this->base_path + this->DETECTED_BAD_IMPORTS_LIST + "_" + std::to_string(this->dump_number) + ".txt" ;
 	return this->cur_list_path;	
 }
+
 
 
 /* ----------------------------- UTILS -----------------------------*/

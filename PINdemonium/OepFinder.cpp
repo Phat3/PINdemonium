@@ -199,13 +199,15 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	//Getting Current process PID and Base Address
 	UINT32 pid = W::GetCurrentProcessId();
-	string outputFile = Config::getInstance()->getCurrentDumpFilePath();
-	string tmpDump = Config::getInstance()->getNotWorkingPath();
-	std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
-	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s, Advanced IAT technique %d",pid, Config::getInstance()->getCurrentDumpFilePath().c_str(), Config::getInstance()->ADVANCED_IAT_FIX);
+	Config * config = Config::getInstance();
+	string outputFile = config->getCurrentDumpFilePath();
+	string tmpDump = config->getNotWorkingPath();
+	//std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
+	string plugin_full_path = config->PLUGIN_FULL_PATH;	
+	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s, Plugin %d",pid, config->getCurrentDumpFilePath().c_str(), config->PLUGIN_FULL_PATH.c_str());
 	// -------- Scylla launched as an exe --------	
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();	
-	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, Config::getInstance()->ADVANCED_IAT_FIX, tmpDump, Config::getInstance()->NULLIFY_UNK_IAT_ENTRY);
+	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, tmpDump, config->CALL_PLUGIN_FLAG, config->PLUGIN_FULL_PATH);
 	if(result != SCYLLA_SUCCESS_FIX){
 		MYERRORE("Scylla execution Failed error %d ",result);
 		return result;

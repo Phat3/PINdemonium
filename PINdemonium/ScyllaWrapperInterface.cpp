@@ -20,11 +20,11 @@ ScyllaWrapperInterface::ScyllaWrapperInterface(void)
  pid : pid of the process to dump (Current PID if you want to use the Pin Instrumented Binary)
  curEip : current eip of the program
  outputFile : the name of the dump we want to create
- advanced_iat_fix_flag : flag that specify wheater to activae or not the advanced iat fix technique
  tmpDump : name of the temp file
- nullify_unknown_iat_entry_flag : flag that specify wheater to activae or not the nullify entry technique
+ call_plugin_falg : specify if a plugin has to be called if the iat-fix fails
+ plugin_full_path : full path to the dll containing the plugin
 **/
-UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::string outputFile, int advanced_iat_fix_flag, std::string tmpDump, int nullify_unknown_iat_entry_flag){	
+UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::string outputFile, std::string tmpDump,  bool call_plugin_flag, std::string plugin_full_path){	
 	MYINFO("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 	MYINFO("LAUNCHING SCYLLADUMP AS AN EXTERNAL PROCESS!!");
 	MYINFO("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
@@ -37,9 +37,9 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::
 	scyllaArgsStream <<  pid << " ";
 	scyllaArgsStream << std::hex  << curEip << " ";
 	scyllaArgsStream << outputFile << " ";
-	scyllaArgsStream << advanced_iat_fix_flag << " ";
 	scyllaArgsStream << tmpDump << " ";
-	scyllaArgsStream << nullify_unknown_iat_entry_flag << " ";
+	scyllaArgsStream << call_plugin_flag << " ";
+	scyllaArgsStream << plugin_full_path << " ";
 	std::string scyllaArgs = scyllaArgsStream.str();	
 	MYINFO("Scylla cmd %s %s",scylla.c_str(),scyllaArgs.c_str());
 	//Running external Scyllatest.exe executable

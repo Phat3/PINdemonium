@@ -5,7 +5,7 @@
 
 // Entry point of the plugin
 // This function will be called PINdemonium
-void runPlugin(static HANDLE hProcess, PUNRESOLVED_IMPORT unresolvedImport, unsigned int eip, DWORD nullify_unknown_iat_entry_flag){
+void runPlugin(static HANDLE hProcess, PUNRESOLVED_IMPORT unresolvedImport, unsigned int eip){
 	
 	//local variable
 	int max_instruction_size = sizeof(UINT8)*15;
@@ -85,13 +85,15 @@ void runPlugin(static HANDLE hProcess, PUNRESOLVED_IMPORT unresolvedImport, unsi
 			//check the next row inthe IAT
 			invalidApiAddress = invalidApiAddress + instruction_size;
 		}
+		/*
 		//if we cannot resolve the import fix it with a dummy address so scylla isn't able to resolve the API and it will remove the unresolved import
 		// this functionality is optional (set the flag nullify_unknown_iat_entry_flag as true with command line) because it can break the program
- 		if(!resolved && nullify_unknown_iat_entry_flag){
+ 		if(!resolved){
 			unsigned int correct_address = 0x0;
 			writeMemoryToProcess(hProcess, (DWORD_PTR)(unresolvedImport->ImportTableAddressPointer), sizeof(correct_address), &correct_address);
  			resolved = false;
  		}
+		*/
 		unresolvedImport++; //next pointer to struct
 	}
 	

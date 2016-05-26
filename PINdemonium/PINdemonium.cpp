@@ -35,6 +35,9 @@ KNOB <BOOL> KnobPolymorphicCodePatch(KNOB_MODE_WRITEONCE, "pintool",
 KNOB <BOOL> KnobNullyfyUnknownIATEntry(KNOB_MODE_WRITEONCE, "pintool",
     "nullify-unk-iat", "false" , "specify if you want or not to nullify the IAT entry not detected as correct API by the tool\n NB: THIS OPTION WORKS ONLY IF THE OPTION adv-iatfix IS ACTIVE!");
 
+KNOB <string> KnobPluginSelector(KNOB_MODE_WRITEONCE, "pintool",
+    "plugin", "" , "specify the name of the plugin you want to launch if the IAT reconstructor fails (EX : PINdemoniumStolenAPIPlugin.dll)");
+
 //------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
 
@@ -150,6 +153,21 @@ void ConfigureTool(){
 	else{
 		MYWARN("Invalid number of jumps to track, se to default value: 2\n");
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have invalid value 
+	}
+	//get the selected plugin or return an erro if it doen't exist
+	if(KnobPluginSelector.Value().compare("") != 0){
+		config->CALL_PLUGIN_FLAG = true;
+		config->PLUGIN_FULL_PATH = Config::PINDEMONIUM_PLUGIN_PATH + KnobPluginSelector.Value();
+		W::DWORD fileAttrib = W::GetFileAttributes(config->PLUGIN_FULL_PATH.c_str());
+		//file doesn't exist
+		if(fileAttrib == 0xFFFFFFFF){
+			printf("THE SELECTED PLUGIN DOES NOT EXIST!\n\n\n");
+			exit(-1);
+		}
+	}
+	//don't call any plugin if it isn't selected
+	else{
+		config->CALL_PLUGIN_FLAG = false;
 	}
 }
 

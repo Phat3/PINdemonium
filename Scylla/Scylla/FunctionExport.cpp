@@ -342,7 +342,7 @@ void displayModuleList(std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
 }
 
 
-int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile,  DWORD advance_iat_fix_flag, DWORD nullify_unknown_iat_entry_flag, unsigned int eip)
+int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile, unsigned int eip,  DWORD call_plugin_flag, const WCHAR * plugin_full_path)
 {
 	ApiReader apiReader;
 	ProcessLister processLister;
@@ -379,7 +379,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 
 	apiReader.readAndParseIAT(iatAddr, iatSize, moduleList);
 	//if we want the advanced iat fix technique
-	if(advance_iat_fix_flag){
+	if(call_plugin_flag){
 		//get the number of unresolved immports based on the current module list
 		DWORD_PTR numberOfUnresolvedImportsBefore = getNumberOfUnresolvedImports(moduleList);
 		printf("NUMBER OF UNRES IMPORTS = %d!!!!\n", numberOfUnresolvedImportsBefore);
@@ -397,10 +397,10 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 			addUnresolvedImports(unresolvedImport, moduleList);
 			
 			// --------------------- LOAD AND CALL THE PLUGIN --------------------- //
-			typedef UINT32 (* def_runPlugin)(static HANDLE hProcess, PUNRESOLVED_IMPORT unresolvedImport, unsigned int eip, DWORD nullify_unknown_iat_entry_flag);
+			typedef UINT32 (* def_runPlugin)(static HANDLE hProcess, PUNRESOLVED_IMPORT unresolvedImport, unsigned int eip);
 			//load the dll
 			HMODULE pluginDll = 0;
-			LPCWSTR path = L"C:\\PINdemoniumStolenAPIPlugin.dll";
+			LPCWSTR path = plugin_full_path;
 			//load library
 			pluginDll = LoadLibraryEx(path, NULL, NULL);
 			def_runPlugin runPlugin;
@@ -409,7 +409,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 			{
 				runPlugin = (def_runPlugin)GetProcAddress(pluginDll, "runPlugin");
 				//call the plugin
-				runPlugin(ProcessAccessHelp::hProcess, unresolvedImport, eip, nullify_unknown_iat_entry_flag);
+				runPlugin(ProcessAccessHelp::hProcess, unresolvedImport, eip);
 			}
 			else{
 				printf("\n\n!!!ERROR WHILE LOADING PLUGIN!!!\n\n");

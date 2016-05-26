@@ -39,6 +39,7 @@ public:
 	//files and paths
 	static const string PIN_DIRECTORY_PATH_DEP;
 	static const string PIN_DIRECTORY_PATH_OUTPUT;
+	static const string PINDEMONIUM_PLUGIN_PATH;
 	static const string LOG_FILENAME;
 	static const string REPORT_FILENAME;
 	static const string IDA_PATH;
@@ -59,6 +60,8 @@ public:
 	bool ADVANCED_IAT_FIX;
 	bool POLYMORPHIC_CODE_PATCH;
 	bool NULLIFY_UNK_IAT_ENTRY;
+	string PLUGIN_FULL_PATH;
+	bool CALL_PLUGIN_FLAG;
 
 	//--------------------------Command line Tuning Flags----------------------------
 	static const string FILTER_WRITES_ENABLES;        //Which write instructions are filtered(possible values: 'stack teb')

@@ -4,7 +4,7 @@
 
 // Entry point of the plugin
 // This function will be called PINdemonium
-void runPlugin(static HANDLE hProcess, PUNRESOLVED_IMPORT unresolvedImport, unsigned int eip, DWORD nullify_unknown_iat_entry_flag){
+void runPlugin(static HANDLE hProcess, PUNRESOLVED_IMPORT unresolvedImport, unsigned int eip){
 	
 	//do something cool...
 	

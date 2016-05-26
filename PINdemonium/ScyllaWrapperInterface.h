@@ -24,7 +24,7 @@ class ScyllaWrapperInterface
 public:
 	static ScyllaWrapperInterface* getInstance();
 	//Create a process which launch the ScyllaDumper.exe executable to dump the binary and fix the IAT
-	UINT32 launchScyllaDumpAndFix(int pid, int curEip, string dumpFileName, int advanced_iat_fix_flag, string tmpDump, int nullify_unknown_iat_entry_flag);
+	UINT32 launchScyllaDumpAndFix(int pid, int curEip, string dumpFileName, string tmpDump, bool call_plugin_flag, string plugin_full_path);
 	//interface to the ScyllaWrapper.dll
 	def_ScyllaDumpAndFix	ScyllaDumpAndFix;
 	def_ScyllaWrapAddSection ScyllaWrapAddSection;

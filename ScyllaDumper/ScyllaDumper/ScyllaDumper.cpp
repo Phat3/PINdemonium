@@ -15,7 +15,7 @@
 #define SCYLLA_SUCCESS_FIX 0
 
 
-UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag, WCHAR* tmpDumpFile, DWORD nullify_unknown_iat_entry_flag);
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR* tmpDumpFile, DWORD call_plugin_flag, WCHAR *plugin_full_path);
 BOOL GetFilePathFromPID(DWORD dwProcessId, WCHAR *filename);
 DWORD_PTR GetExeModuleBase(DWORD dwProcessId);
 
@@ -24,23 +24,29 @@ DWORD_PTR GetExeModuleBase(DWORD dwProcessId);
 HMODULE hScylla = 0;
 
 
-
+//
+// arg 1 : Pid
+// arg 2 : Original entry poiunt
+// arg 3 : Output file path
+// arg 4 : Tmp file path used by scylla 
+// arg 5 : Call plugin flag --> 0 don't call any plugin, 1 --> call the plugin pointed by plugin_full_path
+// arg 6 : Full path of the dll containing the plugin that has to be called
 int wmain(int argc, wchar_t *argv[]){
 
 	
 	if(argc < 6){
-		INFO("ScyllaTest.exe <pid> <oep> <output_file> <advance_iat_fix_flag> <tmp_dump> <nullify_unknown_iat_entry_flag>");
+		INFO("ScyllaTest.exe <pid> <oep> <output_file> <tmp_dump> <call_plugin_flag> <plugin_full_path>");
 		return -1;
 	}
 	INFO("argv0 %S argv1 %S argv2 %S argv3 %S argv4 %S argv5 %S argv6 %S", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
 	DWORD pid = _wtoi(argv[1]);
 	DWORD_PTR oep = wcstoul(argv[2],NULL,16);
 	WCHAR *outputFile = argv[3];
-	DWORD advance_iat_fix_flag = _wtoi(argv[4]);
-	WCHAR *tmpDumpFile = argv[5];
-	DWORD nullify_unknown_iat_entry_flag = _wtoi(argv[6]);
+	WCHAR *tmpDumpFile = argv[4];
+	DWORD call_plugin_flag = _wtoi(argv[5]);
+	WCHAR *plugin_full_path = argv[6];
 
-	return IATAutoFix(pid, oep, outputFile, advance_iat_fix_flag, tmpDumpFile, nullify_unknown_iat_entry_flag);
+	return IATAutoFix(pid, oep, outputFile, tmpDumpFile, call_plugin_flag, plugin_full_path);
 	
 }
 
@@ -66,7 +72,7 @@ BOOL isMemoryReadable(DWORD pid, void *ptr, size_t byteCount)
 
 
 
-UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat_fix_flag, WCHAR *tmpDumpFile, DWORD nullify_unknown_iat_entry_flag)
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR *tmpDumpFile, DWORD call_plugin_flag, WCHAR *plugin_full_path)
 {
 
 	DWORD_PTR iatStart = 0;
@@ -124,7 +130,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat
 	}
 	INFO("[SCYLLA SEARCH] iat_start : %08x\t iat_size : %08x\t pid : %d\n", iatStart,iatSize,pid,outputFile);	
 	//Fixing the IAT
-	iat_fix_error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile,advance_iat_fix_flag, nullify_unknown_iat_entry_flag, oep);
+	iat_fix_error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile, oep, call_plugin_flag, plugin_full_path);
 	if(iat_fix_error){
 		INFO("[SCYLLA FIX] error %d\n",iat_fix_error);
 		INFO("[SCYLLA SEARCH] Trying basic IAT search");
@@ -140,7 +146,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, DWORD advance_iat
 			return SCYLLA_ERROR_IAT_NOT_FOUND;
 		}
 		else{
-			iat_fix_error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile,advance_iat_fix_flag, nullify_unknown_iat_entry_flag, oep);
+			iat_fix_error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmpDumpFile,outputFile, oep, call_plugin_flag, plugin_full_path);
 			if(iat_fix_error){
 				INFO("[SCYLLA FIX] error %d\n",iat_fix_error);
 				return SCYLLA_ERROR_IAT_NOT_FIXED;
