@@ -294,5 +294,4 @@ _Pvt_Extensions
 *.synctex(4).gz
 *.pdf
 *.pyc
-
-
+.DS_Store
