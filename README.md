@@ -105,7 +105,7 @@ To write your own plugin you have to:
 
 4. Compile the project
 
-5. Copy the compiled Dll in **C:\pin\PINdemoniumPlugins
+5. Copy the compiled Dll in **C:\pin\PINdemoniumPlugins**
 
 6. Launch PINdemonium with the flag **plugin** active followed by your plugin name (EX : -plugin PINdemoniumStolenAPIPlugin.dll)
 
