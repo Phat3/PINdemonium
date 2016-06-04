@@ -121,25 +121,25 @@ void HookFunctions::hookDispatcher(IMG img){
 			//Different arguments are passed to the hooking routine based on the function
 			switch(index){
 				case(VIRTUALALLOC_INDEX):
-					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualAllocHook , IARG_FUNCARG_ENTRYPOINT_VALUE,1 , IARG_FUNCRET_EXITPOINT_VALUE, IARG_END);
+					//RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualAllocHook , IARG_FUNCARG_ENTRYPOINT_VALUE,1 , IARG_FUNCRET_EXITPOINT_VALUE, IARG_END);
 					break;
 				case(RTLALLOCATEHEAP_INDEX):
 					//need to be IPOINT_AFTER because the allocated address is returned as return value
-					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)RtlAllocateHeapHook , IARG_FUNCARG_ENTRYPOINT_VALUE,2, IARG_FUNCRET_EXITPOINT_VALUE, IARG_END);
+					//RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)RtlAllocateHeapHook , IARG_FUNCARG_ENTRYPOINT_VALUE,2, IARG_FUNCRET_EXITPOINT_VALUE, IARG_END);
 					break;
 				case(ISDEBUGGERPRESENT_INDEX):
 					RTN_Replace(rtn, AFUNPTR(IsDebuggerPresentHook));
 					break;
 				case(RTLREALLOCATEHEAP_INDEX):
 					//IPOINT_BEFORE because the address to be realloc is passed as an input paramenter
-					RTN_InsertCall(rtn,IPOINT_BEFORE,(AFUNPTR)RtlReAllocateHeapHook, IARG_FUNCARG_ENTRYPOINT_VALUE,2 , IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_END);
+					//RTN_InsertCall(rtn,IPOINT_BEFORE,(AFUNPTR)RtlReAllocateHeapHook, IARG_FUNCARG_ENTRYPOINT_VALUE,2 , IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_END);
 					break;
 				case(MAPVIEWOFFILE_INDEX):
 					//need to be IPOINT_AFTER because the allocated address is returned as return value
 					RTN_InsertCall(rtn,IPOINT_AFTER,(AFUNPTR)MapViewOfFileHookAfter,IARG_FUNCARG_ENTRYPOINT_VALUE,1,IARG_FUNCARG_ENTRYPOINT_VALUE,2,IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_FUNCARG_ENTRYPOINT_VALUE,4,IARG_FUNCRET_EXITPOINT_VALUE,  IARG_END);
 					break;
 				case(VIRTUALFREE_INDEX):
-					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)VirtualFreeHook , IARG_FUNCARG_ENTRYPOINT_VALUE,0, IARG_END);
+					//RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)VirtualFreeHook , IARG_FUNCARG_ENTRYPOINT_VALUE,0, IARG_END);
 					break;
 				}			
 			RTN_Close(rtn);

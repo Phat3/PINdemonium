@@ -21,6 +21,7 @@ clock_t tStart;
 ProcInfo *proc_info = ProcInfo::getInstance();
 PolymorphicCodeHandlerModule pcpatcher;
 
+
 //------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
 KNOB <UINT32> KnobInterWriteSetAnalysis(KNOB_MODE_WRITEONCE, "pintool",
@@ -113,6 +114,7 @@ void imageLoadCallback(IMG img,void *){
 
 // trigger the instrumentation routine for each instruction
 void Instruction(INS ins,void *v){
+		
 		oepf.IsCurrentInOEP(ins);
 }
 

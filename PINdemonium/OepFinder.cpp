@@ -175,6 +175,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		int offset = 0;
 		
 		unsigned char *hz_maps = (unsigned char *) malloc(size_allocated); // used to store the information about the mapping of the current heap zones 
+		unsigned char *hz_data;
 		HeapZone hz;
 		unsigned int hz_begin;
 		unsigned int hz_size;
@@ -187,7 +188,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 
 			memcpy(hz_maps+offset, &hz_begin, sizeof(int));
 			memcpy(hz_maps+offset+sizeof(int), &hz_size, sizeof(int));
-			
+
 			size_remainder -= sizeof(int)*2; // calculating the remainder size 
 
 			if(size_remainder - 8 <= 0 ){  // we will have space to allocate other stuff? 
@@ -217,9 +218,37 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		std::wstring widestr = std::wstring(dump_path.begin(), dump_path.end());
 		const wchar_t* widecstr = widestr.c_str();
 
+		// adding the section that contains the information about the mapping of the heap zones 
 		scylla_wrapper->loadScyllaLibary();
 		scylla_wrapper->ScyllaWrapAddSection(widecstr, ".hmaps" , size_allocated , 0 , hz_maps);
 		scylla_wrapper->unloadScyllaLibrary();	
+
+		std::string heap_sec_name;
+
+	
+		// now we have to add the data for all the heap zones as sections 
+		for(int i=0;i<hzs.size();i++ ){
+			 
+			heap_sec_name < "secheap" < i;
+	
+
+			hz = hzs.at(i);
+			hz_begin = hz.begin;
+			hz_size  = hz.size;
+			hz_data = (unsigned char *)malloc(hz_size);
+			PIN_SafeCopy(hz_data , (void const *)hz_begin , hz_size);
+
+			scylla_wrapper->loadScyllaLibary();
+			scylla_wrapper->ScyllaWrapAddSection(widecstr, (const W::CHAR *)heap_sec_name.c_str() , size_allocated , 0 , hz_data);
+			scylla_wrapper->unloadScyllaLibrary();	
+
+
+		}
+
+		// now we have to add the stub 
+
+
+
 	}
 
 	
