@@ -20,6 +20,7 @@ namespace W {
 #define OEPFINDER_NOT_WXORX_INST -1;
 #define OEPFINDER_FOUND_OEP 0;
 
+
 class OepFinder
 {
 
@@ -33,7 +34,7 @@ private:
 	//check if the current instruction is a pushad or a popad
 	//if so then set the proper flags in ProcInfo
 	void handlePopadAndPushad(INS ins);
-	BOOL analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip, int ResultDumpAndFix);
+	BOOL analysis(WriteInterval item, UINT32 write_item_index , INS ins, ADDRINT prev_ip, ADDRINT curEip, int ResultDumpAndFix);
 	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex, WriteInterval item);
 	void getCurrentDlls();
 	WxorXHandler *wxorxHandler;

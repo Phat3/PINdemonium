@@ -108,6 +108,11 @@ std::vector<HeapZone> ProcInfo::getHeapMap(){
 }
 
 
+std::vector<Dependence> ProcInfo::getHeapDependencies(){
+	return this->heap_dependencies;
+}
+
+
 /* ----------------------------- UTILS -----------------------------*/
 
 // print the sections information in a fancy way
@@ -169,6 +174,19 @@ UINT32 ProcInfo::searchHeapMap(ADDRINT ip){
 //return the heapzone object
 HeapZone* ProcInfo::getHeapZoneByIndex(UINT32 index){
 	return &this->HeapMap.at(index);
+}
+
+
+
+VOID ProcInfo::addHeapDependence(UINT32 curr_heap_item_index, UINT32 linked_heap_item_index, xed_decoded_inst_t ins_to_patch){
+
+	Dependence dep;
+	dep.curr_heap_item_index = curr_heap_item_index;
+	dep.linked_heap_item_index = linked_heap_item_index;
+	dep.ins_to_patch = ins_to_patch;
+
+	this->heap_dependencies.push_back(dep);
+
 }
 
 

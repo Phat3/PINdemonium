@@ -14,6 +14,12 @@ namespace W{
 	#include  "Intsafe.h"
 }
 
+extern "C" {
+#include "xed-interface.h"
+}
+
+#include <set>
+
 #define MAX_STACK_SIZE 0x100000    //Used to define the memory range of the stack
 #define TEB_SIZE 0xfe0 	
 
@@ -68,6 +74,13 @@ struct HeapZone {
 	UINT32 size;
 };
 
+// this struct will be used to track the interdependencies between heap-zones 
+typedef struct {
+	UINT32 curr_heap_item_index;
+	UINT32 linked_heap_item_index;
+	xed_decoded_inst_t ins_to_patch;
+} Dependence;
+
 class ProcInfo
 {
 public:
@@ -89,6 +102,7 @@ public:
 	ADDRINT getPINVMStart();
 	ADDRINT getPINVMEnd();
 	std::vector<HeapZone> getHeapMap();
+	std::vector<Dependence> getHeapDependencies();
 	/* setter */
 	void addProcAddresses();
 	void setFirstINSaddress(ADDRINT address);
@@ -133,6 +147,8 @@ public:
 	BOOL getMemoryRange(ADDRINT address, MemoryRange& range);	
 	BOOL addProcessHeapsAndCheckAddress(ADDRINT address);
 
+	VOID addHeapDependence(UINT32 curr_heap_item_index, UINT32 linked_heap_item_index, xed_decoded_inst_t ins_to_patch);
+
 private:
 	static ProcInfo* instance;
 	ProcInfo::ProcInfo();
@@ -149,6 +165,8 @@ private:
 	std::vector<LibraryItem> knownLibraries;		   //vector of know library loaded
 	std::vector<LibraryItem> unknownLibraries;		   //vector of unknow library loaded	
 	std::vector<Section> protected_section;			   //vector of protected section ( for example the .text of ntdll is protected ( write on these memory range are redirected to other heap's zone ) )
+	std::vector<Dependence> heap_dependencies; 
+
 	float InitialEntropy;
 	//track if we found a pushad followed by a popad
 	//this is a common technique to restore the initial register status after the unpacking routine
