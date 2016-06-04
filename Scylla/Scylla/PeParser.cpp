@@ -846,6 +846,7 @@ bool PeParser::addNewLastSection(const CHAR * sectionName, DWORD sectionSize, BY
 
 	if (nameLength > IMAGE_SIZEOF_SHORT_NAME)
 	{
+		printf("[ERROR]nameLength > IMAGE_SIZEOF_SHORT_NAME\n");
 		return false;
 	}
 

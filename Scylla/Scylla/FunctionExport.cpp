@@ -495,9 +495,8 @@ int WINAPI ScyllaAddSection(const WCHAR * dump_path , const CHAR * sectionName, 
 	peFile->setEntryPointVa(last_section_header_va + offset );
 	
 	// save the pe
-
 	return peFile->savePeFileToDisk(dump_path);
-	
+
 	//return 1;
 	
 }

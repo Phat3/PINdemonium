@@ -161,18 +161,50 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
 	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
 	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
-	if( item.getHeapFlag() && dumpAndFixResult != SCYLLA_ERROR_FILE_FROM_PID  && dumpAndFixResult != SCYLLA_ERROR_DUMP ){
-		MYINFO("-----DUMPING HEAP-----\n");
-		unsigned char * Buffer;
-		UINT32 size_write_set = item.getAddrEnd() - item.getAddrBegin();
-		//prepare the buffer to copy inside the stuff into the heap section to dump 		  
-		Buffer = (unsigned char *)malloc( size_write_set );
-		// copy the heap zone into the buffer 
-		PIN_SafeCopy(Buffer , (void const *)item.getAddrBegin() , size_write_set);	
+	
+	// Now we have to discover if there are any heap zones and in that case create the stub to restore before the program execution
+	ProcInfo *pInfo = ProcInfo::getInstance();
+
+	std::vector<HeapZone> hzs = pInfo->getHeapMap();
+	
+	if(hzs.size() > 0){
+
+		int size_allocated = 1000;
+		int base_size = 1000;
+		int size_remainder = size_allocated;
+		int offset = 0;
+		
+		unsigned char *hz_maps = (unsigned char *) malloc(size_allocated); // used to store the information about the mapping of the current heap zones 
+		HeapZone hz;
+		unsigned int hz_begin;
+		unsigned int hz_size;
+
+		for( int i=0;i<hzs.size();i++ ){
+
+			hz = hzs.at(i);
+			hz_begin = hz.begin;
+			hz_size  = hz.size;
+
+			memcpy(hz_maps+offset, &hz_begin, sizeof(int));
+			memcpy(hz_maps+offset+sizeof(int), &hz_size, sizeof(int));
+			
+			size_remainder -= sizeof(int)*2; // calculating the remainder size 
+
+			if(size_remainder - 8 <= 0 ){  // we will have space to allocate other stuff? 
+				size_allocated += base_size; // increment the size_allocated
+				realloc(hz_maps,size_allocated); // and realloc the buffer 
+			}
+			offset+=sizeof(int)*2;
+		}
+
+		// here we have all the information that we need to restore the heap zones inside the hz_maps buffer 
+		// let's add it as a section inside the taken dump
+
 		ScyllaWrapperInterface *scylla_wrapper = ScyllaWrapperInterface::getInstance();
-		// get the name of the last dump from the Config object 
 		Config *config = Config::getInstance();
+
 		string dump_path = config->getCurrentDumpFilePath();
+
 		if(!existFile(dump_path)){ // this is the case in which we have a not working dump but we want to add anyway the .heap 
 			dump_path = config->getNotWorkingPath();
 		}
@@ -180,17 +212,19 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 			MYINFO("[CRITICAL ERROR]Dump file not found\n");
 			return OEPFINDER_HEURISTIC_FAIL;
 		}
+
 		// and convert it into the WCHAR representation 
 		std::wstring widestr = std::wstring(dump_path.begin(), dump_path.end());
 		const wchar_t* widecstr = widestr.c_str();
-		// calculate where the program jump in the heap ( i.e. 0 perfectly at the begin of the heapzone ) 
-		UINT32 offset = curEip - item.getAddrBegin();
-		//REMEMEBER TO LOAD AND UNLOAD SCYLLAWRAPPER!
+
 		scylla_wrapper->loadScyllaLibary();
-		scylla_wrapper->ScyllaWrapAddSection(widecstr, ".heap" ,size_write_set , offset , Buffer);
-		scylla_wrapper->unloadScyllaLibrary();
-		free(Buffer);
+		scylla_wrapper->ScyllaWrapAddSection(widecstr, ".hmaps" , size_allocated , 0 , hz_maps);
+		scylla_wrapper->unloadScyllaLibrary();	
 	}
+
+	
+
+
 	//write the heuristic results on ile
 	Config::getInstance()->writeOnReport(curEip, item);
 	return OEPFINDER_HEURISTIC_FAIL;

@@ -107,6 +107,9 @@ std::vector<HeapZone> ProcInfo::getHeapMap(){
 	return this->HeapMap;
 }
 
+unsigned int ProcInfo::getHeapMapSize(){
+	return this->HeapMap.size();
+}
 
 /* ----------------------------- UTILS -----------------------------*/
 

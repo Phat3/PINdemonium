@@ -89,6 +89,7 @@ public:
 	ADDRINT getPINVMStart();
 	ADDRINT getPINVMEnd();
 	std::vector<HeapZone> getHeapMap();
+	unsigned int getHeapMapSize();
 	/* setter */
 	void addProcAddresses();
 	void setFirstINSaddress(ADDRINT address);
