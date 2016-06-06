@@ -273,6 +273,7 @@
     <ClCompile Include="WriteInterval.cpp" />
     <ClCompile Include="LongJumpHeuristic.cpp" />
     <ClCompile Include="WxorXHandler.cpp" />
+    <ClCompile Include="YaraHeuristic.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README" />
@@ -296,6 +297,7 @@
     <ClInclude Include="WriteInterval.h" />
     <ClInclude Include="LongJumpHeuristic.h" />
     <ClInclude Include="WxorXHandler.h" />
+    <ClInclude Include="YaraHeuristic.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

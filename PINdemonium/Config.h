@@ -27,6 +27,7 @@ public:
 	string getCurrentDumpFilePath();
 	string getCurrentDetectedListPath();
 	string getNotWorkingPath();
+	string getYaraResultPath();
 	long double getDumpNumber();
 	
 	//utils

@@ -106,7 +106,11 @@ string Config::getCurrentDetectedListPath(){
 	return this->cur_list_path;	
 }
 
+string Config::getYaraResultPath(){	
+ 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
+ 	return  this->base_path + "yaraResults" + "_" + std::to_string(this->dump_number) + ".txt" ;
 
+ }
 
 /* ----------------------------- UTILS -----------------------------*/
 

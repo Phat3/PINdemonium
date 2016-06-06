@@ -93,6 +93,9 @@
     <ClCompile Include="PolymorphicCodeHandlerModule.cpp">
       <Filter>Source Files\PINdemonium</Filter>
     </ClCompile>
+    <ClCompile Include="YaraHeuristic.cpp">
+      <Filter>Source Files\PINdemonium\OEP-Heuristics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README">
@@ -156,6 +159,9 @@
     </ClInclude>
     <ClInclude Include="PolymorphicCodeHandlerModule.h">
       <Filter>Header Files\PINdemonium</Filter>
+    </ClInclude>
+    <ClInclude Include="YaraHeuristic.h">
+      <Filter>Header Files\PINdemonium\OEP-Heuristics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
