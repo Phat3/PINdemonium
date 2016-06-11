@@ -27,6 +27,7 @@ public:
 	string getCurrentDumpFilePath();
 	string getCurrentDetectedListPath();
 	string getNotWorkingPath();
+	string Config::getWorkingDir();
 	long double getDumpNumber();
 	
 	//utils
@@ -36,6 +37,8 @@ public:
 	void writeOnReport(ADDRINT ip, WriteInterval wi);
 	void Config::writeOnTimeLog(string s);
 	void setWorking (int working);
+	void setNewWorkingDirectory();
+
 	//files and paths
 	static const string PIN_DIRECTORY_PATH_DEP;
 	static const string PIN_DIRECTORY_PATH_OUTPUT;
@@ -81,6 +84,7 @@ private:
 	FILE *report_file;
 	FILE *test_file;
 	string base_path;
+	string working_dir;
 	string not_working_path;
 	string cur_dump_path;        //Path of the final (IAT fixed) Dump
 	string cur_list_path;		 //Path of the list of the detected function

@@ -92,6 +92,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	//If the instruction violate WxorX return the index of the WriteItem in which the EIP is
 	//If the instruction doesn't violate WxorX return -1
 	writeItemIndex = wxorxHandler->getWxorXindex(curEip);
+
 	//W xor X broken
 	if(writeItemIndex != -1 ){
 		WriteInterval item = wxorxHandler->getWritesSet()[writeItemIndex];
@@ -109,6 +110,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			MYPRINT("------------------------------------ NEW STUB FROM begin: %08x TO %08x -------------------------------------",item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("-------------------------------------------------------------------------------------------------------");
 			MYINFO("Current EIP %08x",curEip);
+			Config::getInstance()->setNewWorkingDirectory(); // create the folder dump_0 inside the folder associated to this timestamp 
 			int result = this->DumpAndFixIAT(curEip);
 			Config::getInstance()->setWorking(result);
 			this->analysis(item, ins, prev_ip, curEip,result);
@@ -143,6 +145,7 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 			MYPRINT("- - - - - - - - - - - - - - JUMP NUMBER %d OF LENGHT %d  IN STUB FORM %08x TO %08x- - - - - - - - - - - - - -",item.getCurrNumberJMP(),currJMPLength, item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYINFO("Current EIP %08x",curEip);
+			Config::getInstance()->setNewWorkingDirectory(); // create a new folder to store the dump 
 			int result = this->DumpAndFixIAT(curEip);
 			config->setWorking(result);
 			this->analysis(item, ins, prev_ip, curEip , result);
@@ -162,7 +165,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
 	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
 	
-	// Now we have to discover if there are any heap zones and in that case create the stub to restore before the program execution
+	// Now we have to discover if there are any heap zones and in that case dump them
 	ProcInfo *pInfo = ProcInfo::getInstance();
 
 	std::vector<HeapZone> hzs = pInfo->getHeapMap();
@@ -270,10 +273,10 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	UINT32 pid = W::GetCurrentProcessId();
 	Config * config = Config::getInstance();
 	string outputFile = config->getCurrentDumpFilePath();
-	string tmpDump = config->getNotWorkingPath();
+	string tmpDump = outputFile;
 	//std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
 	string plugin_full_path = config->PLUGIN_FULL_PATH;	
-	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s, Plugin %d",pid, config->getCurrentDumpFilePath().c_str(), config->PLUGIN_FULL_PATH.c_str());
+	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s, Plugin %d",pid, outputFile.c_str(), config->PLUGIN_FULL_PATH.c_str());
 	// -------- Scylla launched as an exe --------	
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();	
 	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, tmpDump, config->CALL_PLUGIN_FLAG, config->PLUGIN_FULL_PATH);

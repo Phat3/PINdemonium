@@ -37,12 +37,15 @@ UINT32 InitFunctionCall::getFileSize(FILE * fp){
 }
 
 UINT32 InitFunctionCall::run(ADDRINT curEip,WriteInterval* wi){
+
 	string idap_res_file = Config::getInstance()->getCurrentDetectedListPath();
 	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
+	
 	if(!existFile(dumpFile)){
 		MYERRORE("Dump file hasn't been created");
 		return -1;
 	}
+	
 	launchIdaScript(Config::IDA_PATH, Config::IDAP_BAD_IMPORTS_CHECKER, Config::BAD_IMPORTS_LIST, idap_res_file, dumpFile);
 	//Read the result of IdaPython script
 	FILE *fd = fopen(idap_res_file.c_str(),"r");

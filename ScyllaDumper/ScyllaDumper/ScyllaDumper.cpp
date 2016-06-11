@@ -95,6 +95,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR *tmpDumpFil
 	INFO("Original Exe Path: %S",originalExe);
 		
 	success = ScyllaDumpProcessW(pid,originalExe,hMod,oep,tmpDumpFile);
+
 	if(!success){
 		INFO("[SCYLLA DUMP] Error Dumping  Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,tmpDumpFile);
 		return SCYLLA_ERROR_DUMP;
@@ -155,7 +156,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR *tmpDumpFil
 	}
 
 	//Removing the correct dump from the not working directory
-	_wremove(tmpDumpFile);
+	//_wremove(tmpDumpFile);
 
 	INFO("[SCYLLA FIX] Success fixed file at %S",outputFile);
 	return SCYLLA_SUCCESS_FIX;

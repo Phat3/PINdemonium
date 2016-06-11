@@ -12,7 +12,7 @@ const string Config::BAD_IMPORTS_LIST = PIN_DIRECTORY_PATH_DEP + "badImportsList
 const string Config::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
 const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
 const string Config::SCYLLA_WRAPPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaWrapper.dll";
-const string Config::PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING = "NotWorking\\";
+//const string Config::PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING = "NotWorking\\";
 const string Config::DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "dumperSelector.py";
 
 //Tuning Flags
@@ -51,11 +51,15 @@ Config::Config(){
 	//set the initial dump number
 	this->dump_number = 0;
 	//build the path for this execution
-	this->base_path = PIN_DIRECTORY_PATH_OUTPUT + this->getCurDateAndTime() + "\\";
+	this->working_dir = this->getCurDateAndTime();
+	this->base_path = PIN_DIRECTORY_PATH_OUTPUT + this->working_dir + "\\";
+
 	//mk the directory
 	_mkdir(this->base_path.c_str());
-	this->not_working_path = this->base_path + PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING;
-	_mkdir(this->not_working_path.c_str());
+
+	//this->not_working_path = this->base_path + PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING;
+	//_mkdir(this->not_working_path.c_str());
+	
 	//create the log and report files
 	string log_file_path = this->base_path + LOG_FILENAME;
 	string report_file_path = this->base_path + REPORT_FILENAME;
@@ -93,8 +97,13 @@ string Config::getNotWorkingPath(){
 }
 
 string Config::getCurrentDumpFilePath(){	
+
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
-	this->cur_dump_path = this->base_path + ProcInfo::getInstance()->getProcName() + "_" + std::to_string(this->dump_number) + ".exe" ;
+	std::string proc_name = ProcInfo::getInstance()->getProcName();
+
+	_mkdir(this->base_path.c_str());
+
+	this->cur_dump_path = this->working_dir + "\\" + proc_name + "_" + std::to_string(this->dump_number) + ".exe" ;
 	
 	return this->cur_dump_path;	
 }
@@ -106,7 +115,9 @@ string Config::getCurrentDetectedListPath(){
 	return this->cur_list_path;	
 }
 
-
+string Config::getWorkingDir(){
+	return this->working_dir;
+}
 
 /* ----------------------------- UTILS -----------------------------*/
 
@@ -151,6 +162,24 @@ void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 void Config::setWorking(int working)
 {
 	this->working = working;
+	std::string working_tag = "[WORKING]" + this->working_dir;
+	std::string not_working_tag = "[NOT WORKING]" + this->working_dir;
+
+	if(working == 1){
+		rename(this->working_dir.c_str(),working_tag.c_str());
+	}
+	else{
+		rename(this->working_dir.c_str(),not_working_tag.c_str());
+	}
+}
+
+void Config::setNewWorkingDirectory(){
+	
+	std::string prefix = "dump_";
+	this->working_dir = this->base_path + prefix + std::to_string(this->getDumpNumber());
+
+	_mkdir(this->working_dir.c_str());
+
 }
 
 //return the current date and time as a string
