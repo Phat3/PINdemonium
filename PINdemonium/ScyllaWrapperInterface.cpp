@@ -54,6 +54,7 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::
 	W::WaitForSingleObject(pi.hProcess,INFINITE);
 	W::CloseHandle(pi.hProcess);
 	W::CloseHandle(pi.hThread);
+
 	if(!existFile(outputFile)){
 		MYERRORE("Scylla Can't dump the process");
 		return exitCode;

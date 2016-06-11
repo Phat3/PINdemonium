@@ -13,6 +13,7 @@ namespace W {
 #include "GdbDebugger.h"
 #include "ScyllaWrapperInterface.h"
 #include "TimeTracker.h"
+#include <fstream>
 
 //return value for IsCurrentInOEP function
 #define OEPFINDER_INS_FILTERED -3;

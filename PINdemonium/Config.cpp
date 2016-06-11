@@ -161,15 +161,25 @@ void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
 //Sets if the current dump works or not
 void Config::setWorking(int working)
 {
+	printf("SET WORKING?\n");
+
 	this->working = working;
-	std::string working_tag = "[WORKING]" + this->working_dir;
-	std::string not_working_tag = "[NOT WORKING]" + this->working_dir;
+
+	std::string working_tag =  this->working_dir + "-[working]";
+	std::string not_working_tag =  this->working_dir + "-[not working]";
 
 	if(working == 1){
+		
+			printf("SET WORKING\n");
+
 		rename(this->working_dir.c_str(),working_tag.c_str());
+		this->working_dir = working_tag;
 	}
 	else{
+					printf("SET NOT WORKING\n");
+
 		rename(this->working_dir.c_str(),not_working_tag.c_str());
+		this->working_dir = not_working_tag;
 	}
 }
 

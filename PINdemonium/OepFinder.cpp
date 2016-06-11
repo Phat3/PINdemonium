@@ -170,8 +170,44 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 
 	std::vector<HeapZone> hzs = pInfo->getHeapMap();
 	
+
 	if(hzs.size() > 0){
 
+		std::string heaps_dir = Config::getInstance()->getWorkingDir() + "\\heaps";
+		_mkdir(heaps_dir.c_str()); // create the folder we will store the .bin of the heap zones 
+
+		HeapZone hz;
+		unsigned int hz_begin;
+		unsigned int hz_size;
+		unsigned char *hz_data;
+		Config *config = Config::getInstance();
+
+		std::string heap_map_path = heaps_dir + "\\" +  "heap_map.txt";
+		std::ofstream heap_map_file(heap_map_path);
+
+		for(unsigned int i=0;i<hzs.size();i++ ){
+		
+			std::string heap_bin_path = heaps_dir + "\\" +  "heap_" + std::to_string((_ULonglong)i) + ".bin";
+
+			hz = hzs.at(i);
+			hz_begin = hz.begin;
+			hz_size  = hz.size;
+
+			// record the location information of this heapzone inside the heap_map.txt 			
+			heap_map_file << std::to_string((_ULonglong)i)  << " " << std::hex << hz_begin << " " << std::to_string((_ULonglong)hz_size) << "\n" ;
+			
+			hz_data = (unsigned char *)malloc(hz_size);
+			PIN_SafeCopy(hz_data , (void const *)hz_begin , hz_size);
+			std::ofstream heap_file(heap_bin_path, std::ios::binary);
+
+			heap_file.write((char *) hz_data, hz_size);
+			heap_file.close();
+		}
+
+		heap_map_file.close();
+		
+
+		/*
 		int size_allocated = 1000;
 		int base_size = 1000;
 		int size_remainder = size_allocated;
@@ -251,17 +287,9 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		// now we have to add the stub 
 		unsigned char stub[1000];
 
-
-
-
-
-
-
+		*/
 
 	}
-
-	
-
 
 	//write the heuristic results on ile
 	Config::getInstance()->writeOnReport(curEip, item);
