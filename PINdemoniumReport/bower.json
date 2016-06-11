@@ -1,0 +1,21 @@
+{
+  "name": "PINdemoniumReport",
+  "description": "",
+  "main": "report_builder.js",
+  "authors": [
+    "Sebastiano Mariani"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/seba0691/PINdemonium",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "compiled/static/vendor",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.6"
+  }
+}
