@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "ReportGeneralInformation.h"
 #include <fstream>
+#include "json.h"
 
 class Report
 {

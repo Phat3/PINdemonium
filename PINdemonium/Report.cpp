@@ -20,13 +20,13 @@ void Report::initializeReport(string process_name,float initial_entropy){
 	report_file.open(report_path);
 
 	info = ReportGeneralInformation(process_name,initial_entropy);
-	string info_json = info.toJson();
-	report_file << "{";
-	report_file << "information:";
-	report_file << info_json;
-	report_file << ",";
-	report_file << "dumps:[]";
-	report_file << "}";
+	Json::FastWriter fastWriter;
+	Json::Value report;
+	Json::Value info_json = info.toJson();
+	report["information"] = info_json;
+	report["dumps"] = Json::Value(Json::arrayValue);
+
+	report_file << fastWriter.write(report);
 	report_file.flush();
 
  }

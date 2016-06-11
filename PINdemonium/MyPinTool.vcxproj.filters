@@ -123,6 +123,9 @@
     <ClCompile Include="ReportGeneralInformation.cpp">
       <Filter>Source Files\Report</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\jsoncpp-master\dist\jsoncpp.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README">
@@ -210,6 +213,9 @@
     </ClInclude>
     <ClInclude Include="ReportGeneralInformation.h">
       <Filter>Header Files\Report</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\jsoncpp-master\dist\json\json.h">
+      <Filter>Header Files\Helpers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

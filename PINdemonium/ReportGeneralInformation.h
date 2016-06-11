@@ -1,5 +1,8 @@
 #pragma once
 #include "ReportObject.h"
+#include "json.h"
+
+
 class ReportGeneralInformation : public ReportObject
 {
 
@@ -11,7 +14,7 @@ private:
 public:
 	ReportGeneralInformation();
 	ReportGeneralInformation(string name,float initial_entropy);
-	string toJson();
+	Json::Value toJson();
 
 };
 

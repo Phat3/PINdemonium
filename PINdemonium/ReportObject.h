@@ -1,12 +1,13 @@
 #pragma once
 #include "pin.H"
+#include "json.h"
 
 
 class ReportObject
 {
 public:
 	ReportObject(void);
-	virtual string toJson()
-		{return "";}
+	virtual Json::Value toJson()
+		{return NULL;}
 };
 

@@ -10,8 +10,10 @@ ReportGeneralInformation::ReportGeneralInformation(string name,float initial_ent
 }
 
 
-string ReportGeneralInformation::toJson(){
-	return "{name:" +  this->name +  \
-			"entropy:" + to_string((long double)this->entropy) + \
-			"}";
+Json::Value ReportGeneralInformation::toJson(){
+	Json::Value root;
+	root["name"] = this->name;
+	root["entropy"] =this->entropy;
+	return root;
+ 
 }
