@@ -37,6 +37,12 @@
     <Filter Include="Header Files\PINdemonium\OEP-Heuristics">
       <UniqueIdentifier>{35aa198c-b8a2-4e0a-98e9-1ac38d9d7aa3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Report">
+      <UniqueIdentifier>{a0afdd0c-1eb5-46d4-b858-d665ea95aedb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Report">
+      <UniqueIdentifier>{240004a1-4fab-4669-8086-858ce531f24d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Heuristics.cpp">
@@ -96,6 +102,27 @@
     <ClCompile Include="YaraHeuristic.cpp">
       <Filter>Source Files\PINdemonium\OEP-Heuristics</Filter>
     </ClCompile>
+    <ClCompile Include="Report.cpp">
+      <Filter>Source Files\Report</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportObject.cpp">
+      <Filter>Source Files\Report</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportEntropy.cpp">
+      <Filter>Source Files\Report</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportYaraRules.cpp">
+      <Filter>Source Files\Report</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportJumpOuterSection.cpp">
+      <Filter>Source Files\Report</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportLongJump.cpp">
+      <Filter>Source Files\Report</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportGeneralInformation.cpp">
+      <Filter>Source Files\Report</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README">
@@ -120,9 +147,6 @@
     </ClInclude>
     <ClInclude Include="InitFunctionCallHeuristic.h">
       <Filter>Header Files\PINdemonium\OEP-Heuristics</Filter>
-    </ClInclude>
-    <ClInclude Include="ProcInfo.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GdbDebugger.h">
       <Filter>Header Files\Helpers</Filter>
@@ -162,6 +186,30 @@
     </ClInclude>
     <ClInclude Include="YaraHeuristic.h">
       <Filter>Header Files\PINdemonium\OEP-Heuristics</Filter>
+    </ClInclude>
+    <ClInclude Include="Report.h">
+      <Filter>Header Files\Report</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportObject.h">
+      <Filter>Header Files\Report</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportEntropy.h">
+      <Filter>Header Files\Report</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportYaraRules.h">
+      <Filter>Header Files\Report</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportJumpOuterSection.h">
+      <Filter>Header Files\Report</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportLongJump.h">
+      <Filter>Header Files\Report</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcInfo.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportGeneralInformation.h">
+      <Filter>Header Files\Report</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

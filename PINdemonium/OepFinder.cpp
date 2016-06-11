@@ -195,7 +195,6 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		free(Buffer);
 	}
 	//write the heuristic results on ile
-	Config::getInstance()->writeOnReport(curEip, item);
 	return OEPFINDER_HEURISTIC_FAIL;
 }
 

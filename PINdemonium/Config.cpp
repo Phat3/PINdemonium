@@ -15,6 +15,7 @@ const string Config::SCYLLA_WRAPPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\Scy
 const string Config::PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING = "NotWorking\\";
 const string Config::DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "dumperSelector.py";
 
+
 //Tuning Flags
 const bool Config::ATTACH_DEBUGGER = false;
 const string Config::FILTER_WRITES_ENABLES = "teb stack";
@@ -58,13 +59,8 @@ Config::Config(){
 	_mkdir(this->not_working_path.c_str());
 	//create the log and report files
 	string log_file_path = this->base_path + LOG_FILENAME;
-	string report_file_path = this->base_path + REPORT_FILENAME;
-	this->log_file = fopen(log_file_path.c_str(),"w");
-	
-	string test_filename = this->base_path + "testEvasion.txt";
-	this->test_file = fopen(test_filename.c_str(),"w");
-	
-	this->report_file = fopen(report_file_path.c_str(),"w");
+
+	this->log_file = fopen(log_file_path.c_str(),"w");	
 	this->numberOfBadImports = calculateNumberOfBadImports();
 	this->working = -1;
 	//move the dumper selector in the directory of the current execution
@@ -73,11 +69,8 @@ Config::Config(){
 
 /* ----------------------------- GETTER -----------------------------*/
 
-//flush the buffer and close the file
-void Config::closeReportFile()
-{
-	fflush(this->report_file);
-	fclose(this->report_file);
+string Config::getReportPath(){
+	return  this->base_path + REPORT_FILENAME;
 }
 
 string Config::getBasePath(){
@@ -131,24 +124,6 @@ FILE* Config::getLogFile()
 	#endif
 }
 
-//return the file pointer
-FILE* Config::getTestFile()
-{
-	
-	return this->test_file;
-	
-}
-
-//write the JSON resulted by the analysis for this write set
-void Config::writeOnReport(ADDRINT ip, WriteInterval wi)
-{
-	char * works = "NO";
-	if(this->working == 1)
-		works = "PROBABLY YES";
-	//write the report entry	
-	fprintf(this->report_file,"{\"dump number\" : \"%d\", \"runnable?\" : \"%s\", \"ip\" : \"%08x\", \"begin\" : \"%08x\", \"end\" : \"%08x\", \"entropy_flag\" : \"%d\", \"longjmp_flag\" : \"%d\", \"jmp_outer_section_flag\" : \"%d\", \"pushad_popad_flag\" : \"%d\", \"detected_functions\" : \"%d/%d\"}\n", (int)this->getDumpNumber(), works, ip, wi.getAddrBegin(), wi.getAddrEnd(), wi.getEntropyFlag(), wi.getLongJmpFlag(), wi.getJmpOuterSectionFlag(), wi.getPushadPopadflag(), wi.getDetectedFunctions(), this->numberOfBadImports);
-	fflush(this->report_file);
-}
 
 
 //Sets if the current dump works or not

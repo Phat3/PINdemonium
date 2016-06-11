@@ -21,20 +21,18 @@ class Config
 public:
 	static Config* getInstance();
 	FILE* Config::getLogFile();
-	FILE* Config::getTestFile();
 	//getter
 	string getBasePath();
 	string getCurrentDumpFilePath();
 	string getCurrentDetectedListPath();
 	string getNotWorkingPath();
 	string getYaraResultPath();
+	string getReportPath();
 	long double getDumpNumber();
 	
 	//utils
 	void incrementDumpNumber();
 	void Config::closeLogFile();
-	void Config::closeReportFile();
-	void writeOnReport(ADDRINT ip, WriteInterval wi);
 	void Config::writeOnTimeLog(string s);
 	void setWorking (int working);
 	//files and paths
@@ -79,8 +77,6 @@ private:
 	Config::Config();
 	static Config* instance;
 	FILE *log_file;
-	FILE *report_file;
-	FILE *test_file;
 	string base_path;
 	string not_working_path;
 	string cur_dump_path;        //Path of the final (IAT fixed) Dump

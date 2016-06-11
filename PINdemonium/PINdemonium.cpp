@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "pin.H"
 #include "OepFinder.h"
+#include "Report.h"
 #include <time.h>
 #include  "Debug.h"
 #include "Config.h"
@@ -51,7 +52,6 @@ VOID Fini(INT32 code, VOID *v){
 	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 	CLOSELOG();
 	Config *config = Config::getInstance();
-	config->closeReportFile();
 }
 
 // - usage 
@@ -83,7 +83,9 @@ void imageLoadCallback(IMG img,void *){
 		MYINFO("----------------------------------------------");
 		float initial_entropy = proc_info->GetEntropy();
 		proc_info->setInitialEntropy(initial_entropy);
-		MYINFO("----------------------------------------------");
+		MYINFO("----------------------------------------------");	
+		//create Report File
+		Report::getInstance()->initializeReport(proc_info->getProcName(),initial_entropy);
 		//retrieve the section of the PE
 		for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
 			item.name = SEC_Name(sec);
@@ -203,10 +205,12 @@ int main(int argc, char * argv[]){
 	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
 	//get theknob args
 	ConfigureTool();
+	
 	if(Config::getInstance()->POLYMORPHIC_CODE_PATCH){
 		TRACE_AddInstrumentFunction(Trace,0);
 	}
 	proc_info->addProcAddresses();
+
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();

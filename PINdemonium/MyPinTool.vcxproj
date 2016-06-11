@@ -269,6 +269,13 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="PushadPopadHeuristic.cpp" />
+    <ClCompile Include="Report.cpp" />
+    <ClCompile Include="ReportEntropy.cpp" />
+    <ClCompile Include="ReportGeneralInformation.cpp" />
+    <ClCompile Include="ReportJumpOuterSection.cpp" />
+    <ClCompile Include="ReportLongJump.cpp" />
+    <ClCompile Include="ReportObject.cpp" />
+    <ClCompile Include="ReportYaraRules.cpp" />
     <ClCompile Include="ScyllaWrapperInterface.cpp" />
     <ClCompile Include="WriteInterval.cpp" />
     <ClCompile Include="LongJumpHeuristic.cpp" />
@@ -293,6 +300,13 @@
     <ClInclude Include="FilterHandler.h" />
     <ClInclude Include="OepFinder.h" />
     <ClInclude Include="PushadPopadHeuristic.h" />
+    <ClInclude Include="Report.h" />
+    <ClInclude Include="ReportEntropy.h" />
+    <ClInclude Include="ReportGeneralInformation.h" />
+    <ClInclude Include="ReportJumpOuterSection.h" />
+    <ClInclude Include="ReportLongJump.h" />
+    <ClInclude Include="ReportObject.h" />
+    <ClInclude Include="ReportYaraRules.h" />
     <ClInclude Include="ScyllaWrapperInterface.h" />
     <ClInclude Include="WriteInterval.h" />
     <ClInclude Include="LongJumpHeuristic.h" />

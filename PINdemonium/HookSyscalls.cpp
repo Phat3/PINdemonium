@@ -123,7 +123,6 @@ void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL
 
 void HookSyscalls::NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
 	if( sc->arg1 == 0x1f){
-		MYTEST("Detected NtQueryInformation 0x1f");
 		unsigned int  * pdebug_flag = (unsigned int *)sc->arg2;
 		memset(pdebug_flag,0x00000001,1);
 	}
