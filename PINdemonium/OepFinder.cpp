@@ -220,18 +220,16 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 
 		// adding the section that contains the information about the mapping of the heap zones 
 		scylla_wrapper->loadScyllaLibary();
-		scylla_wrapper->ScyllaWrapAddSection(widecstr, ".hmaps" , size_allocated , 0 , hz_maps);
+		unsigned int hmaps_address = scylla_wrapper->ScyllaWrapAddSection(widecstr, ".hmaps" , size_allocated , 0 , hz_maps);
 		scylla_wrapper->unloadScyllaLibrary();	
 
 		std::string heap_sec_name;
 
+		unsigned int sec_address;
 	
 		// now we have to add the data for all the heap zones as sections 
 		for(int i=0;i<hzs.size();i++ ){
 			 
-			heap_sec_name < "secheap" < i;
-	
-
 			hz = hzs.at(i);
 			hz_begin = hz.begin;
 			hz_size  = hz.size;
@@ -239,13 +237,21 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 			PIN_SafeCopy(hz_data , (void const *)hz_begin , hz_size);
 
 			scylla_wrapper->loadScyllaLibary();
-			scylla_wrapper->ScyllaWrapAddSection(widecstr, (const W::CHAR *)heap_sec_name.c_str() , size_allocated , 0 , hz_data);
+			sec_address = scylla_wrapper->ScyllaWrapAddSection(widecstr, "heap", size_allocated , 0 , hz_data);
 			scylla_wrapper->unloadScyllaLibrary();	
-
-
 		}
 
+		// this is the address of the last section inserted 
+		// this will be hardcoded inside the loader-stub 
+		printf("LAST ADDRESS: %08x\n" , sec_address);
+
 		// now we have to add the stub 
+		unsigned char stub[1000];
+
+
+
+
+
 
 
 
