@@ -51,18 +51,18 @@ class MemoryLayout extends React.Component {
   }
 
 
-  _drawDump(){
+  _drawDump(y, name){
     // draw the rectangle representing the memory of the process
     var dumpShape = new createjs.Shape()
-    dumpShape.name = "prova"
+    dumpShape.name = name
     dumpShape.width = this.canvas.width / 2.5
     dumpShape.height = 100
     dumpShape.x = (this.canvas.width - dumpShape.width)/2
-    dumpShape.y = 200
+    dumpShape.y = y
     dumpShape.graphics.beginFill("red").drawRect(0, 0, dumpShape.width, dumpShape.height);
     
     // draw the label above the rectangle representing the process
-    var labelDumpShape = new createjs.Text("DUMP 1", "30px Arial", "white");
+    var labelDumpShape = new createjs.Text(name, "30px Arial", "white");
     // center the label on the rectangle
     var labelDumpShapeBounds = labelDumpShape.getBounds()
     labelDumpShape.x = dumpShape.x + ( (dumpShape.width - labelDumpShapeBounds.width) / 2)
@@ -83,24 +83,33 @@ class MemoryLayout extends React.Component {
 
   _drawArrow(){
 
-    var drawingCanvas = new createjs.Shape();
-    this.stage.addChild(drawingCanvas);
+    var dump_1 = this.stage.getChildByName("DUMP_1")
+    var dump_2 = this.stage.getChildByName("DUMP_2")
 
-    drawingCanvas.graphics.setStrokeStyle(2).beginStroke(createjs.Graphics.getRGB(0, 0, 0)).moveTo(10, 10).lineTo(200,200);
-
-    drawingCanvas.graphics.setStrokeStyle(2).beginStroke(createjs.Graphics.getRGB(0, 0, 0)).moveTo(200, 200).lineTo(200,300);
-
-
-    var radian = Math.atan2((110 - 240), (90 - 90))
-
-
+    var beginArrowX = dump_1.x
+    var beginArrowY = dump_1.y + (dump_1.height / 2)
+    var leftOffsetArrow = 60
+    var middleArriveDumpY = dump_2.y + (dump_2.height / 2)
     var arrow = new createjs.Shape();
-    arrow.graphics.beginStroke(createjs.Graphics.getRGB(0, 0, 0)).moveTo(-5, +5).lineTo(0, 0).lineTo(-5, -5);
+    arrow.name = "arrow"
+    arrow.graphics.setStrokeStyle(4)
+                  .beginStroke(createjs.Graphics.getRGB(0, 0, 0))
+
+                  .moveTo(beginArrowX, beginArrowY)                             // move the corsor on the left border of the start dump
+                                                                                // and in the middle of its height
+                  
+                  .lineTo(beginArrowX - leftOffsetArrow, beginArrowY)           // draw a straight horizontal segment 60px on the left
+
+                  .lineTo(beginArrowX - leftOffsetArrow, middleArriveDumpY)     // draw a straight vertical line until the middle of the arrive dump
+
+                  .lineTo(beginArrowX, middleArriveDumpY)                       // draw a straight horizontal line until the left border of the final dump
+
+                  .moveTo(beginArrowX - 25,  middleArriveDumpY - 13)            // draw the arrowhead
+
+                  .lineTo(beginArrowX, middleArriveDumpY)                       // draw the arrowhead
+
+                  .lineTo(beginArrowX - 25,  middleArriveDumpY + 13)            // draw the arrowhead
     
-    var degree = radian / Math.PI * 180;
-    arrow.x = 100;
-    arrow.y = 100;
-    arrow.rotation = degree;
 
     this.stage.addChild(arrow);
     this.stage.update();
@@ -113,9 +122,12 @@ class MemoryLayout extends React.Component {
     this._setHeight() 
     this.stage = new createjs.Stage("memoryLayoutCanvas");
     this._drawMemory()
-    this._drawDump()
+    this._drawDump(400, "DUMP_1")
+    this._drawDump(700, "DUMP_2")
     this._drawArrow()
-    //var prev_dump = this.stage.getChildByName("prova")
+
+    //this.stage.removeChild(this.stage.getChildByName("arrow"))
+    //this.stage.update()
   }
 
   render () {
