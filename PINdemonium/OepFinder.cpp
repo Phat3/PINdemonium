@@ -161,15 +161,14 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip , int dumpAndFixResult){
 	//call the proper heuristics
 	//we have to implement it in a better way!!
-	item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
-	item.setEntropyFlag(Heuristics::entropyHeuristic());
-	item.setJmpOuterSectionFlag(Heuristics::jmpOuterSectionHeuristic(ins, prev_ip));
-	item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
-	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
-	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
-	MYINFO("Calling YARA");
+	Heuristics::longJmpHeuristic(ins, prev_ip);
+	Heuristics::entropyHeuristic();
+	Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
+	Heuristics::pushadPopadHeuristic();
+	Heuristics::initFunctionCallHeuristic(curEip,&item);
  	Heuristics::yaraHeuristic();
- 	MYINFO("Finished YARA");
+
+	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
 	if( item.getHeapFlag() && dumpAndFixResult != SCYLLA_ERROR_FILE_FROM_PID  && dumpAndFixResult != SCYLLA_ERROR_DUMP ){
 		MYINFO("-----DUMPING HEAP-----\n");
 		unsigned char * Buffer;
