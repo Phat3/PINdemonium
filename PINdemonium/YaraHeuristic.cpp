@@ -55,7 +55,8 @@ UINT32 YaraHeuristic::run(){
 
 	string yara_res_file = Config::getInstance()->getYaraResultPath();
 	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
-
+	bool result= false;
+	string output = "";
 	if(!existFile(dumpFile)){
 		MYERRORE("Dump file hasn't been created");
 		return -1;
@@ -80,12 +81,17 @@ UINT32 YaraHeuristic::run(){
     }
 	W::PROCESS_INFORMATION  piResults;
 	if(launchYara(YARA_PATH,YARA_RULES, dumpFile, yara_res_file,&piResults )){
-		string result = ReadFromPipe(piResults);
-		MYINFO("Yara result %s",result.c_str());
+		result =true;
+		output = ReadFromPipe(piResults);
+		MYINFO("Yara result %s",output.c_str());
 	}
 	else{
 		MYERRORE("error launching Yara");
 	}
+
+	ReportDump& report_dump = Report::getInstance()->getCurrentDump();
+	ReportObject* yara_heur = new ReportYaraRules(result, output);
+	report_dump.addHeuristic(yara_heur);
 
 	
 	return 0;

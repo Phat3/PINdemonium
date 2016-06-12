@@ -1,5 +1,6 @@
 #pragma once
 #include "Heuristics.h"
+#include "ReportYaraRules.h"
 namespace W{
 #include "windows.h"
 }
