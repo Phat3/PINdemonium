@@ -14,7 +14,7 @@ private:
 public:
 	ReportGeneralInformation();
 	ReportGeneralInformation(string name,float initial_entropy);
-	Json::Value toJson();
+	Json::Value ReportGeneralInformation::toJson();
 
 };
 

@@ -51,7 +51,7 @@ VOID Fini(INT32 code, VOID *v){
 	//get the execution time
 	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 	CLOSELOG();
-	Config *config = Config::getInstance();
+	Report::getInstance()->closeReport();
 }
 
 // - usage 

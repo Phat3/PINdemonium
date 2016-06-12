@@ -5,9 +5,10 @@
 
 class ReportObject
 {
+protected:
+	Json::Value root;
 public:
 	ReportObject(void);
-	virtual Json::Value toJson()
-		{return NULL;}
+	virtual Json::Value toJson(void) = 0;
 };
 

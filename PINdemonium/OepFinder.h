@@ -7,6 +7,7 @@
 #include "FilterHandler.h"
 #include "ProcInfo.h"
 #include "Config.h"
+#include "Report.h"
 namespace W {
 	#include <windows.h>
 }
@@ -37,6 +38,7 @@ private:
 	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex, WriteInterval item);
 	void getCurrentDlls();
 	WxorXHandler *wxorxHandler;
+	Report *report;
 	UINT32 DumpAndFixIAT(ADDRINT curEip);
 };
 

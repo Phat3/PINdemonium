@@ -94,7 +94,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalOptions>/EHs- /EHa-  -std=c++11 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/EHs- /EHa-  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)Scylla\Scylla;C:\pin\source\include\pin;C:\pin\source\include\pin\gen;C:\pin\source\tools\InstLib;C:\pin\extras\xed-ia32\include;C:\pin\extras\components\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TARGET_IA32;HOST_IA32;TARGET_WINDOWS;BIGARRAY_MULTIPLIER=1;_CRT_SECURE_NO_DEPRECATE;_SECURE_SCL=0;WIN32</PreprocessorDefinitions>
@@ -271,6 +271,7 @@
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="PushadPopadHeuristic.cpp" />
     <ClCompile Include="Report.cpp" />
+    <ClCompile Include="ReportDump.cpp" />
     <ClCompile Include="ReportEntropy.cpp" />
     <ClCompile Include="ReportGeneralInformation.cpp" />
     <ClCompile Include="ReportJumpOuterSection.cpp" />
@@ -303,6 +304,7 @@
     <ClInclude Include="OepFinder.h" />
     <ClInclude Include="PushadPopadHeuristic.h" />
     <ClInclude Include="Report.h" />
+    <ClInclude Include="ReportDump.h" />
     <ClInclude Include="ReportEntropy.h" />
     <ClInclude Include="ReportGeneralInformation.h" />
     <ClInclude Include="ReportJumpOuterSection.h" />

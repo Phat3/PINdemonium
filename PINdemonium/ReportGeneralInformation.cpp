@@ -11,7 +11,6 @@ ReportGeneralInformation::ReportGeneralInformation(string name,float initial_ent
 
 
 Json::Value ReportGeneralInformation::toJson(){
-	Json::Value root;
 	root["name"] = this->name;
 	root["entropy"] =this->entropy;
 	return root;

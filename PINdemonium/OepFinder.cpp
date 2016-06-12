@@ -3,6 +3,7 @@
 
 OepFinder::OepFinder(void){
 	this->wxorxHandler = WxorXHandler::getInstance();
+	this->report = Report::getInstance();
 }
 
 OepFinder::~OepFinder(void){
@@ -109,11 +110,15 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			MYPRINT("------------------------------------ NEW STUB FROM begin: %08x TO %08x -------------------------------------",item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("-------------------------------------------------------------------------------------------------------");
 			MYINFO("Current EIP %08x",curEip);
+			
+			report->createReportDump(curEip,item.getAddrBegin(),item.getAddrEnd(),Config::getInstance()->getDumpNumber(),false);
 			int result = this->DumpAndFixIAT(curEip);
 			Config::getInstance()->setWorking(result);
 			this->analysis(item, ins, prev_ip, curEip,result);
 			wxorxHandler->setBrokenFlag(writeItemIndex);
 			Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
+			//W::DebugBreak();
+			report->closeReportDump();
 				
 		}
 		// If we want to debug the program manually let's set the breakpoint after the triggered analysis
@@ -124,6 +129,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	}
 	//update the previous IP
 	proc_info->setPrevIp(INS_Address(ins));
+
 	return OEPFINDER_NOT_WXORX_INST;
 }
 
