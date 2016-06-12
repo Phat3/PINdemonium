@@ -42,27 +42,30 @@ void Report::createReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, 
 }
 
 //return the current dump object
-int Report::getCurrentDump(ReportDump *dump){
-	if (!dumps.empty()){
-		*dump = dumps.back();
-		return 1;
-	}
-	return NULL;
+ReportDump& Report::getCurrentDump(){
+	return dumps.at(dumps.size()-1);
 }
 
 void Report::closeReportDump(){
-	ReportDump cur_dump;  
+	ReportDump& cur_dump = getCurrentDump();  
 	//get current dump and add it to the json structure
 
-	if(getCurrentDump(&cur_dump)){							//check the current dump exist
-		Json::Value cur_dump_json = cur_dump.toJson();
-		report["dumps"].append(cur_dump_json);				//add it to the json structure
-		writeJsonToReport(report);							//write it to file
-	}
+						
+	Json::Value cur_dump_json = cur_dump.toJson();
+	report["dumps"].append(cur_dump_json);				//add it to the json structure
+	writeJsonToReport(report);							//write it to file
+	
 }
 
 void Report::closeReport(){
 	delete info;
+/*  remember to free the heuristics
+	for(std::vector<ReportDump>::iterator dump = dumps.begin(); dump != dumps.end(); ++dump){
+		for(std::vector<ReportDump>::iterator it = dump; it != dumps.end(); ++it){
+		
+		}
+	}
+	*/
 }
 
 
