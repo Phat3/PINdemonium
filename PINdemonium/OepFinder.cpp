@@ -149,9 +149,11 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 			MYPRINT("- - - - - - - - - - - - - - JUMP NUMBER %d OF LENGHT %d  IN STUB FORM %08x TO %08x- - - - - - - - - - - - - -",item.getCurrNumberJMP(),currJMPLength, item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYINFO("Current EIP %08x",curEip);
+			report->createReportDump(curEip,item.getAddrBegin(),item.getAddrEnd(),Config::getInstance()->getDumpNumber(),true);
 			int result = this->DumpAndFixIAT(curEip);
 			config->setWorking(result);
 			this->analysis(item, ins, prev_ip, curEip , result);
+			report->closeReportDump(); //close the current dump report
 			wxorxH->incrementCurrJMPNumber(writeItemIndex);
 			config->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 		}				
