@@ -32,12 +32,6 @@ class App extends React.Component {
             </div>
         </div>
 
-        <div className="row" id="slider">
-            <div className="col-sm-12" >
-                <h4>footer</h4>
-            </div>
-        </div>
-
       </div>
     );
   }

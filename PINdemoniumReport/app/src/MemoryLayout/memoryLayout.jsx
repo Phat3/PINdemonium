@@ -1,5 +1,7 @@
 import React from 'react';
 
+import Slider from './slider.jsx'
+
 
 class MemoryLayout extends React.Component {
 
@@ -123,7 +125,7 @@ class MemoryLayout extends React.Component {
     this.stage = new createjs.Stage("memoryLayoutCanvas");
     this._drawMemory()
     this._drawDump(400, "DUMP_1")
-    this._drawDump(700, "DUMP_2")
+    this._drawDump(100, "DUMP_2")
     this._drawArrow()
 
     //this.stage.removeChild(this.stage.getChildByName("arrow"))
@@ -132,9 +134,20 @@ class MemoryLayout extends React.Component {
 
   render () {
 
+    var highlightBorder = {
+      marginTop: '15px',
+      borderTop : '#f33901 1px solid'
+    }
+
     return (
       <div>
         <canvas id="memoryLayoutCanvas"></canvas>
+
+        <div className="row" id="slider" style={highlightBorder}>
+            <div className="col-sm-12" >
+                <Slider />
+            </div>
+        </div>
       </div>
     );
 
@@ -143,3 +156,9 @@ class MemoryLayout extends React.Component {
 }
 
 export default MemoryLayout;
+
+
+
+
+
+
