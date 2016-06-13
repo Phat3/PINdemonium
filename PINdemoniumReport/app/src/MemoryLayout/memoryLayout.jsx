@@ -80,6 +80,8 @@ class MemoryLayout extends React.Component {
 
   _drawDumps(startDumpIndex, endDumpIndex){
 
+
+
     var startDump = this.props.dumps[startDumpIndex]
     var endDump = this.props.dumps[endDumpIndex]
 
@@ -177,16 +179,22 @@ class MemoryLayout extends React.Component {
     // create another "layer" for the dumps
     this.dumpsContainer = new createjs.Container()
     this.stage.addChild(this.dumpsContainer)
-    // draw the initial situation
-    this._drawDumps(0,1)
+    // draw the initial situation (INDEX (-1,-1) IS THE INITIAL SITUATION!!!)
+    //this._drawDumps(-1,-1)
   }
 
   // update the canvas in order to visualize the new dumps situation
   updateMemory(startDump, endDump){
     //clear the old canvas
     this.dumpsContainer.removeAllChildren()
-    //draw the new one
-    this._drawDumps(startDump, endDump)
+    this.stage.update()
+    // idf both the index are -1 we want to see the initial situation
+    if(startDump !== -1 && endDump !== -1){
+      //draw the new one
+      this._drawDumps(startDump, endDump)
+    }
+    
+    
   }
 
   render () {
