@@ -203,14 +203,16 @@ class MemoryLayout extends React.Component {
       marginTop: '15px',
       borderTop : '#f33901 1px solid'
     }
+    // if the report contains no dump then don't show the slider 
+    var slider = this.props.dumps.length === 0 ? <h3>Sorry there are no dump in this report...</h3> : <Slider dumps={this.props.dumps} onUpdate={this.updateMemory}/>
 
     return (
       <div>
         <canvas id="memoryLayoutCanvas"></canvas>
 
         <div className="row" id="slider" style={highlightBorder}>
-            <div className="col-sm-12" >
-                <Slider dumps={this.props.dumps} onUpdate={this.updateMemory}/>
+            <div className="col-sm-12" style={{textAlign : 'center'}}>
+                {slider}
             </div>
         </div>
       </div>
