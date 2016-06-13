@@ -30,10 +30,10 @@ class MemoryLayout extends React.Component {
     // draw the rectangle representing the memory of the process
     var memorySpace = new createjs.Shape();
     memorySpace.width = this.canvas.width / 3
-    memorySpace.height = this.canvas.height - 50 
+    memorySpace.height = this.canvas.height - 52 
     memorySpace.x = memorySpace.width
     memorySpace.y = 50
-    memorySpace.graphics.beginFill("DeepSkyBlue").drawRect(0, 0, memorySpace.width, memorySpace.height);
+    memorySpace.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("DeepSkyBlue").drawRect(0, 0, memorySpace.width, memorySpace.height);
 
     // draw the label above the rectangle representing the process
     var labelMemorySpace = new createjs.Text("Memory Layout", "30px Arial", "black");
@@ -69,7 +69,7 @@ class MemoryLayout extends React.Component {
         this._drawDump(100, endDump, "DUMP_2")
     }
 
-     this._drawArrow()
+     this._drawArrow(endDump.eip)
   }
 
 
@@ -81,7 +81,7 @@ class MemoryLayout extends React.Component {
     dumpShape.height = 100
     dumpShape.x = (this.canvas.width - dumpShape.width)/2
     dumpShape.y = y
-    dumpShape.graphics.beginFill("red").drawRect(0, 0, dumpShape.width, dumpShape.height);
+    dumpShape.graphics.setStrokeStyle(4).beginStroke("#4caf50").beginFill("red").drawRect(0, 0, dumpShape.width, dumpShape.height);
     
     // draw the label above the rectangle representing the process
     var labelDumpShape = new createjs.Text(name, "30px Arial", "white");
@@ -103,19 +103,19 @@ class MemoryLayout extends React.Component {
     this.stage.update();
   }
 
-  _drawArrow(){
+  _drawArrow(oep){
 
     var dump_1 = this.dumpsContainer.getChildByName("DUMP_1")
     var dump_2 = this.dumpsContainer.getChildByName("DUMP_2")
 
-    var beginArrowX = dump_1.x
+    var beginArrowX = dump_1.x - 2
     var beginArrowY = dump_1.y + (dump_1.height / 2)
     var leftOffsetArrow = 60
     var middleArriveDumpY = dump_2.y + (dump_2.height / 2)
     var arrow = new createjs.Shape();
     arrow.name = "arrow"
     arrow.graphics.setStrokeStyle(4)
-                  .beginStroke(createjs.Graphics.getRGB(0, 0, 0))
+                  .beginStroke("#f33901")
 
                   .moveTo(beginArrowX, beginArrowY)                             // move the corsor on the left border of the start dump
                                                                                 // and in the middle of its height
@@ -133,7 +133,11 @@ class MemoryLayout extends React.Component {
                   .lineTo(beginArrowX - 25,  middleArriveDumpY + 13)            // draw the arrowhead
     
 
-    this.dumpsContainer.addChild(arrow);
+    var labelOEP = new createjs.Text("OEP : 0x" + oep.toString(16), "20px Arial", "green");
+    labelOEP.x = beginArrowX - leftOffsetArrow - labelOEP.getBounds().width - 10
+    labelOEP.y = middleArriveDumpY - (labelOEP.getBounds().height / 2)
+
+    this.dumpsContainer.addChild(arrow, labelOEP);
     this.stage.update();
 
   }
