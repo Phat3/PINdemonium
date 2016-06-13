@@ -5,6 +5,17 @@ import SliderItem from './sliderItem.jsx'
 
 class Slider extends React.Component {
 
+   constructor(){
+    super()
+    this.state = { activeItem : 0 }
+    this.navigateToDump = this.navigateToDump.bind(this)
+  }
+
+
+  navigateToDump(id){
+    this.setState({ activeItem : id })
+  }
+
   render () {
 
     var olStyle = {
@@ -21,7 +32,12 @@ class Slider extends React.Component {
     */
     var items = []
     for (var i = 0; i <= 10; i++) {
-      items.push(<SliderItem key={i} />)
+      if( i === this.state.activeItem){
+        items.push(<SliderItem key={i} id={i} onSelect={this.navigateToDump} active={true}/>)
+      }
+      else{
+        items.push(<SliderItem key={i} id={i} onSelect={this.navigateToDump} active={false}/>)
+      }
     }
 
     return (

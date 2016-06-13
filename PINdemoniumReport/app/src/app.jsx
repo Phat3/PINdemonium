@@ -7,16 +7,6 @@ import MemoryLayout from './MemoryLayout/memoryLayout.jsx';
 class App extends React.Component {
   render () {
 
-    var titleStyle = {
-      textAlign : 'center',
-      height : '5vh',
-      paddingTop : '1vh'
-    }
-
-    var canvasStyle = {
-      width: '100%'
-    }
-
     return (
       <div>
 
