@@ -19,7 +19,8 @@ var sampleData = {
 
     "information": {
       "entropy":5.7108359336853027,
-      "name":"write_testASprotect"
+      "name":"write_testASprotect",
+      "main_module" : {"start_address" : 4194304, "end_address" : 4259839}
     }
 }
 
@@ -44,7 +45,7 @@ class App extends React.Component {
 
         <div className="row">
             <div className="col-sm-12">
-              <MemoryLayout dumps={this.state.data.dumps}/>
+              <MemoryLayout dumps={this.state.data.dumps} information={this.state.data.information}/>
             </div>
         </div>
 

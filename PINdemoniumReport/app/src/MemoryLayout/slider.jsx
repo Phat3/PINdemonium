@@ -7,6 +7,7 @@ class Slider extends React.Component {
 
    constructor(){
     super()
+    // keep trackof the highlighted "dot"
     this.state = { activeItem : 0 }
     this.navigateToDump = this.navigateToDump.bind(this)
   }
@@ -33,16 +34,15 @@ class Slider extends React.Component {
     })
     */
     var items = []    
+    //create an item for each dump
     for (var i = 0; i < this.props.dumps.length -1 ; i++) {
       var active = false 
-      var startDump = i
-      var endDump = i + 1
-
+      // highligth the current dump situation selected
       if( i === this.state.activeItem){
         active = true
       }
-      items.push(<SliderItem key={i} id={i} onSelect={this.navigateToDump} active={active} endDump={endDump} startDump={startDump}/>)
-      
+      // create the component with the proper props
+      items.push(<SliderItem key={i} id={i} onSelect={this.navigateToDump} active={active} endDump={ i + 1} startDump={i} />)   
     }
 
     return (
@@ -53,6 +53,10 @@ class Slider extends React.Component {
       </div>
     );
   }
+}
+
+Slider.propTypes = {
+  onUpdate: React.PropTypes.func.isRequired 
 }
 
 export default Slider;

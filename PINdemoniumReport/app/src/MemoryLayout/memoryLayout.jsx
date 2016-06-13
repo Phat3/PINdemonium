@@ -50,7 +50,30 @@ class MemoryLayout extends React.Component {
     labelMemoryLastAddress.x = labelmemoryAddressX
     labelMemoryLastAddress.y = memorySpace.height - (labelMemoryLastAddress.getBounds().height) + 50
 
-    this.stage.addChild(memorySpace, labelMemorySpace, labelMemoryFirstAddress, labelMemoryLastAddress);
+    // draw the main module
+    var mainModule = new createjs.Shape();
+    mainModule.width = memorySpace.width
+    mainModule.height = memorySpace.height / 3
+    mainModule.x = memorySpace.x
+    mainModule.y = memorySpace.y + mainModule.height
+    mainModule.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("yellowGreen").drawRect(0, 0, mainModule.width, mainModule.height);
+
+    // draw the label for the main module
+    var labelMainModule = new createjs.Text("Main module", "25px Arial", "black");
+    var labelMainModuleBounds = labelMainModule.getBounds()
+    labelMainModule.x = mainModule.width + ( (mainModule.width - labelMainModuleBounds.width) / 2)
+    labelMainModule.y = mainModule.y + 50
+
+    // draw the addresses label on the right of the main module
+    var labelMainModuleStartAddress = new createjs.Text("0x" + this.props.information.main_module.start_address.toString(16), "20px Arial", "green");
+    var labelMainModuleEndAddress = new createjs.Text("0x" + this.props.information.main_module.end_address.toString(16), "20px Arial", "green");
+    var labelMainModuleAddressX = mainModule.x + mainModule.width + 10
+    labelMainModuleStartAddress.x = labelMainModuleAddressX
+    labelMainModuleStartAddress.y =  mainModule.y - (labelMainModuleEndAddress.getBounds().height / 2 )
+    labelMainModuleEndAddress.x = labelMainModuleAddressX
+    labelMainModuleEndAddress.y = labelMainModuleStartAddress.y + mainModule.height
+
+    this.stage.addChild(memorySpace, labelMemorySpace, labelMemoryFirstAddress, labelMemoryLastAddress, mainModule, labelMainModule, labelMainModuleStartAddress, labelMainModuleEndAddress);
     // update the canvas
     this.stage.update();
   }
@@ -133,6 +156,7 @@ class MemoryLayout extends React.Component {
                   .lineTo(beginArrowX - 25,  middleArriveDumpY + 13)            // draw the arrowhead
     
 
+    // place the label that display the OEP on the left of the label
     var labelOEP = new createjs.Text("OEP : 0x" + oep.toString(16), "20px Arial", "green");
     labelOEP.x = beginArrowX - leftOffsetArrow - labelOEP.getBounds().width - 10
     labelOEP.y = middleArriveDumpY - (labelOEP.getBounds().height / 2)
@@ -144,21 +168,24 @@ class MemoryLayout extends React.Component {
 
   //callback of reactjs called when th component mounting is finished
   componentDidMount() {
+    // set the canvas dimension on the view port
     this.canvas = document.getElementById('memoryLayoutCanvas'); 
     this._setHeight() 
     this.stage = new createjs.Stage("memoryLayoutCanvas");
+    //draw the memory layout
     this._drawMemory()
+    // create another "layer" for the dumps
     this.dumpsContainer = new createjs.Container()
     this.stage.addChild(this.dumpsContainer)
+    // draw the initial situation
     this._drawDumps(0,1)
-   
-    //this.stage.removeChild(this.stage.getChildByName("arrow"))
-    //this.stage.update()
   }
 
+  // update the canvas in order to visualize the new dumps situation
   updateMemory(startDump, endDump){
-    // this._drawMemory()
+    //clear the old canvas
     this.dumpsContainer.removeAllChildren()
+    //draw the new one
     this._drawDumps(startDump, endDump)
   }
 
