@@ -11,6 +11,9 @@ class MemoryLayout extends React.Component {
     this._drawMemory = this._drawMemory.bind(this)
     this._drawDump = this._drawDump.bind(this)
     this._drawArrow = this._drawArrow.bind(this)
+    this._drawDumps = this._drawDumps.bind(this)
+    this.updateMemory = this.updateMemory.bind(this)
+
   }
 
   //set the proper dimensions for the canvas object based on the viewport dimension
@@ -52,8 +55,25 @@ class MemoryLayout extends React.Component {
     this.stage.update();
   }
 
+  _drawDumps(startDumpIndex, endDumpIndex){
 
-  _drawDump(y, name){
+    var startDump = this.props.dumps[startDumpIndex]
+    var endDump = this.props.dumps[endDumpIndex]
+
+    if(startDump.start_address < endDump.start_address){
+        this._drawDump(100, startDump, "DUMP_1")
+        this._drawDump(400, endDump, "DUMP_2")
+    }
+    else{
+        this._drawDump(400, startDump, "DUMP_1")
+        this._drawDump(100, endDump, "DUMP_2")
+    }
+
+     this._drawArrow()
+  }
+
+
+  _drawDump(y, dump, name){
     // draw the rectangle representing the memory of the process
     var dumpShape = new createjs.Shape()
     dumpShape.name = name
@@ -71,22 +91,22 @@ class MemoryLayout extends React.Component {
     labelDumpShape.y = dumpShape.y + ( ( dumpShape.height - labelDumpShapeBounds.height) / 2)
     
     // draw the addresses label on the right of the memory layout
-    var labelDumpShapeFirstAddress = new createjs.Text("0x00400040", "20px Arial", "blue");
-    var labelDumpShapeLastAddress = new createjs.Text("0x00411040", "20px Arial", "blue");
+    var labelDumpShapeFirstAddress = new createjs.Text("0x" + dump.start_address.toString(16), "20px Arial", "blue");
+    var labelDumpShapeLastAddress = new createjs.Text("0x" + dump.end_address.toString(16), "20px Arial", "blue");
     labelDumpShapeFirstAddress.x = dumpShape.width + dumpShape.x + 10
     labelDumpShapeFirstAddress.y = dumpShape.y
     labelDumpShapeLastAddress.x = dumpShape.width + dumpShape.x + 10
     labelDumpShapeLastAddress.y = dumpShape.y +   dumpShape.height - (labelDumpShapeLastAddress.getBounds().height)
 
-    this.stage.addChild(dumpShape, labelDumpShape, labelDumpShapeFirstAddress, labelDumpShapeLastAddress);
+    this.dumpsContainer.addChild(dumpShape, labelDumpShape, labelDumpShapeFirstAddress, labelDumpShapeLastAddress);
     // update the canvas
     this.stage.update();
   }
 
   _drawArrow(){
 
-    var dump_1 = this.stage.getChildByName("DUMP_1")
-    var dump_2 = this.stage.getChildByName("DUMP_2")
+    var dump_1 = this.dumpsContainer.getChildByName("DUMP_1")
+    var dump_2 = this.dumpsContainer.getChildByName("DUMP_2")
 
     var beginArrowX = dump_1.x
     var beginArrowY = dump_1.y + (dump_1.height / 2)
@@ -113,7 +133,7 @@ class MemoryLayout extends React.Component {
                   .lineTo(beginArrowX - 25,  middleArriveDumpY + 13)            // draw the arrowhead
     
 
-    this.stage.addChild(arrow);
+    this.dumpsContainer.addChild(arrow);
     this.stage.update();
 
   }
@@ -124,12 +144,18 @@ class MemoryLayout extends React.Component {
     this._setHeight() 
     this.stage = new createjs.Stage("memoryLayoutCanvas");
     this._drawMemory()
-    this._drawDump(400, "DUMP_1")
-    this._drawDump(100, "DUMP_2")
-    this._drawArrow()
-
+    this.dumpsContainer = new createjs.Container()
+    this.stage.addChild(this.dumpsContainer)
+    this._drawDumps(0,1)
+   
     //this.stage.removeChild(this.stage.getChildByName("arrow"))
     //this.stage.update()
+  }
+
+  updateMemory(startDump, endDump){
+    // this._drawMemory()
+    this.dumpsContainer.removeAllChildren()
+    this._drawDumps(startDump, endDump)
   }
 
   render () {
@@ -145,7 +171,7 @@ class MemoryLayout extends React.Component {
 
         <div className="row" id="slider" style={highlightBorder}>
             <div className="col-sm-12" >
-                <Slider />
+                <Slider dumps={this.props.dumps} onUpdate={this.updateMemory}/>
             </div>
         </div>
       </div>

@@ -11,9 +11,11 @@ class Slider extends React.Component {
     this.navigateToDump = this.navigateToDump.bind(this)
   }
 
-
-  navigateToDump(id){
+  // method passed as callback parameter to children components
+  // this method will be called when an item on the slider is clicked
+  navigateToDump(id, startDump, endDump){
     this.setState({ activeItem : id })
+    this.props.onUpdate(startDump, endDump)
   }
 
   render () {
@@ -30,14 +32,17 @@ class Slider extends React.Component {
       return <RegisterRow key={row.id} name={row.name} content={row.content}/>
     })
     */
-    var items = []
-    for (var i = 0; i <= 10; i++) {
+    var items = []    
+    for (var i = 0; i < this.props.dumps.length -1 ; i++) {
+      var active = false 
+      var startDump = i
+      var endDump = i + 1
+
       if( i === this.state.activeItem){
-        items.push(<SliderItem key={i} id={i} onSelect={this.navigateToDump} active={true}/>)
+        active = true
       }
-      else{
-        items.push(<SliderItem key={i} id={i} onSelect={this.navigateToDump} active={false}/>)
-      }
+      items.push(<SliderItem key={i} id={i} onSelect={this.navigateToDump} active={active} endDump={endDump} startDump={startDump}/>)
+      
     }
 
     return (

@@ -11,7 +11,7 @@ class SliderItem extends React.Component {
 
   handleClick(event) {
     event.preventDefault()
-    this.props.onSelect(this.props.id)
+    this.props.onSelect(this.props.id, this.props.startDump, this.props.endDump)
   }
 
   render () {
