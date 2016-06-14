@@ -73,14 +73,56 @@ class MemoryLayout extends React.Component {
     labelMainModuleEndAddress.x = labelMainModuleAddressX
     labelMainModuleEndAddress.y = labelMainModuleStartAddress.y + mainModule.height
 
-    this.stage.addChild(memorySpace, labelMemorySpace, labelMemoryFirstAddress, labelMemoryLastAddress, mainModule, labelMainModule, labelMainModuleStartAddress, labelMainModuleEndAddress);
+    var aboveHeap = new createjs.Shape();
+    aboveHeap.width = memorySpace.width
+    aboveHeap.height = memorySpace.height / 6
+    aboveHeap.x = memorySpace.x
+    aboveHeap.y = mainModule.y - aboveHeap.height - 50
+    aboveHeap.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("orange").drawRect(0, 0, aboveHeap.width, aboveHeap.height);
+
+    // draw the addresses label on the right of the main module
+    var labelAboveHeapStartAddress = new createjs.Text("0x" + this.props.information.main_module.start_address.toString(16), "20px Arial", "green");
+    var labelAboveHeapEndAddress = new createjs.Text("0x" + this.props.information.main_module.end_address.toString(16), "20px Arial", "green");
+    var labelAboveHeapAddressX = aboveHeap.x + aboveHeap.width + 10
+    labelAboveHeapStartAddress.x = labelAboveHeapAddressX
+    labelAboveHeapStartAddress.y =  aboveHeap.y - (labelAboveHeapEndAddress.getBounds().height / 2 )
+    labelAboveHeapEndAddress.x = labelAboveHeapAddressX
+    labelAboveHeapEndAddress.y = labelAboveHeapStartAddress.y + aboveHeap.height
+
+    var underHeap = new createjs.Shape();
+    underHeap.width = memorySpace.width
+    underHeap.height = memorySpace.height / 6
+    underHeap.x = memorySpace.x
+    underHeap.y = mainModule.y + mainModule.height + 50
+    underHeap.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("orange").drawRect(0, 0, underHeap.width, underHeap.height);
+
+    // draw the addresses label on the right of the main module
+    var labelUnderHeapStartAddress = new createjs.Text("0x" + this.props.information.main_module.start_address.toString(16), "20px Arial", "green");
+    var labelUnderHeapEndAddress = new createjs.Text("0x" + this.props.information.main_module.end_address.toString(16), "20px Arial", "green");
+    var labelUnderHeapAddressX = underHeap.x + underHeap.width + 10
+    labelUnderHeapStartAddress.x = labelUnderHeapAddressX
+    labelUnderHeapStartAddress.y =  underHeap.y - (labelUnderHeapEndAddress.getBounds().height / 2 )
+    labelUnderHeapEndAddress.x = labelUnderHeapAddressX
+    labelUnderHeapEndAddress.y = labelUnderHeapStartAddress.y + underHeap.height
+
+    // draw the label for the main module
+    var labelAboveHeap = new createjs.Text("Heap 1", "25px Arial", "black");
+    var labelAboveHeapBounds = labelAboveHeap.getBounds()
+    labelAboveHeap.x = aboveHeap.x + ( (aboveHeap.width - labelAboveHeapBounds.width) / 2)
+    labelAboveHeap.y = aboveHeap.y + 50
+
+    // draw the label for the main module
+    var labelUnderHeap = new createjs.Text("Heap 2", "25px Arial", "black");
+    var labelUnderHeapBounds = labelUnderHeap.getBounds()
+    labelUnderHeap.x = underHeap.x + ( (underHeap.width - labelUnderHeapBounds.width) / 2)
+    labelUnderHeap.y = underHeap.y + 50
+
+    this.stage.addChild(memorySpace, labelMemorySpace, labelMemoryFirstAddress, labelMemoryLastAddress, mainModule, labelMainModule, labelMainModuleStartAddress, labelMainModuleEndAddress, aboveHeap, underHeap, labelAboveHeapStartAddress, labelAboveHeapEndAddress, labelUnderHeapStartAddress, labelUnderHeapEndAddress, labelUnderHeap, labelAboveHeap);
     // update the canvas
     this.stage.update();
   }
 
   _drawDumps(startDumpIndex, endDumpIndex){
-
-
 
     var startDump = this.props.dumps[startDumpIndex]
     var endDump = this.props.dumps[endDumpIndex]
@@ -140,7 +182,7 @@ class MemoryLayout extends React.Component {
     var arrow = new createjs.Shape();
     arrow.name = "arrow"
     arrow.graphics.setStrokeStyle(4)
-                  .beginStroke("#f33901")
+                  .beginStroke("magenta")
 
                   .moveTo(beginArrowX, beginArrowY)                             // move the corsor on the left border of the start dump
                                                                                 // and in the middle of its height
@@ -193,8 +235,7 @@ class MemoryLayout extends React.Component {
       //draw the new one
       this._drawDumps(startDump, endDump)
     }
-    
-    
+     
   }
 
   render () {
