@@ -7,11 +7,15 @@ class MemoryLayout extends React.Component {
 
   constructor(){
     super()
+    // priv method (pseudo)
     this._setHeight = this._setHeight.bind(this)
     this._drawMemory = this._drawMemory.bind(this)
     this._drawDump = this._drawDump.bind(this)
     this._drawArrow = this._drawArrow.bind(this)
     this._drawDumps = this._drawDumps.bind(this)
+    this._drawAddressesLabel = this._drawAddressesLabel.bind(this)
+    this._drawTitleLabel = this._drawTitleLabel.bind(this)
+    //  public method (pseudo)
     this.updateMemory = this.updateMemory.bind(this)
 
   }
@@ -30,25 +34,10 @@ class MemoryLayout extends React.Component {
     // draw the rectangle representing the memory of the process
     var memorySpace = new createjs.Shape();
     memorySpace.width = this.canvas.width / 3
-    memorySpace.height = this.canvas.height - 52 
+    memorySpace.height = this.canvas.height - 80 
     memorySpace.x = memorySpace.width
     memorySpace.y = 50
     memorySpace.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("DeepSkyBlue").drawRect(0, 0, memorySpace.width, memorySpace.height);
-
-    // draw the label above the rectangle representing the process
-    var labelMemorySpace = new createjs.Text("Memory Layout", "30px Arial", "black");
-    // center the label on the rectangle
-    var labelMemorySpaceBounds = labelMemorySpace.getBounds()
-    labelMemorySpace.x = memorySpace.width + ( (memorySpace.width - labelMemorySpaceBounds.width) / 2)
-
-    // draw the addresses label on the right of the memory layout
-    var labelMemoryFirstAddress = new createjs.Text("0x00", "20px Arial", "red");
-    var labelMemoryLastAddress = new createjs.Text("0xff", "20px Arial", "red");
-    var labelmemoryAddressX = memorySpace.width * 2 + 10
-    labelMemoryFirstAddress.x = labelmemoryAddressX
-    labelMemoryFirstAddress.y = 50
-    labelMemoryLastAddress.x = labelmemoryAddressX
-    labelMemoryLastAddress.y = memorySpace.height - (labelMemoryLastAddress.getBounds().height) + 50
 
     // draw the main module
     var mainModule = new createjs.Shape();
@@ -58,21 +47,7 @@ class MemoryLayout extends React.Component {
     mainModule.y = memorySpace.y + mainModule.height
     mainModule.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("yellowGreen").drawRect(0, 0, mainModule.width, mainModule.height);
 
-    // draw the label for the main module
-    var labelMainModule = new createjs.Text("Main module", "25px Arial", "black");
-    var labelMainModuleBounds = labelMainModule.getBounds()
-    labelMainModule.x = mainModule.width + ( (mainModule.width - labelMainModuleBounds.width) / 2)
-    labelMainModule.y = mainModule.y + 50
-
-    // draw the addresses label on the right of the main module
-    var labelMainModuleStartAddress = new createjs.Text("0x" + this.props.information.main_module.start_address.toString(16), "20px Arial", "green");
-    var labelMainModuleEndAddress = new createjs.Text("0x" + this.props.information.main_module.end_address.toString(16), "20px Arial", "green");
-    var labelMainModuleAddressX = mainModule.x + mainModule.width + 10
-    labelMainModuleStartAddress.x = labelMainModuleAddressX
-    labelMainModuleStartAddress.y =  mainModule.y - (labelMainModuleEndAddress.getBounds().height / 2 )
-    labelMainModuleEndAddress.x = labelMainModuleAddressX
-    labelMainModuleEndAddress.y = labelMainModuleStartAddress.y + mainModule.height
-
+    // draw the heap above the main module
     var aboveHeap = new createjs.Shape();
     aboveHeap.width = memorySpace.width
     aboveHeap.height = memorySpace.height / 6
@@ -80,46 +55,68 @@ class MemoryLayout extends React.Component {
     aboveHeap.y = mainModule.y - aboveHeap.height - 50
     aboveHeap.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("orange").drawRect(0, 0, aboveHeap.width, aboveHeap.height);
 
-    // draw the addresses label on the right of the main module
-    var labelAboveHeapStartAddress = new createjs.Text("0x" + this.props.information.main_module.start_address.toString(16), "20px Arial", "green");
-    var labelAboveHeapEndAddress = new createjs.Text("0x" + this.props.information.main_module.end_address.toString(16), "20px Arial", "green");
-    var labelAboveHeapAddressX = aboveHeap.x + aboveHeap.width + 10
-    labelAboveHeapStartAddress.x = labelAboveHeapAddressX
-    labelAboveHeapStartAddress.y =  aboveHeap.y - (labelAboveHeapEndAddress.getBounds().height / 2 )
-    labelAboveHeapEndAddress.x = labelAboveHeapAddressX
-    labelAboveHeapEndAddress.y = labelAboveHeapStartAddress.y + aboveHeap.height
-
+    // draw the heap under the main module
     var underHeap = new createjs.Shape();
     underHeap.width = memorySpace.width
     underHeap.height = memorySpace.height / 6
     underHeap.x = memorySpace.x
     underHeap.y = mainModule.y + mainModule.height + 50
     underHeap.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("orange").drawRect(0, 0, underHeap.width, underHeap.height);
+    
+    // draw the label above the rectangle representing the process
+    var labelMemorySpace = new createjs.Text("Memory Layout", "30px Arial", "black");
+    // center the label on the rectangle
+    var labelMemorySpaceBounds = labelMemorySpace.getBounds()
+    labelMemorySpace.x = memorySpace.width + ( (memorySpace.width - labelMemorySpaceBounds.width) / 2)
 
-    // draw the addresses label on the right of the main module
-    var labelUnderHeapStartAddress = new createjs.Text("0x" + this.props.information.main_module.start_address.toString(16), "20px Arial", "green");
-    var labelUnderHeapEndAddress = new createjs.Text("0x" + this.props.information.main_module.end_address.toString(16), "20px Arial", "green");
-    var labelUnderHeapAddressX = underHeap.x + underHeap.width + 10
-    labelUnderHeapStartAddress.x = labelUnderHeapAddressX
-    labelUnderHeapStartAddress.y =  underHeap.y - (labelUnderHeapEndAddress.getBounds().height / 2 )
-    labelUnderHeapEndAddress.x = labelUnderHeapAddressX
-    labelUnderHeapEndAddress.y = labelUnderHeapStartAddress.y + underHeap.height
-
-    // draw the label for the main module
-    var labelAboveHeap = new createjs.Text("Heap 1", "25px Arial", "black");
-    var labelAboveHeapBounds = labelAboveHeap.getBounds()
-    labelAboveHeap.x = aboveHeap.x + ( (aboveHeap.width - labelAboveHeapBounds.width) / 2)
-    labelAboveHeap.y = aboveHeap.y + 50
+    this.stage.addChild(memorySpace, labelMemorySpace, mainModule, aboveHeap, underHeap);
 
     // draw the label for the main module
-    var labelUnderHeap = new createjs.Text("Heap 2", "25px Arial", "black");
-    var labelUnderHeapBounds = labelUnderHeap.getBounds()
-    labelUnderHeap.x = underHeap.x + ( (underHeap.width - labelUnderHeapBounds.width) / 2)
-    labelUnderHeap.y = underHeap.y + 50
+    this._drawTitleLabel("Main module", "black", mainModule.x, mainModule.y, mainModule.width, mainModule.height)
 
-    this.stage.addChild(memorySpace, labelMemorySpace, labelMemoryFirstAddress, labelMemoryLastAddress, mainModule, labelMainModule, labelMainModuleStartAddress, labelMainModuleEndAddress, aboveHeap, underHeap, labelAboveHeapStartAddress, labelAboveHeapEndAddress, labelUnderHeapStartAddress, labelUnderHeapEndAddress, labelUnderHeap, labelAboveHeap);
+    // draw the label for the heap 1
+    this._drawTitleLabel("Heap 1", "black", aboveHeap.x, aboveHeap.y, aboveHeap.width, aboveHeap.height)
+
+    // draw the label for the heap 2
+    this._drawTitleLabel("Heap 2", "black", underHeap.x, underHeap.y, underHeap.width, underHeap.height)
+
+     // draw the address labels for the hep 2
+    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), "blue", underHeap.x, underHeap.y, underHeap.width, underHeap.height)
+
+    // draw the address labels for the heap 1
+    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), "blue", aboveHeap.x, aboveHeap.y, aboveHeap.width, aboveHeap.height)
+
+    // draw the address labels for the main module
+    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), "green", mainModule.x, mainModule.y, mainModule.width, mainModule.height)
+
+    // draw tha bound of the memory
+    this._drawAddressesLabel("00", "ff", "red", memorySpace.x, memorySpace.y, memorySpace.width, memorySpace.height)
+    
     // update the canvas
     this.stage.update();
+  }
+
+  // draw the addresses label on the right of the relative shape
+  _drawAddressesLabel(startAddress, endAddress, color, relX, relY, relWidth, relheight){
+    var labelStartAddress = new createjs.Text("0x" + startAddress, "20px Arial", color);
+    var labelEndAddress = new createjs.Text("0x" + endAddress, "20px Arial", color);
+    var labelAddressX = relX + relWidth + 10
+    labelStartAddress.x = labelAddressX
+    labelStartAddress.y =  relY - (labelEndAddress.getBounds().height / 2 )
+    labelEndAddress.x = labelAddressX
+    labelEndAddress.y = labelStartAddress.y + relheight
+
+    this.stage.addChild(labelStartAddress, labelEndAddress)
+  }
+
+  // draw the the title label in the center of the relative shape
+  _drawTitleLabel(title, color, relX, relY, relWidth, relHeight){
+    var labelTitle = new createjs.Text(title, "25px Arial", color);
+    var labelTitleBounds = labelTitle.getBounds()
+    labelTitle.x = relX + ( (relWidth - labelTitleBounds.width) / 2)
+    labelTitle.y = relY + (relHeight / 2) - (labelTitleBounds.height / 2)
+
+    this.stage.addChild(labelTitle)
   }
 
   _drawDumps(startDumpIndex, endDumpIndex){
