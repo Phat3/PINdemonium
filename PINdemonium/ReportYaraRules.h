@@ -8,10 +8,10 @@ class ReportYaraRules : public ReportObject
 private: 
 	string name;
 	bool result;
-	string output;
+	vector<string> matched_rules;
 public:
 	ReportYaraRules(void);
-	ReportYaraRules(bool result,string output);
+	ReportYaraRules(bool result,vector<string> matched_rule);
 	Json::Value toJson();
 	
 };

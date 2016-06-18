@@ -20,4 +20,6 @@ private:
 	BOOL existFile (std::string name);
 	BOOL launchYara(string yara_path, string yara_rules_path, string yara_input_path,string yara_output,W::PROCESS_INFORMATION * piResults);
 	UINT32 getFileSize(FILE * fp);
+	vector<string> parseYaraOutput(string output);
+	vector<string> split(const string &s, char delim);
 };

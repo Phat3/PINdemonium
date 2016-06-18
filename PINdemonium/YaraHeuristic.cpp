@@ -3,8 +3,8 @@
 #define YARA_LAUNCHER "YaraLauncher.bat"
 
 
-#define YARA_PATH "C:\\pin\\PinUnpackerDependencies\\Yara\\yara32.exe"
-#define YARA_RULES "C:\\pin\\PinUnpackerDependencies\\Yara\\yara_rules.yar"
+#define YARA_PATH "C:\\pin\\PINdemoniumDependencies\\Yara\\yara32.exe"
+#define YARA_RULES "C:\\pin\\PINdemoniumDependencies\\Yara\\yara_rules.yar"
 
 BOOL YaraHeuristic::existFile (std::string name) {
 	if (FILE *file = fopen(name.c_str(), "r")) {
@@ -47,6 +47,36 @@ string YaraHeuristic::ReadFromPipe(W::PROCESS_INFORMATION piProcInfo) {
 
 }
 
+/*
+Split a string in an array based on a delimiter character
+*/
+vector<string> YaraHeuristic::split(const string &s, char delim) {
+    vector<string> elems;
+    stringstream ss(s);
+    string item;
+    while (getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+/*
+Parse yara output and return a vector containing the matched rules as string
+*/
+vector<string> YaraHeuristic::parseYaraOutput(string output){
+	vector<string> matched_rules;
+	istringstream output_stream(output); 
+	for(string line; getline(output_stream,line);){ // iterate through lines
+		MYINFO("current line %s",line.c_str());
+		try{
+			string matched_string = split(line,' ').at(0);
+			MYINFO("Adding rule %s",matched_string.c_str());
+			matched_rules.push_back(matched_string); 
+		}
+		catch (const std::out_of_range& e){
+		}	
+	}
+	return matched_rules;
+}
 
 
 UINT32 YaraHeuristic::run(){
@@ -56,7 +86,8 @@ UINT32 YaraHeuristic::run(){
 	string yara_res_file = Config::getInstance()->getYaraResultPath();
 	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
 	bool result= false;
-	string output = "";
+	string raw_output = "";
+	vector<string> matched_rules;
 	if(!existFile(dumpFile)){
 		MYERRORE("Dump file hasn't been created");
 		return -1;
@@ -82,15 +113,16 @@ UINT32 YaraHeuristic::run(){
 	W::PROCESS_INFORMATION  piResults;
 	if(launchYara(YARA_PATH,YARA_RULES, dumpFile, yara_res_file,&piResults )){
 		result =true;
-		output = ReadFromPipe(piResults);
-		MYINFO("Yara result %s",output.c_str());
+		raw_output = ReadFromPipe(piResults);
+		matched_rules = parseYaraOutput(raw_output);
+		MYINFO("Yara raw output result %s",raw_output.c_str());
 	}
 	else{
 		MYERRORE("error launching Yara");
 	}
 
 	ReportDump& report_dump = Report::getInstance()->getCurrentDump();
-	ReportObject* yara_heur = new ReportYaraRules(result, output);
+	ReportObject* yara_heur = new ReportYaraRules(result, matched_rules);
 	report_dump.addHeuristic(yara_heur);
 
 	
@@ -101,7 +133,7 @@ UINT32 YaraHeuristic::run(){
 
 
 BOOL YaraHeuristic::launchYara(string yara_path, string yara_rules_path, string yara_input_path,string yara_output,W::PROCESS_INFORMATION * piResults){
-	string YaraLauncherBat = Config::getInstance()->getBasePath() + YARA_LAUNCHER;
+	//string YaraLauncherBat = Config::getInstance()->getBasePath() + YARA_LAUNCHER;
 
 	//Running external idaPython script
 	W::STARTUPINFO si ={0};
@@ -112,26 +144,24 @@ BOOL YaraHeuristic::launchYara(string yara_path, string yara_rules_path, string 
 	si.cb=sizeof(si);
 	
 
-	//Creating the string used to launch the idaPython script
-	std::stringstream YaraLauncherStream;
-	YaraLauncherStream << "\"" << yara_path  << "\"  -s ";                       //path to yara executable
-	YaraLauncherStream << "\"" << yara_rules_path << "\"  ";      //path to yara rules
-	YaraLauncherStream << "\"" << yara_input_path << "\" ";       //path to yara input file
-	//YaraLauncherStream << "> \"" << yara_output << "\" 2&>1";         //path to output produced by yara
-	string YaraLauncher = YaraLauncherStream.str();	 //string containing the yara launcher
+	//NB There can be problem if using spaces inside the path
+
+	string yara_arguments =  yara_path  + " " +                        //path to yara executable
+                             yara_rules_path + " " +     //path to yara rules
+							 yara_input_path;       //path to yara input file
+
 
 
 
 	// Create a file batch which run the IdaPython script and execute it
-	FILE *YaraLauncherFile = fopen(YaraLauncherBat.c_str(),"w");
+	/*FILE *YaraLauncherFile = fopen(YaraLauncherBat.c_str(),"w");
 	fwrite(YaraLauncher.c_str(),strlen(YaraLauncher.c_str()),1,YaraLauncherFile);
-	fclose(YaraLauncherFile);
+	fclose(YaraLauncherFile);*/
 
-	MYINFO("Launching  Yara  %s ",YaraLauncherBat);
+	MYINFO("Launching  Yara executable %s command line %s ",yara_path.c_str(),yara_arguments.c_str());
 	
-	
-	if(!W::CreateProcess(YaraLauncherBat.c_str(),NULL,NULL,NULL,TRUE,CREATE_NEW_CONSOLE,NULL,NULL,&si,&pi)){
-		MYERRORE("Can't launch Yara ");
+	if(!W::CreateProcess(yara_path.c_str(),(char *)yara_arguments.c_str(),NULL,NULL,TRUE,CREATE_NEW_CONSOLE,NULL,NULL,&si,&pi)){
+		MYERRORE("Can't launch Yara Error %d",W::GetLastError());
 		return false;
 	}
 
