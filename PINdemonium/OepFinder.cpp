@@ -194,7 +194,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 			hz_size  = hz.size;
 
 			// record the location information of this heapzone inside the heap_map.txt 			
-			heap_map_file << std::to_string((_ULonglong)i)  << " " << std::hex << hz_begin << " " << std::to_string((_ULonglong)hz_size) << "\n" ;
+			heap_map_file << std::hex << hz_begin << " " << std::to_string((_ULonglong)hz_size) << " " << "\n" ;
 			
 			hz_data = (unsigned char *)malloc(hz_size);
 			PIN_SafeCopy(hz_data , (void const *)hz_begin , hz_size);

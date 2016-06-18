@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DumpLauncher", "DumpLauncher\DumpLauncher.vcxproj", "{D2B8977A-036F-4489-B260-763113E71226}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PeLib", "..\PeLib\PeLib\PeLib.vcxproj", "{99C6475F-695F-4C54-840B-DE1134895BCE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D2B8977A-036F-4489-B260-763113E71226}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D2B8977A-036F-4489-B260-763113E71226}.Debug|Win32.Build.0 = Debug|Win32
+		{D2B8977A-036F-4489-B260-763113E71226}.Release|Win32.ActiveCfg = Release|Win32
+		{D2B8977A-036F-4489-B260-763113E71226}.Release|Win32.Build.0 = Release|Win32
+		{99C6475F-695F-4C54-840B-DE1134895BCE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{99C6475F-695F-4C54-840B-DE1134895BCE}.Debug|Win32.Build.0 = Debug|Win32
+		{99C6475F-695F-4C54-840B-DE1134895BCE}.Release|Win32.ActiveCfg = Release|Win32
+		{99C6475F-695F-4C54-840B-DE1134895BCE}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

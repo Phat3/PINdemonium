@@ -3,6 +3,7 @@
 
 HookFunctions::HookFunctions(void)
 {
+	/*
 	this->functionsMap.insert( std::pair<string,int>("VirtualFree",VIRTUALFREE_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );
@@ -10,6 +11,8 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualQuery",VIRTUALQUERY_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualProtect",VIRTUALPROTECT_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualQueryEx",VIRTUALQUERYEX_INDEX) );
+	*/
+	this->functionsMap.insert( std::pair<string,int>("LoadLibraryW",VIRTUALFREE_INDEX) );
 }
 
 HookFunctions::~HookFunctions(void)
@@ -140,6 +143,7 @@ void HookFunctions::hookDispatcher(IMG img){
 					break;
 				case(VIRTUALFREE_INDEX):
 					//RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)VirtualFreeHook , IARG_FUNCARG_ENTRYPOINT_VALUE,0, IARG_END);
+					printf("LOADLIBRARY\n");
 					break;
 				}			
 			RTN_Close(rtn);
