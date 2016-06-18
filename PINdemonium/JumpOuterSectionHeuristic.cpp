@@ -16,9 +16,14 @@ UINT32 JumpOuterSection::run(INS ins, ADDRINT prev_ip){
 			MYWARN("[JMP OUTER SECTION DETECTED!!] FROM : %s	TO : %s", sec_current.c_str(), sec_prev.c_str());
 		
 		}
-		ReportDump& report_dump = Report::getInstance()->getCurrentDump();
-		ReportObject* long_jmp_heur = new ReportJumpOuterSection(result, sec_prev,sec_current);
-		report_dump.addHeuristic(long_jmp_heur);
+		try{
+			ReportDump& report_dump = Report::getInstance()->getCurrentDump();
+			ReportObject* long_jmp_heur = new ReportJumpOuterSection(result, sec_prev,sec_current);
+			report_dump.addHeuristic(long_jmp_heur);
+		}
+		catch (const std::out_of_range& ){
+			MYERRORE("Problem creating ReportJumpOuterSection report");
+		}	
 	}
 	if(result == true){
 		return OEPFINDER_FOUND_OEP

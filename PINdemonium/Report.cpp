@@ -35,6 +35,7 @@ void Report::initializeReport(string process_name,float initial_entropy){
 
  }
 
+// Create the DumpReport with initial information about the dump
 void Report::createReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset){
 	ReportDump cur_dump =  ReportDump(eip,start_addr,end_addr,dump_number,intra_writeset);
 	dumps.push_back(cur_dump);
@@ -46,10 +47,12 @@ ReportDump& Report::getCurrentDump(){
 	return dumps.at(dumps.size()-1);
 }
 
+/*
+Close the report for the current Dump and write the results on file
+*/
 void Report::closeReportDump(){
 	ReportDump& cur_dump = getCurrentDump();  
 	//get current dump and add it to the json structure
-
 						
 	Json::Value cur_dump_json = cur_dump.toJson();
 	report["dumps"].append(cur_dump_json);				//add it to the json structure
@@ -59,18 +62,11 @@ void Report::closeReportDump(){
 
 void Report::closeReport(){
 	delete info;
-/*  remember to free the heuristics
-	for(std::vector<ReportDump>::iterator dump = dumps.begin(); dump != dumps.end(); ++dump){
-		for(std::vector<ReportDump>::iterator it = dump; it != dumps.end(); ++it){
-		
-		}
-	}
-	*/
 }
 
 
 //------------- Helpers ----------------
-
+//create a new file where writes the current report
 void Report::writeJsonToReport(Json::Value report ){
 	ofstream report_file;
 	report_file.open(report_path,std::ofstream::out);

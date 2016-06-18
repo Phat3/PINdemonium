@@ -66,10 +66,9 @@ vector<string> YaraHeuristic::parseYaraOutput(string output){
 	vector<string> matched_rules;
 	istringstream output_stream(output); 
 	for(string line; getline(output_stream,line);){ // iterate through lines
-		MYINFO("current line %s",line.c_str());
 		try{
 			string matched_string = split(line,' ').at(0);
-			MYINFO("Adding rule %s",matched_string.c_str());
+			MYINFO("Adding matched Yara rule %s",matched_string.c_str());
 			matched_rules.push_back(matched_string); 
 		}
 		catch (const std::out_of_range& e){

@@ -23,7 +23,7 @@ Json::Value ReportDump::toJson(){
 
 		
 
-	//iterate over the heuristics and append their json content in the "heuristics field" array of the current dump
+	//iterate over the heuristics andf append their json content in the "heuristics field" array of the current dump
 	for(auto heur = std::begin(this->heuristics); heur != std::end(this->heuristics); ++heur){
 		ReportObject * cur_heur = *heur;       
 		Json::Value heur_json = cur_heur->toJson();     //generate the json of the heuristic
@@ -33,7 +33,7 @@ Json::Value ReportDump::toJson(){
 	return root;
 	
 }
-
+//add the heuristic object to the current dump report
 void ReportDump::addHeuristic(ReportObject* heur){
 	heuristics.push_back(heur);
 }

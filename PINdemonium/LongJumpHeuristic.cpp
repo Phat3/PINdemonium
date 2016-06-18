@@ -20,9 +20,13 @@ UINT32 LongJumpHeuristic::run(INS ins, ADDRINT prev_ip){
 		}
 		//add heuristic result to report
 		MYINFO("Adding Long Jump Heuristic to report");
-		ReportDump& report_dump = Report::getInstance()->getCurrentDump();
-		ReportObject* long_jmp_heur = new ReportLongJump(result,prev_ip, diff);
-		report_dump.addHeuristic(long_jmp_heur);
+		try{
+			ReportDump& report_dump = Report::getInstance()->getCurrentDump();
+			ReportObject* long_jmp_heur = new ReportLongJump(result,prev_ip, diff);
+			report_dump.addHeuristic(long_jmp_heur);
+		}catch (const std::out_of_range&){
+			MYERRORE("Problem creating ReportLongJump report");
+		}
 				
 	}
 	if(result==true){

@@ -12,11 +12,15 @@ UINT32 EntropyHeuristic::run(){
 	MYINFO("CURRENT ENTROPY IS %f" , entropy_value);
 	MYINFO("ENTROPY DIFFERERNCE IS %f" , difference);
 	if( difference > threshold){
-		result == true;
+		result = true;
 	} 
-	ReportDump& report_dump = Report::getInstance()->getCurrentDump();
-	ReportObject* entropy_heur = new ReportEntropy(result,entropy_value,difference);
-	report_dump.addHeuristic(entropy_heur);
+	try{
+		ReportDump& report_dump = Report::getInstance()->getCurrentDump();
+		ReportObject* entropy_heur = new ReportEntropy(result,entropy_value,difference);
+		report_dump.addHeuristic(entropy_heur);
+	}catch (const std::out_of_range&){
+			MYERRORE("Problem creating ReportEntropy report");
+	}
 
 	if(result == true){
 		return OEPFINDER_FOUND_OEP;
