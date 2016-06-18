@@ -33,7 +33,7 @@ return size;
 string YaraHeuristic::ReadFromPipe(W::PROCESS_INFORMATION piProcInfo) {
     W::DWORD dwRead; 
     CHAR chBuf[PIPE_BUFSIZE];
-    bool bSuccess = FALSE;
+    W::BOOL bSuccess = FALSE;
     std::string out = "", err = "";
     for (;;) { 
         bSuccess=W::ReadFile( g_hChildStd_OUT_Rd, chBuf, PIPE_BUFSIZE, &dwRead, NULL);
@@ -71,7 +71,7 @@ vector<string> YaraHeuristic::parseYaraOutput(string output){
 			MYINFO("Adding matched Yara rule %s",matched_string.c_str());
 			matched_rules.push_back(matched_string); 
 		}
-		catch (const std::out_of_range& e){
+		catch (const std::out_of_range&){
 		}	
 	}
 	return matched_rules;
@@ -83,13 +83,24 @@ UINT32 YaraHeuristic::run(){
 
 
 	string yara_res_file = Config::getInstance()->getYaraResultPath();
-	string  dumpFile = Config::getInstance()->getCurrentDumpFilePath();
+	string fixed_dump = Config::getInstance()->getCurrentDumpFilePath();  // path to file generated when scylla is able to fix the IAT and reconstruct the PE
+	string not_fixed_dump = Config::getInstance()->getNotWorkingPath();   // path to file generated when scylla is NOT able to and reconstruct the PE
+	string dump_to_analyse = "";
+	
 	bool result= false;
 	string raw_output = "";
 	vector<string> matched_rules;
-	if(!existFile(dumpFile)){
-		MYERRORE("Dump file hasn't been created");
-		return -1;
+	if(existFile(fixed_dump)){ // check if a Scylla fixed dump exist
+		dump_to_analyse = fixed_dump; //we analyse the fixed dump
+	}
+	else{
+		if(existFile(not_fixed_dump)){ // check if a not fixed dump exist
+			dump_to_analyse = not_fixed_dump; // we analyse the not fixed dump 
+		}
+		else{
+			MYERRORE("Dump file hasn't been created");  //no file created nothig to analyse
+			return -1;
+		}
 	}
 
 	
@@ -110,7 +121,7 @@ UINT32 YaraHeuristic::run(){
         return -1; 
     }
 	W::PROCESS_INFORMATION  piResults;
-	if(launchYara(YARA_PATH,YARA_RULES, dumpFile, yara_res_file,&piResults )){
+	if(launchYara(YARA_PATH,YARA_RULES, dump_to_analyse, yara_res_file,&piResults )){
 		result =true;
 		raw_output = ReadFromPipe(piResults);
 		matched_rules = parseYaraOutput(raw_output);
