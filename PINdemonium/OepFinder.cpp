@@ -167,7 +167,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	Heuristics::entropyHeuristic();
 	Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
 	Heuristics::pushadPopadHeuristic();
-	Heuristics::initFunctionCallHeuristic(curEip,&item);
+	//Heuristics::initFunctionCallHeuristic(curEip,&item);
  	Heuristics::yaraHeuristic();
 
 	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());

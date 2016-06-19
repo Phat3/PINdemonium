@@ -6,15 +6,6 @@
 #define YARA_PATH "C:\\pin\\PINdemoniumDependencies\\Yara\\yara32.exe"
 #define YARA_RULES "C:\\pin\\PINdemoniumDependencies\\Yara\\yara_rules.yar"
 
-BOOL YaraHeuristic::existFile (std::string name) {
-	if (FILE *file = fopen(name.c_str(), "r")) {
-        fclose(file);
-        return true;
-    } else {
-        return false;
-    }   
-}
-
 
 
 /**
@@ -47,18 +38,7 @@ string YaraHeuristic::ReadFromPipe(W::PROCESS_INFORMATION piProcInfo) {
 
 }
 
-/*
-Split a string in an array based on a delimiter character
-*/
-vector<string> YaraHeuristic::split(const string &s, char delim) {
-    vector<string> elems;
-    stringstream ss(s);
-    string item;
-    while (getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
-}
+
 /*
 Parse yara output and return a vector containing the matched rules as string
 */
@@ -67,7 +47,7 @@ vector<string> YaraHeuristic::parseYaraOutput(string output){
 	istringstream output_stream(output); 
 	for(string line; getline(output_stream,line);){ // iterate through lines
 		try{
-			string matched_string = split(line,' ').at(0);
+			string matched_string = Helper::split(line,' ').at(0);
 			MYINFO("Adding matched Yara rule %s",matched_string.c_str());
 			matched_rules.push_back(matched_string); 
 		}
@@ -90,11 +70,11 @@ UINT32 YaraHeuristic::run(){
 	bool result= false;
 	string raw_output = "";
 	vector<string> matched_rules;
-	if(existFile(fixed_dump)){ // check if a Scylla fixed dump exist
+	if(Helper::existFile(fixed_dump)){ // check if a Scylla fixed dump exist
 		dump_to_analyse = fixed_dump; //we analyse the fixed dump
 	}
 	else{
-		if(existFile(not_fixed_dump)){ // check if a not fixed dump exist
+		if(Helper::existFile(not_fixed_dump)){ // check if a not fixed dump exist
 			dump_to_analyse = not_fixed_dump; // we analyse the not fixed dump 
 		}
 		else{
@@ -130,10 +110,16 @@ UINT32 YaraHeuristic::run(){
 	else{
 		MYERRORE("error launching Yara");
 	}
-
-	ReportDump& report_dump = Report::getInstance()->getCurrentDump();
-	ReportObject* yara_heur = new ReportYaraRules(result, matched_rules);
-	report_dump.addHeuristic(yara_heur);
+	
+	//Saving the information to the report
+	try{
+		ReportDump& report_dump = Report::getInstance()->getCurrentDump();
+		ReportObject* yara_heur = new ReportYaraRules(result, matched_rules);
+		report_dump.addHeuristic(yara_heur);
+	}
+	catch (const std::out_of_range& ){
+		MYERRORE("Problem creating ReportYaraRules report");
+	}	
 
 	
 	return 0;

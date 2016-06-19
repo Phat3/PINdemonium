@@ -54,25 +54,51 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::
 	W::WaitForSingleObject(pi.hProcess,INFINITE);
 	W::CloseHandle(pi.hProcess);
 	W::CloseHandle(pi.hThread);
-	if(!existFile(outputFile)){
+	if(!Helper::existFile(outputFile)){
 		MYERRORE("Scylla Can't dump the process");
 		return exitCode;
+	}
+	if(Helper::existFile(reconstructed_imports_file)){//exist file containing imported functions
+		addImportFunctionToDumpReport(reconstructed_imports_file);
+	
 	}
 	MYINFO("Scylla Finished");
 	return SCYLLA_SUCCESS_FIX;
 }
 
 
-//----------------------------------------------------
-//Launch dumpAndFix function from as an external process
-//----------------------------------------------------
-BOOL ScyllaWrapperInterface::existFile (std::string name) {
-	if (FILE *file = fopen(name.c_str(), "r")) {
-        fclose(file);
-        return true;
-    } else {
-        return false;
-    }   
+
+
+void ScyllaWrapperInterface::addImportFunctionToDumpReport(string reconstructed_imports_file){
+	string line;
+	std::ifstream myfile(reconstructed_imports_file);
+	vector<string> imports;
+	vector<ReportObject *> imports_report;
+	int imports_number=0;
+	//parsing the file to extract modules and functions names and populate json objects
+	while (getline(myfile, line)){
+        try{
+			
+			imports = Helper::split(line,' ');  //the format of the file is "module_name function_name"
+			ReportObject *current_import = new ReportImportedFunction(imports.at(0), imports.at(1));
+			imports_number++;
+			imports_report.push_back(current_import);
+
+		}catch (const std::out_of_range& ){ //handle possible missing information inside the file
+			MYERRORE("Problem adding function to the imported function report line: %s",line.c_str());
+		}	
+	}
+	
+	//Saving the information to the report
+	try{
+		ReportDump& report_dump = Report::getInstance()->getCurrentDump();
+		report_dump.setImportedFunctions(imports_report);
+		report_dump.setNumberOfImports(imports_number);
+	}
+	catch (const std::out_of_range& ){
+		MYERRORE("Problem creating ReportImportedFunction report");
+	}
+
 }
 
 //load scylla dll and expose some of its functions as public attribute of the class

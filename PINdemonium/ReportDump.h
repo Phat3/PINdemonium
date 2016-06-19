@@ -11,6 +11,8 @@ public:
 	ReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset);
 	Json::Value ReportDump::toJson();
 	void addHeuristic(ReportObject*);
+	void setImportedFunctions(vector<ReportObject *>);
+	void setNumberOfImports( int imports_number);
 
 private:
 	int number;
@@ -20,6 +22,7 @@ private:
 	ADDRINT end_address;
 	int reconstructed_imports;
 	int total_imports;
+	vector<ReportObject *> imported_functions;
 	/*
 		In order to create a new heuristic Report you need:
 		1. Create a class (like ReportLongJump) which contains the information needed as attributes

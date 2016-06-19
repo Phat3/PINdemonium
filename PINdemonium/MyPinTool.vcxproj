@@ -257,6 +257,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\jsoncpp-master\dist\jsoncpp.cpp" />
     <ClCompile Include="GdbDebugger.cpp" />
+    <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="HookFunctions.cpp" />
     <ClCompile Include="HookSyscalls.cpp" />
@@ -274,6 +275,7 @@
     <ClCompile Include="ReportDump.cpp" />
     <ClCompile Include="ReportEntropy.cpp" />
     <ClCompile Include="ReportGeneralInformation.cpp" />
+    <ClCompile Include="ReportImportedFunction.cpp" />
     <ClCompile Include="ReportJumpOuterSection.cpp" />
     <ClCompile Include="ReportLongJump.cpp" />
     <ClCompile Include="ReportObject.cpp" />
@@ -291,6 +293,7 @@
     <ClInclude Include="..\..\jsoncpp-master\dist\json\json.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="GdbDebugger.h" />
+    <ClInclude Include="Helper.h" />
     <ClInclude Include="HookFunctions.h" />
     <ClInclude Include="HookSyscalls.h" />
     <ClInclude Include="PolymorphicCodeHandlerModule.h" />
@@ -307,6 +310,7 @@
     <ClInclude Include="ReportDump.h" />
     <ClInclude Include="ReportEntropy.h" />
     <ClInclude Include="ReportGeneralInformation.h" />
+    <ClInclude Include="ReportImportedFunction.h" />
     <ClInclude Include="ReportJumpOuterSection.h" />
     <ClInclude Include="ReportLongJump.h" />
     <ClInclude Include="ReportObject.h" />

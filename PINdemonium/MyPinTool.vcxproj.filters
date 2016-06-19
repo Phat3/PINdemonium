@@ -43,6 +43,12 @@
     <Filter Include="Header Files\Report">
       <UniqueIdentifier>{240004a1-4fab-4669-8086-858ce531f24d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Report\HeuristicsReports">
+      <UniqueIdentifier>{6129cd2d-c9b9-48d5-b78f-5e4eed7513fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Report\HeuristicsReports">
+      <UniqueIdentifier>{c2100b05-693b-4635-a84b-3fb97db9d848}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Heuristics.cpp">
@@ -108,18 +114,6 @@
     <ClCompile Include="ReportObject.cpp">
       <Filter>Source Files\Report</Filter>
     </ClCompile>
-    <ClCompile Include="ReportEntropy.cpp">
-      <Filter>Source Files\Report</Filter>
-    </ClCompile>
-    <ClCompile Include="ReportYaraRules.cpp">
-      <Filter>Source Files\Report</Filter>
-    </ClCompile>
-    <ClCompile Include="ReportJumpOuterSection.cpp">
-      <Filter>Source Files\Report</Filter>
-    </ClCompile>
-    <ClCompile Include="ReportLongJump.cpp">
-      <Filter>Source Files\Report</Filter>
-    </ClCompile>
     <ClCompile Include="ReportGeneralInformation.cpp">
       <Filter>Source Files\Report</Filter>
     </ClCompile>
@@ -127,6 +121,24 @@
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="ReportDump.cpp">
+      <Filter>Source Files\Report</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportJumpOuterSection.cpp">
+      <Filter>Source Files\Report\HeuristicsReports</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportLongJump.cpp">
+      <Filter>Source Files\Report\HeuristicsReports</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportYaraRules.cpp">
+      <Filter>Source Files\Report\HeuristicsReports</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportEntropy.cpp">
+      <Filter>Source Files\Report\HeuristicsReports</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportImportedFunction.cpp">
       <Filter>Source Files\Report</Filter>
     </ClCompile>
   </ItemGroup>
@@ -199,18 +211,6 @@
     <ClInclude Include="ReportObject.h">
       <Filter>Header Files\Report</Filter>
     </ClInclude>
-    <ClInclude Include="ReportEntropy.h">
-      <Filter>Header Files\Report</Filter>
-    </ClInclude>
-    <ClInclude Include="ReportYaraRules.h">
-      <Filter>Header Files\Report</Filter>
-    </ClInclude>
-    <ClInclude Include="ReportJumpOuterSection.h">
-      <Filter>Header Files\Report</Filter>
-    </ClInclude>
-    <ClInclude Include="ReportLongJump.h">
-      <Filter>Header Files\Report</Filter>
-    </ClInclude>
     <ClInclude Include="ProcInfo.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
@@ -221,6 +221,24 @@
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
     <ClInclude Include="ReportDump.h">
+      <Filter>Header Files\Report</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportLongJump.h">
+      <Filter>Header Files\Report\HeuristicsReports</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportEntropy.h">
+      <Filter>Header Files\Report\HeuristicsReports</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportJumpOuterSection.h">
+      <Filter>Header Files\Report\HeuristicsReports</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportYaraRules.h">
+      <Filter>Header Files\Report\HeuristicsReports</Filter>
+    </ClInclude>
+    <ClInclude Include="ReportImportedFunction.h">
       <Filter>Header Files\Report</Filter>
     </ClInclude>
   </ItemGroup>

@@ -45,7 +45,7 @@ int wmain(int argc, wchar_t *argv[]){
 	WCHAR *tmpDumpFile = argv[4];
 	WCHAR *reconstructed_imports_file = argv[5];
 	DWORD call_plugin_flag = _wtoi(argv[6]);
-	WCHAR *plugin_full_path = argv[7];
+	WCHAR *plugin_full_path = argv[7]; // need to be left as last parameter since it can be empty
 	
 	return IATAutoFix(pid, oep, outputFile, tmpDumpFile, call_plugin_flag, plugin_full_path,reconstructed_imports_file);
 	

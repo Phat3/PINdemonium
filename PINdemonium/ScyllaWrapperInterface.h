@@ -1,5 +1,8 @@
 #pragma once
 #include "pin.H"
+#include "Report.h"
+#include "Helper.h"
+#include "ReportImportedFunction.h"
 namespace W{
 	#include <windows.h>
 }
@@ -35,6 +38,6 @@ private:
 	ScyllaWrapperInterface::ScyllaWrapperInterface();
 	static ScyllaWrapperInterface* instance;
 	void * hScyllaWrapper;
-	BOOL existFile (std::string name);
+	void addImportFunctionToDumpReport(string reconstructed_imports_file);
 };
 
