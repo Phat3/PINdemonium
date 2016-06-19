@@ -24,10 +24,8 @@ ScyllaWrapperInterface::ScyllaWrapperInterface(void)
  call_plugin_falg : specify if a plugin has to be called if the iat-fix fails
  plugin_full_path : full path to the dll containing the plugin
 **/
-UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::string outputFile, std::string tmpDump,  bool call_plugin_flag, std::string plugin_full_path){	
-	MYINFO("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::string outputFile, std::string tmpDump,  bool call_plugin_flag, std::string plugin_full_path, std::string reconstructed_imports_file){	
 	MYINFO("LAUNCHING SCYLLADUMP AS AN EXTERNAL PROCESS!!");
-	MYINFO("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 	MYINFO("CURR EIP  %x",curEip);
 	std::string scylla = Config::SCYLLA_DUMPER_PATH;
 	W::DWORD exitCode;
@@ -38,6 +36,7 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::
 	scyllaArgsStream << std::hex  << curEip << " ";
 	scyllaArgsStream << outputFile << " ";
 	scyllaArgsStream << tmpDump << " ";
+	scyllaArgsStream << reconstructed_imports_file << " ";
 	scyllaArgsStream << call_plugin_flag << " ";
 	scyllaArgsStream << plugin_full_path << " ";
 	std::string scyllaArgs = scyllaArgsStream.str();	
@@ -46,6 +45,7 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::
 	W::STARTUPINFO si ={0};
 	W::PROCESS_INFORMATION pi ={0};
 	si.cb=sizeof(si);
+
 	if(!W::CreateProcess(scylla.c_str(),(char *)scyllaArgs.c_str(),NULL,NULL,FALSE,0,NULL,NULL,&si,&pi)){
 		MYERRORE("(INITFUNCTIONCALL)Can't launch Scylla");
 		return -5;
@@ -64,8 +64,6 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::
 
 
 //----------------------------------------------------
-//THESE METHODS ARE NO LONGER USED!!
-//
 //Launch dumpAndFix function from as an external process
 //----------------------------------------------------
 BOOL ScyllaWrapperInterface::existFile (std::string name) {
@@ -77,6 +75,7 @@ BOOL ScyllaWrapperInterface::existFile (std::string name) {
     }   
 }
 
+//load scylla dll and expose some of its functions as public attribute of the class
 //we have to use loadLibrary and GetProcAddress because PIN doesn't support external libraries
 void ScyllaWrapperInterface::loadScyllaLibary(){
 	//init

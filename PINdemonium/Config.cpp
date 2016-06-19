@@ -92,6 +92,9 @@ string Config::getCurrentDumpFilePath(){
 	return this->cur_dump_path;	
 }
 
+string Config::getCurrentReconstructedImportsPath(){
+	return this->base_path + "reconstructed_imports.txt";
+}
 
 string Config::getCurrentDetectedListPath(){	
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)

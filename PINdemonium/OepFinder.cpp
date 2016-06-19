@@ -210,13 +210,15 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	UINT32 pid = W::GetCurrentProcessId();
 	Config * config = Config::getInstance();
 	string outputFile = config->getCurrentDumpFilePath();
+	string reconstructed_imports_file  = config->getCurrentReconstructedImportsPath();
+	MYINFO("XXXXXXXXXXXXreconstructed_imports_file reconstructed_imports_file %s",reconstructed_imports_file.c_str());
 	string tmpDump = config->getNotWorkingPath();
 	//std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
 	string plugin_full_path = config->PLUGIN_FULL_PATH;	
 	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s, Plugin %d",pid, config->getCurrentDumpFilePath().c_str(), config->PLUGIN_FULL_PATH.c_str());
 	// -------- Scylla launched as an exe --------	
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();	
-	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, tmpDump, config->CALL_PLUGIN_FLAG, config->PLUGIN_FULL_PATH);
+	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, tmpDump, config->CALL_PLUGIN_FLAG, config->PLUGIN_FULL_PATH, reconstructed_imports_file);
 	if(result != SCYLLA_SUCCESS_FIX){
 		MYERRORE("Scylla execution Failed error %d ",result);
 		return result;

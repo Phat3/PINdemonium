@@ -66,7 +66,7 @@ BOOL isMemoryReadable(void *ptr, size_t byteCount)
 }
 
 
-UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR * cur_path, WCHAR * tmp_dump)
+UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR * cur_path, WCHAR * tmp_dump,WCHAR *reconstructed_imports_file)
 {
 
 	Log::getInstance()->initLogPath(cur_path);//Initialize the log File NEED TO BE BEFORE ANY INFO(),WARN(),ERROR()
@@ -143,7 +143,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR * cur_path,
 	
 	//Fixing the IAT
 	WCHAR * plugin_full_path = L"";
-	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmp_dump,outputFile,oep,0,plugin_full_path);
+	error = ScyllaIatFixAutoW(iatStart,iatSize,pid,tmp_dump,outputFile,oep,0,plugin_full_path,reconstructed_imports_file);
 	if(error){
 		INFO("[SCYLLA FIX] error %d",error);
 		return SCYLLA_ERROR_IAT_NOT_FIXED;
@@ -158,8 +158,8 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR * cur_path,
 }
 
 
-UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file, WCHAR * cur_path, WCHAR * tmp_dump){
-	return IATAutoFix(pid, oep, output_file, cur_path, tmp_dump);
+UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file, WCHAR * cur_path, WCHAR * tmp_dump, WCHAR *reconstructed_imports_file){
+	return IATAutoFix(pid, oep, output_file, cur_path, tmp_dump,reconstructed_imports_file);
 }
 
 

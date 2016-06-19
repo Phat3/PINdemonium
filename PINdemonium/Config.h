@@ -25,6 +25,7 @@ public:
 	string getBasePath();
 	string getCurrentDumpFilePath();
 	string getCurrentDetectedListPath();
+	string getCurrentReconstructedImportsPath();
 	string getNotWorkingPath();
 	string getYaraResultPath();
 	string getReportPath();
