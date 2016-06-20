@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include "json.h"
 namespace W {
 	#include <windows.h>
 }
@@ -24,11 +25,13 @@ public:
 	//getter
 	string getBasePath();
 	string getCurrentDumpFilePath();
-	string getCurrentDetectedListPath();
 	string getCurrentReconstructedImportsPath();
 	string getNotWorkingPath();
 	string getYaraResultPath();
 	string getReportPath();
+	string getScyllaDumperPath();
+	string getScyllaWrapperPath();
+	string getScyllaPluginsPath();
 	long double getDumpNumber();
 	
 	//utils
@@ -36,20 +39,7 @@ public:
 	void Config::closeLogFile();
 	void Config::writeOnTimeLog(string s);
 	void setWorking (int working);
-	//files and paths
-	static const string PIN_DIRECTORY_PATH_DEP;
-	static const string PIN_DIRECTORY_PATH_OUTPUT;
-	static const string PINDEMONIUM_PLUGIN_PATH;
-	static const string LOG_FILENAME;
-	static const string REPORT_FILENAME;
-	static const string IDA_PATH;
-	static const string IDAP_BAD_IMPORTS_CHECKER;
-	static const string BAD_IMPORTS_LIST;
-	static const string DETECTED_BAD_IMPORTS_LIST;
-	static const string SCYLLA_DUMPER_PATH;
-	static const string SCYLLA_WRAPPER_PATH;
-	static const string PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING;
-	static const string DUMPER_SELECTOR_PATH;
+	
 
 	//--------------------------Command line Tuning Flags----------------------------
 	static const bool  ATTACH_DEBUGGER;
@@ -75,7 +65,7 @@ public:
 	static const UINT32 MAX_JUMP_INTER_WRITE_SET_ANALYSIS;
 
 private:
-	Config::Config();
+	Config::Config(string config_path);
 	static Config* instance;
 	FILE *log_file;
 	string base_path;
@@ -85,7 +75,17 @@ private:
 	long double dump_number;
 	string getCurDateAndTime();
 	int numberOfBadImports;
-	int calculateNumberOfBadImports();
+	void loadJson(string path);
 	int working;
+
+	//files and paths
+	string dependecies_path;
+	string results_path;
+	string plugins_path; 
+	string log_filename;
+	string report_filename;
+	string dep_scylla_dumper_path;
+	string dep_scylla_wrapper_path;
+	string not_working_directory;
 };
 

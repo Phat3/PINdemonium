@@ -261,7 +261,6 @@
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="HookFunctions.cpp" />
     <ClCompile Include="HookSyscalls.cpp" />
-    <ClCompile Include="InitFunctionCallHeuristic.cpp" />
     <ClCompile Include="PolymorphicCodeHandlerModule.cpp" />
     <ClCompile Include="ProcInfo.cpp" />
     <ClCompile Include="EntropyHeuristic.cpp" />
@@ -298,7 +297,6 @@
     <ClInclude Include="HookSyscalls.h" />
     <ClInclude Include="PolymorphicCodeHandlerModule.h" />
     <ClInclude Include="ProcInfo.h" />
-    <ClInclude Include="InitFunctionCallHeuristic.h" />
     <ClInclude Include="Heuristics.h" />
     <ClInclude Include="EntropyHeuristic.h" />
     <ClInclude Include="JumpOuterSectionHeuristic.h" />

@@ -159,7 +159,7 @@ void ConfigureTool(){
 	//get the selected plugin or return an erro if it doen't exist
 	if(KnobPluginSelector.Value().compare("") != 0){
 		config->CALL_PLUGIN_FLAG = true;
-		config->PLUGIN_FULL_PATH = Config::PINDEMONIUM_PLUGIN_PATH + KnobPluginSelector.Value();
+		config->PLUGIN_FULL_PATH = config->getScyllaPluginsPath() + KnobPluginSelector.Value();
 		W::DWORD fileAttrib = W::GetFileAttributes(config->PLUGIN_FULL_PATH.c_str());
 		//file doesn't exist
 		if(fileAttrib == 0xFFFFFFFF){
@@ -210,6 +210,7 @@ int main(int argc, char * argv[]){
 		TRACE_AddInstrumentFunction(Trace,0);
 	}
 	proc_info->addProcAddresses();
+
 
 	//init the hooking system
 	HookSyscalls::enumSyscalls();

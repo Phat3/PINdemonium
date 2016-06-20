@@ -6,7 +6,6 @@
 #include "LongJumpHeuristic.h"
 #include "EntropyHeuristic.h"
 #include "JumpOuterSectionHeuristic.h"
-#include "InitFunctionCallHeuristic.h"
 #include "WxorXHandler.h"
 #include "PushadPopadHeuristic.h"
 #include "YaraHeuristic.h"
@@ -19,7 +18,6 @@ public:
 	static UINT32 longJmpHeuristic(INS ins, ADDRINT prev_ip);
 	static UINT32 entropyHeuristic();
 	static UINT32 jmpOuterSectionHeuristic(INS ins, ADDRINT prev_ip);
-	static UINT32 initFunctionCallHeuristic(ADDRINT curEip, WriteInterval* wi);
 	static UINT32 pushadPopadHeuristic();
 	static UINT32  yaraHeuristic();
 

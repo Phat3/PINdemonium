@@ -1,19 +1,10 @@
 #include "Config.h"
 
 //constanth path and variable for our logging system
-const string Config::PIN_DIRECTORY_PATH_OUTPUT = "C:\\pin\\PINdemoniumResults\\";
-const string Config::PIN_DIRECTORY_PATH_DEP = "C:\\pin\\PINdemoniumDependencies\\";
-const string Config::PINDEMONIUM_PLUGIN_PATH = "C:\\pin\\PINdemoniumPlugins\\";
-const string Config::LOG_FILENAME = "log_PINdemonium.txt";
-const string Config::REPORT_FILENAME = "report_PINdemonium.txt";
-const string Config::IDA_PATH = "\"C:\\Program Files\\IDA 6.6\\idaw.exe\"";
-const string Config::IDAP_BAD_IMPORTS_CHECKER = PIN_DIRECTORY_PATH_DEP + "badImportsChecker.py";
-const string Config::BAD_IMPORTS_LIST = PIN_DIRECTORY_PATH_DEP + "badImportsList.txt";
-const string Config::DETECTED_BAD_IMPORTS_LIST = "detectedBadImportsList";
-const string Config::SCYLLA_DUMPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaDumper.exe";
-const string Config::SCYLLA_WRAPPER_PATH = PIN_DIRECTORY_PATH_DEP + "Scylla\\ScyllaWrapper.dll";
-const string Config::PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING = "NotWorking\\";
-const string Config::DUMPER_SELECTOR_PATH = Config::PIN_DIRECTORY_PATH_DEP + "dumperSelector.py";
+
+
+
+
 
 
 //Tuning Flags
@@ -42,35 +33,38 @@ Config* Config::instance = 0;
 //singleton
 Config* Config::getInstance()
 {
-	if (instance == 0)
-		instance = new Config();
+	if (instance == 0){
+		instance = new Config("C:\\pin\\PINdemoniumDependencies\\config.json");
+	}
 	return instance;
 }
 
 //at the first time open the log file
-Config::Config(){
+Config::Config(string config_path){
+
+	loadJson(config_path);
 	//set the initial dump number
+	//W::DebugBreak();
 	this->dump_number = 0;
 	//build the path for this execution
-	this->base_path = PIN_DIRECTORY_PATH_OUTPUT + this->getCurDateAndTime() + "\\";
+	this->base_path = results_path + this->getCurDateAndTime() + "\\";
 	//mk the directory
 	_mkdir(this->base_path.c_str());
-	this->not_working_path = this->base_path + PIN_DIRECTORY_PATH_OUTPUT_NOT_WORKING;
+	this->not_working_path = this->base_path + not_working_directory;
 	_mkdir(this->not_working_path.c_str());
 	//create the log and report files
-	string log_file_path = this->base_path + LOG_FILENAME;
+	string log_file_path = this->base_path + log_filename;
 
 	this->log_file = fopen(log_file_path.c_str(),"w");	
-	this->numberOfBadImports = calculateNumberOfBadImports();
 	this->working = -1;
-	//move the dumper selector in the directory of the current execution
-	W::CopyFile(DUMPER_SELECTOR_PATH.c_str(), (this->base_path + "dumperSelector.py").c_str(), FALSE);
+	
+
 }
 
 /* ----------------------------- GETTER -----------------------------*/
 
 string Config::getReportPath(){
-	return  this->base_path + REPORT_FILENAME;
+	return  this->base_path + this->report_filename;
 }
 
 string Config::getBasePath(){
@@ -96,19 +90,46 @@ string Config::getCurrentReconstructedImportsPath(){
 	return this->base_path + "reconstructed_imports.txt";
 }
 
-string Config::getCurrentDetectedListPath(){	
-	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
-	this->cur_list_path = this->base_path + this->DETECTED_BAD_IMPORTS_LIST + "_" + std::to_string(this->dump_number) + ".txt" ;
-	return this->cur_list_path;	
-}
 
 string Config::getYaraResultPath(){	
  	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
  	return  this->base_path + "yaraResults" + "_" + std::to_string(this->dump_number) + ".txt" ;
-
  }
 
+string Config::getScyllaDumperPath(){
+	return  this->dep_scylla_dumper_path;
+}
+string Config::getScyllaWrapperPath(){
+	return this->dep_scylla_wrapper_path;
+}
+
+string Config::getScyllaPluginsPath(){
+	return this->plugins_path;
+}
+
 /* ----------------------------- UTILS -----------------------------*/
+
+void Config::loadJson(string config_path){
+	Json::Value root;   // will contains the root value after parsing.
+    Json::Reader reader;
+    std::ifstream config_file(config_path, std::ifstream::binary);
+    bool parsingSuccessful = reader.parse( config_file, root, false );
+	if ( !parsingSuccessful ){
+		MYERRORE("Error parsing the json config file: %s",reader.getFormattedErrorMessages().c_str());
+		printf("Error parsing the json config file: %s",reader.getFormattedErrorMessages().c_str());
+	}
+	
+	results_path = root["results_path"].asString();
+	dependecies_path =  root["dependecies_path"].asString();
+	plugins_path = root["plugins_path"].asString();
+	log_filename = root["log_filename"].asString();
+	report_filename = root["report_filename"].asString();
+	not_working_directory = root["not_working_directory"].asString();
+
+	dep_scylla_dumper_path = dependecies_path + "Scylla\\ScyllaDumper.exe";
+	dep_scylla_wrapper_path = dependecies_path + "Scylla\\ScyllaWrapper.dll";
+	//MYINFO("Load Config %s  %s",PIN_DIRECTORY_PATH_OUTPUT.c_str(),PIN_DIRECTORY_PATH_DEP.c_str());
+}
 
 //flush the buffer and close the file
 void Config::closeLogFile()
@@ -151,13 +172,5 @@ void Config::incrementDumpNumber(){
 	this->dump_number++;
 }
 
-int Config::calculateNumberOfBadImports(){
-	int numberOfLines = 0;
-	string line;
-	std::ifstream myfile(BAD_IMPORTS_LIST.c_str());
-	while (getline(myfile, line))
-        ++numberOfLines;	
-	return numberOfLines;	
-}
 
 

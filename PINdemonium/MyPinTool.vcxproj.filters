@@ -69,9 +69,6 @@
     <ClCompile Include="JumpOuterSectionHeuristic.cpp">
       <Filter>Source Files\PINdemonium\OEP-Heuristics</Filter>
     </ClCompile>
-    <ClCompile Include="InitFunctionCallHeuristic.cpp">
-      <Filter>Source Files\PINdemonium\OEP-Heuristics</Filter>
-    </ClCompile>
     <ClCompile Include="Config.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
@@ -161,9 +158,6 @@
       <Filter>Header Files\PINdemonium\OEP-Heuristics</Filter>
     </ClInclude>
     <ClInclude Include="JumpOuterSectionHeuristic.h">
-      <Filter>Header Files\PINdemonium\OEP-Heuristics</Filter>
-    </ClInclude>
-    <ClInclude Include="InitFunctionCallHeuristic.h">
       <Filter>Header Files\PINdemonium\OEP-Heuristics</Filter>
     </ClInclude>
     <ClInclude Include="GdbDebugger.h">

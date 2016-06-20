@@ -35,6 +35,7 @@ public:
 	void unloadScyllaLibrary();
 
 private:
+	Config *config;
 	ScyllaWrapperInterface::ScyllaWrapperInterface();
 	static ScyllaWrapperInterface* instance;
 	void * hScyllaWrapper;

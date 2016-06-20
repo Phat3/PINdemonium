@@ -13,6 +13,7 @@ ScyllaWrapperInterface* ScyllaWrapperInterface::getInstance()
 
 ScyllaWrapperInterface::ScyllaWrapperInterface(void)
 {
+	config = Config::getInstance();
 }
 
 /**Lauch external tool ScyllaDumper to dump the process with PID pid 
@@ -27,7 +28,7 @@ ScyllaWrapperInterface::ScyllaWrapperInterface(void)
 UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::string outputFile, std::string tmpDump,  bool call_plugin_flag, std::string plugin_full_path, std::string reconstructed_imports_file){	
 	MYINFO("LAUNCHING SCYLLADUMP AS AN EXTERNAL PROCESS!!");
 	MYINFO("CURR EIP  %x",curEip);
-	std::string scylla = Config::SCYLLA_DUMPER_PATH;
+	std::string scylla = config->getScyllaDumperPath();
 	W::DWORD exitCode;
 	//Creating the string containing the arguments to pass to the ScyllaTest.exe
 	std::stringstream scyllaArgsStream;
@@ -107,8 +108,8 @@ void ScyllaWrapperInterface::loadScyllaLibary(){
 	//init
 	this->hScyllaWrapper = 0;
 	//load library
-	this->hScyllaWrapper = W::LoadLibraryEx((W::LPCSTR)Config::SCYLLA_WRAPPER_PATH.c_str(), NULL, NULL);
-	W::HANDLE scyh = W::GetModuleHandle((W::LPCSTR)Config::SCYLLA_WRAPPER_PATH.c_str());
+	this->hScyllaWrapper = W::LoadLibraryEx((W::LPCSTR)config->getScyllaWrapperPath().c_str(), NULL, NULL);
+	W::HANDLE scyh = W::GetModuleHandle((W::LPCSTR)config->getScyllaWrapperPath().c_str());
 	//MYINFO("Address in which scylla is mapped: %08x\n" , scyh);
 	//get proc address
 	if (this->hScyllaWrapper)
