@@ -9,23 +9,8 @@
 
 //Tuning Flags
 const bool Config::ATTACH_DEBUGGER = false;
-const string Config::FILTER_WRITES_ENABLES = "teb stack";
-const UINT32 Config::TIMEOUT_TIMER_SECONDS = 120;
 const UINT32 Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS = 20;
 
-// Divisor of the timing 
-//if we divide high_1_part and high_2_part with two different values the timeGetTime() doesn't work
-//it doesn't work because high_1_part and high_2_part are used in order to understand if the value read for the low_part
-//is consistent ( high_1_part == high_2_part -> low_part consistent ) 
-const UINT32 Config::KSYSTEM_TIME_DIVISOR = 1;
-const UINT32 Config::TICK_DIVISOR = 3000;	//this value is based on exait technique (the time returned is equal to the time returned when the program is not instrumented)
-const UINT32 Config::CC_DIVISOR = 3500;	//this value is based on exait technique (the time returned is equal to the time returned when the program is not instrumented)
-
-//the rdtsc works like this :
-//store the least 32 significant bit of the returned value in EAX and the most 32 significant bit in EDX ( value = EDX:EAX )
-const UINT32 Config::RDTSC_DIVISOR = 400;
-const UINT32 Config::INTERRUPT_TIME_DIVISOR = 1000;
-const UINT32 Config::SYSTEM_TIME_DIVISOR = 100;
 
 // singleton
 Config* Config::instance = 0;
@@ -107,6 +92,12 @@ string Config::getScyllaPluginsPath(){
 	return this->plugins_path;
 }
 
+string Config::getFilteredWrites(){
+	return this->filtered_writes;
+}
+
+
+
 /* ----------------------------- UTILS -----------------------------*/
 
 void Config::loadJson(string config_path){
@@ -115,8 +106,8 @@ void Config::loadJson(string config_path){
     std::ifstream config_file(config_path, std::ifstream::binary);
     bool parsingSuccessful = reader.parse( config_file, root, false );
 	if ( !parsingSuccessful ){
-		MYERRORE("Error parsing the json config file: %s",reader.getFormattedErrorMessages().c_str());
 		printf("Error parsing the json config file: %s",reader.getFormattedErrorMessages().c_str());
+		//Can't use LOG since the log path hasn't been loaded yet
 	}
 	
 	results_path = root["results_path"].asString();
@@ -125,6 +116,10 @@ void Config::loadJson(string config_path){
 	log_filename = root["log_filename"].asString();
 	report_filename = root["report_filename"].asString();
 	not_working_directory = root["not_working_directory"].asString();
+	filtered_writes =root["filtered_writes"].asString();
+	timeout =root["timeout"].asInt();
+
+
 
 	dep_scylla_dumper_path = dependecies_path + "Scylla\\ScyllaDumper.exe";
 	dep_scylla_wrapper_path = dependecies_path + "Scylla\\ScyllaWrapper.dll";

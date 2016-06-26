@@ -171,6 +171,8 @@ void ConfigureTool(){
 	else{
 		config->CALL_PLUGIN_FLAG = false;
 	}
+	//set filtered write
+	FilterHandler::getInstance()->setFilters(config->getFilteredWrites());
 }
 
 // - if an exception is found returns all the information about it (DEBUG purposes)
@@ -203,6 +205,7 @@ int main(int argc, char * argv[]){
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 	PIN_AddFiniFunction(Fini, 0);
 	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
+	
 	//get theknob args
 	ConfigureTool();
 	

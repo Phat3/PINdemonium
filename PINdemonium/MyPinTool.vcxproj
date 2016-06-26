@@ -289,12 +289,12 @@
     <None Include="..\README" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\jsoncpp-master\dist\json\json.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="GdbDebugger.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="HookFunctions.h" />
     <ClInclude Include="HookSyscalls.h" />
+    <ClInclude Include="json.h" />
     <ClInclude Include="PolymorphicCodeHandlerModule.h" />
     <ClInclude Include="ProcInfo.h" />
     <ClInclude Include="Heuristics.h" />

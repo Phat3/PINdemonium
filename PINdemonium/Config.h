@@ -33,6 +33,8 @@ public:
 	string getScyllaWrapperPath();
 	string getScyllaPluginsPath();
 	long double getDumpNumber();
+	string getFilteredWrites();
+	
 	
 	//utils
 	void incrementDumpNumber();
@@ -43,6 +45,7 @@ public:
 
 	//--------------------------Command line Tuning Flags----------------------------
 	static const bool  ATTACH_DEBUGGER;
+	static const UINT32 MAX_JUMP_INTER_WRITE_SET_ANALYSIS;
 	//Tunable from command line
 	bool INTER_WRITESET_ANALYSIS_ENABLE; //Trigger the analysis inside a WriteSet in which WxorX is already broken if a Long JMP is encontered (MPress packer)
 	UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
@@ -53,16 +56,6 @@ public:
 	string PLUGIN_FULL_PATH;
 	bool CALL_PLUGIN_FLAG;
 
-	//--------------------------Command line Tuning Flags----------------------------
-	static const string FILTER_WRITES_ENABLES;        //Which write instructions are filtered(possible values: 'stack teb')
-	static const UINT32 TIMEOUT_TIMER_SECONDS;
-	static const UINT32 TICK_DIVISOR; //this is used in order to lowe the ticks returnedd from GetTickCount and timeGetTime 
-	static const UINT32 CC_DIVISOR; // this is used in order to lower the microseconds returned from the QueryPerformanceCounter 
-	static const UINT32 KSYSTEM_TIME_DIVISOR; // this is used to lower the LONG lowpart returned from the timeGetTime in the struct _KSYSTEM_TIME inside kuser_shared_data
-	static const UINT32 RDTSC_DIVISOR;
-	static const UINT32 INTERRUPT_TIME_DIVISOR;
-	static const UINT32 SYSTEM_TIME_DIVISOR;
-	static const UINT32 MAX_JUMP_INTER_WRITE_SET_ANALYSIS;
 
 private:
 	Config::Config(string config_path);
@@ -87,5 +80,10 @@ private:
 	string dep_scylla_dumper_path;
 	string dep_scylla_wrapper_path;
 	string not_working_directory;
+	//command line tuning flags
+	string filtered_writes;        //Which write instructions are filtered(possible values: 'stack teb')
+	UINT32 timeout;
+
+
 };
 
