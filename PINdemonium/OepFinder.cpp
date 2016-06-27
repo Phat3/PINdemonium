@@ -155,22 +155,9 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 	}
 }
 
-BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip , int dumpAndFixResult){
-	//call the proper heuristics
-	//we have to implement it in a better way!!
-	item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
-	item.setEntropyFlag(Heuristics::entropyHeuristic());
-	item.setJmpOuterSectionFlag(Heuristics::jmpOuterSectionHeuristic(ins, prev_ip));
-	item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
-	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
-	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
-	
-	// Now we have to discover if there are any heap zones and in that case dump them
-	ProcInfo *pInfo = ProcInfo::getInstance();
+UINT32 OepFinder::checkHeapWxorX(WriteInterval item, ADDRINT curEip, int dumpAndFixResult){
 
-	std::vector<HeapZone> hzs = pInfo->getHeapMap();
-	
-	// include in the PE the dump of the current heap zone in which we have break the WxorX 
+		// include in the PE the dump of the current heap zone in which we have break the WxorX 
 	if( item.getHeapFlag() && dumpAndFixResult != SCYLLA_ERROR_FILE_FROM_PID  && dumpAndFixResult != SCYLLA_ERROR_DUMP ){
 		
 		unsigned char * Buffer;
@@ -201,44 +188,68 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		scylla_wrapper->unloadScyllaLibrary();
 		free(Buffer);
 	}
+
+	return 0;
+}
+
+UINT32 OepFinder::saveHeapZones(std::vector<HeapZone> hzs){
+
+	std::string heaps_dir = Config::getInstance()->getWorkingDir() + "\\heaps";
+	_mkdir(heaps_dir.c_str()); // create the folder we will store the .bin of the heap zones 
+
+	HeapZone hz;
+	unsigned int hz_begin;
+	unsigned int hz_size;
+	unsigned char *hz_data;
+	Config *config = Config::getInstance();
+
+	std::string heap_map_path = heaps_dir + "\\" +  "heap_map.txt";
+	std::ofstream heap_map_file(heap_map_path);
+
+	for(unsigned int i=0;i<hzs.size();i++ ){
+		
+		std::string heap_bin_path = heaps_dir + "\\" +  "heap_" + std::to_string((_ULonglong)i) + ".bin";
+
+		hz = hzs.at(i);
+		hz_begin = hz.begin;
+		hz_size  = hz.size;
+
+		// record the location information of this heapzone inside the heap_map.txt 			
+		heap_map_file << std::hex << hz_begin << " " << std::to_string((_ULonglong)hz_size) << " " << "\n" ;
+			
+		hz_data = (unsigned char *)malloc(hz_size);
+		PIN_SafeCopy(hz_data , (void const *)hz_begin , hz_size);
+		std::ofstream heap_file(heap_bin_path, std::ios::binary);
+
+		heap_file.write((char *) hz_data, hz_size);
+		heap_file.close();
+	}
+	heap_map_file.close();
+
+
+}
+
+BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip , int dumpAndFixResult){
+	//call the proper heuristics
+	//we have to implement it in a better way!!
+	item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
+	item.setEntropyFlag(Heuristics::entropyHeuristic());
+	item.setJmpOuterSectionFlag(Heuristics::jmpOuterSectionHeuristic(ins, prev_ip));
+	item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
+	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
+	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
+	ProcInfo *pInfo = ProcInfo::getInstance();
+	std::vector<HeapZone> hzs = pInfo->getHeapMap();
 	
+	// if the curEip is in an heap zones let's save it inside the PE dumped 
+	checkHeapWxorX(item, curEip,dumpAndFixResult);
+
 	// In any case if there are any heap-zones let's save them in a separate folder
 	if(hzs.size() > 0){
-
-		std::string heaps_dir = Config::getInstance()->getWorkingDir() + "\\heaps";
-		_mkdir(heaps_dir.c_str()); // create the folder we will store the .bin of the heap zones 
-
-		HeapZone hz;
-		unsigned int hz_begin;
-		unsigned int hz_size;
-		unsigned char *hz_data;
-		Config *config = Config::getInstance();
-
-		std::string heap_map_path = heaps_dir + "\\" +  "heap_map.txt";
-		std::ofstream heap_map_file(heap_map_path);
-
-		for(unsigned int i=0;i<hzs.size();i++ ){
-		
-			std::string heap_bin_path = heaps_dir + "\\" +  "heap_" + std::to_string((_ULonglong)i) + ".bin";
-
-			hz = hzs.at(i);
-			hz_begin = hz.begin;
-			hz_size  = hz.size;
-
-			// record the location information of this heapzone inside the heap_map.txt 			
-			heap_map_file << std::hex << hz_begin << " " << std::to_string((_ULonglong)hz_size) << " " << "\n" ;
-			
-			hz_data = (unsigned char *)malloc(hz_size);
-			PIN_SafeCopy(hz_data , (void const *)hz_begin , hz_size);
-			std::ofstream heap_file(heap_bin_path, std::ios::binary);
-
-			heap_file.write((char *) hz_data, hz_size);
-			heap_file.close();
-		}
-		heap_map_file.close();
+		saveHeapZones(hzs);
 	}
 
-	//write the heuristic results on ile
+	//write the heuristic results on report 
 	Config::getInstance()->writeOnReport(curEip, item);
 	return OEPFINDER_HEURISTIC_FAIL;
 }

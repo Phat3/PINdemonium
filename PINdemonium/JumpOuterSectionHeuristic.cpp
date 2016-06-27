@@ -14,7 +14,7 @@ UINT32 JumpOuterSection::run(INS ins, ADDRINT prev_ip){
 			return OEPFINDER_FOUND_OEP
 		}
 	}
-	return OEPFINDER_HEURISTIC_FAIL
+	return OEPFINDER_HEURISTIC_FAIL;
 }
 
 //retrieve the name of the current section
