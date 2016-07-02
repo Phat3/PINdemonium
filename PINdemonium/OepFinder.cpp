@@ -110,7 +110,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			MYPRINT("------------------------------------ NEW STUB FROM begin: %08x TO %08x -------------------------------------",item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("-------------------------------------------------------------------------------------------------------");
 			MYINFO("Current EIP %08x",curEip);
-			
+			Config::getInstance()->setNewWorkingDirectory(); // create the folder dump_0 inside the folder associated to this timestamp 
 			report->createReportDump(curEip,item.getAddrBegin(),item.getAddrEnd(),Config::getInstance()->getDumpNumber(),false);
 			int result = this->DumpAndFixIAT(curEip);
 			Config::getInstance()->setWorking(result);
@@ -150,6 +150,7 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYINFO("Current EIP %08x",curEip);
 			report->createReportDump(curEip,item.getAddrBegin(),item.getAddrEnd(),Config::getInstance()->getDumpNumber(),true);
+			Config::getInstance()->setNewWorkingDirectory(); // create a new folder to store the dump 
 			int result = this->DumpAndFixIAT(curEip);
 			config->setWorking(result);
 			this->analysis(item, ins, prev_ip, curEip , result);
@@ -160,19 +161,11 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 	}
 }
 
-BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip , int dumpAndFixResult){
-	//call the proper heuristics
-	//we have to implement it in a better way!!
-	Heuristics::longJmpHeuristic(ins, prev_ip);
-	Heuristics::entropyHeuristic();
-	Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
-	Heuristics::pushadPopadHeuristic();
-	//Heuristics::initFunctionCallHeuristic(curEip,&item);
- 	Heuristics::yaraHeuristic();
+UINT32 OepFinder::checkHeapWxorX(WriteInterval item, ADDRINT curEip, int dumpAndFixResult){
 
-	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
+		// include in the PE the dump of the current heap zone in which we have break the WxorX 
 	if( item.getHeapFlag() && dumpAndFixResult != SCYLLA_ERROR_FILE_FROM_PID  && dumpAndFixResult != SCYLLA_ERROR_DUMP ){
-		MYINFO("-----DUMPING HEAP-----\n");
+		
 		unsigned char * Buffer;
 		UINT32 size_write_set = item.getAddrEnd() - item.getAddrBegin();
 		//prepare the buffer to copy inside the stuff into the heap section to dump 		  
@@ -201,6 +194,67 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		scylla_wrapper->unloadScyllaLibrary();
 		free(Buffer);
 	}
+
+	return 0;
+}
+
+UINT32 OepFinder::saveHeapZones(std::vector<HeapZone> hzs){
+
+	std::string heaps_dir = Config::getInstance()->getWorkingDir() + "\\heaps";
+	_mkdir(heaps_dir.c_str()); // create the folder we will store the .bin of the heap zones 
+
+	HeapZone hz;
+	unsigned int hz_begin;
+	unsigned int hz_size;
+	unsigned char *hz_data;
+	Config *config = Config::getInstance();
+
+	std::string heap_map_path = heaps_dir + "\\" +  "heap_map.txt";
+	std::ofstream heap_map_file(heap_map_path);
+
+	for(unsigned int i=0;i<hzs.size();i++ ){
+		
+		std::string heap_bin_path = heaps_dir + "\\" +  "heap_" + std::to_string((_ULonglong)i) + ".bin";
+
+		hz = hzs.at(i);
+		hz_begin = hz.begin;
+		hz_size  = hz.size;
+
+		// record the location information of this heapzone inside the heap_map.txt 			
+		heap_map_file << "heap_" << std::to_string((_ULonglong)i) << " " << std::hex << hz_begin << " " << std::to_string((_ULonglong)hz_size) << " " << "\n" ;
+			
+		hz_data = (unsigned char *)malloc(hz_size);
+		PIN_SafeCopy(hz_data , (void const *)hz_begin , hz_size);
+		std::ofstream heap_file(heap_bin_path, std::ios::binary);
+
+		heap_file.write((char *) hz_data, hz_size);
+		heap_file.close();
+	}
+	heap_map_file.close();
+}
+
+BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip , int dumpAndFixResult){
+	//call the proper heuristics
+	//we have to implement it in a better way!!
+	Heuristics::longJmpHeuristic(ins, prev_ip);
+	Heuristics::entropyHeuristic();
+	Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
+	Heuristics::pushadPopadHeuristic();
+	//Heuristics::initFunctionCallHeuristic(curEip,&item);
+ 	Heuristics::yaraHeuristic();
+
+	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
+	ProcInfo *pInfo = ProcInfo::getInstance();
+	std::vector<HeapZone> hzs = pInfo->getHeapMap();
+	
+	// if the curEip is in an heap zones let's save it inside the PE dumped 
+	checkHeapWxorX(item, curEip,dumpAndFixResult);
+
+	// In any case if there are any heap-zones let's save them in a separate folder
+	if(hzs.size() > 0){
+		saveHeapZones(hzs);
+	}
+
 	//write the heuristic results on ile
 	return OEPFINDER_HEURISTIC_FAIL;
 }
@@ -212,10 +266,10 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	string outputFile = config->getCurrentDumpFilePath();
 	string reconstructed_imports_file  = config->getCurrentReconstructedImportsPath();
 	MYINFO("XXXXXXXXXXXXreconstructed_imports_file reconstructed_imports_file %s",reconstructed_imports_file.c_str());
-	string tmpDump = config->getNotWorkingPath();
+	string tmpDump = outputFile;
 	//std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
 	string plugin_full_path = config->PLUGIN_FULL_PATH;	
-	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s, Plugin %d",pid, config->getCurrentDumpFilePath().c_str(), config->PLUGIN_FULL_PATH.c_str());
+	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s, Plugin %d",pid, outputFile.c_str(), config->PLUGIN_FULL_PATH.c_str());
 	// -------- Scylla launched as an exe --------	
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();	
 	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, tmpDump, config->CALL_PLUGIN_FLAG, config->PLUGIN_FULL_PATH, reconstructed_imports_file);

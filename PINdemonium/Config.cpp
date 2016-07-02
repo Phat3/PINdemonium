@@ -2,11 +2,6 @@
 
 //constanth path and variable for our logging system
 
-
-
-
-
-
 //Tuning Flags
 const bool Config::ATTACH_DEBUGGER = false;
 const UINT32 Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS = 20;
@@ -66,7 +61,11 @@ string Config::getNotWorkingPath(){
 
 string Config::getCurrentDumpFilePath(){	
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
-	this->cur_dump_path = this->base_path + ProcInfo::getInstance()->getProcName() + "_" + std::to_string(this->dump_number) + ".exe" ;
+	std::string proc_name = ProcInfo::getInstance()->getProcName();
+
+	_mkdir(this->base_path.c_str());
+
+	this->cur_dump_path = this->working_dir + "\\" + proc_name + "_" + std::to_string(this->dump_number) + ".exe" ;
 	
 	return this->cur_dump_path;	
 }
@@ -115,7 +114,6 @@ void Config::loadJson(string config_path){
 	plugins_path = root["plugins_path"].asString();
 	log_filename = root["log_filename"].asString();
 	report_filename = root["report_filename"].asString();
-	not_working_directory = root["not_working_directory"].asString();
 	filtered_writes =root["filtered_writes"].asString();
 	timeout =root["timeout"].asInt();
 
@@ -144,13 +142,6 @@ FILE* Config::getLogFile()
 }
 
 
-
-//Sets if the current dump works or not
-void Config::setWorking(int working)
-{
-	this->working = working;
-}
-
 //return the current date and time as a string
 string Config::getCurDateAndTime(){
   time_t rawtime;
@@ -168,4 +159,33 @@ void Config::incrementDumpNumber(){
 }
 
 
+void Config::setNewWorkingDirectory(){
+	
+	std::string prefix = "dump_";
+	this->working_dir = this->base_path + prefix + std::to_string(this->getDumpNumber());
 
+	_mkdir(this->working_dir.c_str());
+
+}
+
+string Config::getWorkingDir(){
+	return this->working_dir;
+}
+
+
+void Config::setWorking(int working)
+{
+	this->working = working;
+
+	std::string working_tag =  this->working_dir + "-[working]";
+	std::string not_working_tag =  this->working_dir + "-[not working]";
+
+	if(working == 1){
+		rename(this->working_dir.c_str(),working_tag.c_str());
+		this->working_dir = working_tag;
+	}
+	else{
+		rename(this->working_dir.c_str(),not_working_tag.c_str());
+		this->working_dir = not_working_tag;
+	}
+}
