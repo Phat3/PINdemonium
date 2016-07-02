@@ -123,10 +123,9 @@ Config file located at C:\pin\PINdemoniumDependencies\config.json contains varia
 
 ## Results
 Results are located at **C:\pin\PINdemoniumResults\\< current_date_and_time >\\** and contains:
-
 - **report_PINdemonium**: Json file which contains the most important information about the unpacking process;
-- 
 - **log_PINdemonium.txt**: Log which contains useful debugging information
+
 ### Report Structure
 ```
 {  
