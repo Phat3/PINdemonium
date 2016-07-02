@@ -255,12 +255,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\jsoncpp-master\dist\jsoncpp.cpp" />
     <ClCompile Include="GdbDebugger.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="HookFunctions.cpp" />
     <ClCompile Include="HookSyscalls.cpp" />
+    <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="PolymorphicCodeHandlerModule.cpp" />
     <ClCompile Include="ProcInfo.cpp" />
     <ClCompile Include="EntropyHeuristic.cpp" />
