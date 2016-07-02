@@ -126,21 +126,21 @@ Results are located at **C:\pin\PINdemoniumResults\\< current_date_and_time >\\*
 	- **report_PINdemonium**: Json file which contains the most important information about the unpacking process;
 	- **log_PINdemonium.txt**: Log which contains useful debugging information
 ### Report Structure
-```json
+```
 {  
    "dumps":[                                   		//Array containing information for each dump
       {  
-         "eip":4220719,         			//EIP where the dump was taken     
-         "start_address":4220439,			//start address of the Write-set block
+         "eip":4220719,         				//EIP where the dump was taken     
+         "start_address":4220439,				//start address of the Write-set block
          "end_address":4221043,				//end address of the Write-set block
          "heuristics":[
-            {						//Yara Rules Heuristic
+            {								//Yara Rules Heuristic
                "matched_rules":["ASProtectv12AlexeySolodovnikovh1"],
                 "name":"YaraRulesHeuristic",
                 "result":true
             },
             {  
-               "length":1801,				//Long Jump Heuristic
+               "length":1801,					//Long Jump Heuristic
                "name":"LongJumpHeuristic",
                "prev_ip":4218918,
                "result":true
@@ -152,7 +152,7 @@ Results are located at **C:\pin\PINdemoniumResults\\< current_date_and_time >\\*
                "result":false
             },
             {  
-               "current_section":".data",		//Jump Outer Section Heuristic
+               "current_section":".data",			//Jump Outer Section Heuristic
                "name":"JumpOuterSectionHeuristic",
                "prev_section":".data",
                "result":false
