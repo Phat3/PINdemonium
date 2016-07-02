@@ -113,6 +113,7 @@ Inside the template two helper function are provided:
 - **readMemoryFromProcess** : this function reads the memory from the specified process, at the specified address and copies the read bytes into a buffer
 
 - **writeMemoryToProcess** : this function writes the bytes contained inside a specified buffer into the process memory starting from a specified address
+
 ## Yara Rules
 Every time a dump is taken yara is invoked and the rules contained inside C:\pin\PINdemoniumDependencies\Yara\yara_rules.yar are checked. The current rule comes from https://github.com/Yara-Rules/rules:
 	- rules\evasion_packer : Try to identify antiVM/antiDebug techniques and the presence of a known packer
@@ -127,38 +128,38 @@ Results are located at **C:\pin\PINdemoniumResults\\< current_date_and_time >\\*
 ### Report Structure
 ```json
 {  
-   "dumps":[                                   		#Array containing information for each dump
+   "dumps":[                                   		//Array containing information for each dump
       {  
-         "eip":4220719,         			#EIP where the dump was taken     
-         "start_address":4220439,			#start address of the Write-set block
-         "end_address":4221043,				#end address of the Write-set block
+         "eip":4220719,         			//EIP where the dump was taken     
+         "start_address":4220439,			//start address of the Write-set block
+         "end_address":4221043,				//end address of the Write-set block
          "heuristics":[
-            {						#Yara Rules Heuristic
+            {						//Yara Rules Heuristic
                "matched_rules":["ASProtectv12AlexeySolodovnikovh1"],
                 "name":"YaraRulesHeuristic",
                 "result":true
             },
             {  
-               "length":1801,				#Long Jump Heuristic
+               "length":1801,				//Long Jump Heuristic
                "name":"LongJumpHeuristic",
                "prev_ip":4218918,
                "result":true
             },
             {  
-               "current_entropy":5.7026081085205078,    #Entropy Heuristic
+               "current_entropy":5.7026081085205078,    //Entropy Heuristic
                "difference_entropy_percentage":0.0014407391427084804,
                "name":"EntropyHeuristic",
                "result":false
             },
             {  
-               "current_section":".data",		#Jump Outer Section Heuristic
+               "current_section":".data",		//Jump Outer Section Heuristic
                "name":"JumpOuterSectionHeuristic",
                "prev_section":".data",
                "result":false
             }
          ],
          "imports":[  
-		.... Imported functions....
+		//.... Imported functions....
          ],
          "intra_writeset":false,
          "number":0,
