@@ -115,7 +115,7 @@ Inside the template two helper function are provided:
 - **writeMemoryToProcess** : this function writes the bytes contained inside a specified buffer into the process memory starting from a specified address
 
 ## Yara Rules
-Every time a dump is taken yara is invoked and the rules contained inside C:\pin\PINdemoniumDependencies\Yara\yara_rules.yar are checked. The current rule comes from https://github.com/Yara-Rules/rules:
+Every time a dump is taken yara is invoked and the rules contained inside **C:\pin\PINdemoniumDependencies\Yara\yara_rules.yar** are checked. The current rule comes from https://github.com/Yara-Rules/rules:
 	- rules\evasion_packer : Try to identify antiVM/antiDebug techniques and the presence of a known packer
 	- rules\malware: Try to identify the malware family of the unpacked stage
 ## Config
@@ -123,6 +123,7 @@ Config file located at C:\pin\PINdemoniumDependencies\config.json contains varia
 
 ## Results
 Results are located at **C:\pin\PINdemoniumResults\\< current_date_and_time >\\** and contains:
+	
 	- **report_PINdemonium**: Json file which contains the most important information about the unpacking process;
 	- **log_PINdemonium.txt**: Log which contains useful debugging information
 ### Report Structure
