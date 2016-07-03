@@ -74,11 +74,10 @@ VOID MapViewOfFileHookAfter(W::DWORD dwDesiredAccess,W::DWORD dwFileOffsetHigh, 
 }
 
 VOID VirtualFreeHook(UINT32 address_to_free){
-	MYINFO("Have to free the address %08x\n" , address_to_free);
+	MYINFO("Calling VirtualFree of the address %08x\n" , address_to_free);
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	std::vector<HeapZone> HeapMap = pInfo->getHeapMap();
 	int index_to_remove = -1;
-	MYINFO("HeapZone before free");
 	for(unsigned index=0; index <  HeapMap.size(); index++) {
 		if(address_to_free == pInfo->getHeapZoneByIndex(index)->begin){
 			index_to_remove = index;
@@ -87,7 +86,6 @@ VOID VirtualFreeHook(UINT32 address_to_free){
 	if(index_to_remove != -1){
 		pInfo->deleteHeapZone(index_to_remove);
 	}
-	MYINFO("HeapZone after free");
 }
 
 //REMEMBER!!! : PIN wants a function pointer in the AFUNCPTR agument!!!
@@ -117,7 +115,7 @@ void HookFunctions::hookDispatcher(IMG img){
 		//if we found a valid routine
 		if(rtn != RTN_Invalid()){		
 			ADDRINT va_address = RTN_Address(rtn);
-			MYINFO("Inside %s Address of %s: %08x" ,IMG_Name(img).c_str(),func_name, va_address);
+			//MYINFO("Inside %s Address of %s: %08x" ,IMG_Name(img).c_str(),func_name, va_address);
 			RTN_Open(rtn); 	
 			int index = item->second;
 			//decide what to do based on the function hooked

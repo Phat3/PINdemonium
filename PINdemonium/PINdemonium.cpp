@@ -153,7 +153,7 @@ void ConfigureTool(){
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
 	}
 	else{
-		MYWARN("Invalid number of jumps to track, se to default value: 2\n");
+		//MYWARN("Invalid number of jumps to track, se to default value: 2\n");
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have invalid value 
 	}
 	//get the selected plugin or return an erro if it doen't exist
@@ -218,7 +218,7 @@ int main(int argc, char * argv[]){
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
-	MYINFO("->Starting instrumented program<-\n");
+	MYINFO("\n\n---->Starting instrumented program<-----\n");
 	PIN_StartProgram();	
 	return 0;
 	

@@ -117,8 +117,6 @@ void Config::loadJson(string config_path){
 	filtered_writes =root["filtered_writes"].asString();
 	timeout =root["timeout"].asInt();
 
-
-
 	dep_scylla_dumper_path = dependecies_path + "Scylla\\ScyllaDumper.exe";
 	dep_scylla_wrapper_path = dependecies_path + "Scylla\\ScyllaWrapper.dll";
 	//MYINFO("Load Config %s  %s",PIN_DIRECTORY_PATH_OUTPUT.c_str(),PIN_DIRECTORY_PATH_DEP.c_str());
@@ -179,8 +177,9 @@ void Config::setWorking(int working)
 
 	std::string working_tag =  this->working_dir + "-[working]";
 	std::string not_working_tag =  this->working_dir + "-[not working]";
+	std::string not_dumped_tag =  this->working_dir + "-[not dumped]";
 
-	if(working == 1){
+	if(working == 0){
 		rename(this->working_dir.c_str(),working_tag.c_str());
 		this->working_dir = working_tag;
 	}
