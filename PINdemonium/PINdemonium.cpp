@@ -47,9 +47,9 @@ KNOB <string> KnobPluginSelector(KNOB_MODE_WRITEONCE, "pintool",
 VOID Fini(INT32 code, VOID *v){
 	//inspect the write set at the end of the execution
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
-	MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
+	//MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
 	//get the execution time
-	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+	MYPRINT("\n\n\nTotal execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 	CLOSELOG();
 	Report::getInstance()->closeReport();
 }
@@ -131,7 +131,7 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	pInfo->addThreadStackAddress(stackBase);
 	pInfo->addThreadTebAddress();
-	MYINFO("-----------------a NEW Thread started!--------------------\n");
+	//MYINFO("-----------------a NEW Thread started!--------------------\n");
 }
 
 // - if the flag is pecified start pin as launched with the flag appdebug

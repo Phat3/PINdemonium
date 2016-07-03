@@ -117,7 +117,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			report->createReportDump(curEip,item.getAddrBegin(),item.getAddrEnd(),Config::getInstance()->getDumpNumber(),false);
 			int result = this->DumpAndFixIAT(curEip);
 			Config::getInstance()->setWorking(result);
-			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+			MYPRINT("\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - SAGE 2: ANALYZING DUMP - - - - - - - - - - - - - - - - - - - - - -");
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			this->analysis(item, ins, prev_ip, curEip,result);
@@ -170,10 +170,7 @@ UINT32 OepFinder::checkHeapWxorX(WriteInterval item, ADDRINT curEip, int dumpAnd
 
 		// include in the PE the dump of the current heap zone in which we have break the WxorX 
 	if( item.getHeapFlag() && dumpAndFixResult != SCYLLA_ERROR_FILE_FROM_PID  && dumpAndFixResult != SCYLLA_ERROR_DUMP ){
-		
-		MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
-		MYPRINT("- - - - - - - - - - - - - - - - - - - - - STAGE 3: OEP ON HEAP     - - - - -- - - - - - - - - - - - - - - - -");
-		MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+		MYPRINT("[INFO][OepFinder.cpp] - EIP ON THE HEAP - DUMPING THE HEAP-ZONE");
 		unsigned char * Buffer;
 		UINT32 size_write_set = item.getAddrEnd() - item.getAddrBegin();
 		//prepare the buffer to copy inside the stuff into the heap section to dump 		  
@@ -202,12 +199,16 @@ UINT32 OepFinder::checkHeapWxorX(WriteInterval item, ADDRINT curEip, int dumpAnd
 		scylla_wrapper->unloadScyllaLibrary();
 		free(Buffer);
 	}
+	else{
+	  MYPRINT("[INFO][OepFinder.cpp] - [WARN] EIP IS NOT ON THE HEAP\n");
+	}
 
 	return 0;
 }
 
 UINT32 OepFinder::saveHeapZones(std::vector<HeapZone> hzs){
 
+	MYPRINT("[INFO][OepFinder.cpp] - SAVING ALL THE HEAP-ZONES ALLOCATED UNTIL NOW: %d HEAP-ZONES\n", hzs.size());
 	std::string heaps_dir = Config::getInstance()->getWorkingDir() + "\\heaps";
 	_mkdir(heaps_dir.c_str()); // create the folder we will store the .bin of the heap zones 
 
@@ -255,6 +256,9 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	std::vector<HeapZone> hzs = pInfo->getHeapMap();
 	
+	MYPRINT("\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+	MYPRINT("- - - - - - - - - - - - - - - - - - - - - STAGE 3: DUMP HEAP - - - - - - - -- - - - - - - - - - - - - - - - -");
+	MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 	// if the curEip is in an heap zones let's save it inside the PE dumped 
 	checkHeapWxorX(item, curEip,dumpAndFixResult);
 
