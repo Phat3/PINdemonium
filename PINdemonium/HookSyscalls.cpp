@@ -17,10 +17,6 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 		MYINFO("Number of syscall is %d\n", syscall_number);
 		return;
 	}
-	if(syscall_number == 0x12b){
-		MYINFO("Invoked WaitReply of syscall is %08x %d\n",PIN_GetContextReg(ctx,REG_EIP), syscall_number);
-		
-	}
 	//fill the structure with the provided info
 	syscall_t *sc = &((syscall_t *) v)[thread_id];	
 	sc->syscall_number = syscall_number;
@@ -46,10 +42,7 @@ void HookSyscalls::syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDAR
 	syscall_t *sc = &((syscall_t *) v)[thread_id];
 	//search forn an hook on exit
 	std::map<unsigned long, string>::iterator syscallMapItem = syscallsMap.find(sc->syscall_number);
-	if(sc->syscall_number == 0x12b){
-		MYINFO("Exit WaitReply of syscall is %d\n", sc->syscall_number);
-		testing=0;
-	}
+
 	if(syscallMapItem !=  syscallsMap.end()){
 		//serch if we have an hook for the syscall
 		std::map<string, syscall_hook>::iterator syscallHookItem = syscallsHooks.find(syscallMapItem->second + "_exit");
@@ -60,7 +53,7 @@ void HookSyscalls::syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDAR
 	}	
 }
 
-//NtSystemQueryInformation detected
+//Avoid Pin detection based on NtSystemQueryInformation 
 void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
 	if(sc->arg0 == SYSTEM_PROCESS_INFORMATION){
 		//cast to our structure in order to retrieve the information returned from the NtSystemQueryInformation function
@@ -77,21 +70,7 @@ void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx,
 	}
 }
 
-// lower the results of the NtQueryPerformanceCounterHook
-void HookSyscalls::NtQueryPerformanceCounterHook(syscall_t *sc , CONTEXT *ctx, SYSCALL_STANDARD std){
-	//the first argument of the syscall is a pointer to the LARGE_INTEGER struct that will store the results ( hxxps://msdn.microsoft.com/en-us/library/bb432384(v=vs.85).aspx )
-	W::PLARGE_INTEGER p_li = (W::PLARGE_INTEGER)sc->arg0; 
-	// cut the QuadPart, it is usually used to calculate the delta ( ex: ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart; )
-	p_li->QuadPart = p_li->QuadPart/Config::CC_DIVISOR;  
-}
 
-//NtOpenProcess detected
-//let's change the PID that the malware wants to open with a non existing one in order to trigger an error status
-//we have to use this trick because we aren't able to change the return value of the syscall yet... (the value in EAX)
-void HookSyscalls::NtOpenProcessEntry(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
-	PCLIENT_ID cid = (PCLIENT_ID)sc->arg3;
-
-}
 
 
 void HookSyscalls::NtWriteVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx, SYSCALL_STANDARD std){
@@ -114,36 +93,18 @@ void HookSyscalls::NtAllocateVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx , SY
 	proc_info->insertHeapZone(hz); 
 }
 
-void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
-	W::PVOID base_address_pointer = (W::PVOID) sc->arg2;
-	ADDRINT base_address =  *(ADDRINT *) base_address_pointer;
-	ProcInfo *proc_info = ProcInfo::getInstance();
-}
 
-
+// Avoid PIN detection through NtQueryInformationProcessHook
 void HookSyscalls::NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
 	if( sc->arg1 == 0x1f){
-		MYTEST("Detected NtQueryInformation 0x1f");
 		unsigned int  * pdebug_flag = (unsigned int *)sc->arg2;
 		memset(pdebug_flag,0x00000001,1);
 	}
 }
 
-//The NtRequestWaitReplyPortHook allocates 4 memory pages of type MEM_MAPPED so we need to rescan the memory after it has been performed
-void HookSyscalls::NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
-	MYINFO("Found a NtRequestWaitReplyPort");
-	ProcInfo *proc_info = ProcInfo::getInstance();
-}
 
-//static int counter;
-//The NtRequestWaitReplyPortHook allocates 4 memory pages of type MEM_MAPPED so we need to rescan the memory after it has been performed
-void HookSyscalls::NtQueryVirtualMemoryHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std){
-	W::HANDLE hProcess = (W::HANDLE) sc->arg0;
-	ADDRINT baseAddress = sc->arg1;
-	W::PMEMORY_BASIC_INFORMATION mbi = (W::PMEMORY_BASIC_INFORMATION)sc->arg3;
-	UINT32 numBytes = sc->arg5;
 
-}
+
 
 //----------------------------- END HOOKS -----------------------------//
 
@@ -183,17 +144,13 @@ void HookSyscalls::enumSyscalls()
 }
 
 void HookSyscalls::initHooks(){
-	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryPerformanceCounter_exit",&HookSyscalls::NtQueryPerformanceCounterHook));
+
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQuerySystemInformation_exit",&HookSyscalls::NtQuerySystemInformationHookExit));
-	syscallsHooks.insert(std::pair<string,syscall_hook>("NtOpenProcess_entry",&HookSyscalls::NtOpenProcessEntry));
+
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtAllocateVirtualMemory_exit",&HookSyscalls::NtAllocateVirtualMemoryHook));
 	//hxxp://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FMemory%20Management%2FVirtual%20Memory%2FNtWriteVirtualMemory.html
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtWriteVirtualMemory_entry",&HookSyscalls::NtWriteVirtualMemoryHook));
-	syscallsHooks.insert(std::pair<string,syscall_hook>("NtRequestWaitReplyPort_exit",&HookSyscalls::NtRequestWaitReplyPortHook));
-	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryInformationProcess_exit",&HookSyscalls::NtQueryInformationProcessHook));
-	
-	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryVirtualMemory_exit",&HookSyscalls::NtQueryVirtualMemoryHook));
 	// allocate syscall information struct
 	static syscall_t sc[256] = {0};
 	PIN_AddSyscallEntryFunction(&HookSyscalls::syscallEntry,&sc);

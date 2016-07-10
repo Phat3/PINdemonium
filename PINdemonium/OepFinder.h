@@ -7,6 +7,7 @@
 #include "FilterHandler.h"
 #include "ProcInfo.h"
 #include "Config.h"
+#include "Report.h"
 namespace W {
 	#include <windows.h>
 }
@@ -34,9 +35,12 @@ private:
 	//if so then set the proper flags in ProcInfo
 	void handlePopadAndPushad(INS ins);
 	BOOL analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip, int ResultDumpAndFix);
+	UINT32 checkHeapWxorX(WriteInterval item, ADDRINT curEip , int dumpAndFixResult);
+	UINT32 saveHeapZones(std::vector<HeapZone> hzs);
 	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex, WriteInterval item);
 	void getCurrentDlls();
 	WxorXHandler *wxorxHandler;
+	Report *report;
 	UINT32 DumpAndFixIAT(ADDRINT curEip);
 };
 

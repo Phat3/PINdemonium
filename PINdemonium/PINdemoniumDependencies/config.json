@@ -1,0 +1,17 @@
+{
+	//General  Configuration Path
+	"results_path": "C:\\pin\\PINdemoniumResults\\",  // path where the results of the unpacking will be put
+	"dependecies_path": "C:\\pin\\PINdemoniumDependencies\\", // path containing the dependecies of Pindemonium
+	"plugins_path": "C:\\pin\\PINdemoniumPlugins\\" , // path containing plugins for IAT fixing
+	
+	//Configuration Files inside the results_path folder
+	"log_filename": "log_PINdemonium.txt",			//log of the Pindemonium execution
+	"report_filename": "report_PINdemonium.txt",	//report json file containing structed information of the execution
+	"not_working_directory": "NotWorking\\",		//directory containing not working dumps
+
+	//Configuration Parameters Default
+	"filtered_writes": "teb stack",  //memory area where writes to are not tracked Possible values: 
+	"timeout" : 120				 //Timeout after last dump determining the end of unpacking
+
+
+}

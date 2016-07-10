@@ -17,20 +17,12 @@ public:
 	//getter
 	ADDRINT getAddrBegin();
 	ADDRINT getAddrEnd();
-	UINT32 getEntropyFlag();
-	UINT32 getLongJmpFlag();
-	UINT32 getJmpOuterSectionFlag();
-	UINT32 getPushadPopadflag();
 	UINT32 getBrokenFlag();
 	UINT32 getThreshold();
 	UINT32 getCurrNumberJMP();
 	BOOL getHeapFlag();
 	UINT32 getDetectedFunctions();
 	//setter
-	void setEntropyFlag(UINT32 flag);
-	void setLongJmpFlag(UINT32 flag);
-	void setJmpOuterSectionFlag(UINT32 flag);
-	void setPushadPopadFlag(UINT32 flag);
 	void setBrokenFlag(BOOL flag);
 	void incrementCurrNumberJMP();
 	void setDetectedFunctions(UINT32 numberOfFunctions);
@@ -38,10 +30,6 @@ public:
 private:
 	ADDRINT addr_begin;
 	ADDRINT addr_end;
-	UINT32 entropy_flag;
-	UINT32 long_jmp_flag;
-	UINT32 jmp_outer_section_flag;
-	UINT32 pushad_popad_flag;
 	BOOL broken_flag;
 	UINT32 cur_number_jmp;
 	BOOL heap_flag;

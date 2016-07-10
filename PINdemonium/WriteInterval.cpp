@@ -26,22 +26,6 @@ ADDRINT WriteInterval::getAddrEnd(){
 	return this->addr_end;
 }
 
-UINT32 WriteInterval::getEntropyFlag(){
-	return this->entropy_flag;
-}
-
-UINT32 WriteInterval::getLongJmpFlag(){
-	return this->long_jmp_flag;
-}
-
-UINT32 WriteInterval::getJmpOuterSectionFlag(){
-	return this->jmp_outer_section_flag;
-}
-
-UINT32 WriteInterval::getPushadPopadflag(){
-	return this->pushad_popad_flag;
-}
-
 UINT32 WriteInterval::getBrokenFlag(){
 	return this->broken_flag;
 }
@@ -60,22 +44,6 @@ BOOL WriteInterval::getHeapFlag(){
 
 UINT32 WriteInterval::getDetectedFunctions(){
 	return this->detectedFunctions;
-}
-
-void WriteInterval::setEntropyFlag(UINT32 flag){
-	this->entropy_flag = flag;
-}
-
-void WriteInterval::setLongJmpFlag(UINT32 flag){
-	this->long_jmp_flag = flag;
-}
-
-void WriteInterval::setJmpOuterSectionFlag(UINT32 flag){
-	this->jmp_outer_section_flag = flag;
-}
-
-void WriteInterval::setPushadPopadFlag(UINT32 flag){
-	this->pushad_popad_flag = flag;
 }
 
 
