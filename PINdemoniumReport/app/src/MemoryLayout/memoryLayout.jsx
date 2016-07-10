@@ -33,13 +33,19 @@ class MemoryLayout extends React.Component {
   }
 
   _drawMemory(){
+    // style variables
+    var strokeColor = "rgba(243,57,1,1)"
+    var textColor = "rgb(255, 113, 70)"
+    var mainMemoryBackgroundColor = "rgba(45,45,45,1)"
+    var memorySectionBackroundColor = "rgba(51,51,51,1)"
+
     // draw the rectangle representing the memory of the process
     var memorySpace = new createjs.Shape();
     memorySpace.width = this.canvas.width / 3
     memorySpace.height = this.canvas.height - 80 
     memorySpace.x = memorySpace.width
     memorySpace.y = 50
-    memorySpace.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("DeepSkyBlue").drawRect(0, 0, memorySpace.width, memorySpace.height);
+    memorySpace.graphics.setStrokeStyle(2).beginStroke(strokeColor).beginFill(mainMemoryBackgroundColor).drawRect(0, 0, memorySpace.width, memorySpace.height);
 
     // draw the main module
     var mainModule = new createjs.Shape();
@@ -47,7 +53,7 @@ class MemoryLayout extends React.Component {
     mainModule.height = memorySpace.height / 3
     mainModule.x = memorySpace.x
     mainModule.y = memorySpace.y + mainModule.height
-    mainModule.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("yellowGreen").drawRect(0, 0, mainModule.width, mainModule.height);
+    mainModule.graphics.setStrokeStyle(2).beginStroke(strokeColor).beginFill(memorySectionBackroundColor).drawRect(0, 0, mainModule.width, mainModule.height);
 
     // draw the heap above the main module
     var aboveHeap = new createjs.Shape();
@@ -55,7 +61,7 @@ class MemoryLayout extends React.Component {
     aboveHeap.height = memorySpace.height / 6
     aboveHeap.x = memorySpace.x
     aboveHeap.y = mainModule.y - aboveHeap.height - 50
-    aboveHeap.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("orange").drawRect(0, 0, aboveHeap.width, aboveHeap.height);
+    aboveHeap.graphics.setStrokeStyle(2).beginStroke(strokeColor).beginFill(memorySectionBackroundColor).drawRect(0, 0, aboveHeap.width, aboveHeap.height);
 
     // draw the heap under the main module
     var underHeap = new createjs.Shape();
@@ -63,10 +69,10 @@ class MemoryLayout extends React.Component {
     underHeap.height = memorySpace.height / 6
     underHeap.x = memorySpace.x
     underHeap.y = mainModule.y + mainModule.height + 50
-    underHeap.graphics.setStrokeStyle(2).beginStroke("rgba(0,0,0,1)").beginFill("orange").drawRect(0, 0, underHeap.width, underHeap.height);
+    underHeap.graphics.setStrokeStyle(2).beginStroke(strokeColor).beginFill(memorySectionBackroundColor).drawRect(0, 0, underHeap.width, underHeap.height);
     
     // draw the label above the rectangle representing the process
-    var labelMemorySpace = new createjs.Text("Memory Layout", "30px Arial", "black");
+    var labelMemorySpace = new createjs.Text("Memory Layout", "30px Arial", textColor);
     // center the label on the rectangle
     var labelMemorySpaceBounds = labelMemorySpace.getBounds()
     labelMemorySpace.x = memorySpace.width + ( (memorySpace.width - labelMemorySpaceBounds.width) / 2)
@@ -74,22 +80,22 @@ class MemoryLayout extends React.Component {
     this.stage.addChild(memorySpace, labelMemorySpace, mainModule, aboveHeap, underHeap);
 
     // draw the label for the main module
-    this._drawTitleLabel("Main module", "black", mainModule.x, mainModule.y, mainModule.width, mainModule.height)
+    this._drawTitleLabel("Main module", textColor, mainModule.x, mainModule.y, mainModule.width, mainModule.height)
 
     // draw the label for the heap 1
-    this._drawTitleLabel("Heap 1", "black", aboveHeap.x, aboveHeap.y, aboveHeap.width, aboveHeap.height)
+    this._drawTitleLabel("Heap 1", textColor, aboveHeap.x, aboveHeap.y, aboveHeap.width, aboveHeap.height)
 
     // draw the label for the heap 2
-    this._drawTitleLabel("Heap 2", "black", underHeap.x, underHeap.y, underHeap.width, underHeap.height)
+    this._drawTitleLabel("Heap 2", textColor, underHeap.x, underHeap.y, underHeap.width, underHeap.height)
 
      // draw the address labels for the hep 2
-    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), "blue", underHeap.x, underHeap.y, underHeap.width, underHeap.height)
+    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), textColor, underHeap.x, underHeap.y, underHeap.width, underHeap.height)
 
     // draw the address labels for the heap 1
-    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), "blue", aboveHeap.x, aboveHeap.y, aboveHeap.width, aboveHeap.height)
+    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), textColor, aboveHeap.x, aboveHeap.y, aboveHeap.width, aboveHeap.height)
 
     // draw the address labels for the main module
-    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), "green", mainModule.x, mainModule.y, mainModule.width, mainModule.height)
+    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), textColor, mainModule.x, mainModule.y, mainModule.width, mainModule.height)
 
     // draw tha bound of the memory
     this._drawAddressesLabel("00", "ff", "red", memorySpace.x, memorySpace.y, memorySpace.width, memorySpace.height)
@@ -150,6 +156,12 @@ class MemoryLayout extends React.Component {
 
 
   _drawDump(y, dump, name){
+
+     // style variables
+    var strokeColor = "rgb(126, 255, 126)"
+    var textColor = "rgb(126, 255, 126)"
+    var dumpBackroundColor = "rgba(51,51,51,1)"
+
     // draw the rectangle representing the memory of the process
     var dumpShape = new createjs.Shape()
     dumpShape.name = name
@@ -157,18 +169,18 @@ class MemoryLayout extends React.Component {
     dumpShape.height = 100
     dumpShape.x = (this.canvas.width - dumpShape.width)/2
     dumpShape.y = y
-    dumpShape.graphics.setStrokeStyle(4).beginStroke("#4caf50").beginFill("red").drawRect(0, 0, dumpShape.width, dumpShape.height);
+    dumpShape.graphics.setStrokeStyle(4).beginStroke(strokeColor).beginFill(dumpBackroundColor).drawRect(0, 0, dumpShape.width, dumpShape.height);
     
     // draw the label above the rectangle representing the process
-    var labelDumpShape = new createjs.Text(name, "30px Arial", "white");
+    var labelDumpShape = new createjs.Text(name, "30px Arial", textColor);
     // center the label on the rectangle
     var labelDumpShapeBounds = labelDumpShape.getBounds()
     labelDumpShape.x = dumpShape.x + ( (dumpShape.width - labelDumpShapeBounds.width) / 2)
     labelDumpShape.y = dumpShape.y + ( ( dumpShape.height - labelDumpShapeBounds.height) / 2)
     
     // draw the addresses label on the right of the memory layout
-    var labelDumpShapeFirstAddress = new createjs.Text("0x" + dump.start_address.toString(16), "20px Arial", "blue");
-    var labelDumpShapeLastAddress = new createjs.Text("0x" + dump.end_address.toString(16), "20px Arial", "blue");
+    var labelDumpShapeFirstAddress = new createjs.Text("0x" + dump.start_address.toString(16), "20px Arial", textColor);
+    var labelDumpShapeLastAddress = new createjs.Text("0x" + dump.end_address.toString(16), "20px Arial", textColor);
     labelDumpShapeFirstAddress.x = dumpShape.width + dumpShape.x + 10
     labelDumpShapeFirstAddress.y = dumpShape.y
     labelDumpShapeLastAddress.x = dumpShape.width + dumpShape.x + 10
@@ -181,6 +193,10 @@ class MemoryLayout extends React.Component {
 
   _drawFirstArrow(oep){
 
+     // style variables
+    var strokeColor = "rgb(126, 255, 126)"
+    var textColor = "rgb(126, 255, 126)"
+
     var dump_1 = this.dumpsContainer.getChildByName("DUMP_1")
 
     var leftOffsetArrow = 60
@@ -191,7 +207,7 @@ class MemoryLayout extends React.Component {
     var arrow = new createjs.Shape();
     arrow.name = "arrow"
     arrow.graphics.setStrokeStyle(4)
-                  .beginStroke("magenta")
+                  .beginStroke(strokeColor)
 
                   .moveTo(beginArrowX, beginArrowY)                             // move the corsor on the left border of the start dump
                                                                                 // and in the middle of its height
@@ -207,7 +223,7 @@ class MemoryLayout extends React.Component {
 
     
     // place the label that display the OEP on the left of the label
-    var labelOEP = new createjs.Text("OEP : 0x" + oep.toString(16), "20px Arial", "green");
+    var labelOEP = new createjs.Text("OEP : 0x" + oep.toString(16), "20px Arial", textColor);
     labelOEP.x = beginArrowX - labelOEP.getBounds().width - 10
     labelOEP.y = beginArrowY - (labelOEP.getBounds().height / 2)
     this.dumpsContainer.addChild(arrow, labelOEP);
@@ -217,6 +233,10 @@ class MemoryLayout extends React.Component {
   }
 
   _drawArrow(oep){
+
+    // style variables
+    var strokeColor = "rgb(126, 255, 126)"
+    var textColor = "rgb(126, 255, 126)"
 
     var dump_1 = this.dumpsContainer.getChildByName("DUMP_1")
     var dump_2 = this.dumpsContainer.getChildByName("DUMP_2")
@@ -228,7 +248,7 @@ class MemoryLayout extends React.Component {
     var arrow = new createjs.Shape();
     arrow.name = "arrow"
     arrow.graphics.setStrokeStyle(4)
-                  .beginStroke("magenta")
+                  .beginStroke(strokeColor)
 
                   .moveTo(beginArrowX, beginArrowY)                             // move the corsor on the left border of the start dump
                                                                                 // and in the middle of its height
@@ -247,7 +267,7 @@ class MemoryLayout extends React.Component {
     
 
     // place the label that display the OEP on the left of the label
-    var labelOEP = new createjs.Text("OEP : 0x" + oep.toString(16), "20px Arial", "green");
+    var labelOEP = new createjs.Text("OEP : 0x" + oep.toString(16), "20px Arial", textColor);
     labelOEP.x = beginArrowX - leftOffsetArrow - labelOEP.getBounds().width - 10
     labelOEP.y = middleArriveDumpY - (labelOEP.getBounds().height / 2)
 
@@ -293,7 +313,8 @@ class MemoryLayout extends React.Component {
 
     var highlightBorder = {
       marginTop: '15px',
-      borderTop : '#f33901 1px solid'
+      borderTop : '#f33901 1px solid',
+      background: "rgba(51,51,51,1)"
     }
     // if the report contains no dump then don't show the slider 
     var slider = this.props.dumps.length === 0 ? <h3>Sorry there are no dump in this report...</h3> : <Slider dumps={this.props.dumps} onUpdate={this.updateMemory}/>

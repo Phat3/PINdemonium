@@ -27,6 +27,7 @@ class Slider extends React.Component {
         textAlign : 'center',
         paddingLeft : '0px',
         paddingTop : '20px',
+        paddingBottom : '10px'
     }
     /*
     var items = this.props.data.map(function(row){
@@ -39,7 +40,7 @@ class Slider extends React.Component {
     ]    
     //create an item for each dump
     for (var i = 0; i < this.props.dumps.length -1 ; i++) {
-      // create the component with the proper props
+      // create the component with the proper prop
       items.push(<SliderItem key={i} id={i} onSelect={this.navigateToDump} active={i === this.state.activeItem ? true : false} endDump={ i + 1} startDump={i} />)   
     }
 

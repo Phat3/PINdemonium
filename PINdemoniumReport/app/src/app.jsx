@@ -9,7 +9,7 @@ var sampleData = {
       {"eip":4220719,"end_address":4221043,"intra_writeset":false,"number":0,"start_address":4220439},
       {"eip":36990976,"end_address":36993536,"intra_writeset":false,"number":1,"start_address":36990976},
       {"eip":36900864,"end_address":36933120,"intra_writeset":false,"number":2,"start_address":36900864},
-      {"eip":4198420,"end_address":4198421,"intra_writeset":false,"number":3,"start_address":4198420},
+      {"eip":4198420,"end_address":4198421,"intra_writeset":true,"number":3,"start_address":4198420},
       {"eip":54135236,"end_address":54136236,"intra_writeset":false,"number":4,"start_address":54133648},
       {"eip":54138648,"end_address":54138729,"intra_writeset":false,"number":5,"start_address":54138644},
       {"eip":54138732,"end_address":54138741,"intra_writeset":false,"number":6,"start_address":54138700},
@@ -34,10 +34,17 @@ class App extends React.Component {
 
   render () {
 
+    var informationStyle = {
+      background: "rgba(51,51,51,1)",
+      borderTop: "1px solid rgb(243, 57, 1)",
+      borderBottom: "1px solid rgb(243, 57, 1)",
+      marginBottom : "15px"
+    }
+
     return (
       <div>
 
-        <div className="row" id="information">
+        <div className="row" id="information" style={informationStyle}>
             <div className="col-sm-12">
                 <h4>Information</h4>
             </div>
