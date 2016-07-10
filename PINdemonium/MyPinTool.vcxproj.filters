@@ -138,6 +138,9 @@
     <ClCompile Include="jsoncpp.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="md5.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README">
@@ -233,6 +236,9 @@
       <Filter>Header Files\Report</Filter>
     </ClInclude>
     <ClInclude Include="json.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="md5.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
   </ItemGroup>

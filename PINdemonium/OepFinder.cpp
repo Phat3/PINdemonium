@@ -48,7 +48,7 @@ static void ConnectDebugger()
 		  MYINFO("errore  3");
 		 return;
 	}
-    MYINFO("uscitos  1");
+    
 	int timeout = 30000;
 	DEBUG_CONNECTION_INFO infoDbg;
 	PIN_GetDebugConnectionInfo(&infoDbg);
@@ -206,40 +206,95 @@ UINT32 OepFinder::checkHeapWxorX(WriteInterval item, ADDRINT curEip, int dumpAnd
 	return 0;
 }
 
-UINT32 OepFinder::saveHeapZones(std::vector<HeapZone> hzs){
+
+std::string dumpHZ(HeapZone hz, char * data, std::string hz_md5){
+
+	std::string heap_dir_path = Config::getInstance()->getHeapDir();
+	std::string heap_bin_name = "heap_" + hz_md5 + ".bin";
+	std::string heap_bin_path = heap_dir_path + "\\" + heap_bin_name; // this is the heap.bin in the global folder HEAP
+
+	// dump of the heap inside this folder 
+	std::string heap_dir = Config::getInstance()->getHeapDir();
+	std::ofstream heap_file(heap_bin_path, std::ios::binary);
+
+	heap_file.write((char *) data, hz.size);
+	heap_file.close();
+
+	return heap_bin_path;
+}
+
+
+std::string linkHZ(std::string heap_bin_path){
+
+	// we will save the link to the heap.bin inside the folder heaps of the currente dump 
+	std::string heaps_dir = Config::getInstance()->getWorkingDir() + "\\heaps";
+
+	// creating the name of the link by extracting the name of the heap.bin 
+	std::size_t pos = heap_bin_path.find("heap_");
+	std::string heap_link_name = heap_bin_path.substr(pos);
+
+	// finally composing the heap link path
+	std::string heap_link_path = heaps_dir + "\\" + heap_link_name;
+
+	W::CreateHardLink(heap_link_path.c_str() , heap_bin_path.c_str() ,NULL);
+
+	return  heap_link_name;
+}
+
+void logHZ(std::string heap_link_name, HeapZone hz, std::string hz_md5){
+
+	// open the heap_map.txt
+	std::string working_dir = Config::getInstance()->getWorkingDir();  
+	std::string heap_map_path = working_dir + "\\heaps" +  "\\heap_map.txt"; // write the log 
+
+	printf("Inside logHZ - heap_map_path: %s\n", heap_map_path.c_str());
+
+	std::ofstream heap_map_file(heap_map_path,ios::app);
+
+	heap_map_file << heap_link_name << " " << std::hex << hz.begin << " " << std::to_string((_ULonglong)hz.size) << " " << "\n" ;
+
+	heap_map_file.close();
+}
+
+
+
+VOID OepFinder::saveHeapZones(std::map<std::string,HeapZone> hzs, std::map<std::string,std::string> hzs_dumped){
 
 	MYPRINT("[INFO][OepFinder.cpp] - SAVING ALL THE HEAP-ZONES ALLOCATED UNTIL NOW: %d HEAP-ZONES\n", hzs.size());
 	std::string heaps_dir = Config::getInstance()->getWorkingDir() + "\\heaps";
 	_mkdir(heaps_dir.c_str()); // create the folder we will store the .bin of the heap zones 
 
-	HeapZone hz;
-	unsigned int hz_begin;
-	unsigned int hz_size;
-	unsigned char *hz_data;
+	char *hz_data;
+	std::string hz_md5;
+	std::string hz_md5_now;
 	Config *config = Config::getInstance();
 
 	std::string heap_map_path = heaps_dir + "\\" +  "heap_map.txt";
 	std::ofstream heap_map_file(heap_map_path);
 
-	for(unsigned int i=0;i<hzs.size();i++ ){
-		
-		std::string heap_bin_path = heaps_dir + "\\" +  "heap_" + std::to_string((_ULonglong)i) + ".bin";
+	for (std::map<std::string,HeapZone>::iterator it=hzs.begin(); it!=hzs.end(); ++it){	
+		HeapZone hz = it->second;
+		std::string hz_md5 = it->first;
+		hz_data = (char *)malloc(hz.size);
+		PIN_SafeCopy(hz_data , (void const *)hz.begin , hz.size);
+		hz_md5_now = md5(hz_data); // take the md5 of the data inside the heap 
 
-		hz = hzs.at(i);
-		hz_begin = hz.begin;
-		hz_size  = hz.size;
+		std::map<std::string,std::string>::iterator hz_dumped_it = hzs_dumped.find(hz_md5_now);
 
-		// record the location information of this heapzone inside the heap_map.txt 			
-		heap_map_file << "heap_" << std::to_string((_ULonglong)i) << " " << std::hex << hz_begin << " " << std::to_string((_ULonglong)hz_size) << " " << "\n" ;
-			
-		hz_data = (unsigned char *)malloc(hz_size);
-		PIN_SafeCopy(hz_data , (void const *)hz_begin , hz_size);
-		std::ofstream heap_file(heap_bin_path, std::ios::binary);
-
-		heap_file.write((char *) hz_data, hz_size);
-		heap_file.close();
+		if(hz_dumped_it != hzs_dumped.end()){
+			// an heapzone with these data has already been dumped
+			MYPRINT("HEAPZONE MD5 %s ALREADY DUMPED - CREATING HARD LINK", hz_md5_now);
+			std::string heap_link_name = linkHZ(hz_dumped_it->second);
+			logHZ(heap_link_name,hz,hz_md5);
+		}else{
+			MYPRINT("HEAPZONE MD5 %s NOT DUMPED - CREATING DUMP AND HARD LINK", hz_md5_now);
+			std::string heap_bin_path  = dumpHZ(hz,hz_data,hz_md5_now);
+			std::string heap_link_name = linkHZ(heap_bin_path);
+			logHZ(heap_link_name,hz,hz_md5_now);
+			ProcInfo *pInfo = ProcInfo::getInstance();
+			pInfo->insertDumpedHeapZone(hz_md5_now,heap_bin_path);
+		}
 	}
-	heap_map_file.close();
 }
 
 BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip , int dumpAndFixResult){
@@ -254,17 +309,19 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 
 	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t BROKEN-FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
 	ProcInfo *pInfo = ProcInfo::getInstance();
-	std::vector<HeapZone> hzs = pInfo->getHeapMap();
+	std::map<std::string , HeapZone> hzs = pInfo->getHeapMap();
+	std::map<std::string , std::string> hzs_dumped = pInfo->getDumpedHZ();
 	
 	MYPRINT("\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 	MYPRINT("- - - - - - - - - - - - - - - - - - - - - STAGE 3: DUMP HEAP - - - - - - - -- - - - - - - - - - - - - - - - -");
 	MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+
 	// if the curEip is in an heap zones let's save it inside the PE dumped 
 	checkHeapWxorX(item, curEip,dumpAndFixResult);
 
 	// In any case if there are any heap-zones let's save them in a separate folder
 	if(hzs.size() > 0){
-		saveHeapZones(hzs);
+		saveHeapZones(hzs,hzs_dumped);
 	}
 
 	//write the heuristic results on ile

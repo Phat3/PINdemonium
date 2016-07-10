@@ -11,6 +11,7 @@
 #include "HookFunctions.h"
 #include "HookSyscalls.h"
 #include "PolymorphicCodeHandlerModule.h"
+#include "md5.h"
 namespace W {
 	#include <windows.h>
 }
@@ -144,7 +145,9 @@ void initDebug(){
 
 // - set the option for the current run
 void ConfigureTool(){	
+	
 	Config *config = Config::getInstance();
+
 	config->INTER_WRITESET_ANALYSIS_ENABLE = KnobInterWriteSetAnalysis.Value();	
 	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
 	config->POLYMORPHIC_CODE_PATCH = KnobPolymorphicCodePatch.Value();
@@ -193,7 +196,7 @@ int main(int argc, char * argv[]){
 	if(Config::ATTACH_DEBUGGER){
 		initDebug();
 	}
-	MYINFO("->Configuring Pintool<-\n");
+	
 	//get the start time of the execution (benchmark)
 	tStart = clock();	
 	// Initialize pin
@@ -206,8 +209,10 @@ int main(int argc, char * argv[]){
 	PIN_AddFiniFunction(Fini, 0);
 	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
 	
+	printf("->Configuring Pintool<-\n");
 	//get theknob args
 	ConfigureTool();
+
 	
 	if(Config::getInstance()->POLYMORPHIC_CODE_PATCH){
 		TRACE_AddInstrumentFunction(Trace,0);
@@ -218,7 +223,8 @@ int main(int argc, char * argv[]){
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
-	MYINFO("\n\n---->Starting instrumented program<-----\n");
+	printf("\n\n---->Starting instrumented program<-----\n");
+
 	PIN_StartProgram();	
 	return 0;
 	

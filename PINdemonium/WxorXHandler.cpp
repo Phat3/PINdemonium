@@ -34,11 +34,8 @@ BOOL WxorXHandler::isWriteINS(INS ins){
 VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size){
 	
 	//check if the write is on the heap
-	UINT32 heapzone_index = ProcInfo::getInstance()->searchHeapMap(start_addr);
-	BOOL heap_flag = FALSE;
-	if(heapzone_index != -1){
-		heap_flag = TRUE;
-	}
+	bool isheap = ProcInfo::getInstance()->searchHeapMap(start_addr);
+
 	//calculate the end address of the write
 	UINT32 end_addr = start_addr + size;
 	//iterate through our structure in order to find if we have to update one of our WriteInterval
@@ -46,12 +43,12 @@ VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size){
 	for(int i = 0; i < this->WritesSet.size(); i++){
 		//if we foud that an item has to be updated then update it and return
 		if(this->WritesSet[i].checkUpdate(start_addr, end_addr)){
-			this->WritesSet[i].update(start_addr, end_addr, heap_flag);	
+			this->WritesSet[i].update(start_addr, end_addr, isheap);	
 			return; 
 		}
 	}
 	//create and add it to our structure
-	WriteInterval new_interval = WriteInterval(start_addr, end_addr, heap_flag);
+	WriteInterval new_interval = WriteInterval(start_addr, end_addr, isheap);
 	this->WritesSet.push_back(new_interval);
 }
 

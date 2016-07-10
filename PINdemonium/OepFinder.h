@@ -8,6 +8,7 @@
 #include "ProcInfo.h"
 #include "Config.h"
 #include "Report.h"
+#include "md5.h"
 namespace W {
 	#include <windows.h>
 }
@@ -36,7 +37,7 @@ private:
 	void handlePopadAndPushad(INS ins);
 	BOOL analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip, int ResultDumpAndFix);
 	UINT32 checkHeapWxorX(WriteInterval item, ADDRINT curEip , int dumpAndFixResult);
-	UINT32 saveHeapZones(std::vector<HeapZone> hzs);
+	VOID saveHeapZones(std::map<std::string , HeapZone> hzs , std::map<std::string,std::string> hzs_dumped);
 	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,UINT32 writeItemIndex, WriteInterval item);
 	void getCurrentDlls();
 	WxorXHandler *wxorxHandler;

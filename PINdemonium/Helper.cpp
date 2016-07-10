@@ -1,5 +1,7 @@
 #include "Helper.h"
 
+#define MD5LEN  16
+
 
 Helper::Helper(void)
 {

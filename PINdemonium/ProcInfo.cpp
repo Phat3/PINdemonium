@@ -104,10 +104,14 @@ clock_t ProcInfo::getStartTimer(){
 	return this->start_timer;
 }
 
-std::vector<HeapZone> ProcInfo::getHeapMap(){
+std::map<string , HeapZone> ProcInfo::getHeapMap(){
 	return this->HeapMap;
 }
 
+std::map<string,string> ProcInfo::getDumpedHZ(){
+	return this->HeapMapDumped;
+
+}
 
 /* ----------------------------- UTILS -----------------------------*/
 
@@ -139,37 +143,33 @@ string ProcInfo::getSectionNameByIp(ADDRINT ip){
 }
 
 // insert the mmory range in the current list of memory ranges detected on the heap
-void ProcInfo::insertHeapZone(HeapZone heap_zone){
-	this->HeapMap.push_back(heap_zone);
+void ProcInfo::insertHeapZone(std::string hz_md5,HeapZone heap_zone){
+	this->HeapMap.insert( std::pair<std::string,HeapZone>(hz_md5,heap_zone) );
 }
 
-// remove last memory range from the heap list
-void ProcInfo::removeLastHeapZone(){
-	this->HeapMap.pop_back();
+void ProcInfo::insertDumpedHeapZone(std::string hz_data_md5, std::string hz_bin_path){
+	this->HeapMapDumped.insert( std::pair<std::string,std::string>(hz_data_md5,hz_bin_path) );
 }
+
 
 // remove a specific memory range from the heap list
-void ProcInfo::deleteHeapZone(UINT32 index){     
-	this->HeapMap.erase(this->HeapMap.begin()+index);
+void ProcInfo::deleteHeapZone(std::string md5_to_remove){     
+	this->HeapMap.erase(md5_to_remove);
 }
 
-// return the index of he memory range that includes the specified address
+// return the index of the memory range that includes the specified address
 // if it is not found it returns -1
-UINT32 ProcInfo::searchHeapMap(ADDRINT ip){
+bool ProcInfo::searchHeapMap(ADDRINT ip){
 	int i=0;
 	HeapZone hz;
-	for(i=0; i<this->HeapMap.size();i++){	    
-		hz = this->HeapMap.at(i);
+
+	for (std::map<std::string,HeapZone>::iterator it=HeapMap.begin(); it!=HeapMap.end(); ++it){	
+		hz = it->second;
 		if(ip >= hz.begin && ip <= hz.end){
-			   return i;
+			   return true;
 		}
 	}
-	return -1;
-}
-
-//return the heapzone object
-HeapZone* ProcInfo::getHeapZoneByIndex(UINT32 index){
-	return &this->HeapMap.at(index);
+	return false;
 }
 
 
@@ -215,8 +215,12 @@ BOOL ProcInfo::isInsideJmpBlacklist(ADDRINT ip){
 
 
 void ProcInfo::printHeapList(){
-	for(unsigned index=0; index <  this->HeapMap.size(); index++) {
-		MYINFO("Heapzone number  %u  start %08x end %08x",index,this->HeapMap.at(index).begin,this->HeapMap.at(index).end);
+		
+	int cont = 1;
+	for (std::map<std::string,HeapZone>::iterator it=HeapMap.begin(); it!=HeapMap.end(); ++it){	
+		HeapZone hz = it->second;
+		MYINFO("Heapzone number  %u  start %08x end %08x",cont,hz.begin,hz.end);
+		cont++;
 	}
 }
 

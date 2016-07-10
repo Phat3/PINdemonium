@@ -88,9 +88,15 @@ void HookSyscalls::NtAllocateVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx , SY
 	hz.begin = heap_address;
 	hz.size = region_size;
     hz.end = region_size+heap_address;
-	MYINFO("NtAllocateVirtualMemoryHook insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
+	hz.version = 0; // version 0 of this heap
+
+	std::string heap_key =  std::to_string((_ULonglong)hz.begin) + std::to_string((_ULonglong)hz.end);
+
+	std::string hz_md5 = md5(heap_key);
+
+	MYINFO("NtAllocateVirtualMemoryHook insert in Heap Zone %08x -> %08x MD5(begin_addr+end_addr): %s",hz.begin,hz.end,hz_md5.c_str());
 	//saving this heap zone in the map inside ProcInfo
-	proc_info->insertHeapZone(hz); 
+	proc_info->insertHeapZone(hz_md5,hz); 
 }
 
 

@@ -20,7 +20,7 @@ Config* Config::getInstance()
 }
 
 //at the first time open the log file
-Config::Config(string config_path){
+Config::Config(std::string config_path){
 
 	loadJson(config_path);
 	//set the initial dump number
@@ -28,12 +28,24 @@ Config::Config(string config_path){
 	this->dump_number = 0;
 	//build the path for this execution
 	this->base_path = results_path + this->getCurDateAndTime() + "\\";
+
+	printf("BASE PATH: %s\n" , this->base_path.c_str());
+
 	//mk the directory
 	_mkdir(this->base_path.c_str());
-	this->not_working_path = this->base_path + not_working_directory;
-	_mkdir(this->not_working_path.c_str());
+
+	
+
+	this->heap_dir = this->base_path + "\\HEAP";
+	_mkdir(this->heap_dir.c_str());
+
+	printf("HEAP DIR: %s\n" , this->heap_dir.c_str());
+
+
 	//create the log and report files
 	string log_file_path = this->base_path + log_filename;
+
+	printf("LOG FILE PATH: %s\n" , log_file_path.c_str());
 
 	this->log_file = fopen(log_file_path.c_str(),"w");	
 	this->working = -1;
@@ -49,6 +61,10 @@ string Config::getReportPath(){
 
 string Config::getBasePath(){
 	return this->base_path;
+}
+
+string Config::getHeapDir(){
+	return this->heap_dir;
 }
 
 long double Config::getDumpNumber(){

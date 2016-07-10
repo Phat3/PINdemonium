@@ -22,6 +22,7 @@ HookFunctions::~HookFunctions(void)
 
 //----------------------------- HOOKED FUNCTIONS -----------------------------//
 
+
 // hook the VirtualAlloc() in order to retrieve the memory range allocated and build ours data structures
 // NOT USED ANYMORE, WE HOOKED THE NtAllocateVirtualMemory syscall in order to be more generic ( see HookSyscalls.cpp row 126 )
 VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){  
@@ -30,31 +31,56 @@ VOID VirtualAllocHook(UINT32 virtual_alloc_size , UINT32 ret_heap_address ){
 	hz.begin = ret_heap_address;
 	hz.size = virtual_alloc_size;
 	hz.end = ret_heap_address + virtual_alloc_size;  
+	hz.version = 0;
 	MYINFO("Virtualloc insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
 	//saving this heap zone in the map inside ProcInfo
-	proc_info->insertHeapZone(hz); 
+
+	char *hz_data = (char *)malloc(hz.size);
+	PIN_SafeCopy(hz_data , (void const *)hz.begin , hz.size);
+
+	std::string heap_key =  std::to_string((_ULonglong)hz.begin) + std::to_string((_ULonglong)hz.end);
+
+	std::string hz_md5 = md5(heap_key);
+
+	proc_info->insertHeapZone(hz_md5,hz); 
+
+	free(hz_data);
 }
 
 //hook the  HeapAllocHook() in order to retrieve the memory range allocated and build ours data structures
 static HeapZone prev_heap_alloc;
+std::string prev_md5;
+
 VOID RtlAllocateHeapHook(int heap_alloc_size , UINT32 ret_heap_address ){	 
 	if (heap_alloc_size == 0 ){
 		return;
 	}
 	ProcInfo *proc_info = ProcInfo::getInstance();
+
+	
 	//need this code because sometimes RTLAllocHeap is invoked twice (because of the IPOINT_AFTER insert)and the second time is the correct one
 	if (prev_heap_alloc.begin == ret_heap_address){
-		proc_info->removeLastHeapZone();
+		proc_info->deleteHeapZone(prev_md5);
 	
 	}
+	
 	HeapZone hz;
 	hz.begin = ret_heap_address;
 	hz.size = heap_alloc_size;
 	hz.end = ret_heap_address + heap_alloc_size;
+	hz.version = 0;
 	prev_heap_alloc =hz;
-	//saving this heap zone in the map inside ProcInfo
-	proc_info->insertHeapZone(hz); 
+	 
+	char *hz_data = (char *)malloc(hz.size);
+	PIN_SafeCopy(hz_data , (void const *)hz.begin , hz.size);
 
+	std::string heap_key =  std::to_string((_ULonglong)hz.begin) + std::to_string((_ULonglong)hz.end);
+
+	std::string hz_md5 = md5(heap_key);
+
+	proc_info->insertHeapZone(hz_md5,hz);
+
+	free(hz_data);
 }
 
 VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){	
@@ -63,8 +89,20 @@ VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){
 	hz.begin = heap_address;
 	hz.size = size;
 	hz.end = heap_address + size;
-	//saving this heap zone in the map inside ProcInfo
-	proc_info->insertHeapZone(hz); 
+	hz.version = 0;
+
+	char *hz_data = (char *)malloc(hz.size);
+	PIN_SafeCopy(hz_data , (void const *)hz.begin , hz.size);
+
+	std::string heap_key =  std::to_string((_ULonglong)hz.begin) + std::to_string((_ULonglong)hz.end);
+
+	std::string hz_md5 = md5(heap_key);
+
+	proc_info->insertHeapZone(hz_md5,hz);
+
+	free(hz_data);
+
+	
 }
 
 
@@ -73,18 +111,23 @@ VOID MapViewOfFileHookAfter(W::DWORD dwDesiredAccess,W::DWORD dwFileOffsetHigh, 
 	ProcInfo *proc_info = ProcInfo::getInstance();
 }
 
+
 VOID VirtualFreeHook(UINT32 address_to_free){
 	MYINFO("Calling VirtualFree of the address %08x\n" , address_to_free);
 	ProcInfo *pInfo = ProcInfo::getInstance();
-	std::vector<HeapZone> HeapMap = pInfo->getHeapMap();
-	int index_to_remove = -1;
-	for(unsigned index=0; index <  HeapMap.size(); index++) {
-		if(address_to_free == pInfo->getHeapZoneByIndex(index)->begin){
-			index_to_remove = index;
+	std::map<string,HeapZone> HeapMap = pInfo->getHeapMap();
+	
+	std::string md5_to_remove = "";
+
+	for (std::map<std::string,HeapZone>::iterator it=HeapMap.begin(); it!=HeapMap.end(); ++it){
+		if(address_to_free == it->second.begin){
+			md5_to_remove = it->first;
+			break;
 		}
 	}
-	if(index_to_remove != -1){
-		pInfo->deleteHeapZone(index_to_remove);
+	
+	if(strcmp(md5_to_remove.c_str(),"")){
+		pInfo->deleteHeapZone(md5_to_remove);
 	}
 }
 

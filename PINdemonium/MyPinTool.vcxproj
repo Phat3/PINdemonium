@@ -261,6 +261,7 @@
     <ClCompile Include="HookFunctions.cpp" />
     <ClCompile Include="HookSyscalls.cpp" />
     <ClCompile Include="jsoncpp.cpp" />
+    <ClCompile Include="md5.cpp" />
     <ClCompile Include="PolymorphicCodeHandlerModule.cpp" />
     <ClCompile Include="ProcInfo.cpp" />
     <ClCompile Include="EntropyHeuristic.cpp" />
@@ -295,6 +296,7 @@
     <ClInclude Include="HookFunctions.h" />
     <ClInclude Include="HookSyscalls.h" />
     <ClInclude Include="json.h" />
+    <ClInclude Include="md5.h" />
     <ClInclude Include="PolymorphicCodeHandlerModule.h" />
     <ClInclude Include="ProcInfo.h" />
     <ClInclude Include="Heuristics.h" />

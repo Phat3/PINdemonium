@@ -42,8 +42,8 @@ public:
 	void Config::writeOnTimeLog(string s);
 	void setWorking (int working);
 	void setNewWorkingDirectory();
-	string Config::getWorkingDir();
-	
+	string getWorkingDir();
+	string getHeapDir();
 
 	//--------------------------Command line Tuning Flags----------------------------
 	static const bool  ATTACH_DEBUGGER;
@@ -68,6 +68,7 @@ private:
 	string not_working_path;
 	string cur_dump_path;        //Path of the final (IAT fixed) Dump
 	string cur_list_path;		 //Path of the list of the detected function
+	string heap_dir;
 	long double dump_number;
 	string getCurDateAndTime();
 	int numberOfBadImports;
