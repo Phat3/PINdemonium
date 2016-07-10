@@ -40,6 +40,7 @@ stack: filter all instructions which belong to libraries and write on the stack
 teb:   filter all instructions which belong to libraries and write on the TEB (Exception Handling)
 **/
 VOID FilterHandler::setFilters(const string filters){
+	MYINFO("Setting write filters" );
 	vector<string> filterVect;
 	stringstream ss(filters);
 	string temp;
@@ -47,7 +48,7 @@ VOID FilterHandler::setFilters(const string filters){
 	filterVect.push_back(temp);
 	for(std::vector<string>::iterator filt = filterVect.begin(); filt != filterVect.end(); ++filt) {	
 		MYINFO("Activating filter %s",(*filt).c_str() );
-		filterExecutionFlag += pow(2.0,filterMap[*filt]);
+		filterExecutionFlag += pow(2.0,filterMap[*filt]); //bitmap representing active flags
 	}	   	
 }
 

@@ -1,5 +1,8 @@
 #pragma once
 #include "pin.H"
+#include "Report.h"
+#include "Helper.h"
+#include "ReportImportedFunction.h"
 namespace W{
 	#include <windows.h>
 }
@@ -24,7 +27,7 @@ class ScyllaWrapperInterface
 public:
 	static ScyllaWrapperInterface* getInstance();
 	//Create a process which launch the ScyllaDumper.exe executable to dump the binary and fix the IAT
-	UINT32 launchScyllaDumpAndFix(int pid, int curEip, string dumpFileName, string tmpDump, bool call_plugin_flag, string plugin_full_path);
+	UINT32 launchScyllaDumpAndFix(int pid, int curEip, string dumpFileName, string tmpDump, bool call_plugin_flag, string plugin_full_path, string reconstructed_imports_file);
 	//interface to the ScyllaWrapper.dll
 	def_ScyllaDumpAndFix	ScyllaDumpAndFix;
 	def_ScyllaWrapAddSection ScyllaWrapAddSection;
@@ -32,9 +35,10 @@ public:
 	void unloadScyllaLibrary();
 
 private:
+	Config *config;
 	ScyllaWrapperInterface::ScyllaWrapperInterface();
 	static ScyllaWrapperInterface* instance;
 	void * hScyllaWrapper;
-	BOOL existFile (std::string name);
+	void addImportFunctionToDumpReport(string reconstructed_imports_file);
 };
 

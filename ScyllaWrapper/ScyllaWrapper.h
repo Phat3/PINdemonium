@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include <string>
 
-UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file,  WCHAR * cur_path, WCHAR * tmp_dump);
+UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file,  WCHAR * cur_path, WCHAR * tmp_dump, WCHAR *reconstructed_imports_file);
 
 
 /* 
@@ -17,5 +17,5 @@ UINT32 ScyllaDumpAndFix(int pid, int oep, WCHAR * output_file,  WCHAR * cur_path
    Ret:
    True or False if Scylla sucessfully add the new section  
 */
-UINT32 ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData);
+UINT32 ScyllaWrapAddSection(const WCHAR * dump_path , const CHAR * sectionName, DWORD sectionSize, UINT32 offset, BYTE * sectionData,WCHAR *reconstructed_imports_file);
 

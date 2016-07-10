@@ -6,6 +6,7 @@
 #include "TimeTracker.h"
 #include <time.h>
 #include <unordered_set>
+#include "Helper.h"
 namespace W{
 	#include "windows.h"
 	#include <tlhelp32.h>

@@ -94,7 +94,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <AdditionalOptions>/EHs- /EHa- %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/EHs- /EHa-  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)Scylla\Scylla;C:\pin\source\include\pin;C:\pin\source\include\pin\gen;C:\pin\source\tools\InstLib;C:\pin\extras\xed-ia32\include;C:\pin\extras\components\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TARGET_IA32;HOST_IA32;TARGET_WINDOWS;BIGARRAY_MULTIPLIER=1;_CRT_SECURE_NO_DEPRECATE;_SECURE_SCL=0;WIN32</PreprocessorDefinitions>
@@ -255,11 +255,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\jsoncpp-master\dist\jsoncpp.cpp" />
     <ClCompile Include="GdbDebugger.cpp" />
+    <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="HookFunctions.cpp" />
     <ClCompile Include="HookSyscalls.cpp" />
-    <ClCompile Include="InitFunctionCallHeuristic.cpp" />
     <ClCompile Include="PolymorphicCodeHandlerModule.cpp" />
     <ClCompile Include="ProcInfo.cpp" />
     <ClCompile Include="EntropyHeuristic.cpp" />
@@ -269,10 +270,20 @@
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="OepFinder.cpp" />
     <ClCompile Include="PushadPopadHeuristic.cpp" />
+    <ClCompile Include="Report.cpp" />
+    <ClCompile Include="ReportDump.cpp" />
+    <ClCompile Include="ReportEntropy.cpp" />
+    <ClCompile Include="ReportGeneralInformation.cpp" />
+    <ClCompile Include="ReportImportedFunction.cpp" />
+    <ClCompile Include="ReportJumpOuterSection.cpp" />
+    <ClCompile Include="ReportLongJump.cpp" />
+    <ClCompile Include="ReportObject.cpp" />
+    <ClCompile Include="ReportYaraRules.cpp" />
     <ClCompile Include="ScyllaWrapperInterface.cpp" />
     <ClCompile Include="WriteInterval.cpp" />
     <ClCompile Include="LongJumpHeuristic.cpp" />
     <ClCompile Include="WxorXHandler.cpp" />
+    <ClCompile Include="YaraHeuristic.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README" />
@@ -280,11 +291,12 @@
   <ItemGroup>
     <ClInclude Include="Debug.h" />
     <ClInclude Include="GdbDebugger.h" />
+    <ClInclude Include="Helper.h" />
     <ClInclude Include="HookFunctions.h" />
     <ClInclude Include="HookSyscalls.h" />
+    <ClInclude Include="json.h" />
     <ClInclude Include="PolymorphicCodeHandlerModule.h" />
     <ClInclude Include="ProcInfo.h" />
-    <ClInclude Include="InitFunctionCallHeuristic.h" />
     <ClInclude Include="Heuristics.h" />
     <ClInclude Include="EntropyHeuristic.h" />
     <ClInclude Include="JumpOuterSectionHeuristic.h" />
@@ -292,10 +304,20 @@
     <ClInclude Include="FilterHandler.h" />
     <ClInclude Include="OepFinder.h" />
     <ClInclude Include="PushadPopadHeuristic.h" />
+    <ClInclude Include="Report.h" />
+    <ClInclude Include="ReportDump.h" />
+    <ClInclude Include="ReportEntropy.h" />
+    <ClInclude Include="ReportGeneralInformation.h" />
+    <ClInclude Include="ReportImportedFunction.h" />
+    <ClInclude Include="ReportJumpOuterSection.h" />
+    <ClInclude Include="ReportLongJump.h" />
+    <ClInclude Include="ReportObject.h" />
+    <ClInclude Include="ReportYaraRules.h" />
     <ClInclude Include="ScyllaWrapperInterface.h" />
     <ClInclude Include="WriteInterval.h" />
     <ClInclude Include="LongJumpHeuristic.h" />
     <ClInclude Include="WxorXHandler.h" />
+    <ClInclude Include="YaraHeuristic.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

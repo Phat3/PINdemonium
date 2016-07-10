@@ -3,6 +3,7 @@
 
 OepFinder::OepFinder(void){
 	this->wxorxHandler = WxorXHandler::getInstance();
+	this->report = Report::getInstance();
 }
 
 OepFinder::~OepFinder(void){
@@ -109,11 +110,15 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			MYPRINT("------------------------------------ NEW STUB FROM begin: %08x TO %08x -------------------------------------",item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("-------------------------------------------------------------------------------------------------------");
 			MYINFO("Current EIP %08x",curEip);
+			
+			report->createReportDump(curEip,item.getAddrBegin(),item.getAddrEnd(),Config::getInstance()->getDumpNumber(),false);
 			int result = this->DumpAndFixIAT(curEip);
 			Config::getInstance()->setWorking(result);
 			this->analysis(item, ins, prev_ip, curEip,result);
 			wxorxHandler->setBrokenFlag(writeItemIndex);
 			Config::getInstance()->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
+			//W::DebugBreak();
+			report->closeReportDump();
 				
 		}
 		// If we want to debug the program manually let's set the breakpoint after the triggered analysis
@@ -124,6 +129,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	}
 	//update the previous IP
 	proc_info->setPrevIp(INS_Address(ins));
+
 	return OEPFINDER_NOT_WXORX_INST;
 }
 
@@ -143,9 +149,11 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 			MYPRINT("- - - - - - - - - - - - - - JUMP NUMBER %d OF LENGHT %d  IN STUB FORM %08x TO %08x- - - - - - - - - - - - - -",item.getCurrNumberJMP(),currJMPLength, item.getAddrBegin(),item.getAddrEnd());
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYINFO("Current EIP %08x",curEip);
+			report->createReportDump(curEip,item.getAddrBegin(),item.getAddrEnd(),Config::getInstance()->getDumpNumber(),true);
 			int result = this->DumpAndFixIAT(curEip);
 			config->setWorking(result);
 			this->analysis(item, ins, prev_ip, curEip , result);
+			report->closeReportDump(); //close the current dump report
 			wxorxH->incrementCurrJMPNumber(writeItemIndex);
 			config->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 		}				
@@ -155,12 +163,14 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT curEip , int dumpAndFixResult){
 	//call the proper heuristics
 	//we have to implement it in a better way!!
-	item.setLongJmpFlag(Heuristics::longJmpHeuristic(ins, prev_ip));
-	item.setEntropyFlag(Heuristics::entropyHeuristic());
-	item.setJmpOuterSectionFlag(Heuristics::jmpOuterSectionHeuristic(ins, prev_ip));
-	item.setPushadPopadFlag(Heuristics::pushadPopadHeuristic());
+	Heuristics::longJmpHeuristic(ins, prev_ip);
+	Heuristics::entropyHeuristic();
+	Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
+	Heuristics::pushadPopadHeuristic();
+	//Heuristics::initFunctionCallHeuristic(curEip,&item);
+ 	Heuristics::yaraHeuristic();
+
 	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
-	UINT32 error = Heuristics::initFunctionCallHeuristic(curEip,&item);
 	if( item.getHeapFlag() && dumpAndFixResult != SCYLLA_ERROR_FILE_FROM_PID  && dumpAndFixResult != SCYLLA_ERROR_DUMP ){
 		MYINFO("-----DUMPING HEAP-----\n");
 		unsigned char * Buffer;
@@ -192,7 +202,6 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 		free(Buffer);
 	}
 	//write the heuristic results on ile
-	Config::getInstance()->writeOnReport(curEip, item);
 	return OEPFINDER_HEURISTIC_FAIL;
 }
 
@@ -201,13 +210,15 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	UINT32 pid = W::GetCurrentProcessId();
 	Config * config = Config::getInstance();
 	string outputFile = config->getCurrentDumpFilePath();
+	string reconstructed_imports_file  = config->getCurrentReconstructedImportsPath();
+	MYINFO("XXXXXXXXXXXXreconstructed_imports_file reconstructed_imports_file %s",reconstructed_imports_file.c_str());
 	string tmpDump = config->getNotWorkingPath();
 	//std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
 	string plugin_full_path = config->PLUGIN_FULL_PATH;	
 	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s, Plugin %d",pid, config->getCurrentDumpFilePath().c_str(), config->PLUGIN_FULL_PATH.c_str());
 	// -------- Scylla launched as an exe --------	
 	ScyllaWrapperInterface *sc = ScyllaWrapperInterface::getInstance();	
-	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, tmpDump, config->CALL_PLUGIN_FLAG, config->PLUGIN_FULL_PATH);
+	UINT32 result = sc->launchScyllaDumpAndFix(pid, curEip, outputFile, tmpDump, config->CALL_PLUGIN_FLAG, config->PLUGIN_FULL_PATH, reconstructed_imports_file);
 	if(result != SCYLLA_SUCCESS_FIX){
 		MYERRORE("Scylla execution Failed error %d ",result);
 		return result;

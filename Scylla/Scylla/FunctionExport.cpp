@@ -9,6 +9,8 @@
 #include "IATSearch.h"
 #include "ImportRebuilder.h"
 #include "DllInjectionPlugin.h"
+#include <fstream>
+#include <string>
 
 
 extern HINSTANCE hDllModule;
@@ -310,6 +312,44 @@ void addUnresolvedImports( PUNRESOLVED_IMPORT firstUnresImp, std::map<DWORD_PTR,
 	firstUnresImp->ImportTableAddressPointer = 0;
 }
 
+void writeImportedFunctionsToFile(std::map<DWORD_PTR, ImportModuleThunk> & moduleList, const WCHAR * file_path )
+{
+
+	
+	std::ofstream output_file; 
+	output_file.open(file_path);
+
+	std::map<DWORD_PTR, ImportModuleThunk>::iterator iterator1;
+	std::map<DWORD_PTR, ImportThunk>::iterator iterator2;
+	ImportModuleThunk * moduleThunk = 0;
+	ImportThunk * importThunk = 0;
+
+	iterator1 = moduleList.begin();
+
+	while (iterator1 != moduleList.end())
+	{
+		moduleThunk = &(iterator1->second);
+
+		iterator2 = moduleThunk->thunkList.begin();
+
+		while (iterator2 != moduleThunk->thunkList.end())
+		{
+			importThunk = &(iterator2->second);
+			std::wstring WmoduleName(importThunk->moduleName);
+			std::string  moduleName(WmoduleName.begin(),WmoduleName.end());
+			std::string functionName(importThunk->name);
+			output_file << moduleName << " " << functionName << "\n";
+			
+
+			iterator2++;
+		}
+
+		iterator1++;
+	}
+	output_file.close();
+
+}
+
 void displayModuleList(std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
 {
 	std::map<DWORD_PTR, ImportModuleThunk>::iterator iterator1;
@@ -339,9 +379,19 @@ void displayModuleList(std::map<DWORD_PTR, ImportModuleThunk> & moduleList )
 	}
 
 }
-
-
-int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixFile, unsigned int eip,  DWORD call_plugin_flag, const WCHAR * plugin_full_path)
+/*
+Function which reconstruct the Import Directory of a memory dump
+iatAddr: address of the IAT
+iatSize: size of the IAT
+dwProcessID: PID of the process from which the memory dump to fix has been taken
+dumpFile: path to the dump to fix
+iatFixedFile: path to the PE which will contained the Import Directory fixed
+eip: Current Instruction Pointer
+call_plugin_flag: flag to activate the plugin to fix the IAT
+plugin_full_path: path of the plugin to fix the IAT (compulsory when call_plugin_flag is true)
+reconstructed_imports_file: path to file which will contains the list of reconstructed imports
+*/
+int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId, const WCHAR * dumpFile, const WCHAR * iatFixedFile, unsigned int eip,  DWORD call_plugin_flag, const WCHAR * plugin_full_path, const WCHAR *reconstructed_imports_file)
 {
 	ApiReader apiReader;
 	ProcessLister processLister;
@@ -439,7 +489,8 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 		}
 	
 	}
-
+	//write imported function reconstructed to file
+	writeImportedFunctionsToFile(moduleList,reconstructed_imports_file);
 	//add IAT section to dump
 	ImportRebuilder importRebuild(dumpFile);
 
@@ -447,7 +498,7 @@ int WINAPI ScyllaIatFixAutoW(DWORD_PTR iatAddr, DWORD iatSize, DWORD dwProcessId
 
 	int retVal = SCY_ERROR_IATWRITE;
 
-	if (importRebuild.rebuildImportTable(iatFixFile, moduleList))
+	if (importRebuild.rebuildImportTable(iatFixedFile, moduleList))
 	{	
 		retVal = SCY_ERROR_SUCCESS;
 	}
