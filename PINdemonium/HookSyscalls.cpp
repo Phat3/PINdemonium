@@ -109,9 +109,6 @@ void HookSyscalls::NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , 
 }
 
 
-
-
-
 //----------------------------- END HOOKS -----------------------------//
 
 

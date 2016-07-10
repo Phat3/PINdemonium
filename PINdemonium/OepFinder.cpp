@@ -118,7 +118,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			int result = this->DumpAndFixIAT(curEip);
 			Config::getInstance()->setWorking(result);
 			MYPRINT("\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
-			MYPRINT("- - - - - - - - - - - - - - - - - - - - - SAGE 2: ANALYZING DUMP - - - - - - - - - - - - - - - - - - - - - -");
+			MYPRINT("- - - - - - - - - - - - - - - - - - - - - STAGE 2: ANALYZING DUMP - - - - - - - - - - - - - - - - - - - - - -");
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			this->analysis(item, ins, prev_ip, curEip,result);
 			wxorxHandler->setBrokenFlag(writeItemIndex);
@@ -181,6 +181,11 @@ UINT32 OepFinder::checkHeapWxorX(WriteInterval item, ADDRINT curEip, int dumpAnd
 		// get the name of the last dump from the Config object 
 		Config *config = Config::getInstance();
 		string dump_path = config->getCurrentDumpFilePath();
+
+		if(dumpAndFixResult != 0){
+			dump_path = dump_path + "_dmp";
+		}
+
 		if(!existFile(dump_path)){ // this is the case in which we have a not working dump but we want to add anyway the .heap 
 			dump_path = config->getNotWorkingPath();
 		}
@@ -334,7 +339,7 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	Config * config = Config::getInstance();
 	string outputFile = config->getCurrentDumpFilePath();
 	string reconstructed_imports_file  = config->getCurrentReconstructedImportsPath();
-	string tmpDump = outputFile;
+	string tmpDump = outputFile + "_dmp";
 	//std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
 	string plugin_full_path = config->PLUGIN_FULL_PATH;	
 	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s, Plugin %d",pid, outputFile.c_str(), config->PLUGIN_FULL_PATH.c_str());
