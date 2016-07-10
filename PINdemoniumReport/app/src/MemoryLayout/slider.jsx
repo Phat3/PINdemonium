@@ -8,7 +8,7 @@ class Slider extends React.Component {
    constructor(){
     super()
     // keep trackof the highlighted "dot"
-    this.state = { activeItem : -1 }
+    this.state = { activeItem : -2 }
     this.navigateToDump = this.navigateToDump.bind(this)
   }
 
@@ -33,7 +33,10 @@ class Slider extends React.Component {
       return <RegisterRow key={row.id} name={row.name} content={row.content}/>
     })
     */
-    var items = [<SliderItem key={-1} id={-1} onSelect={this.navigateToDump} active={this.state.activeItem === -1 ? true : false} endDump={-1} startDump={-1} />]    
+    var items = [
+      <SliderItem key={-2} id={-2} onSelect={this.navigateToDump} active={this.state.activeItem === -2 ? true : false} endDump={-1} startDump={-1} />,
+      <SliderItem key={-1} id={-1} onSelect={this.navigateToDump} active={this.state.activeItem === -1 ? true : false} endDump={0} startDump={-1} />
+    ]    
     //create an item for each dump
     for (var i = 0; i < this.props.dumps.length -1 ; i++) {
       // create the component with the proper props

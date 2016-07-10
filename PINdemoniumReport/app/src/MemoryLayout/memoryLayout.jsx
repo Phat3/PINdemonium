@@ -12,7 +12,9 @@ class MemoryLayout extends React.Component {
     this._drawMemory = this._drawMemory.bind(this)
     this._drawDump = this._drawDump.bind(this)
     this._drawArrow = this._drawArrow.bind(this)
+    this._drawFirstArrow = this._drawFirstArrow.bind(this)
     this._drawDumps = this._drawDumps.bind(this)
+    this._drawFirstDump = this._drawFirstDump.bind(this)
     this._drawAddressesLabel = this._drawAddressesLabel.bind(this)
     this._drawTitleLabel = this._drawTitleLabel.bind(this)
     //  public method (pseudo)
@@ -119,6 +121,16 @@ class MemoryLayout extends React.Component {
     this.stage.addChild(labelTitle)
   }
 
+  // draw the initial dump 
+  _drawFirstDump(){
+
+    var dump = this.props.dumps[0]
+
+    this._drawDump(400, dump, "DUMP_1")
+
+    this._drawFirstArrow(dump.eip)
+  }
+
   _drawDumps(startDumpIndex, endDumpIndex){
 
     var startDump = this.props.dumps[startDumpIndex]
@@ -165,6 +177,43 @@ class MemoryLayout extends React.Component {
     this.dumpsContainer.addChild(dumpShape, labelDumpShape, labelDumpShapeFirstAddress, labelDumpShapeLastAddress);
     // update the canvas
     this.stage.update();
+  }
+
+  _drawFirstArrow(oep){
+
+    var dump_1 = this.dumpsContainer.getChildByName("DUMP_1")
+
+    var leftOffsetArrow = 60
+    var endArrowX = dump_1.x - 2
+    var beginArrowX = endArrowX - leftOffsetArrow
+    var beginArrowY = dump_1.y + (dump_1.height / 2)
+
+    var arrow = new createjs.Shape();
+    arrow.name = "arrow"
+    arrow.graphics.setStrokeStyle(4)
+                  .beginStroke("magenta")
+
+                  .moveTo(beginArrowX, beginArrowY)                             // move the corsor on the left border of the start dump
+                                                                                // and in the middle of its height
+                  
+                  .lineTo(endArrowX, beginArrowY)                               // draw a straight horizontal segment 60px on the left
+
+                  .moveTo(endArrowX - 25,  beginArrowY - 13)            // draw the arrowhead
+
+                  .lineTo(endArrowX, beginArrowY)                       // draw the arrowhead
+
+                  .lineTo(endArrowX - 25,  beginArrowY + 13)            // draw the arrowhead
+    
+
+    
+    // place the label that display the OEP on the left of the label
+    var labelOEP = new createjs.Text("OEP : 0x" + oep.toString(16), "20px Arial", "green");
+    labelOEP.x = beginArrowX - labelOEP.getBounds().width - 10
+    labelOEP.y = beginArrowY - (labelOEP.getBounds().height / 2)
+    this.dumpsContainer.addChild(arrow, labelOEP);
+
+    this.stage.update();
+
   }
 
   _drawArrow(oep){
@@ -218,6 +267,7 @@ class MemoryLayout extends React.Component {
     // create another "layer" for the dumps
     this.dumpsContainer = new createjs.Container()
     this.stage.addChild(this.dumpsContainer)
+    //this._drawFirstDump()
     // draw the initial situation (INDEX (-1,-1) IS THE INITIAL SITUATION!!!)
     //this._drawDumps(-1,-1)
   }
@@ -227,8 +277,12 @@ class MemoryLayout extends React.Component {
     //clear the old canvas
     this.dumpsContainer.removeAllChildren()
     this.stage.update()
+    // draw the first dump
+    if(startDump == -1 && endDump == 0){
+      this._drawFirstDump()
+    }
     // idf both the index are -1 we want to see the initial situation
-    if(startDump !== -1 && endDump !== -1){
+    else if(startDump !== -1 && endDump !== -1){
       //draw the new one
       this._drawDumps(startDump, endDump)
     }
