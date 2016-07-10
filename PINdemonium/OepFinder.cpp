@@ -274,7 +274,7 @@ VOID OepFinder::saveHeapZones(std::map<std::string,HeapZone> hzs, std::map<std::
 
 	for (std::map<std::string,HeapZone>::iterator it=hzs.begin(); it!=hzs.end(); ++it){	
 		HeapZone hz = it->second;
-		std::string hz_md5 = it->first;
+		std::string mem_hz_md5 = it->first;
 		hz_data = (char *)malloc(hz.size);
 		PIN_SafeCopy(hz_data , (void const *)hz.begin , hz.size);
 		hz_md5_now = md5(hz_data); // take the md5 of the data inside the heap 
@@ -283,11 +283,11 @@ VOID OepFinder::saveHeapZones(std::map<std::string,HeapZone> hzs, std::map<std::
 
 		if(hz_dumped_it != hzs_dumped.end()){
 			// an heapzone with these data has already been dumped
-			MYPRINT("HEAPZONE MD5 %s ALREADY DUMPED - CREATING HARD LINK", hz_md5_now);
+			MYPRINT("HEAPZONE [POSITION MD5 %s - DATA MD5 %s] ALREADY DUMPED - CREATING HARD LINK", mem_hz_md5.c_str(), hz_md5_now.c_str());
 			std::string heap_link_name = linkHZ(hz_dumped_it->second);
 			logHZ(heap_link_name,hz,hz_md5);
 		}else{
-			MYPRINT("HEAPZONE MD5 %s NOT DUMPED - CREATING DUMP AND HARD LINK", hz_md5_now);
+			MYPRINT("HEAPZONE [POSITION MD5 %s - DATA MD5 %s] NOT DUMPED - CREATING DUMP AND HARD LINK", mem_hz_md5.c_str(), hz_md5_now.c_str());
 			std::string heap_bin_path  = dumpHZ(hz,hz_data,hz_md5_now);
 			std::string heap_link_name = linkHZ(heap_bin_path);
 			logHZ(heap_link_name,hz,hz_md5_now);
