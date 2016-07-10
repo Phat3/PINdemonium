@@ -170,7 +170,7 @@ UINT32 OepFinder::checkHeapWxorX(WriteInterval item, ADDRINT curEip, int dumpAnd
 
 		// include in the PE the dump of the current heap zone in which we have break the WxorX 
 	if( item.getHeapFlag() && dumpAndFixResult != SCYLLA_ERROR_FILE_FROM_PID  && dumpAndFixResult != SCYLLA_ERROR_DUMP ){
-		MYPRINT("[INFO][OepFinder.cpp] - EIP ON THE HEAP - DUMPING THE HEAP-ZONE");
+		MYPRINT("[INFO][OepFinder.cpp] - EIP ON THE HEAP - DUMPING THE HEAP-ZONE BEGIN 0x%08x | END 0x%08x", item.getAddrBegin(),item.getAddrEnd());
 		unsigned char * Buffer;
 		UINT32 size_write_set = item.getAddrEnd() - item.getAddrBegin();
 		//prepare the buffer to copy inside the stuff into the heap section to dump 		  
@@ -247,7 +247,7 @@ void logHZ(std::string heap_link_name, HeapZone hz, std::string hz_md5){
 	std::string working_dir = Config::getInstance()->getWorkingDir();  
 	std::string heap_map_path = working_dir + "\\heaps" +  "\\heap_map.txt"; // write the log 
 
-	printf("Inside logHZ - heap_map_path: %s\n", heap_map_path.c_str());
+	//printf("Inside logHZ - heap_map_path: %s\n", heap_map_path.c_str());
 
 	std::ofstream heap_map_file(heap_map_path,ios::app);
 
@@ -283,11 +283,11 @@ VOID OepFinder::saveHeapZones(std::map<std::string,HeapZone> hzs, std::map<std::
 
 		if(hz_dumped_it != hzs_dumped.end()){
 			// an heapzone with these data has already been dumped
-			MYPRINT("HEAPZONE [POSITION MD5 %s - DATA MD5 %s] ALREADY DUMPED - CREATING HARD LINK", mem_hz_md5.c_str(), hz_md5_now.c_str());
+			MYPRINT("HEAPZONE [POSITION (BEGIN 0x%08x | END 0x%08x) - DATA MD5 %s] ALREADY DUMPED! - CREATING HARD LINKS", hz.begin,hz.end, hz_md5_now.c_str());
 			std::string heap_link_name = linkHZ(hz_dumped_it->second);
 			logHZ(heap_link_name,hz,hz_md5);
 		}else{
-			MYPRINT("HEAPZONE [POSITION MD5 %s - DATA MD5 %s] NOT DUMPED - CREATING DUMP AND HARD LINK", mem_hz_md5.c_str(), hz_md5_now.c_str());
+			MYPRINT("HEAPZONE [POSITION (BEGIN 0x%08x | END 0x%08x) - DATA MD5 %s] TO DUMP! - CREATING DUMP AND HARD LINKS", hz.begin,hz.end, hz_md5_now.c_str());
 			std::string heap_bin_path  = dumpHZ(hz,hz_data,hz_md5_now);
 			std::string heap_link_name = linkHZ(heap_bin_path);
 			logHZ(heap_link_name,hz,hz_md5_now);
@@ -307,7 +307,7 @@ BOOL OepFinder::analysis(WriteInterval item, INS ins, ADDRINT prev_ip, ADDRINT c
 	//Heuristics::initFunctionCallHeuristic(curEip,&item);
  	Heuristics::yaraHeuristic();
 
-	MYINFO("CURRENT WRITE SET SIZE : %d\t START : %08x\t END : %08x\t BROKEN-FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
+	MYINFO("CURRENT WRITE SET SIZE : %d\t START : 0x%08x\t END : 0x%08x\t BROKEN-FLAG : %d", (item.getAddrEnd() - item.getAddrBegin()), item.getAddrBegin(), item.getAddrEnd(), item.getBrokenFlag());
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	std::map<std::string , HeapZone> hzs = pInfo->getHeapMap();
 	std::map<std::string , std::string> hzs_dumped = pInfo->getDumpedHZ();
