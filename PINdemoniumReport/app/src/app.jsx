@@ -20,7 +20,9 @@ var sampleData = {
     "information": {
       "entropy":5.7108359336853027,
       "name":"write_testASprotect",
-      "main_module" : {"start_address" : 4194304, "end_address" : 4259839}
+      "main_module" : {"start_address" : 4194304, "end_address" : 4259839},
+      "heap_above" : { "start_address" : 3000000, "end_address" : 4000000 },
+      "heap_below" : { "start_address" : 5000000, "end_address" : 999999999 }
     }
 }
 

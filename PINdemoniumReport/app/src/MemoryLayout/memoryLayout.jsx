@@ -9,6 +9,7 @@ class MemoryLayout extends React.Component {
     super()
     // priv method (pseudo)
     this._setHeight = this._setHeight.bind(this)
+    this._getDumpYCoord = this._getDumpYCoord.bind(this)
     this._drawMemory = this._drawMemory.bind(this)
     this._drawDump = this._drawDump.bind(this)
     this._drawConnectionArrow = this._drawConnectionArrow.bind(this)
@@ -34,6 +35,23 @@ class MemoryLayout extends React.Component {
     this.canvas.height = window.innerHeight - (navbarHeight + informationHeight + sliderHeight + 50);
   }
 
+  // get the right Y coordinate based on the position of the dump in memory
+  _getDumpYCoord(dump){
+    // if the dump addresses are in the heap above range return the correct Y
+    if(dump.start_address >= this.props.information.heap_above.start_address && dump.start_address <= this.props.information.heap_above.end_address){
+      var section = this.stage.getChildByName("heapAbove")
+    }
+    // heap 2 reange
+    else if (dump.start_address >= this.props.information.heap_below.start_address && dump.end_address <= this.props.information.heap_below.end_address){
+      var section = this.stage.getChildByName("heapBelow")
+    }
+    // main module (for simplicity if we don't know where the dump is let's put it in the main module)
+    else{
+      var section = this.stage.getChildByName("mainModule")
+    }
+    return { y : section.y, height : section.height / 3 }
+  }
+
   _drawMemory(){
     // style variables
     var strokeColor = "rgba(243,57,1,1)"
@@ -55,22 +73,26 @@ class MemoryLayout extends React.Component {
     mainModule.height = memorySpace.height / 3
     mainModule.x = memorySpace.x
     mainModule.y = memorySpace.y + mainModule.height
+    mainModule.name = "mainModule"
     mainModule.graphics.setStrokeStyle(2).beginStroke(strokeColor).beginFill(memorySectionBackroundColor).drawRect(0, 0, mainModule.width, mainModule.height);
 
     // draw the heap above the main module
     var aboveHeap = new createjs.Shape();
     aboveHeap.width = memorySpace.width
-    aboveHeap.height = memorySpace.height / 6
+    aboveHeap.height = memorySpace.height / 4
     aboveHeap.x = memorySpace.x
-    aboveHeap.y = mainModule.y - aboveHeap.height - 50
+    aboveHeap.y = memorySpace.y  + 30
+    aboveHeap.name = "heapAbove"
     aboveHeap.graphics.setStrokeStyle(2).beginStroke(strokeColor).beginFill(memorySectionBackroundColor).drawRect(0, 0, aboveHeap.width, aboveHeap.height);
 
     // draw the heap under the main module
     var underHeap = new createjs.Shape();
+    
     underHeap.width = memorySpace.width
-    underHeap.height = memorySpace.height / 6
+    underHeap.height = memorySpace.height / 4
     underHeap.x = memorySpace.x
-    underHeap.y = mainModule.y + mainModule.height + 50
+    underHeap.y = memorySpace.y + memorySpace.height - underHeap.height - 30
+    underHeap.name = "heapBelow"
     underHeap.graphics.setStrokeStyle(2).beginStroke(strokeColor).beginFill(memorySectionBackroundColor).drawRect(0, 0, underHeap.width, underHeap.height);
     
     // draw the label above the rectangle representing the process
@@ -91,26 +113,32 @@ class MemoryLayout extends React.Component {
     this._drawTitleLabel("Heap 2", textColor, underHeap.x, underHeap.y, underHeap.width, underHeap.height)
 
      // draw the address labels for the hep 2
-    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), textColor, underHeap.x, underHeap.y, underHeap.width, underHeap.height)
+    this._drawAddressesLabel(this.props.information.heap_below.start_address.toString(16), this.props.information.heap_below.end_address.toString(16), "left", textColor, underHeap.x, underHeap.y, underHeap.width, underHeap.height)
 
     // draw the address labels for the heap 1
-    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), textColor, aboveHeap.x, aboveHeap.y, aboveHeap.width, aboveHeap.height)
+    this._drawAddressesLabel(this.props.information.heap_above.start_address.toString(16), this.props.information.heap_above.end_address.toString(16), "left", textColor, aboveHeap.x, aboveHeap.y, aboveHeap.width, aboveHeap.height)
 
     // draw the address labels for the main module
-    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), textColor, mainModule.x, mainModule.y, mainModule.width, mainModule.height)
+    this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), "right", textColor, mainModule.x, mainModule.y, mainModule.width, mainModule.height)
 
     // draw tha bound of the memory
-    this._drawAddressesLabel("00", "ff", "red", memorySpace.x, memorySpace.y, memorySpace.width, memorySpace.height)
+    this._drawAddressesLabel("00", "ff", "right", "red", memorySpace.x, memorySpace.y, memorySpace.width, memorySpace.height)
     
     // update the canvas
     this.stage.update();
   }
 
   // draw the addresses label on the right of the relative shape
-  _drawAddressesLabel(startAddress, endAddress, color, relX, relY, relWidth, relheight){
+  _drawAddressesLabel(startAddress, endAddress, position, color, relX, relY, relWidth, relheight){
     var labelStartAddress = new createjs.Text("0x" + startAddress, "20px Arial", color);
     var labelEndAddress = new createjs.Text("0x" + endAddress, "20px Arial", color);
-    var labelAddressX = relX + relWidth + 10
+    if(position === "right"){
+      var labelAddressX = relX + relWidth + 20
+    }
+    else{
+      var labelAddressX = relX - 20 - labelStartAddress.getBounds().width
+    }
+    
     labelStartAddress.x = labelAddressX
     labelStartAddress.y =  relY - (labelEndAddress.getBounds().height / 2 )
     labelEndAddress.x = labelAddressX
@@ -132,9 +160,9 @@ class MemoryLayout extends React.Component {
   // draw a dump that is not connected to the previous one
   _drawSingleDump(){
 
-    var dump = this.props.dumps[0]
-
-    this._drawDump(400, dump, "DUMP " + dump.number)
+    var dump = this.props.dumps[0]    
+    var dimensions = this._getDumpYCoord(dump)
+    this._drawDump(dimensions.y + dimensions.height, dimensions.height, dump, "DUMP " + dump.number)
 
     this._drawSingleArrow(dump)
   }
@@ -143,8 +171,8 @@ class MemoryLayout extends React.Component {
   _drawInterWriteSetDump(){
 
     var dump = this.props.dumps[0]
-
-    this._drawDump(400, dump, "DUMP " + dump.number)
+    var dimensions = this._getDumpYCoord(dump)
+    this._drawDump(dimensions.y + dimensions.height, dimensions.height, dump, "DUMP " + dump.number)
 
     this._drawRecursiveArrow(dump)
   }
@@ -154,21 +182,34 @@ class MemoryLayout extends React.Component {
     // get the dumps to draw
     var startDump = this.props.dumps[startDumpIndex]
     var endDump = this.props.dumps[endDumpIndex]
-    // posiotion the two dumps correctly
-    if(startDump.start_address < endDump.start_address){
-        this._drawDump(100, startDump, "DUMP " + startDump.number)
-        this._drawDump(400, endDump, "DUMP " + endDump.number)
+
+    var dimensionsStartDump = this._getDumpYCoord(startDump)
+    var dimensionsEndDump = this._getDumpYCoord(endDump)
+
+    if(dimensionsStartDump.y == dimensionsEndDump.y){
+      var yFirstDump = dimensionsStartDump.y + dimensionsStartDump.height / 3
+      var ySecondDump = yFirstDump + dimensionsStartDump.height + dimensionsStartDump.height / 3
+
+      if(startDump.start_address < endDump.start_address){    
+        this._drawDump(yFirstDump, dimensionsStartDump.height, startDump, "DUMP " + startDump.number)
+        this._drawDump(ySecondDump, dimensionsEndDump.height, endDump, "DUMP " + endDump.number)
+      }
+      else{
+          this._drawDump(ySecondDump, dimensionsEndDump.height, startDump, "DUMP " + startDump.number)
+          this._drawDump(yFirstDump, dimensionsEndDump.height, endDump, "DUMP " + endDump.number)
+      }
     }
     else{
-        this._drawDump(400, startDump, "DUMP " + startDump.number)
-        this._drawDump(100, endDump, "DUMP " + endDump.number)
+        this._drawDump(dimensionsStartDump.y + dimensionsStartDump.height, dimensionsStartDump.height, startDump, "DUMP " + startDump.number)
+        this._drawDump(dimensionsEndDump.y + dimensionsEndDump.height, dimensionsEndDump.height, endDump, "DUMP " + endDump.number)
     }
+
     // connect them with an arrow
      this._drawConnectionArrow(startDump, endDump)
   }
 
   // draw the rectangle representing the dump with its labels
-  _drawDump(y, dump, name){
+  _drawDump(y, height, dump, name){
 
      // style variables
     var strokeColor = "rgb(126, 255, 126)"
@@ -179,7 +220,7 @@ class MemoryLayout extends React.Component {
     var dumpShape = new createjs.Shape()
     dumpShape.name = name
     dumpShape.width = this.canvas.width / 2.5
-    dumpShape.height = 100
+    dumpShape.height = height
     dumpShape.x = (this.canvas.width - dumpShape.width)/2
     dumpShape.y = y
     dumpShape.graphics.setStrokeStyle(4).beginStroke(strokeColor).beginFill(dumpBackroundColor).drawRect(0, 0, dumpShape.width, dumpShape.height);
