@@ -17,10 +17,6 @@ void HookSyscalls::syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDA
 		MYINFO("Number of syscall is %d\n", syscall_number);
 		return;
 	}
-	if(syscall_number == 0x12b){
-		MYINFO("Invoked WaitReply of syscall is %08x %d\n",PIN_GetContextReg(ctx,REG_EIP), syscall_number);
-		
-	}
 	//fill the structure with the provided info
 	syscall_t *sc = &((syscall_t *) v)[thread_id];	
 	sc->syscall_number = syscall_number;
@@ -46,10 +42,7 @@ void HookSyscalls::syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDAR
 	syscall_t *sc = &((syscall_t *) v)[thread_id];
 	//search forn an hook on exit
 	std::map<unsigned long, string>::iterator syscallMapItem = syscallsMap.find(sc->syscall_number);
-	if(sc->syscall_number == 0x12b){
-		MYINFO("Exit WaitReply of syscall is %d\n", sc->syscall_number);
-		testing=0;
-	}
+
 	if(syscallMapItem !=  syscallsMap.end()){
 		//serch if we have an hook for the syscall
 		std::map<string, syscall_hook>::iterator syscallHookItem = syscallsHooks.find(syscallMapItem->second + "_exit");

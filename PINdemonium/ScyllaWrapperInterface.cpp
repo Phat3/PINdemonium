@@ -26,8 +26,6 @@ ScyllaWrapperInterface::ScyllaWrapperInterface(void)
  plugin_full_path : full path to the dll containing the plugin
 **/
 UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::string outputFile, std::string tmpDump,  bool call_plugin_flag, std::string plugin_full_path, std::string reconstructed_imports_file){	
-	MYINFO("LAUNCHING SCYLLADUMP AS AN EXTERNAL PROCESS!!");
-	MYINFO("CURR EIP  %x",curEip);
 	std::string scylla = config->getScyllaDumperPath();
 	W::DWORD exitCode;
 	//Creating the string containing the arguments to pass to the ScyllaTest.exe
@@ -55,6 +53,7 @@ UINT32 ScyllaWrapperInterface::launchScyllaDumpAndFix(int pid, int curEip, std::
 	W::WaitForSingleObject(pi.hProcess,INFINITE);
 	W::CloseHandle(pi.hProcess);
 	W::CloseHandle(pi.hThread);
+
 	if(!Helper::existFile(outputFile)){
 		MYERRORE("Scylla Can't dump the process");
 		return exitCode;

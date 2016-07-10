@@ -105,7 +105,7 @@ UINT32 YaraHeuristic::run(){
 		result =true;
 		raw_output = ReadFromPipe(piResults);
 		matched_rules = parseYaraOutput(raw_output);
-		MYINFO("Yara raw output result %s",raw_output.c_str());
+		//MYINFO("Yara raw output result %s",raw_output.c_str());
 	}
 	else{
 		MYERRORE("error launching Yara");

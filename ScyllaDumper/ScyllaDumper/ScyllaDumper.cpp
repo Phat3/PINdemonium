@@ -38,7 +38,7 @@ int wmain(int argc, wchar_t *argv[]){
 		INFO("ScyllaTest.exe <pid> <oep> <output_file> <tmp_dump>  <reconstructed_imports_file> <call_plugin_flag> <plugin_full_path>");
 		return -1;
 	}
-	INFO("argv0 %S argv1 %S argv2 %S argv3 %S argv4 %S argv5 %S argv6 %S arg7  %S", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7]);
+	//INFO("argv0 %S argv1 %S argv2 %S argv3 %S argv4 %S argv5 %S argv6 %S arg7  %S", argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7]);
 	DWORD pid = _wtoi(argv[1]);
 	DWORD_PTR oep = wcstoul(argv[2],NULL,16);
 	WCHAR *outputFile = argv[3];
@@ -85,7 +85,8 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR *tmpDumpFil
 	if(!hMod){
 		INFO("Can't find PID");
 	}
-	INFO("GetExeModuleBase %X", hMod);
+	
+	//INFO("GetExeModuleBase %X", hMod);
 
 	//Dumping Process
 	BOOL success = GetFilePathFromPID(pid,originalExe);
@@ -93,7 +94,8 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR *tmpDumpFil
 		INFO("Error in getting original Path from Pid: %d",pid);
 		return SCYLLA_ERROR_FILE_FROM_PID;
 	}
-	INFO("Original Exe Path: %S",originalExe);
+	
+	//INFO("Original Exe Path: %S",originalExe);
 		
 	success = ScyllaDumpProcessW(pid,originalExe,hMod,oep,tmpDumpFile);
 	if(!success){
@@ -102,7 +104,8 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR *tmpDumpFil
 	}
 	INFO("[SCYLLA DUMP] Successfully dumped Pid: %d, FileToDump: %S, Hmod: %X, oep: %X, output: %S ",pid,originalExe,hMod,oep,tmpDumpFile);
 
-	INFO("[SCYLLA SEARCH] Trying advanced IAT search\n");
+	INFO("[SCYLLA DUMP] Now let's search the IAT!\n");
+	INFO("[SCYLLA SEARCH] (1) Trying with the advanced IAT search\n");
 	//Searching the IAT
 	int basic_iat_search_error = 0;
 	int adv_iat_search_error = ScyllaIatSearch(pid, &iatStart, &iatSize, oep, TRUE);
@@ -116,7 +119,7 @@ UINT32 IATAutoFix(DWORD pid, DWORD_PTR oep, WCHAR *outputFile, WCHAR *tmpDumpFil
 		else{
 			ERRORE("[SCYLLA ADVANCED SEARCH] IAT address not readable/mapped iat_start : %08x\t iat_size : %08x\n", iatStart, iatSize);
 		}
-		INFO("[SCYLLA SEARCH] Trying basic IAT search");
+		INFO("[SCYLLA SEARCH] (2) Trying basic IAT search");
 		//Trying  Basic IAT search
 		basic_iat_search_error = ScyllaIatSearch(pid, &iatStart, &iatSize, oep, FALSE);
 		if(basic_iat_search_error || !isMemoryReadable(pid, (void *) iatStart,iatSize)){

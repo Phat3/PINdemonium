@@ -47,9 +47,9 @@ KNOB <string> KnobPluginSelector(KNOB_MODE_WRITEONCE, "pintool",
 VOID Fini(INT32 code, VOID *v){
 	//inspect the write set at the end of the execution
 	WxorXHandler *wxorxHandler = WxorXHandler::getInstance();
-	MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
+	//MYINFO("WRITE SET SIZE: %d", wxorxHandler->getWritesSet().size());
 	//get the execution time
-	MYINFO("Total execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+	MYPRINT("\n\n\nTotal execution Time: %.2fs", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 	CLOSELOG();
 	Report::getInstance()->closeReport();
 }
@@ -131,7 +131,7 @@ static VOID OnThreadStart(THREADID, CONTEXT *ctxt, INT32, VOID *){
 	ProcInfo *pInfo = ProcInfo::getInstance();
 	pInfo->addThreadStackAddress(stackBase);
 	pInfo->addThreadTebAddress();
-	MYINFO("-----------------a NEW Thread started!--------------------\n");
+	//MYINFO("-----------------a NEW Thread started!--------------------\n");
 }
 
 // - if the flag is pecified start pin as launched with the flag appdebug
@@ -153,7 +153,7 @@ void ConfigureTool(){
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
 	}
 	else{
-		MYWARN("Invalid number of jumps to track, se to default value: 2\n");
+		//MYWARN("Invalid number of jumps to track, se to default value: 2\n");
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = 2; // default value is 2 if we have invalid value 
 	}
 	//get the selected plugin or return an erro if it doen't exist
@@ -218,7 +218,7 @@ int main(int argc, char * argv[]){
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
-	MYINFO("->Starting instrumented program<-\n");
+	MYINFO("\n\n---->Starting instrumented program<-----\n");
 	PIN_StartProgram();	
 	return 0;
 	

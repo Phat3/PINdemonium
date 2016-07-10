@@ -41,6 +41,8 @@ public:
 	void Config::closeLogFile();
 	void Config::writeOnTimeLog(string s);
 	void setWorking (int working);
+	void setNewWorkingDirectory();
+	string Config::getWorkingDir();
 	
 
 	//--------------------------Command line Tuning Flags----------------------------
@@ -61,6 +63,7 @@ private:
 	Config::Config(string config_path);
 	static Config* instance;
 	FILE *log_file;
+	string working_dir;
 	string base_path;
 	string not_working_path;
 	string cur_dump_path;        //Path of the final (IAT fixed) Dump

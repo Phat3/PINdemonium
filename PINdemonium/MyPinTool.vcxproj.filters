@@ -135,7 +135,7 @@
     <ClCompile Include="ReportImportedFunction.cpp">
       <Filter>Source Files\Report</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\jsoncpp-master\dist\jsoncpp.cpp">
+    <ClCompile Include="jsoncpp.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
   </ItemGroup>

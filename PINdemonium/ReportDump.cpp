@@ -14,7 +14,7 @@ ReportDump::ReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dum
 
 
 Json::Value ReportDump::toJson(){
-	MYINFO("Generating current dump report");
+	//MYINFO("Generating current dump report");
 	root["eip"] = eip;
 	root["start_address"] = start_address;
 	root["end_address"] = end_address;
