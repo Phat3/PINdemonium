@@ -11,10 +11,12 @@ class MemoryLayout extends React.Component {
     this._setHeight = this._setHeight.bind(this)
     this._drawMemory = this._drawMemory.bind(this)
     this._drawDump = this._drawDump.bind(this)
-    this._drawArrow = this._drawArrow.bind(this)
-    this._drawFirstArrow = this._drawFirstArrow.bind(this)
-    this._drawDumps = this._drawDumps.bind(this)
-    this._drawFirstDump = this._drawFirstDump.bind(this)
+    this._drawConnectionArrow = this._drawConnectionArrow.bind(this)
+    this._drawSingleArrow = this._drawSingleArrow.bind(this)
+    this._drawRecursiveArrow = this._drawRecursiveArrow.bind(this)
+    this._drawConsecutiveDumps = this._drawConsecutiveDumps.bind(this)
+    this._drawSingleDump = this._drawSingleDump.bind(this)
+    this._drawInterWriteSetDump = this._drawInterWriteSetDump.bind(this)
     this._drawAddressesLabel = this._drawAddressesLabel.bind(this)
     this._drawTitleLabel = this._drawTitleLabel.bind(this)
     //  public method (pseudo)
@@ -127,34 +129,45 @@ class MemoryLayout extends React.Component {
     this.stage.addChild(labelTitle)
   }
 
-  // draw the initial dump 
-  _drawFirstDump(){
+  // draw a dump that is not connected to the previous one
+  _drawSingleDump(){
 
     var dump = this.props.dumps[0]
 
-    this._drawDump(400, dump, "DUMP_1")
+    this._drawDump(400, dump, "DUMP " + dump.number)
 
-    this._drawFirstArrow(dump.eip)
+    this._drawSingleArrow(dump)
   }
 
-  _drawDumps(startDumpIndex, endDumpIndex){
+  // draw the dump marked as interwriteset
+  _drawInterWriteSetDump(){
 
+    var dump = this.props.dumps[0]
+
+    this._drawDump(400, dump, "DUMP " + dump.number)
+
+    this._drawRecursiveArrow(dump)
+  }
+
+  // draw two connected dumps
+  _drawConsecutiveDumps(startDumpIndex, endDumpIndex){
+    // get the dumps to draw
     var startDump = this.props.dumps[startDumpIndex]
     var endDump = this.props.dumps[endDumpIndex]
-
+    // posiotion the two dumps correctly
     if(startDump.start_address < endDump.start_address){
-        this._drawDump(100, startDump, "DUMP_1")
-        this._drawDump(400, endDump, "DUMP_2")
+        this._drawDump(100, startDump, "DUMP " + startDump.number)
+        this._drawDump(400, endDump, "DUMP " + endDump.number)
     }
     else{
-        this._drawDump(400, startDump, "DUMP_1")
-        this._drawDump(100, endDump, "DUMP_2")
+        this._drawDump(400, startDump, "DUMP " + startDump.number)
+        this._drawDump(100, endDump, "DUMP " + endDump.number)
     }
-
-     this._drawArrow(endDump.eip)
+    // connect them with an arrow
+     this._drawConnectionArrow(startDump, endDump)
   }
 
-
+  // draw the rectangle representing the dump with its labels
   _drawDump(y, dump, name){
 
      // style variables
@@ -191,13 +204,15 @@ class MemoryLayout extends React.Component {
     this.stage.update();
   }
 
-  _drawFirstArrow(oep){
+
+  // draw an arrow that point in the middle of the dump
+  _drawSingleArrow(dump){
 
      // style variables
     var strokeColor = "rgb(126, 255, 126)"
     var textColor = "rgb(126, 255, 126)"
 
-    var dump_1 = this.dumpsContainer.getChildByName("DUMP_1")
+    var dump_1 = this.dumpsContainer.getChildByName("DUMP " + dump.number)
 
     var leftOffsetArrow = 60
     var endArrowX = dump_1.x - 2
@@ -209,10 +224,10 @@ class MemoryLayout extends React.Component {
     arrow.graphics.setStrokeStyle(4)
                   .beginStroke(strokeColor)
 
-                  .moveTo(beginArrowX, beginArrowY)                             // move the corsor on the left border of the start dump
-                                                                                // and in the middle of its height
+                  .moveTo(beginArrowX, beginArrowY)                     // move the corsor on the left border of the start dump
+                                                                        // and in the middle of its height
                   
-                  .lineTo(endArrowX, beginArrowY)                               // draw a straight horizontal segment 60px on the left
+                  .lineTo(endArrowX, beginArrowY)                       // draw a straight horizontal segment until the border of the dump is reached
 
                   .moveTo(endArrowX - 25,  beginArrowY - 13)            // draw the arrowhead
 
@@ -223,7 +238,7 @@ class MemoryLayout extends React.Component {
 
     
     // place the label that display the OEP on the left of the label
-    var labelOEP = new createjs.Text("OEP : 0x" + oep.toString(16), "20px Arial", textColor);
+    var labelOEP = new createjs.Text("OEP : 0x" + dump.eip.toString(16), "20px Arial", textColor);
     labelOEP.x = beginArrowX - labelOEP.getBounds().width - 10
     labelOEP.y = beginArrowY - (labelOEP.getBounds().height / 2)
     this.dumpsContainer.addChild(arrow, labelOEP);
@@ -232,14 +247,65 @@ class MemoryLayout extends React.Component {
 
   }
 
-  _drawArrow(oep){
+  // draw an arrow that start from the current dump and arrive at the same dump
+  _drawRecursiveArrow(dump){
+
+     // style variables
+    var strokeColor = "rgb(126, 255, 126)"
+    var textColor = "rgb(126, 255, 126)"
+
+    var dump_1 = this.dumpsContainer.getChildByName("DUMP " + dump.number)
+
+    var leftOffsetArrow = 60
+    var beginArrowX = dump_1.x - 2
+    var endArrowX = beginArrowX - leftOffsetArrow
+    var beginArrowY = dump_1.y + 20
+    var endArrowY = dump_1.y + dump_1.height - 20
+
+    var arrow = new createjs.Shape();
+    arrow.name = "arrow"
+    arrow.graphics.setStrokeStyle(4)
+                  .setStrokeDash([10,10])                               // dashed line
+                  .beginStroke(strokeColor)
+
+                  .moveTo(beginArrowX, beginArrowY)                     // move the corsor on the left border of the start dump
+                                                                        // and in the middle of its height
+                  
+                  .lineTo(endArrowX, beginArrowY)                       // draw a straight horizontal segment 60px on the left
+
+                  .lineTo(endArrowX, endArrowY)                         // draw a straight vertical segment down
+
+                  .lineTo(beginArrowX, endArrowY)                       // draw a straight horizontal segment unutil the border of the dump is reached
+
+                  .setStrokeDash([0,0])                                 // remove the dash line
+
+                  .moveTo(beginArrowX - 25,  endArrowY - 13)            // draw the arrowhead
+
+                  .lineTo(beginArrowX, endArrowY)                       // draw the arrowhead
+
+                  .lineTo(beginArrowX - 25,  endArrowY + 13)            // draw the arrowhead
+    
+
+    
+    // place the label that display the OEP on the left of the label
+    var labelOEP = new createjs.Text("OEP : 0x" + dump.eip.toString(16), "20px Arial", textColor);
+    labelOEP.x = endArrowX - labelOEP.getBounds().width - 10
+    labelOEP.y = endArrowY - (labelOEP.getBounds().height / 2)
+    this.dumpsContainer.addChild(arrow, labelOEP);
+
+    this.stage.update();
+
+  }
+
+  // draw an arrow that connect the start dump with the end dump
+  _drawConnectionArrow(startDump, endDump){
 
     // style variables
     var strokeColor = "rgb(126, 255, 126)"
     var textColor = "rgb(126, 255, 126)"
 
-    var dump_1 = this.dumpsContainer.getChildByName("DUMP_1")
-    var dump_2 = this.dumpsContainer.getChildByName("DUMP_2")
+    var dump_1 = this.dumpsContainer.getChildByName("DUMP " + startDump.number)
+    var dump_2 = this.dumpsContainer.getChildByName("DUMP " + endDump.number)
 
     var beginArrowX = dump_1.x - 2
     var beginArrowY = dump_1.y + (dump_1.height / 2)
@@ -267,7 +333,7 @@ class MemoryLayout extends React.Component {
     
 
     // place the label that display the OEP on the left of the label
-    var labelOEP = new createjs.Text("OEP : 0x" + oep.toString(16), "20px Arial", textColor);
+    var labelOEP = new createjs.Text("OEP : 0x" + endDump.eip.toString(16), "20px Arial", textColor);
     labelOEP.x = beginArrowX - leftOffsetArrow - labelOEP.getBounds().width - 10
     labelOEP.y = middleArriveDumpY - (labelOEP.getBounds().height / 2)
 
@@ -287,7 +353,7 @@ class MemoryLayout extends React.Component {
     // create another "layer" for the dumps
     this.dumpsContainer = new createjs.Container()
     this.stage.addChild(this.dumpsContainer)
-    //this._drawFirstDump()
+    //this._drawInterWriteSetDump()
     // draw the initial situation (INDEX (-1,-1) IS THE INITIAL SITUATION!!!)
     //this._drawDumps(-1,-1)
   }
@@ -299,12 +365,12 @@ class MemoryLayout extends React.Component {
     this.stage.update()
     // draw the first dump
     if(startDump == -1 && endDump == 0){
-      this._drawFirstDump()
+      this._drawSingleDump()
     }
     // idf both the index are -1 we want to see the initial situation
     else if(startDump !== -1 && endDump !== -1){
       //draw the new one
-      this._drawDumps(startDump, endDump)
+      this._drawConsecutiveDumps(startDump, endDump)
     }
      
   }

@@ -41,7 +41,7 @@ class Slider extends React.Component {
     //create an item for each dump
     for (var i = 0; i < this.props.dumps.length -1 ; i++) {
       // create the component with the proper prop
-      items.push(<SliderItem key={i} id={i} onSelect={this.navigateToDump} active={i === this.state.activeItem ? true : false} endDump={ i + 1} startDump={i} />)   
+      items.push(<SliderItem key={i} id={this.props.dumps[i].number} onSelect={this.navigateToDump} active={i === this.state.activeItem ? true : false} endDump={ i + 1} startDump={i} />)   
     }
 
     return (
