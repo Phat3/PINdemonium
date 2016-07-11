@@ -77,17 +77,20 @@ An unpacker for windows executables exploiting the capabilities of PIN.
 1. Run this command from the directory **C:\pin\\**
 
 	```
-	pin -t PINdemonium.dll [-flags] -- <path_to_the_exe_to_be_instrumented>s
+	pin -t PINdemonium.dll -unp [-unpacking_flags] -antiev [-anti_evasion_flags] -- <path_to_the_exe_to_be_instrumented>s
 	```
 
 	**Flags :**
-	- **-iwae <number_of_jump_to_dump>** : specify if you want or not to track the inter_write_set analysis dumps and how many jump
+	- **unpacking flags**: To activate these flags it is necessary to add **-unp**:
+		- **-iwae <number_of_jump_to_dump>** : specify if you want or not to track the inter_write_set analysis dumps and how many jump
 		
 
-	- **-poly-patch**: if the binary you are analyzing has some kind of polymorphic behavior this activate the patch in order to avoid pin to execute the wrong trace.
+		- **-poly-patch**: if the binary you are analyzing has some kind of polymorphic behavior this activate the patch in order to avoid pin to execute the wrong trace.
 
 
-	- **-plugin <name_of_the_plugin>**: specify if you want to call a custom plugin if the IAT-fix fails (more information on in the Plugin system section).
+		- **-plugin <name_of_the_plugin>**: specify if you want to call a custom plugin if the IAT-fix fails (more information on in the Plugin system section).
+	- **anti-evasion flags**: To activate these flags it is necessary to add **-antiev**:
+		- **-antiev-sread**: Activate the Fake Read module to fake the values returned by read attempts in particular memory areas
 
 2. Check your result in **C:\pin\PINdemoniumResults\\< current_date_and_time >\\**
 

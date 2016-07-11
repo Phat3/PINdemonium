@@ -19,10 +19,7 @@ public:
 	void avoidEvasion(INS ins);
 
 private:
-	PatternMatchModule evasionPatcher;
 	FakeReadHandler fakeMemH;
-	FakeWriteHandler fakeWriteH;
 	BOOL firstRead;
-	void ScanForMappedFiles();	
 };
 

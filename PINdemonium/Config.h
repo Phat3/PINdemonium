@@ -48,7 +48,11 @@ public:
 	//--------------------------Command line Tuning Flags----------------------------
 	static const bool  ATTACH_DEBUGGER;
 	static const UINT32 MAX_JUMP_INTER_WRITE_SET_ANALYSIS;
+	
 	//Tunable from command line
+	bool ANTIEVASION_MODE;
+	bool UNPACKING_MODE;
+	bool ANTIEVASION_MODE_SREAD;
 	bool INTER_WRITESET_ANALYSIS_ENABLE; //Trigger the analysis inside a WriteSet in which WxorX is already broken if a Long JMP is encontered (MPress packer)
 	UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
 	//mode of operation

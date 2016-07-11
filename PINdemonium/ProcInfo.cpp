@@ -43,6 +43,8 @@ void ProcInfo::setPopadFlag(BOOL flag){
 }
 
 void ProcInfo::setProcName(string name){
+
+	
 	this->full_proc_name = name;
 	//get the starting position of the last element of the path (the exe name)
 	int pos_exe_name = name.find_last_of("\\");
@@ -50,6 +52,7 @@ void ProcInfo::setProcName(string name){
 	//get the name from the last occurrence of / till the end of the string minus the file extension
 	exe_name = Helper::replace_string(exe_name, " ", "");
 	this->proc_name =  exe_name.substr(0, exe_name.length() - 4);
+
 }
 
 void ProcInfo::setInitialEntropy(float Entropy){

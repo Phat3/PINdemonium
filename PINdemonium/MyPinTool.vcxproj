@@ -255,11 +255,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FakeReadHandler.cpp" />
     <ClCompile Include="GdbDebugger.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Heuristics.cpp" />
     <ClCompile Include="HookFunctions.cpp" />
     <ClCompile Include="HookSyscalls.cpp" />
+    <ClCompile Include="PINshield.cpp" />
     <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="PolymorphicCodeHandlerModule.cpp" />
     <ClCompile Include="ProcInfo.cpp" />
@@ -290,11 +292,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="FakeReadHandler.h" />
     <ClInclude Include="GdbDebugger.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="HookFunctions.h" />
     <ClInclude Include="HookSyscalls.h" />
     <ClInclude Include="json.h" />
+    <ClInclude Include="PINshield.h" />
     <ClInclude Include="PolymorphicCodeHandlerModule.h" />
     <ClInclude Include="ProcInfo.h" />
     <ClInclude Include="Heuristics.h" />

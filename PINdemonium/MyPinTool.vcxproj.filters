@@ -49,6 +49,12 @@
     <Filter Include="Source Files\Report\HeuristicsReports">
       <UniqueIdentifier>{c2100b05-693b-4635-a84b-3fb97db9d848}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\PinShield">
+      <UniqueIdentifier>{323d0bef-68ee-4619-b39d-cc1e47c29a78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PinShield">
+      <UniqueIdentifier>{bb7462fc-7176-446f-ad2f-1a517905b721}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Heuristics.cpp">
@@ -137,6 +143,12 @@
     </ClCompile>
     <ClCompile Include="jsoncpp.cpp">
       <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="FakeReadHandler.cpp">
+      <Filter>Source Files\PinShield</Filter>
+    </ClCompile>
+    <ClCompile Include="PINshield.cpp">
+      <Filter>Source Files\PinShield</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -234,6 +246,12 @@
     </ClInclude>
     <ClInclude Include="json.h">
       <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="FakeReadHandler.h">
+      <Filter>Header Files\PinShield</Filter>
+    </ClInclude>
+    <ClInclude Include="PINshield.h">
+      <Filter>Header Files\PinShield</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

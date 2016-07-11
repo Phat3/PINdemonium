@@ -164,6 +164,6 @@ private:
 	VOID addPebAddress();
 	//Library Helpers
 	string libToString(LibraryItem lib);
-	long long FindEx(W::HANDLE hProcess, W::LPVOID MemoryStart, W::DWORD MemorySize, W::LPVOID SearchPattern, W::DWORD PatternSize, W::LPBYTE WildCard);
+	
 };
 

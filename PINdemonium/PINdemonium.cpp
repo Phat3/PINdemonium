@@ -10,12 +10,13 @@
 #include "FilterHandler.h"
 #include "HookFunctions.h"
 #include "HookSyscalls.h"
+#include "PINshield.h"
 #include "PolymorphicCodeHandlerModule.h"
 namespace W {
 	#include <windows.h>
 }
 
-
+PINshield thider;
 OepFinder oepf;
 HookFunctions hookFun;
 clock_t tStart;
@@ -38,6 +39,15 @@ KNOB <BOOL> KnobNullyfyUnknownIATEntry(KNOB_MODE_WRITEONCE, "pintool",
 
 KNOB <string> KnobPluginSelector(KNOB_MODE_WRITEONCE, "pintool",
     "plugin", "" , "specify the name of the plugin you want to launch if the IAT reconstructor fails (EX : PINdemoniumStolenAPIPlugin.dll)");
+
+KNOB <BOOL> KnobUnpacking(KNOB_MODE_WRITEONCE, "pintool",
+     "unp", "false" , "specify if you want or not to activate the unpacking engine");
+
+KNOB <BOOL> KnobAntiEvasion(KNOB_MODE_WRITEONCE, "pintool",
+     "antiev", "false" , "specify if you want or not to activate the anti evasion engine");
+ 
+KNOB <BOOL> KnobAntiEvasionSuspiciousRead(KNOB_MODE_WRITEONCE, "pintool",
+     "antiev-sread", "false" , "specify if you want or not to activate the handling of suspicious reads");
 
 //------------------------------Custom option for our FindOEPpin.dll-------------------------------------------------------------------------
 
@@ -115,7 +125,15 @@ void imageLoadCallback(IMG img,void *){
 
 // trigger the instrumentation routine for each instruction
 void Instruction(INS ins,void *v){
-		oepf.IsCurrentInOEP(ins);
+	Config *config = Config::getInstance();
+ 	if(config->ANTIEVASION_MODE){
+ 		thider.avoidEvasion(ins);
+ 	}
+  	
+ 	if(config->UNPACKING_MODE){
+  		oepf.IsCurrentInOEP(ins);
+ 	}	
+		
 }
 
 // trigger the instrumentation routine for each trace collected (useful in order to spiot polymorphic code on the current trace)
@@ -145,6 +163,9 @@ void initDebug(){
 // - set the option for the current run
 void ConfigureTool(){	
 	Config *config = Config::getInstance();
+	config->UNPACKING_MODE  = KnobUnpacking.Value();
+	config->ANTIEVASION_MODE = KnobAntiEvasion.Value();
+	config->ANTIEVASION_MODE_SREAD = KnobAntiEvasionSuspiciousRead.Value();
 	config->INTER_WRITESET_ANALYSIS_ENABLE = KnobInterWriteSetAnalysis.Value();	
 	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
 	config->POLYMORPHIC_CODE_PATCH = KnobPolymorphicCodePatch.Value();

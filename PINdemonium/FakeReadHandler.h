@@ -45,7 +45,14 @@ typedef struct FakeMemoryItem{
 
 }FakeMemoryItem;
 
-
+/*
+To create a new area of memory where read operations return a differnt value from the actual one you need to:
+1. Define a FakeMemoryItem and setting startAddress and EndAddress to the value of the memory region to fake
+2. Define a fakeMemoryFunction which will be invoked when a read inside the range startAddress and EndAddress is detected. The function needs to:
+	a. Set curFakeMemory variable to the faked value 
+	b. return the address of curFakeMemory
+3. Add FakeMemoryItem to fakeMemory array inside the initFakeMemory() function 
+*/
 class FakeReadHandler
 {
 private:
@@ -66,7 +73,5 @@ public:
 	FakeReadHandler(void);
 	~FakeReadHandler(void);
 	VOID initFakeMemory();
-	static BOOL isAddrInWhiteList(ADDRINT address);
-	BOOL CheckInCurrentDlls(UINT32 address_to_check);
 	ADDRINT getFakeMemory(ADDRINT address, ADDRINT eip);
 };
