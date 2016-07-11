@@ -8,12 +8,38 @@
     <style type="text/css">
       body{
         background: rgba(45,45,45,1);
-        color : rgb(255, 113, 70);;
+        color : rgb(255, 113, 70);
       }
 
       .navbar-default{
         border : 0px;
-         background: rgba(45,45,45,1);
+        background: rgba(45,45,45,1);
+      }
+
+      .modal-content{
+        border-radius : 0px;
+        border: 3px solid rgb(126, 255, 126);
+        background : rgba(45,45,45,1);
+        color : rgb(126, 255, 126);
+      }
+
+      .modal-header{
+        text-align: center;
+        border : 0px;
+      }
+
+      .close{
+        opacity : 1;
+        text-shadow : none;
+        color: rgb(126, 255, 126);
+        margin-top: -6px;
+        font-size: 30px;
+      }
+
+       .close:hover{
+        opacity : 1;
+        text-shadow : none;
+        color: rgb(255, 113, 70);
       }
     </style>
   </head>
@@ -27,6 +53,24 @@
         <div class="container-fluid">
             <div id="app"></div>
         </div>
+
+        <div class="modal fade" tabindex="-1" role="dialog" id="modalInfo">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Modal title</h4>
+              </div>
+              <div class="modal-body">
+                <p>One fine body&hellip;</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
         
         <script src="static/js/report_builder.js"></script>
   </body>

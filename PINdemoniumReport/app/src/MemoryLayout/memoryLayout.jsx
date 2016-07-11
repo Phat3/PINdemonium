@@ -2,11 +2,15 @@ import React from 'react';
 
 import Slider from './slider.jsx'
 
+import InfoModal from './infoModal.jsx'
+
 
 class MemoryLayout extends React.Component {
 
   constructor(){
     super()
+
+    this.state = { showModal : false, activeDump : undefined }
     // priv method (pseudo)
     this._setHeight = this._setHeight.bind(this)
     this._getDumpYCoord = this._getDumpYCoord.bind(this)
@@ -22,6 +26,8 @@ class MemoryLayout extends React.Component {
     this._drawTitleLabel = this._drawTitleLabel.bind(this)
     //  public method (pseudo)
     this.updateMemory = this.updateMemory.bind(this)
+    this.showInfo = this.showInfo.bind(this)
+    this.closeInfo = this.closeInfo.bind(this)
 
   }
 
@@ -223,6 +229,8 @@ class MemoryLayout extends React.Component {
     dumpShape.height = height
     dumpShape.x = (this.canvas.width - dumpShape.width)/2
     dumpShape.y = y
+    var callbackFun = this.showInfo
+    dumpShape.addEventListener("click", function(event){ callbackFun(event, dump)})
     dumpShape.graphics.setStrokeStyle(4).beginStroke(strokeColor).beginFill(dumpBackroundColor).drawRect(0, 0, dumpShape.width, dumpShape.height);
     
     // draw the label above the rectangle representing the process
@@ -416,6 +424,15 @@ class MemoryLayout extends React.Component {
      
   }
 
+  showInfo(event, dump){
+    console.log(dump)
+    this.setState( {showModal : true, activeDump : dump});
+  }
+
+  closeInfo(){
+    this.setState( {showModal : false});
+  }
+
   render () {
 
     var highlightBorder = {
@@ -435,6 +452,8 @@ class MemoryLayout extends React.Component {
                 {slider}
             </div>
         </div>
+        <InfoModal closeInfo={this.closeInfo} show={this.state.showModal} dump={this.state.activeDump}/>
+
       </div>
     );
 
