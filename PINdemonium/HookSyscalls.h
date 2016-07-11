@@ -89,15 +89,15 @@ public:
 private:
 	//Hooks
 	//static void NtQuerySystemInformationHook(syscall_t *sc,CONTEXT *ctx, SYSCALL_STANDARD std);
-	static void NtQueryPerformanceCounterHook(syscall_t *sc,CONTEXT *ctx, SYSCALL_STANDARD std);
+
 	static void NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
-	static void NtOpenProcessEntry(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
+
 	static void NtWriteVirtualMemoryHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
 	static void NtAllocateVirtualMemoryHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
 	static void NtMapViewOfSectionHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
-	static void NtRequestWaitReplyPortHook(syscall_t *sc, CONTEXT *ctx, SYSCALL_STANDARD std);
+	
 	static void NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std);
-	static void NtQueryVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std);
+
 	//Helpers
 	static void syscallEntry(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v);
 	static void syscallExit(THREADID thread_id, CONTEXT *ctx, SYSCALL_STANDARD std, void *v);

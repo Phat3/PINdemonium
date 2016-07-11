@@ -35,8 +35,6 @@ private:
 	//check if the current instruction is a pushad or a popad
 	//if so then set the proper flags in ProcInfo
 	void handlePopadAndPushad(INS ins);
-
-
 	BOOL analysis(WriteInterval* item, INS ins, ADDRINT prev_ip, ADDRINT curEip , int dumpAndFixResult);
 	UINT32 checkHeapWxorX(WriteInterval* item, ADDRINT curEip , int dumpAndFixResult);
 	VOID saveHeapZones(std::map<std::string , HeapZone> hzs , std::map<std::string,std::string> hzs_dumped);

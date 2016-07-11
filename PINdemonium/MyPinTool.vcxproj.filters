@@ -141,6 +141,9 @@
     <ClCompile Include="md5.cpp">
       <Filter>Source Files\Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="ProcessInjectionModule.cpp">
+      <Filter>Source Files\PINdemonium</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README">
@@ -240,6 +243,9 @@
     </ClInclude>
     <ClInclude Include="md5.h">
       <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessInjectionModule.h">
+      <Filter>Header Files\PINdemonium</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
