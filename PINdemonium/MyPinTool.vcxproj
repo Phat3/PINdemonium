@@ -263,6 +263,7 @@
     <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="md5.cpp" />
     <ClCompile Include="PolymorphicCodeHandlerModule.cpp" />
+    <ClCompile Include="ProcessInjectionModule.cpp" />
     <ClCompile Include="ProcInfo.cpp" />
     <ClCompile Include="EntropyHeuristic.cpp" />
     <ClCompile Include="FilterHandler.cpp" />
@@ -298,6 +299,7 @@
     <ClInclude Include="json.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="PolymorphicCodeHandlerModule.h" />
+    <ClInclude Include="ProcessInjectionModule.h" />
     <ClInclude Include="ProcInfo.h" />
     <ClInclude Include="Heuristics.h" />
     <ClInclude Include="EntropyHeuristic.h" />

@@ -18,17 +18,17 @@ public:
 	//manage the write set that contains the WriteInterval written by the program
 	VOID writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size);
 	//check if the W xor X law is broken
-	UINT32 getWxorXindex(ADDRINT ip);
+	WriteInterval* getWxorXinterval(ADDRINT ip);
 	//delete the analyzed WriteInterval
 	VOID deleteWriteItem(UINT32 writeItemIndex);
 	//getter for the data structure
 	std::vector<WriteInterval> getWritesSet();
 	VOID displayWriteSet();
-	VOID setBrokenFlag(int writeItemIndex);
 	VOID incrementCurrJMPNumber(int writeItemIndex);
-	std::vector<WriteInterval> WritesSet;
+	
 
 private: 
+	std::vector<WriteInterval> WritesSet;
 	 static WxorXHandler* instance;
 	 WxorXHandler(){};
 
