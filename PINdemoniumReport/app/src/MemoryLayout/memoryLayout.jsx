@@ -44,11 +44,11 @@ class MemoryLayout extends React.Component {
   // get the right Y coordinate based on the position of the dump in memory
   _getDumpYCoord(dump){
     // if the dump addresses are in the heap above range return the correct Y
-    if(dump.start_address >= this.props.information.heap_above.start_address && dump.start_address <= this.props.information.heap_above.end_address){
+    if(dump.start_address < this.props.information.main_module.start_address){
       var section = this.stage.getChildByName("heapAbove")
     }
     // heap 2 reange
-    else if (dump.start_address >= this.props.information.heap_below.start_address && dump.end_address <= this.props.information.heap_below.end_address){
+    else if (dump.start_address > this.props.information.main_module.end_address){
       var section = this.stage.getChildByName("heapBelow")
     }
     // main module (for simplicity if we don't know where the dump is let's put it in the main module)
@@ -117,12 +117,6 @@ class MemoryLayout extends React.Component {
 
     // draw the label for the heap 2
     this._drawTitleLabel("Heap 2", textColor, underHeap.x, underHeap.y, underHeap.width, underHeap.height)
-
-     // draw the address labels for the hep 2
-    this._drawAddressesLabel(this.props.information.heap_below.start_address.toString(16), this.props.information.heap_below.end_address.toString(16), "left", textColor, underHeap.x, underHeap.y, underHeap.width, underHeap.height)
-
-    // draw the address labels for the heap 1
-    this._drawAddressesLabel(this.props.information.heap_above.start_address.toString(16), this.props.information.heap_above.end_address.toString(16), "left", textColor, aboveHeap.x, aboveHeap.y, aboveHeap.width, aboveHeap.height)
 
     // draw the address labels for the main module
     this._drawAddressesLabel(this.props.information.main_module.start_address.toString(16), this.props.information.main_module.end_address.toString(16), "right", textColor, mainModule.x, mainModule.y, mainModule.width, mainModule.height)
@@ -413,7 +407,7 @@ class MemoryLayout extends React.Component {
     this.dumpsContainer.removeAllChildren()
     this.stage.update()
     // draw the first dump
-    if(startDump == -1 && endDump == 0){
+    if(startDump !== endDumo - 1){
       this._drawSingleDump()
     }
     // idf both the index are -1 we want to see the initial situation
