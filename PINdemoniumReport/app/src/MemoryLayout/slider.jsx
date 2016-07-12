@@ -9,14 +9,38 @@ class Slider extends React.Component {
     super()
     // keep trackof the highlighted "dot"
     this.state = { activeItem : -2 }
-    this.navigateToDump = this.navigateToDump.bind(this)
+    this.navigateToEmptyMemory = this.navigateToEmptyMemory.bind(this)
+    this.navigateToSingleDump = this.navigateToSingleDump.bind(this)
+    this.navigateToIntraWriteSetDump = this.navigateToIntraWriteSetDump.bind(this)
+    this.navigateToConsecutiveDump = this.navigateToConsecutiveDump.bind(this)
   }
 
   // method passed as callback parameter to children components
   // this method will be called when an item on the slider is clicked
-  navigateToDump(id, startDump, endDump){
+  navigateToEmptyMemory(id, startDump, endDump){
     this.setState({ activeItem : id })
-    this.props.onUpdate(startDump, endDump)
+    this.props.onEmptyMemory()
+  }
+
+  // method passed as callback parameter to children components
+  // this method will be called when an item on the slider is clicked
+  navigateToSingleDump(id, startDump, endDump){
+    this.setState({ activeItem : id })
+    this.props.onSingleDump(startDump)
+  }
+
+  // method passed as callback parameter to children components
+  // this method will be called when an item on the slider is clicked
+  navigateToIntraWriteSetDump(id, startDump, endDump){
+    this.setState({ activeItem : id })
+    this.props.onIntraWriteSetDump(startDump)
+  }
+
+  // method passed as callback parameter to children components
+  // this method will be called when an item on the slider is clicked
+  navigateToConsecutiveDump(id, startDump, endDump){
+    this.setState({ activeItem : id })
+    this.props.onConsecutiveDumps(startDump, endDump)
   }
 
   render () {
@@ -35,16 +59,21 @@ class Slider extends React.Component {
     })
     */
     var items = [
-      <SliderItem key={-2} id={-2} onSelect={this.navigateToDump} active={this.state.activeItem === -2 ? true : false} endDump={-2} startDump={-2} />,
-      <SliderItem key={-1} id={-1} onSelect={this.navigateToDump} active={this.state.activeItem === -1 ? true : false} endDump={0} startDump={-2} />
+      <SliderItem key={-2} id={-2} onSelect={this.navigateToEmptyMemory} active={this.state.activeItem === -2 ? true : false} endDump={undefined} startDump={undefined} />,
+      <SliderItem key={-1} id={-1} onSelect={this.navigateToSingleDump} active={this.state.activeItem === -1 ? true : false} endDump={undefined} startDump={0} />
     ]    
     //create an item for each dump
     for (var i = 0; i < this.props.dumps.length -1 ; i++) {
       if(this.props.dumps[i].intra_writeset){
-        items.push(<SliderItem key={i} id={this.props.dumps[i].number} onSelect={this.navigateToDump} active={i === this.state.activeItem ? true : false} endDump={this.props.dumps[i]} startDump={i} />)   
+        items.push(<SliderItem key={i} id={this.props.dumps[i].number} onSelect={this.navigateToIntraWriteSetDump} active={i === this.state.activeItem ? true : false} endDump={undefined} startDump={i} />)   
       }
-      // create the component with the proper prop
-      items.push(<SliderItem key={i} id={this.props.dumps[i].number} onSelect={this.navigateToDump} active={i === this.state.activeItem ? true : false} endDump={this.props.dumps[i + 1]} startDump={i} />)   
+      else if(i + 1 < this.props.dumps.length  && this.props.dumps[i].number + 1 == this.props.dumps[i+1].number){
+        items.push(<SliderItem key={i} id={this.props.dumps[i].number} onSelect={this.navigateToConsecutiveDump} active={i === this.state.activeItem ? true : false} endDump={i + 1} startDump={i} />)   
+      }
+      else{
+        // create the component with the proper prop
+        items.push(<SliderItem key={i} id={this.props.dumps[i].number} onSelect={this.navigateToSingleDump} active={i === this.state.activeItem ? true : false} endDump={undefined} startDump={i} />)   
+      }
     }
 
     return (
@@ -58,7 +87,10 @@ class Slider extends React.Component {
 }
 
 Slider.propTypes = {
-  onUpdate: React.PropTypes.func.isRequired 
+  onEmptyMemory: React.PropTypes.func.isRequired,
+  onSingleDump: React.PropTypes.func.isRequired,
+  onConsecutiveDumps: React.PropTypes.func.isRequired,
+  onIntraWriteSetDump: React.PropTypes.func.isRequired 
 }
 
 export default Slider;

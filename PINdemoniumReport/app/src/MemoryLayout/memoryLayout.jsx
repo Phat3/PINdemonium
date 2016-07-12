@@ -19,13 +19,13 @@ class MemoryLayout extends React.Component {
     this._drawConnectionArrow = this._drawConnectionArrow.bind(this)
     this._drawSingleArrow = this._drawSingleArrow.bind(this)
     this._drawRecursiveArrow = this._drawRecursiveArrow.bind(this)
-    this._drawConsecutiveDumps = this._drawConsecutiveDumps.bind(this)
-    this._drawSingleDump = this._drawSingleDump.bind(this)
-    this._drawInterWriteSetDump = this._drawInterWriteSetDump.bind(this)
     this._drawAddressesLabel = this._drawAddressesLabel.bind(this)
     this._drawTitleLabel = this._drawTitleLabel.bind(this)
     //  public method (pseudo)
-    this.updateMemory = this.updateMemory.bind(this)
+    this.drawEmptyMemory = this.drawEmptyMemory.bind(this)
+    this.drawConsecutiveDumps = this.drawConsecutiveDumps.bind(this)
+    this.drawSingleDump = this.drawSingleDump.bind(this)
+    this.drawIntraWriteSetDump = this.drawIntraWriteSetDump.bind(this)
     this.showInfo = this.showInfo.bind(this)
     this.closeInfo = this.closeInfo.bind(this)
 
@@ -155,57 +155,6 @@ class MemoryLayout extends React.Component {
     labelTitle.y = relY + (relHeight / 2) - (labelTitleBounds.height / 2)
 
     this.stage.addChild(labelTitle)
-  }
-
-  // draw a dump that is not connected to the previous one
-  _drawSingleDump(){
-
-    var dump = this.props.dumps[0]    
-    var dimensions = this._getDumpYCoord(dump)
-    this._drawDump(dimensions.y + dimensions.height, dimensions.height, dump, "DUMP " + dump.number)
-
-    this._drawSingleArrow(dump)
-  }
-
-  // draw the dump marked as interwriteset
-  _drawInterWriteSetDump(){
-
-    var dump = this.props.dumps[0]
-    var dimensions = this._getDumpYCoord(dump)
-    this._drawDump(dimensions.y + dimensions.height, dimensions.height, dump, "DUMP " + dump.number)
-
-    this._drawRecursiveArrow(dump)
-  }
-
-  // draw two connected dumps
-  _drawConsecutiveDumps(startDumpIndex, endDumpIndex){
-    // get the dumps to draw
-    var startDump = this.props.dumps[startDumpIndex]
-    var endDump = this.props.dumps[endDumpIndex]
-
-    var dimensionsStartDump = this._getDumpYCoord(startDump)
-    var dimensionsEndDump = this._getDumpYCoord(endDump)
-
-    if(dimensionsStartDump.y == dimensionsEndDump.y){
-      var yFirstDump = dimensionsStartDump.y + dimensionsStartDump.height / 3
-      var ySecondDump = yFirstDump + dimensionsStartDump.height + dimensionsStartDump.height / 3
-
-      if(startDump.start_address < endDump.start_address){    
-        this._drawDump(yFirstDump, dimensionsStartDump.height, startDump, "DUMP " + startDump.number)
-        this._drawDump(ySecondDump, dimensionsEndDump.height, endDump, "DUMP " + endDump.number)
-      }
-      else{
-          this._drawDump(ySecondDump, dimensionsEndDump.height, startDump, "DUMP " + startDump.number)
-          this._drawDump(yFirstDump, dimensionsEndDump.height, endDump, "DUMP " + endDump.number)
-      }
-    }
-    else{
-        this._drawDump(dimensionsStartDump.y + dimensionsStartDump.height, dimensionsStartDump.height, startDump, "DUMP " + startDump.number)
-        this._drawDump(dimensionsEndDump.y + dimensionsEndDump.height, dimensionsEndDump.height, endDump, "DUMP " + endDump.number)
-    }
-
-    // connect them with an arrow
-     this._drawConnectionArrow(startDump, endDump)
   }
 
   // draw the rectangle representing the dump with its labels
@@ -401,22 +350,64 @@ class MemoryLayout extends React.Component {
     //this._drawDumps(-1,-1)
   }
 
-  // update the canvas in order to visualize the new dumps situation
-  updateMemory(startDump, endDump){
+  drawEmptyMemory(){
     //clear the old canvas
     this.dumpsContainer.removeAllChildren()
     this.stage.update()
-    // draw the first dump
-    if(startDump !== endDumo - 1){
-      this._drawSingleDump()
-    }
-    // idf both the index are -1 we want to see the initial situation
-    else if(startDump !== -1 && endDump !== -1){
-      //draw the new one
-      this._drawConsecutiveDumps(startDump, endDump)
-    }
-     
   }
+
+   // draw a dump that is not connected to the previous one
+  drawSingleDump(dumpIndex){
+    this.drawEmptyMemory()
+    var dump = this.props.dumps[dumpIndex]    
+    var dimensions = this._getDumpYCoord(dump)
+    this._drawDump(dimensions.y + dimensions.height, dimensions.height, dump, "DUMP " + dump.number)
+
+    this._drawSingleArrow(dump)
+  }
+
+  // draw the dump marked as interwriteset
+  drawIntraWriteSetDump(dumpIndex){
+    this.drawEmptyMemory()
+    var dump = this.props.dumps[dumpIndex]
+    var dimensions = this._getDumpYCoord(dump)
+    this._drawDump(dimensions.y + dimensions.height, dimensions.height, dump, "DUMP " + dump.number)
+
+    this._drawRecursiveArrow(dump)
+  }
+
+  // draw two connected dumps
+  drawConsecutiveDumps(startDumpIndex, endDumpIndex){
+    this.drawEmptyMemory()
+    // get the dumps to draw
+    var startDump = this.props.dumps[startDumpIndex]
+    var endDump = this.props.dumps[endDumpIndex]
+
+    var dimensionsStartDump = this._getDumpYCoord(startDump)
+    var dimensionsEndDump = this._getDumpYCoord(endDump)
+
+    if(dimensionsStartDump.y == dimensionsEndDump.y){
+      var yFirstDump = dimensionsStartDump.y + dimensionsStartDump.height / 3
+      var ySecondDump = yFirstDump + dimensionsStartDump.height + dimensionsStartDump.height / 3
+
+      if(startDump.start_address < endDump.start_address){    
+        this._drawDump(yFirstDump, dimensionsStartDump.height, startDump, "DUMP " + startDump.number)
+        this._drawDump(ySecondDump, dimensionsEndDump.height, endDump, "DUMP " + endDump.number)
+      }
+      else{
+          this._drawDump(ySecondDump, dimensionsEndDump.height, startDump, "DUMP " + startDump.number)
+          this._drawDump(yFirstDump, dimensionsEndDump.height, endDump, "DUMP " + endDump.number)
+      }
+    }
+    else{
+        this._drawDump(dimensionsStartDump.y + dimensionsStartDump.height, dimensionsStartDump.height, startDump, "DUMP " + startDump.number)
+        this._drawDump(dimensionsEndDump.y + dimensionsEndDump.height, dimensionsEndDump.height, endDump, "DUMP " + endDump.number)
+    }
+
+    // connect them with an arrow
+     this._drawConnectionArrow(startDump, endDump)
+  }
+
 
   showInfo(event, dump){
     console.log(dump)
@@ -435,7 +426,11 @@ class MemoryLayout extends React.Component {
       background: "rgba(51,51,51,1)"
     }
     // if the report contains no dump then don't show the slider 
-    var slider = this.props.dumps.length === 0 ? <h3>Sorry there are no dump in this report...</h3> : <Slider dumps={this.props.dumps} onUpdate={this.updateMemory}/>
+    var slider = this.props.dumps.length === 0 ? <h3>Sorry there are no dump in this report...</h3> : <Slider dumps={this.props.dumps} 
+                                                                                                              onEmptyMemory={this.drawEmptyMemory}
+                                                                                                              onSingleDump={this.drawSingleDump} 
+                                                                                                              onIntraWriteSetDump={this.drawIntraWriteSetDump} 
+                                                                                                              onConsecutiveDumps={this.drawConsecutiveDumps}/>
 
     return (
       <div>
