@@ -32,9 +32,9 @@ BOOL WxorXHandler::isWriteINS(INS ins){
 
 // - Calculate the target of the write (end_addr)
 // - Update an existing WriteInterval / create a new one
-VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size){
+VOID WxorXHandler::writeSetManager(ADDRINT start_addr, UINT32 size){
 	std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer.at(this->pid);
-	this->_writeSetManager(ip,start_addr,size,currentWriteSet);
+	this->_writeSetManager(start_addr,size,currentWriteSet);
 	
 }
 
@@ -46,15 +46,15 @@ WriteInterval* WxorXHandler::getWxorXinterval(ADDRINT ip){
 
 // - Calculate the target of the write (end_addr)
 // - Update an existing WriteInterval / create a new one
-VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size,W::DWORD pid){
+VOID WxorXHandler::writeSetManager( ADDRINT start_addr, UINT32 size,W::DWORD pid){
 	try{
 		std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer.at(pid);
-		this->_writeSetManager(ip,start_addr,size,currentWriteSet);
+		this->_writeSetManager(start_addr,size,currentWriteSet);
 	}
 	catch (const std::out_of_range& oor) {
 		this->WriteSetContainer.insert(std::pair<W::DWORD,std::vector<WriteInterval>>(this->pid, std::vector<WriteInterval>()));
 		std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer.at(pid);
-		this->_writeSetManager(ip,start_addr,size,currentWriteSet);
+		this->_writeSetManager(start_addr,size,currentWriteSet);
 	}
 	
 	
@@ -90,7 +90,7 @@ VOID WxorXHandler::displayWriteSet(){
 
 //----------------------- PRIVATES METHODS -----------------------
 
-VOID WxorXHandler::_writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size,std::vector<WriteInterval> &currentWriteSet){
+VOID WxorXHandler::_writeSetManager( ADDRINT start_addr, UINT32 size,std::vector<WriteInterval> &currentWriteSet){
 	//check if the write is on the heap
 	bool isheap = ProcInfo::getInstance()->searchHeapMap(start_addr);
 

@@ -3,9 +3,11 @@
 
 ProcessInjectionModule::ProcessInjectionModule(void)
 {
+	wxorxHandler = WxorXHandler::getInstance();
+
 }
 
 
-ProcessInjectionModule::~ProcessInjectionModule(void)
-{
+VOID ProcessInjectionModule::AddInjectedWrite(ADDRINT start, UINT32 size, W::DWORD pid ){
+	wxorxHandler->writeSetManager(start,size,pid);
 }

@@ -16,12 +16,12 @@ public:
 	//check if the current instruction is a write operation
 	BOOL isWriteINS(INS ins);
 	//manage the write set that contains the WriteInterval written by the program
-	VOID writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size);
+	VOID writeSetManager(ADDRINT start_addr, UINT32 size);
 	//check if the W xor X law is broken
 	WriteInterval* getWxorXinterval(ADDRINT ip);
 
 	//manage the write set that contains the WriteInterval written by the program and injected in another process
-	VOID writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size, W::DWORD pid);
+	VOID writeSetManager(ADDRINT start_addr, UINT32 size, W::DWORD pid);
 	//check if the W xor X law is broken inside injected process
 	WriteInterval* getWxorXinterval(ADDRINT ip, W::DWORD pid);
 	VOID displayWriteSet();
@@ -31,7 +31,7 @@ public:
 private: 
 	map<W::DWORD, std::vector<WriteInterval>> WriteSetContainer;
 	
-	VOID _writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size,std::vector<WriteInterval> &currentWriteSet);
+	VOID _writeSetManager( ADDRINT start_addr, UINT32 size,std::vector<WriteInterval> &currentWriteSet);
 	WriteInterval* _getWxorXinterval(ADDRINT ip,std::vector<WriteInterval> &currentWriteSet);
 	
 	//std::vector<WriteInterval> WritesSet;

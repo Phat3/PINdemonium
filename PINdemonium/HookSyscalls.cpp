@@ -106,12 +106,14 @@ void HookSyscalls::NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , 
 }
 
 void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
-	/*W::HANDLE process = (W::HANDLE)sc->arg1;
-	W::DWORD BaseAddress = (W::DWORD) sc->arg2;
-	W::DWORD ViewSize = (W::DWORD) sc->arg6;
+	W::HANDLE process = (W::HANDLE)sc->arg1;
+	W::PVOID *BaseAddress = (W::PVOID *) sc->arg2;
+	W::PSIZE_T ViewSize = (W::PSIZE_T) sc->arg6;
+	
 	W::DWORD pid = W::GetProcessId(process);
-	MYINFO("Process pid %d  baseAddr %08x Size %08x ",pid,BaseAddress,ViewSize);
-	*/
+	printf("Process pid %d  baseAddr %08x Size %08x ",pid,*BaseAddress,*ViewSize);
+	MYINFO("Process pid %d  baseAddr %08x Size %08x ",pid,*BaseAddress,*ViewSize);
+	
 }
 
 
@@ -170,7 +172,7 @@ void HookSyscalls::initHooks(){
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtAllocateVirtualMemory_exit",&HookSyscalls::NtAllocateVirtualMemoryHook));
 	//hxxp://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FMemory%20Management%2FVirtual%20Memory%2FNtWriteVirtualMemory.html
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtWriteVirtualMemory_entry",&HookSyscalls::NtWriteVirtualMemoryHook));
-	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_entry",&HookSyscalls::NtMapViewOfSectionHook));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryInformationProcess_exit",&HookSyscalls::NtQueryInformationProcessHook));
 	// allocate syscall information struct
 	static syscall_t sc[256] = {0};
