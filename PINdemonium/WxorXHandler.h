@@ -16,21 +16,23 @@ public:
 	//check if the current instruction is a write operation
 	BOOL isWriteINS(INS ins);
 	//manage the write set that contains the WriteInterval written by the program
-	VOID writeSetManager(ADDRINT ip, ADDRINT end_addr, UINT32 size);
+	VOID writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size);
 	//check if the W xor X law is broken
 	WriteInterval* getWxorXinterval(ADDRINT ip);
-	//delete the analyzed WriteInterval
-	VOID deleteWriteItem(UINT32 writeItemIndex);
-	//getter for the data structure
-	std::vector<WriteInterval> getWritesSet();
 	VOID displayWriteSet();
 	VOID incrementCurrJMPNumber(int writeItemIndex);
 	
 
 private: 
-	std::vector<WriteInterval> WritesSet;
+	map<W::DWORD, std::vector<WriteInterval>> WriteSetContainer;
+	
+	VOID _writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size,std::vector<WriteInterval> &currentWriteSet);
+	WriteInterval* _getWxorXinterval(ADDRINT ip,std::vector<WriteInterval> &currentWriteSet);
+	
+	//std::vector<WriteInterval> WritesSet;
 	 static WxorXHandler* instance;
-	 WxorXHandler(){};
+	 WxorXHandler();
+	 W::DWORD pid;
 
 };
 

@@ -338,11 +338,7 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	Config * config = Config::getInstance();
 	string outputFile = config->getCurrentDumpFilePath();
 	string reconstructed_imports_file  = config->getCurrentReconstructedImportsPath();
-<<<<<<< Updated upstream
 	string tmpDump = outputFile + "_dmp";
-=======
-	string tmpDump = outputFile + "_tmp";
->>>>>>> Stashed changes
 	//std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());
 	string plugin_full_path = config->PLUGIN_FULL_PATH;	
 	MYINFO("Calling scylla with : Current PID %d, Current output file dump %s, Plugin %d",pid, outputFile.c_str(), config->PLUGIN_FULL_PATH.c_str());

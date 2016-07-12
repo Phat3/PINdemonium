@@ -73,10 +73,7 @@ void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx,
 
 
 
-void HookSyscalls::NtWriteVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx, SYSCALL_STANDARD std){
-	W::PVOID address_to_write = (W::PVOID)sc->arg1; // get the address where the syscall is writing 
-	W::ULONG number_of_bytes_to_write = (W::ULONG)sc->arg3; // get how many bytes it is trying to write 
-}
+
 
 void HookSyscalls::NtAllocateVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
 	W::PVOID base_address_pointer = (W::PVOID) sc->arg1;
@@ -109,8 +106,24 @@ void HookSyscalls::NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , 
 }
 
 void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
+	/*W::HANDLE process = (W::HANDLE)sc->arg1;
+	W::DWORD BaseAddress = (W::DWORD) sc->arg2;
+	W::DWORD ViewSize = (W::DWORD) sc->arg6;
+	W::DWORD pid = W::GetProcessId(process);
+	MYINFO("Process pid %d  baseAddr %08x Size %08x ",pid,BaseAddress,ViewSize);
+	*/
 }
 
+
+void HookSyscalls::NtWriteVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx, SYSCALL_STANDARD std){
+	W::HANDLE process = (W::HANDLE)sc->arg0;
+	W::PVOID address_to_write = (W::PVOID)sc->arg1; // get the address where the syscall is writing 
+	W::ULONG number_of_bytes_to_write = (W::ULONG)sc->arg3; // get how many bytes it is trying to write 
+	W::DWORD injected_pid = W::GetProcessId(process);
+	if(injected_pid != W::GetCurrentProcessId()){
+		
+	}
+}
 
 
 //----------------------------- END HOOKS -----------------------------//
