@@ -19,6 +19,11 @@ public:
 	VOID writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size);
 	//check if the W xor X law is broken
 	WriteInterval* getWxorXinterval(ADDRINT ip);
+
+	//manage the write set that contains the WriteInterval written by the program and injected in another process
+	VOID writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size, W::DWORD pid);
+	//check if the W xor X law is broken inside injected process
+	WriteInterval* getWxorXinterval(ADDRINT ip, W::DWORD pid);
 	VOID displayWriteSet();
 	VOID incrementCurrJMPNumber(int writeItemIndex);
 	

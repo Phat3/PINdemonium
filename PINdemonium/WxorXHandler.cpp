@@ -44,6 +44,34 @@ WriteInterval* WxorXHandler::getWxorXinterval(ADDRINT ip){
 	return this->_getWxorXinterval(ip,currentWriteSet);	
 }
 
+// - Calculate the target of the write (end_addr)
+// - Update an existing WriteInterval / create a new one
+VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size,W::DWORD pid){
+	try{
+		std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer.at(pid);
+		this->_writeSetManager(ip,start_addr,size,currentWriteSet);
+	}
+	catch (const std::out_of_range& oor) {
+		this->WriteSetContainer.insert(std::pair<W::DWORD,std::vector<WriteInterval>>(this->pid, std::vector<WriteInterval>()));
+		std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer.at(pid);
+		this->_writeSetManager(ip,start_addr,size,currentWriteSet);
+	}
+	
+	
+}
+
+//return the WriteItem index inside our vector that broke the W xor X index
+WriteInterval* WxorXHandler::getWxorXinterval(ADDRINT ip,W::DWORD pid){
+	try{
+		std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer.at(pid);
+		return this->_getWxorXinterval(ip,currentWriteSet);
+	}
+	catch (const std::out_of_range& oor) {
+		return NULL;
+	}
+}
+
+
 
 
 VOID WxorXHandler::incrementCurrJMPNumber(int writeItemIndex){
