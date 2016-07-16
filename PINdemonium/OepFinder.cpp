@@ -12,13 +12,13 @@ OepFinder::~OepFinder(void){
 static bool start_dump = false;
 
 //update the write set manager
-VOID handleWrite(ADDRINT ip, ADDRINT end_addr, UINT32 size, void *handler){		
+VOID handleWrite(ADDRINT ip, ADDRINT start_addr, UINT32 size, void *handler){		
 	FilterHandler *filterHandler = FilterHandler::getInstance();
 	//check if the target address belongs to some filtered range		
-	if(!filterHandler->isFilteredWrite(end_addr,ip)){
+	if(!filterHandler->isFilteredWrite(start_addr,ip)){
 		//if not update the write set		
 		WxorXHandler *WHandler = (WxorXHandler *)handler;
-		WHandler->writeSetManager(ip, end_addr, size);
+		WHandler->writeSetManager(start_addr, size);
 	}	
 }
 
