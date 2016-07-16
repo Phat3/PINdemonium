@@ -101,7 +101,7 @@ UINT32 YaraHeuristic::run(vector<string> paths_to_analyse){
 		global_matched_rules.insert(global_matched_rules.end(),cur_matched_rules.begin(),cur_matched_rules.end());
 	}
 	
-	if(global_matched_rules.empty()){
+	if(!global_matched_rules.empty()){
 		result = true;
 	}
 

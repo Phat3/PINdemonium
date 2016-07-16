@@ -2,6 +2,7 @@
 #include "pin.H"
 #include "WxorXHandler.h"
 #include "Report.h"
+#include "Heuristics.h"
 namespace W{
 	#include "windows.h"
 }

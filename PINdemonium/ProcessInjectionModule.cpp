@@ -39,8 +39,17 @@ VOID ProcessInjectionModule::HandleInjectedMemory(std::vector<WriteInterval>* cu
 	
 	
 	for(std::vector<WriteInterval>::iterator item = currentWriteSet->begin(); item != currentWriteSet->end(); ++item) {
+		
 		string cur_dump_path = DumpRemoteWriteInterval(&(*item), pid);
+		
 		report->createReportDump(item->getAddrBegin(),item->getAddrBegin(),item->getAddrEnd(),Config::getInstance()->getDumpNumber(),false,pid);
+		//the memory has been dumped correctly and we have the path to the dump
+		if (cur_dump_path != ""){
+			vector<string> dumps_to_analyse;
+			dumps_to_analyse.push_back(cur_dump_path);
+			Heuristics::yaraHeuristic(dumps_to_analyse);
+		}
+		
 		report->closeReportDump();
 		config->incrementDumpNumber();
 
