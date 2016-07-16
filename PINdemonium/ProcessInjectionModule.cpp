@@ -27,7 +27,7 @@ VOID ProcessInjectionModule::AddInjectedWrite(ADDRINT start, UINT32 size, W::DWO
 VOID ProcessInjectionModule::CheckInjectedExecution(W::DWORD pid ){
 	std::vector<WriteInterval>* currentWriteSet =  WxorXHandler::getInstance()->getWxorXintervalInjected(pid);
 	if(currentWriteSet){
-		printf("identified injection and execution");
+		MYINFO("Identify Injected execution %d",pid);
 		HandleInjectedMemory(currentWriteSet,pid);
 		wxorxHandler->clearWriteSet(pid); //clear the dumped writeItems from the current WriteSet
 	}
@@ -35,15 +35,12 @@ VOID ProcessInjectionModule::CheckInjectedExecution(W::DWORD pid ){
 
 
 VOID ProcessInjectionModule::HandleInjectedMemory(std::vector<WriteInterval>* currentWriteSet,W::DWORD pid){
-	MYINFO("Dumping memory from %d",pid);
-	
 	
 	for(std::vector<WriteInterval>::iterator item = currentWriteSet->begin(); item != currentWriteSet->end(); ++item) {
-		
-		string cur_dump_path = DumpRemoteWriteInterval(&(*item), pid);
-		
+		MYINFO("Trying to dump injected memory inside pid %d from addr %08x to %08x",pid,item->getAddrBegin(),item->getAddrEnd());
+		string cur_dump_path = DumpRemoteWriteInterval(&(*item), pid);	
 		report->createReportDump(item->getAddrBegin(),item->getAddrBegin(),item->getAddrEnd(),Config::getInstance()->getDumpNumber(),false,pid);
-		//the memory has been dumped correctly and we have the path to the dump
+		//check if the memory has been dumped correctly and we have the path to the dump
 		if (cur_dump_path != ""){
 			vector<string> dumps_to_analyse;
 			dumps_to_analyse.push_back(cur_dump_path);
@@ -67,11 +64,11 @@ string ProcessInjectionModule::DumpRemoteWriteInterval(WriteInterval* item,W::DW
 	if(W::ReadProcessMemory(process,(W::LPVOID)item->getAddrBegin(),buffer,  size,&dwBytesRead)){
 		string path = config->getInjectionDir()+"/injection_" + std::to_string((long double)pid)+"_"+std::to_string((long double)config->getDumpNumber())+".bin";
 		WriteBufferToFile(buffer,size,path);
-		MYINFO("Remote injection inside pid %d dumped at %s",pid,path.c_str());
+		MYINFO("Dumped remote injected memory inside pid %d to %s",pid,path.c_str());
 		return path;
 	}
 	else{
-		MYERRORE("Error reading injected process memory %s",W::GetLastError());
+		MYERRORE("Error reading injected process %d  memory %s",pid,W::GetLastError());
 		return "";
 	}	
 

@@ -51,7 +51,6 @@ VOID WxorXHandler::writeSetManager( ADDRINT start_addr, UINT32 size,W::DWORD cur
 	
 		std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer[cur_pid];
 		this->_writeSetManager(start_addr,size,currentWriteSet);
-		displayWriteSet(cur_pid);
 
 	
 	

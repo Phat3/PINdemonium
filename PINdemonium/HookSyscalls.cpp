@@ -110,11 +110,7 @@ void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL
 	W::PVOID *BaseAddress = (W::PVOID *) sc->arg2;
 	W::PSIZE_T ViewSize = (W::PSIZE_T) sc->arg6;
 	W::DWORD pid = W::GetProcessId(process);
-	printf("Process pid %d  baseAddr %08x Size %08x \n",pid,*BaseAddress,*ViewSize);
-	MYINFO("Process pid %d  baseAddr %08x Size %08x ",pid,*BaseAddress,*ViewSize);
 	if(pid != W::GetCurrentProcessId()){
-		
-		printf("Write Injection through NtMapViewOfSectionHook pid %d  baseAddr %08x Size %08x\n",pid,*BaseAddress,*ViewSize);
 		MYINFO("Write Injection through NtMapViewOfSectionHook pid %d  baseAddr %08x Size %08x",pid,*BaseAddress,*ViewSize);
 		ProcessInjectionModule::getInstance()->AddInjectedWrite((ADDRINT)*BaseAddress, *ViewSize,  pid );
 	}
@@ -128,9 +124,7 @@ void HookSyscalls::NtWriteVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx, SYSCAL
 	W::ULONG number_of_bytes_to_write = (W::ULONG)sc->arg3; // get how many bytes it is trying to write 
 	W::DWORD injected_pid = W::GetProcessId(process);
 	if(injected_pid != W::GetCurrentProcessId()){
-		printf("Write Injection through NtWriteVirtualMemoryHook pid %d  baseAddr %08x Size %08x\n",injected_pid,address_to_write,number_of_bytes_to_write);
 		MYINFO("Write Injection through NtWriteVirtualMemoryHook pid %d  baseAddr %08x Size %08x",injected_pid,address_to_write,number_of_bytes_to_write);
-
 		ProcessInjectionModule::getInstance()->AddInjectedWrite((ADDRINT)address_to_write, number_of_bytes_to_write,  injected_pid );
 	}
 }
@@ -139,8 +133,6 @@ void HookSyscalls::NtCreateThreadExHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_S
 	W::HANDLE process = (W::HANDLE)sc->arg3;
 	W::DWORD injected_pid = W::GetProcessId(process);
 	if(injected_pid != W::GetCurrentProcessId()){
-			printf("Calling Process Injection module createtread \n");
-		MYINFO("Calling Process Injection module createtread\n");
 		ProcessInjectionModule::getInstance()->CheckInjectedExecution(injected_pid );
 	}
 }
@@ -149,8 +141,6 @@ void HookSyscalls::NtResumeThreadHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STA
 	W::HANDLE thread = (W::HANDLE)sc->arg0;
 	W::DWORD injected_pid = W::GetProcessIdOfThread(thread);
 	if(injected_pid != W::GetCurrentProcessId()){
-		printf("Calling Process Injection module NtResumeThreadHook \n");
-		MYINFO("Calling Process Injection module NtResumeThreadHook\n");
 		ProcessInjectionModule::getInstance()->CheckInjectedExecution(injected_pid );
 	}
 }
@@ -159,8 +149,6 @@ void HookSyscalls::NtQueueApcThreadHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_S
 	W::HANDLE thread = (W::HANDLE)sc->arg0;
 	W::DWORD injected_pid = W::GetProcessIdOfThread(thread);
 	if(injected_pid != W::GetCurrentProcessId()){
-		printf("Calling Process Injection module NtQueueApcThreadHook \n");
-		MYINFO("Calling Process Injection module NtQueueApcThreadHook\n");
 		ProcessInjectionModule::getInstance()->CheckInjectedExecution(injected_pid );
 	}
 }
