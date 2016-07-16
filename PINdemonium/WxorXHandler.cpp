@@ -76,7 +76,15 @@ VOID WxorXHandler::incrementCurrJMPNumber(int writeItemIndex){
 	currentWriteSet[writeItemIndex].incrementCurrNumberJMP();
 }
 
-//Why this crash the porgram with UPX?
+
+//Clear the currentWriteSet for injection in pid different from current programs 
+VOID WxorXHandler::clearWriteSet(W::DWORD pid){
+	if(pid != this->pid){
+		WriteSetContainer[pid] = std::vector<WriteInterval>();
+	}
+
+}
+
 VOID WxorXHandler::displayWriteSet(W::DWORD pid){	
 	std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer.at(pid);
 	for(unsigned index=0; index <  currentWriteSet.size(); index++) {

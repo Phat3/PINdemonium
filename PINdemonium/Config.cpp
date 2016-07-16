@@ -41,6 +41,10 @@ Config::Config(std::string config_path){
 
 	printf("HEAP DIR: %s\n" , this->heap_dir.c_str());
 
+	this->injection_dir = this->base_path + "\\INJECTIONS";
+	_mkdir(this->injection_dir.c_str());
+	printf("INJECTION DIR: %s\n" , this->injection_dir.c_str());
+
 
 	//create the log and report files
 	string log_file_path = this->base_path + log_filename;
@@ -65,6 +69,10 @@ string Config::getBasePath(){
 
 string Config::getHeapDir(){
 	return this->heap_dir;
+}
+
+string Config::getInjectionDir(){
+	return this->injection_dir;
 }
 
 long double Config::getDumpNumber(){

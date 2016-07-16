@@ -1,6 +1,7 @@
 #pragma once
 #include "pin.H"
 #include "WxorXHandler.h"
+#include "Report.h"
 namespace W{
 	#include "windows.h"
 }
@@ -14,12 +15,16 @@ public:
 
 	VOID AddInjectedWrite(ADDRINT start, UINT32 size, W::DWORD  );
 	VOID CheckInjectedExecution(W::DWORD pid );
-	VOID DumpInjectedMemory(std::vector<WriteInterval>* currentWriteSet,W::DWORD pid);
+	// 
+	
 private:
-	VOID ProcessInjectionModule::WriteBufferToFile(unsigned char *buffer,UINT32 size, string path);
+	VOID HandleInjectedMemory(std::vector<WriteInterval>* currentWriteSet,W::DWORD pid);
+	string DumpRemoteWriteInterval(WriteInterval* item,W::HANDLE process);
+	VOID WriteBufferToFile(unsigned char *buffer,UINT32 size, string path);
 	WxorXHandler *wxorxHandler;
+	Config *config;
+	Report *report;
 	static ProcessInjectionModule *instance;
 	ProcessInjectionModule(void);
-	static int number;
 };
 

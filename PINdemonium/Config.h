@@ -44,6 +44,7 @@ public:
 	void setNewWorkingDirectory();
 	string getWorkingDir();
 	string getHeapDir();
+	string getInjectionDir();
 
 	//--------------------------Command line Tuning Flags----------------------------
 	static const bool  ATTACH_DEBUGGER;
@@ -69,6 +70,7 @@ private:
 	string cur_dump_path;        //Path of the final (IAT fixed) Dump
 	string cur_list_path;		 //Path of the list of the detected function
 	string heap_dir;
+	string injection_dir;
 	long double dump_number;
 	string getCurDateAndTime();
 	int numberOfBadImports;

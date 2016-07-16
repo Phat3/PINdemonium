@@ -3,13 +3,14 @@
 
 ReportDump::ReportDump(){}
 
-ReportDump::ReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset){
+ReportDump::ReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset,int pid){
 	this->eip = eip;
 	this->start_address = start_addr;
 	this->end_address = end_addr;
 	this->intra_writeset = intra_writeset;
 	this->number = dump_number;
 	this->reconstructed_imports = 0;
+	this->pid = pid;
 }
 
 
@@ -21,6 +22,7 @@ Json::Value ReportDump::toJson(){
 	root["intra_writeset"] = intra_writeset;
 	root["number"] = number;
 	root["reconstructed_imports"] = reconstructed_imports;
+	root["pid"] = pid;
 	root["heuristics"] = Json::Value(Json::arrayValue);
 	root["imports"] = Json::Value(Json::arrayValue);
 

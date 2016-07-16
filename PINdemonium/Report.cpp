@@ -36,8 +36,8 @@ void Report::initializeReport(string process_name,float initial_entropy){
  }
 
 // Create the DumpReport with initial information about the dump
-void Report::createReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset){
-	ReportDump cur_dump =  ReportDump(eip,start_addr,end_addr,dump_number,intra_writeset);
+void Report::createReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset,int pid){
+	ReportDump cur_dump =  ReportDump(eip,start_addr,end_addr,dump_number,intra_writeset,pid);
 	dumps.push_back(cur_dump);
 
 }

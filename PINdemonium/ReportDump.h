@@ -8,7 +8,7 @@ class ReportDump : public ReportObject
 {
 public:
 	ReportDump();
-	ReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset);
+	ReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset,int pid);
 	Json::Value ReportDump::toJson();
 	void addHeuristic(ReportObject*);
 	void setImportedFunctions(vector<ReportObject *>);
@@ -20,6 +20,7 @@ private:
 	ADDRINT eip;
 	ADDRINT start_address;
 	ADDRINT end_address;
+	int pid;
 	int reconstructed_imports;
 	int total_imports;
 	vector<ReportObject *> imported_functions;
