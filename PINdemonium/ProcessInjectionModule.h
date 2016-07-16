@@ -19,7 +19,7 @@ public:
 	
 private:
 	VOID HandleInjectedMemory(std::vector<WriteInterval>* currentWriteSet,W::DWORD pid);
-	string DumpRemoteWriteInterval(WriteInterval* item,W::HANDLE process);
+	string DumpRemoteWriteInterval(WriteInterval* item,W::DWORD pid);
 	VOID WriteBufferToFile(unsigned char *buffer,UINT32 size, string path);
 	WxorXHandler *wxorxHandler;
 	Config *config;

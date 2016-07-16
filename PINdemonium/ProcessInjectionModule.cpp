@@ -36,10 +36,10 @@ VOID ProcessInjectionModule::CheckInjectedExecution(W::DWORD pid ){
 
 VOID ProcessInjectionModule::HandleInjectedMemory(std::vector<WriteInterval>* currentWriteSet,W::DWORD pid){
 	MYINFO("Dumping memory from %d",pid);
-	W::HANDLE process = W::OpenProcess(PROCESS_VM_READ,false,pid);
+	
 	
 	for(std::vector<WriteInterval>::iterator item = currentWriteSet->begin(); item != currentWriteSet->end(); ++item) {
-		string cur_dump_path = DumpRemoteWriteInterval(&(*item), process);
+		string cur_dump_path = DumpRemoteWriteInterval(&(*item), pid);
 		report->createReportDump(item->getAddrBegin(),item->getAddrBegin(),item->getAddrEnd(),Config::getInstance()->getDumpNumber(),false,pid);
 		report->closeReportDump();
 		config->incrementDumpNumber();
@@ -49,12 +49,12 @@ VOID ProcessInjectionModule::HandleInjectedMemory(std::vector<WriteInterval>* cu
 
 
 // dump on disk the write interval  on the remote process with pid=pid and return a stringcontaining the path of the dumped memory
-string ProcessInjectionModule::DumpRemoteWriteInterval(WriteInterval* item,W::HANDLE process){
+string ProcessInjectionModule::DumpRemoteWriteInterval(WriteInterval* item,W::DWORD pid){
 	//Dump remote process memory for each item inside the  currentWriteSet
 	W::SIZE_T dwBytesRead = 0;
 	UINT32 size =  item->getAddrEnd()-item->getAddrBegin();
 	unsigned char * buffer = (unsigned char *)malloc(size);
-	UINT32 pid = W::GetProcessId(process);
+	W::HANDLE process = W::OpenProcess(PROCESS_VM_READ,false,pid);
 	if(W::ReadProcessMemory(process,(W::LPVOID)item->getAddrBegin(),buffer,  size,&dwBytesRead)){
 		string path = config->getInjectionDir()+"/injection_" + std::to_string((long double)pid)+"_"+std::to_string((long double)config->getDumpNumber())+".bin";
 		WriteBufferToFile(buffer,size,path);
