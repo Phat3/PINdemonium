@@ -179,14 +179,14 @@ UINT32 OepFinder::checkHeapWxorX(WriteInterval* item, ADDRINT curEip, int dumpAn
 		ScyllaWrapperInterface *scylla_wrapper = ScyllaWrapperInterface::getInstance();
 		// get the name of the last dump from the Config object 
 		Config *config = Config::getInstance();
-		string dump_path = config->getCurrentDumpFilePath();
+		string dump_path = config->getWorkingDumpPath();
 
 		if(dumpAndFixResult != 0){
 			dump_path = dump_path + "_dmp";
 		}
 
 		if(!existFile(dump_path)){ // this is the case in which we have a not working dump but we want to add anyway the .heap 
-			dump_path = config->getNotWorkingPath();
+			dump_path = config->getNotWorkingDumpPath();
 		}
 		if(!existFile(dump_path)){
 			MYINFO("[CRITICAL ERROR]Dump file not found\n");
@@ -309,7 +309,10 @@ BOOL OepFinder::analysis(WriteInterval* item, INS ins, ADDRINT prev_ip, ADDRINT 
 	Heuristics::jmpOuterSectionHeuristic(ins, prev_ip);
 	Heuristics::pushadPopadHeuristic();
 	//Heuristics::initFunctionCallHeuristic(curEip,&item);
- 	Heuristics::yaraHeuristic();
+
+	vector<string> dumps_to_analyse;
+	dumps_to_analyse.push_back(Config::getInstance()->getCurrentDumpPath());
+	Heuristics::yaraHeuristic(dumps_to_analyse);
 
 	MYINFO("CURRENT WRITE SET SIZE : %d\t START : 0x%08x\t END : 0x%08x\t BROKEN-FLAG : %d", (item->getAddrEnd() - item->getAddrBegin()), item->getAddrBegin(), item->getAddrEnd(), item->getBrokenFlag());
 	ProcInfo *pInfo = ProcInfo::getInstance();
@@ -336,7 +339,7 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	//Getting Current process PID and Base Address
 	UINT32 pid = W::GetCurrentProcessId();
 	Config * config = Config::getInstance();
-	string outputFile = config->getCurrentDumpFilePath();
+	string outputFile = config->getWorkingDumpPath();
 	string reconstructed_imports_file  = config->getCurrentReconstructedImportsPath();
 	string tmpDump = outputFile + "_dmp";
 	//std::wstring tmpDump_w = std::wstring(tmpDump.begin(), tmpDump.end());

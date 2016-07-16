@@ -19,7 +19,7 @@ public:
 	static UINT32 entropyHeuristic();
 	static UINT32 jmpOuterSectionHeuristic(INS ins, ADDRINT prev_ip);
 	static UINT32 pushadPopadHeuristic();
-	static UINT32  yaraHeuristic();
+	static UINT32  yaraHeuristic(vector<string> dumps_to_analyse);
 
 };
 

@@ -24,9 +24,10 @@ public:
 	FILE* Config::getLogFile();
 	//getter
 	string getBasePath();
-	string getCurrentDumpFilePath();
+	string getCurrentDumpPath();
+	string getWorkingDumpPath();
 	string getCurrentReconstructedImportsPath();
-	string getNotWorkingPath();
+	string getNotWorkingDumpPath();
 	string getYaraResultPath();
 	string getReportPath();
 	string getScyllaDumperPath();
@@ -67,7 +68,7 @@ private:
 	string working_dir;
 	string base_path;
 	string not_working_path;
-	string cur_dump_path;        //Path of the final (IAT fixed) Dump
+	string working_path;        //Path of the final (IAT fixed) Dump
 	string cur_list_path;		 //Path of the list of the detected function
 	string heap_dir;
 	string injection_dir;

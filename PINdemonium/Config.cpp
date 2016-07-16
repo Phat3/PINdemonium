@@ -79,19 +79,41 @@ long double Config::getDumpNumber(){
 	return this->dump_number;
 }
 
-string Config::getNotWorkingPath(){
+string Config::getNotWorkingDumpPath(){
 	return this->not_working_path + ProcInfo::getInstance()->getProcName() + "_" + std::to_string(this->dump_number) + ".exe";
 }
 
-string Config::getCurrentDumpFilePath(){	
+string Config::getWorkingDumpPath(){	
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
 	std::string proc_name = ProcInfo::getInstance()->getProcName();
 
-	_mkdir(this->base_path.c_str());
+	//_mkdir(this->base_path.c_str());
 
-	this->cur_dump_path = this->working_dir + "\\" + proc_name + "_" + std::to_string(this->dump_number) + ".exe" ;
+	this->working_path = this->working_dir + "\\" + proc_name + "_" + std::to_string(this->dump_number) + ".exe" ;
+	return this->working_path;
 	
-	return this->cur_dump_path;	
+	 
+}
+
+string Config::getCurrentDumpPath(){
+
+	string fixed_dump = Config::getInstance()->getWorkingDumpPath();          // path to file generated when scylla is able to fix the IAT and reconstruct the PE
+	string not_fixed_dump = Config::getInstance()->getNotWorkingDumpPath();   // path to file generated when scylla is NOT able to and reconstruct the PE
+	string dump_to_analyse = "";
+	
+	if(Helper::existFile(fixed_dump)){ // check if a Scylla fixed dump exist
+		dump_to_analyse = fixed_dump;  //we return the fixed dump
+	}
+	else{
+		if(Helper::existFile(not_fixed_dump)){ // check if a not fixed dump exist
+			dump_to_analyse = not_fixed_dump; // we return the not fixed dump 
+		}
+		else{
+			MYERRORE("Dump file hasn't been created");  //no file created nothig to return
+		}
+	}
+	return dump_to_analyse;
+
 }
 
 string Config::getCurrentReconstructedImportsPath(){
