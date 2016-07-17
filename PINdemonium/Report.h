@@ -21,8 +21,8 @@ private:
 
 public:
 	static  Report* getInstance();
-	void initializeReport(string process_name, float initial_entropy);
-	void createReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset,int pid);
+	void initializeReport(string process_name, ADDRINT startAddr, ADDRINT endAddr, float initial_entropy);
+	void createReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset, int pid);
 	ReportDump& getCurrentDump();
 	void closeReportDump();
 	void closeReport();

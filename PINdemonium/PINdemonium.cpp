@@ -89,7 +89,7 @@ void imageLoadCallback(IMG img,void *){
 		proc_info->setInitialEntropy(initial_entropy);
 		MYINFO("----------------------------------------------");	
 		//create Report File
-		Report::getInstance()->initializeReport(proc_info->getProcName(),initial_entropy);
+		Report::getInstance()->initializeReport(proc_info->getProcName(), startAddr, endAddr , initial_entropy);
 		//retrieve the section of the PE
 		for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
 			item.name = SEC_Name(sec);
@@ -184,9 +184,9 @@ void ConfigureTool(){
 
 // - if an exception is found returns all the information about it (DEBUG purposes)
 EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInfo, PHYSICAL_CONTEXT *pPhysCtxt, VOID *v){	
-	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	MYINFO("******Caught Exception:******\n");
 	MYINFO("%s",PIN_ExceptionToString(pExceptInfo).c_str());
-	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	MYINFO("*****Continue to search a valid exception handler******\n");
 	return EHR_CONTINUE_SEARCH;
 }
 
@@ -220,7 +220,6 @@ int main(int argc, char * argv[]){
 		TRACE_AddInstrumentFunction(Trace,0);
 	}
 	proc_info->addProcAddresses();
-
 
 	//init the hooking system
 	HookSyscalls::enumSyscalls();

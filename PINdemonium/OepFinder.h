@@ -40,7 +40,7 @@ private:
 	BOOL analysis(WriteInterval* item, INS ins, ADDRINT prev_ip, ADDRINT curEip , int dumpAndFixResult);
 	UINT32 checkHeapWxorX(WriteInterval* item, ADDRINT curEip , int dumpAndFixResult);
 	VOID saveHeapZones(std::map<std::string , HeapZone> hzs , std::map<std::string,std::string> hzs_dumped);
-	void interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins, WriteInterval *item);
+	void intraWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins, WriteInterval *item);
 	void getCurrentDlls();
 	WxorXHandler *wxorxHandler;
 	Report *report;
