@@ -25,8 +25,8 @@ VOID ProcessInjectionModule::AddInjectedWrite(ADDRINT start, UINT32 size, W::DWO
 }
 
 VOID ProcessInjectionModule::CheckInjectedExecution(W::DWORD pid ){
-	std::vector<WriteInterval>* currentWriteSet =  WxorXHandler::getInstance()->getWxorXintervalInjected(pid);
-	if(currentWriteSet){
+	std::vector<WriteInterval>& currentWriteSet =  WxorXHandler::getInstance()->getWxorXintervalInjected(pid);
+	if(!currentWriteSet.empty()){
 		MYINFO("Identify Injected execution %d",pid);
 		HandleInjectedMemory(currentWriteSet,pid);
 		wxorxHandler->clearWriteSet(pid); //clear the dumped writeItems from the current WriteSet
@@ -34,9 +34,9 @@ VOID ProcessInjectionModule::CheckInjectedExecution(W::DWORD pid ){
 }
 
 
-VOID ProcessInjectionModule::HandleInjectedMemory(std::vector<WriteInterval>* currentWriteSet,W::DWORD pid){
+VOID ProcessInjectionModule::HandleInjectedMemory(std::vector<WriteInterval>& currentWriteSet,W::DWORD pid){
 	
-	for(std::vector<WriteInterval>::iterator item = currentWriteSet->begin(); item != currentWriteSet->end(); ++item) {
+	for(std::vector<WriteInterval>::iterator item = currentWriteSet.begin(); item != currentWriteSet.end(); ++item) {
 		MYINFO("Trying to dump injected memory inside pid %d from addr %08x to %08x",pid,item->getAddrBegin(),item->getAddrEnd());
 		string cur_dump_path = DumpRemoteWriteInterval(&(*item), pid);	
 		report->createReportDump(item->getAddrBegin(),item->getAddrBegin(),item->getAddrEnd(),Config::getInstance()->getDumpNumber(),false,pid);

@@ -23,7 +23,7 @@ public:
 	//manage the write set that contains the WriteInterval written by the program and injected in another process
 	VOID writeSetManager(ADDRINT start_addr, UINT32 size, W::DWORD pid);
 	//check if the W xor X law is broken inside injected process
-	std::vector<WriteInterval>* getWxorXintervalInjected(W::DWORD pid);
+	std::vector<WriteInterval>& getWxorXintervalInjected(W::DWORD pid);
 	VOID clearWriteSet(W::DWORD pid);
 	VOID displayWriteSet(W::DWORD pid);
 	VOID incrementCurrJMPNumber(int writeItemIndex);

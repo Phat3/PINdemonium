@@ -57,14 +57,10 @@ VOID WxorXHandler::writeSetManager( ADDRINT start_addr, UINT32 size,W::DWORD cur
 }
 
 //return the WriteItem index inside our vector that broke the W xor X index
-std::vector<WriteInterval>* WxorXHandler::getWxorXintervalInjected(W::DWORD pid){
-	try{
-		std::vector<WriteInterval>* currentWriteSet = &this->WriteSetContainer.at(pid);
-		return currentWriteSet;
-	}
-	catch (const std::out_of_range& oor) {
-		return NULL;
-	}
+std::vector<WriteInterval>& WxorXHandler::getWxorXintervalInjected(W::DWORD pid){
+	std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer[pid];
+	return currentWriteSet;
+
 }
 
 
