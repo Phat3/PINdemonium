@@ -14,7 +14,6 @@ class YaraHeuristic
 public:
 	UINT32 run(vector<string> paths_to_analyse);
 private:
-	
 	W::HANDLE g_hChildStd_OUT_Rd;
 	W::HANDLE g_hChildStd_OUT_Wr;
 	string ReadFromPipe(W::PROCESS_INFORMATION piProcInfo);

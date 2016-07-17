@@ -9,6 +9,7 @@
 #include "Config.h"
 #include "Report.h"
 #include "md5.h"
+#include "Helper.h"
 namespace W {
 	#include <windows.h>
 }
@@ -29,7 +30,6 @@ public:
 	OepFinder(void);
 	~OepFinder(void);
 	UINT32 IsCurrentInOEP(INS ins);
-	BOOL existFile (std::string name);
 
 private:
 	//check if the current instruction is a pushad or a popad

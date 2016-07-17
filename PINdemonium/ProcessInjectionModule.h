@@ -3,6 +3,7 @@
 #include "WxorXHandler.h"
 #include "Report.h"
 #include "Heuristics.h"
+#include "Helper.h"
 namespace W{
 	#include "windows.h"
 }
@@ -22,6 +23,7 @@ private:
 	VOID HandleInjectedMemory(std::vector<WriteInterval>& currentWriteSet,W::DWORD pid);
 	string DumpRemoteWriteInterval(WriteInterval* item,W::DWORD pid);
 	VOID WriteBufferToFile(unsigned char *buffer,UINT32 size, string path);
+	VOID ExecuteHeuristics(string path_to_analyse);
 	WxorXHandler *wxorxHandler;
 	Config *config;
 	Report *report;

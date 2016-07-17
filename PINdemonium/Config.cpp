@@ -141,6 +141,15 @@ string Config::getFilteredWrites(){
 	return this->filtered_writes;
 }
 
+string Config::getYaraExePath(){
+	return this->yara_exe_path;
+}
+
+string Config::getYaraRulesPath(){
+	return this->yara_rules_path;
+}
+
+
 
 
 /* ----------------------------- UTILS -----------------------------*/
@@ -162,6 +171,8 @@ void Config::loadJson(string config_path){
 	report_filename = root["report_filename"].asString();
 	filtered_writes =root["filtered_writes"].asString();
 	timeout =root["timeout"].asInt();
+	yara_exe_path = root["yara_exe_path"].asString();
+	yara_rules_path  = root["yara_rules_path"].asString();
 
 	dep_scylla_dumper_path = dependecies_path + "Scylla\\ScyllaDumper.exe";
 	dep_scylla_wrapper_path = dependecies_path + "Scylla\\ScyllaWrapper.dll";

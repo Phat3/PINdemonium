@@ -1,12 +1,5 @@
 #include "YaraHeuristic.h"
 
-#define YARA_LAUNCHER "YaraLauncher.bat"
-
-
-#define YARA_PATH "C:\\pin\\PINdemoniumDependencies\\Yara\\yara32.exe"
-#define YARA_RULES "C:\\pin\\PINdemoniumDependencies\\Yara\\yara_rules.yar"
-
-
 
 /**
 	Get the size of the file passed as fp
@@ -58,7 +51,10 @@ vector<string> YaraHeuristic::parseYaraOutput(string output){
 }
 
 vector<string> YaraHeuristic::analyseYara(string dump_to_analyse){
+	string yara_rules_path = Config::getInstance()->getYaraRulesPath();
+	string yara_exe_path = Config::getInstance()->getYaraExePath();	
 	string yara_res_file = Config::getInstance()->getYaraResultPath();
+	
 	string raw_output = "";
 	vector<string> matched_rules;
 	W::SECURITY_ATTRIBUTES sa; 
@@ -78,7 +74,7 @@ vector<string> YaraHeuristic::analyseYara(string dump_to_analyse){
         return vector<string>(); 
     }
 	W::PROCESS_INFORMATION  piResults;
-	if(launchYara(YARA_PATH,YARA_RULES, dump_to_analyse, yara_res_file,&piResults )){
+	if(launchYara(yara_exe_path,yara_rules_path, dump_to_analyse, yara_res_file,&piResults )){
 
 		raw_output = ReadFromPipe(piResults);
 		matched_rules = parseYaraOutput(raw_output);

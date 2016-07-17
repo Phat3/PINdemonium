@@ -185,10 +185,10 @@ UINT32 OepFinder::checkHeapWxorX(WriteInterval* item, ADDRINT curEip, int dumpAn
 			dump_path = dump_path + "_dmp";
 		}
 
-		if(!existFile(dump_path)){ // this is the case in which we have a not working dump but we want to add anyway the .heap 
+		if(!Helper::existFile(dump_path)){ // this is the case in which we have a not working dump but we want to add anyway the .heap 
 			dump_path = config->getNotWorkingDumpPath();
 		}
-		if(!existFile(dump_path)){
+		if(!Helper::existFile(dump_path)){
 			MYINFO("[CRITICAL ERROR]Dump file not found\n");
 			return OEPFINDER_HEURISTIC_FAIL;
 		}
@@ -356,11 +356,4 @@ UINT32 OepFinder::DumpAndFixIAT(ADDRINT curEip){
 	return SCYLLA_SUCCESS_FIX;
 }
 
-BOOL OepFinder::existFile (std::string name) {
-	if (FILE *file = fopen(name.c_str(), "r")) {
-        fclose(file);
-        return true;
-    } else {
-        return false;
-    }   
-}
+

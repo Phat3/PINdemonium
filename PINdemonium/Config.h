@@ -46,6 +46,8 @@ public:
 	string getWorkingDir();
 	string getHeapDir();
 	string getInjectionDir();
+	string getYaraExePath();
+	string getYaraRulesPath();
 
 	//--------------------------Command line Tuning Flags----------------------------
 	static const bool  ATTACH_DEBUGGER;
@@ -84,6 +86,8 @@ private:
 	string plugins_path; 
 	string log_filename;
 	string report_filename;
+	string yara_exe_path;
+	string yara_rules_path;
 	string dep_scylla_dumper_path;
 	string dep_scylla_wrapper_path;
 	string not_working_directory;

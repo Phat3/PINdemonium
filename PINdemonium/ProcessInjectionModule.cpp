@@ -37,14 +37,18 @@ VOID ProcessInjectionModule::CheckInjectedExecution(W::DWORD pid ){
 VOID ProcessInjectionModule::HandleInjectedMemory(std::vector<WriteInterval>& currentWriteSet,W::DWORD pid){
 	
 	for(std::vector<WriteInterval>::iterator item = currentWriteSet.begin(); item != currentWriteSet.end(); ++item) {
-		MYINFO("Trying to dump injected memory inside pid %d from addr %08x to %08x",pid,item->getAddrBegin(),item->getAddrEnd());
+		MYPRINT("\n\n-------------------------------------------------------------------------------------------------------");
+		MYPRINT("------------------------------------ INJECTED STUB inside pid %d begin: %08x TO %08x -------------------------------------",pid,item->getAddrBegin(),item->getAddrEnd());
+		MYPRINT("-------------------------------------------------------------------------------------------------------\n");
+		MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+		MYPRINT("- - - - - - - - - - - - - - - - - - - - - STAGE 1: DUMPING - - - - - - - - - - - - - - - - - - - - - - - - -");
+		MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 		string cur_dump_path = DumpRemoteWriteInterval(&(*item), pid);	
 		report->createReportDump(item->getAddrBegin(),item->getAddrBegin(),item->getAddrEnd(),Config::getInstance()->getDumpNumber(),false,pid);
-		//check if the memory has been dumped correctly and we have the path to the dump
+		
+		//check if the memory has been dumped correctly and execute the heuristics
 		if (cur_dump_path != ""){
-			vector<string> dumps_to_analyse;
-			dumps_to_analyse.push_back(cur_dump_path);
-			Heuristics::yaraHeuristic(dumps_to_analyse);
+			ExecuteHeuristics(cur_dump_path);
 		}
 		
 		report->closeReportDump();
@@ -54,7 +58,10 @@ VOID ProcessInjectionModule::HandleInjectedMemory(std::vector<WriteInterval>& cu
 }
 
 
-// dump on disk the write interval  on the remote process with pid=pid and return a stringcontaining the path of the dumped memory
+/**
+Dump on disk the memory range written on the remote process address space with  
+return a string containing the path of the dumped memory
+**/
 string ProcessInjectionModule::DumpRemoteWriteInterval(WriteInterval* item,W::DWORD pid){
 	//Dump remote process memory for each item inside the  currentWriteSet
 	W::SIZE_T dwBytesRead = 0;
@@ -63,7 +70,7 @@ string ProcessInjectionModule::DumpRemoteWriteInterval(WriteInterval* item,W::DW
 	W::HANDLE process = W::OpenProcess(PROCESS_VM_READ,false,pid);
 	if(W::ReadProcessMemory(process,(W::LPVOID)item->getAddrBegin(),buffer,  size,&dwBytesRead)){
 		string path = config->getInjectionDir()+"/injection_" + std::to_string((long double)pid)+"_"+std::to_string((long double)config->getDumpNumber())+".bin";
-		WriteBufferToFile(buffer,size,path);
+		Helper::writeBufferToFile(buffer,size,path);
 		MYINFO("Dumped remote injected memory inside pid %d to %s",pid,path.c_str());
 		return path;
 	}
@@ -75,25 +82,16 @@ string ProcessInjectionModule::DumpRemoteWriteInterval(WriteInterval* item,W::DW
 }
 
 
-VOID ProcessInjectionModule::WriteBufferToFile(unsigned char *buffer,UINT32 dwBytesToWrite,string path){
 
-    W::DWORD dwBytesWritten = 0;
-
-	  W::HANDLE hFile = W::CreateFile(path.c_str(),                // name of the write
-                       GENERIC_WRITE,          // open for writing
-                       0,                      // do not share
-                       NULL,                   // default security
-                       CREATE_NEW,             // create new file only
-                       FILE_ATTRIBUTE_NORMAL,  // normal file
-                       NULL);                  // no attr. template
-
-   
-
-     W::WriteFile( 
-                    hFile,           // open file handle
-                    buffer,      // start of data to write
-                    dwBytesToWrite,  // number of bytes to write
-                    &dwBytesWritten, // number of bytes that were written
-                    NULL);            // no overlapped structure
-
+/*
+	Executes the heuristics on the dumped memory
+*/
+VOID ProcessInjectionModule::ExecuteHeuristics(string path_to_analyse){
+		MYPRINT("\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+		MYPRINT("- - - - - - - - - - - - - - - - - - - - - STAGE 2: ANALYZING DUMP - - - - - - - - - - - - - - - - - - - - - -");
+		MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+		vector<string> dumps_to_analyse;
+		dumps_to_analyse.push_back(path_to_analyse);
+		Heuristics::yaraHeuristic(dumps_to_analyse);
+	
 }
