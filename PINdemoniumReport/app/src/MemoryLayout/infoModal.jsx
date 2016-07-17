@@ -17,20 +17,22 @@ class InfoModal extends React.Component {
 
   render () {
 
-     var items = [] 
-     //create an item for each dump
-    for (var i = 0; i < 10 ; i++) {
-      // create the component with the proper prop
-      items.push(<li>{"import " + i}</li>)   
-    }
 
     if(this.props.dump){
+
+      var items = [] 
+     
+       //create an item for each dump
+      for (var i = 0; i < this.props.dump.imports.length; i++) {
+        // create the component with the proper prop
+        items.push(<li>{ "function :" }</li>)   
+      }
 
       return (
         <div>
          <Modal show={this.props.show} onHide={this.closeInfo} bsSize="large" >
             <Modal.Header closeButton>
-              <Modal.Title>{"DUMP " + this.props.dump.numbers}</Modal.Title>
+              <Modal.Title>{"DUMP " + this.props.dump.number}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
             
@@ -56,11 +58,12 @@ class InfoModal extends React.Component {
 
               <hr />
 
-              <h4>Detected imports</h4>
+              <h4>Detected imports ({this.props.dump.reconstructed_imports})</h4>
 
               <ul>
                 {items}
               </ul>
+
 
             </Modal.Body>
           </Modal>

@@ -53,6 +53,7 @@ class Slider extends React.Component {
 
      var dump =  dumpsToBeAnalyzed[0]
      var dumpLookahead = dumpsToBeAnalyzed[1]
+     //console.log(dump.number)
      
      if(dump.intra_writeset){
         items.push(<SliderItem key={dump.number} id={dump.number} onSelect={this.navigateToIntraWriteSetDump} active={dump.number === this.state.activeItem ? true : false} endDump={undefined} startDump={dump.number} />)  
@@ -61,18 +62,22 @@ class Slider extends React.Component {
       else if(dump.number + 1 == dumpLookahead.number && dumpLookahead.intra_writeset === false){
         items.push(<SliderItem key={dump.number} id={dump.number} onSelect={this.navigateToConsecutiveDump} active={dump.number === this.state.activeItem ? true : false} endDump={dumpLookahead.number} startDump={dump.number} />)
         //console.log(dump.number)
-        dumpsToBeAnalyzed.shift()
+        //dumpsToBeAnalyzed.shift()
         //this._inspectLookahead(dump, dumpLookahead, items, dumpsToBeAnalyzed) 
       }
       else{
         // create the component with the proper prop
         items.push(<SliderItem key={dump.number} id={dump.number} onSelect={this.navigateToSingleDump} active={dump.number === this.state.activeItem ? true : false} endDump={undefined} startDump={dump.number} />)   
-        this._inspectLookahead(dump, dumpLookahead, items, dumpsToBeAnalyzed) 
+        this._inspectLookahead(dump, dumpLookahead, items) 
       }
       
       dumpsToBeAnalyzed.shift()
       this._analyzeDump(dumpsToBeAnalyzed, items)
 
+    }
+    else if(dumpsToBeAnalyzed.length === 1){
+       var dump =  dumpsToBeAnalyzed[0]
+      items.push(<SliderItem key={dump.number} id={dump.number} onSelect={this.navigateToSingleDump} active={dump.number === this.state.activeItem ? true : false} endDump={undefined} startDump={dump.number} />)   
     }
 
   }
@@ -80,7 +85,9 @@ class Slider extends React.Component {
   _inspectLookahead(dump, dumpLookahead, items, dumpsToBeAnalyzed){
     var specialDumpId = dump.number + 400
     if(dump.number + 1 === dumpLookahead.number && dumpLookahead.intra_writeset === false){
-      dumpsToBeAnalyzed.shift()
+      if(dumpsToBeAnalyzed !== undefined){
+           dumpsToBeAnalyzed.shift()
+      }
       items.push(<SliderItem key={specialDumpId} id={specialDumpId} onSelect={this.navigateToConsecutiveDump} active={specialDumpId === this.state.activeItem ? true : false} endDump={dumpLookahead.number} startDump={dump.number} />)   
     }
   }
@@ -106,7 +113,7 @@ class Slider extends React.Component {
     ]    
     
     var currentDumps = this.props.dumps.slice()
-    currentDumps.shift()
+    //currentDumps.shift()
 
     this._analyzeDump(currentDumps, items)
 
