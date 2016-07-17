@@ -2633,7 +2633,7 @@ class App extends React.Component {
 
         <div className="row" id="information" style={informationStyle}>
             <div className="col-sm-12">
-                <h4>Information</h4>
+               <span style={{fontSize : "18px", fontWeight : "700"}}>Name</span> : {this.state.data.information.name} <span style={{fontSize : "18px", fontWeight : "700", marginLeft : "40px"}}>Entropy</span> : {this.state.data.information.entropy}
             </div>
         </div>
 

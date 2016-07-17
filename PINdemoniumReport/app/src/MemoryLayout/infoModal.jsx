@@ -28,6 +28,43 @@ class InfoModal extends React.Component {
         items.push(<li>{ "function :" }</li>)   
       }
 
+      var heu = []
+
+      for (var i = 0; i < this.props.dump.heuristics.length; i++) {
+        var curHeu = this.props.dump.heuristics[i]
+        switch (curHeu.name){
+          case "LongJumpHeuristic" :
+                heu.push(<hr />)
+                heu.push(<h4> Long jump {curHeu.result ? <span style={{color : "green"}}>(DETECTED)</span> : <span style={{color : "red"}}>(NOT DETECTED)</span>}</h4>)
+                heu.push(<p>{"0x" + curHeu.prev_ip.toString(16)} -> {"0x" + this.props.dump.eip.toString(16)}</p>)
+                break;
+          case "EntropyHeuristic" :
+                heu.push(<hr />)
+                heu.push(<h4> Entropy {curHeu.result ? <span style={{color : "green"}}>(DETECTED)</span> : <span style={{color : "red"}}>(NOT DETECTED)</span>}</h4>)
+                heu.push(<p>{curHeu.current_entropy} ( {curHeu.difference_entropy_percentage * 100} % )</p>)
+                break;
+          case "JumpOuterSectionHeuristic" :
+                heu.push(<hr />)
+                heu.push(<h4> Jump outer section {curHeu.result ? <span style={{color : "green"}}>(DETECTED)</span> : <span style={{color : "red"}}>(NOT DETECTED)</span>}</h4>)
+                heu.push(<p>{curHeu.prev_section} -> {curHeu.current_section}</p>)
+                break;
+          case "YaraRulesHeuristic" : 
+                heu.push(<hr />)
+                heu.push(<h4>Yara Rules {curHeu.result ? <span style={{color : "green"}}>(DETECTED)</span> : <span style={{color : "red"}}>(NOT DETECTED)</span>}</h4>)
+                var rules = []
+                for (var j = 0; j < curHeu.matched_rules.length; j++) {
+                  rules.push(<li>{curHeu.matched_rules[j]}</li>)
+                }
+                heu.push(<p><ul>{rules}</ul></p>)
+                break;
+          default : 
+                break;
+
+        }
+        // create the component with the proper prop
+        items.push(<li>{ "function :" }</li>)   
+      }
+
       return (
         <div>
          <Modal show={this.props.show} onHide={this.closeInfo} bsSize="large" >
@@ -36,25 +73,7 @@ class InfoModal extends React.Component {
             </Modal.Header>
             <Modal.Body>
             
-              <hr />
-              <h4> Yara Rules</h4>
-              
-              <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula.</p>
-
-              <hr />
-              <h4> Entropy</h4>
-              
-              <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula.</p>
-
-              <hr />
-              <h4> Long jump</h4>
-              
-              <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula.</p>
-
-              <hr />
-              <h4> Jump outer section</h4>
-              
-              <p>Duis mollis, est non commodo luctus, nisi erat porttitor ligula.</p>
+              {heu}
 
               <hr />
 
