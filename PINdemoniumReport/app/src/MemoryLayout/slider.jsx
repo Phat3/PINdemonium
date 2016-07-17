@@ -9,6 +9,10 @@ class Slider extends React.Component {
     super()
     // keep trackof the highlighted "dot"
     this.state = { activeItem : -2 }
+
+    this._analyzeDump = this._analyzeDump.bind(this)
+    this._inspectLookahead = this._inspectLookahead.bind(this)
+
     this.navigateToEmptyMemory = this.navigateToEmptyMemory.bind(this)
     this.navigateToSingleDump = this.navigateToSingleDump.bind(this)
     this.navigateToIntraWriteSetDump = this.navigateToIntraWriteSetDump.bind(this)
@@ -43,6 +47,44 @@ class Slider extends React.Component {
     this.props.onConsecutiveDumps(startDump, endDump)
   }
 
+  _analyzeDump(dumpsToBeAnalyzed, items){
+
+    if(dumpsToBeAnalyzed.length > 1){
+
+     var dump =  dumpsToBeAnalyzed[0]
+     var dumpLookahead = dumpsToBeAnalyzed[1]
+     
+     if(dump.intra_writeset){
+        items.push(<SliderItem key={dump.number} id={dump.number} onSelect={this.navigateToIntraWriteSetDump} active={dump.number === this.state.activeItem ? true : false} endDump={undefined} startDump={dump.number} />)  
+        this._inspectLookahead(dump, dumpLookahead, items, dumpsToBeAnalyzed) 
+      }
+      else if(dump.number + 1 == dumpLookahead.number && dumpLookahead.intra_writeset === false){
+        items.push(<SliderItem key={dump.number} id={dump.number} onSelect={this.navigateToConsecutiveDump} active={dump.number === this.state.activeItem ? true : false} endDump={dumpLookahead.number} startDump={dump.number} />)
+        //console.log(dump.number)
+        dumpsToBeAnalyzed.shift()
+        //this._inspectLookahead(dump, dumpLookahead, items, dumpsToBeAnalyzed) 
+      }
+      else{
+        // create the component with the proper prop
+        items.push(<SliderItem key={dump.number} id={dump.number} onSelect={this.navigateToSingleDump} active={dump.number === this.state.activeItem ? true : false} endDump={undefined} startDump={dump.number} />)   
+        this._inspectLookahead(dump, dumpLookahead, items, dumpsToBeAnalyzed) 
+      }
+      
+      dumpsToBeAnalyzed.shift()
+      this._analyzeDump(dumpsToBeAnalyzed, items)
+
+    }
+
+  }
+
+  _inspectLookahead(dump, dumpLookahead, items, dumpsToBeAnalyzed){
+    var specialDumpId = dump.number + 400
+    if(dump.number + 1 === dumpLookahead.number && dumpLookahead.intra_writeset === false){
+      dumpsToBeAnalyzed.shift()
+      items.push(<SliderItem key={specialDumpId} id={specialDumpId} onSelect={this.navigateToConsecutiveDump} active={specialDumpId === this.state.activeItem ? true : false} endDump={dumpLookahead.number} startDump={dump.number} />)   
+    }
+  }
+
   render () {
 
     var olStyle = {
@@ -62,19 +104,11 @@ class Slider extends React.Component {
       <SliderItem key={-2} id={-2} onSelect={this.navigateToEmptyMemory} active={this.state.activeItem === -2 ? true : false} endDump={undefined} startDump={undefined} />,
       <SliderItem key={-1} id={-1} onSelect={this.navigateToSingleDump} active={this.state.activeItem === -1 ? true : false} endDump={undefined} startDump={0} />
     ]    
-    //create an item for each dump
-    for (var i = 0; i < this.props.dumps.length -1 ; i++) {
-      if(this.props.dumps[i].intra_writeset){
-        items.push(<SliderItem key={i} id={this.props.dumps[i].number} onSelect={this.navigateToIntraWriteSetDump} active={i === this.state.activeItem ? true : false} endDump={undefined} startDump={i} />)   
-      }
-      else if(i + 1 < this.props.dumps.length  && this.props.dumps[i].number + 1 == this.props.dumps[i+1].number){
-        items.push(<SliderItem key={i} id={this.props.dumps[i].number} onSelect={this.navigateToConsecutiveDump} active={i === this.state.activeItem ? true : false} endDump={i + 1} startDump={i} />)   
-      }
-      else{
-        // create the component with the proper prop
-        items.push(<SliderItem key={i} id={this.props.dumps[i].number} onSelect={this.navigateToSingleDump} active={i === this.state.activeItem ? true : false} endDump={undefined} startDump={i} />)   
-      }
-    }
+    
+    var currentDumps = this.props.dumps.slice()
+    currentDumps.shift()
+
+    this._analyzeDump(currentDumps, items)
 
     return (
       <div>
