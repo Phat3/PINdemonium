@@ -28,6 +28,9 @@ PolymorphicCodeHandlerModule pcpatcher;
 KNOB <UINT32> KnobInterWriteSetAnalysis(KNOB_MODE_WRITEONCE, "pintool",
     "iwae", "0" , "specify if you want or not to track the inter_write_set analysis dumps and how many jump");
 
+KNOB <UINT32> KnobSkipDump(KNOB_MODE_WRITEONCE, "pintool",
+    "skip", "0" , "specify how many times you want to skip the dump process whe wxorx rule is broken");
+
 KNOB <BOOL> KnobAdvancedIATFixing(KNOB_MODE_WRITEONCE, "pintool",
     "adv-iatfix", "false" , "specify if you want or not to activate the advanced IAT fix technique");
 
@@ -152,7 +155,8 @@ void ConfigureTool(){
 	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
 	config->POLYMORPHIC_CODE_PATCH = KnobPolymorphicCodePatch.Value();
 	config->NULLIFY_UNK_IAT_ENTRY = KnobNullyfyUnknownIATEntry.Value();
-	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS ){
+	config->SKIP_DUMP = KnobSkipDump.Value();
+	if(KnobInterWriteSetAnalysis.Value() >= 1 && KnobInterWriteSetAnalysis.Value() <= Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS ){
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
 	}
 	else{
@@ -211,9 +215,7 @@ int main(int argc, char * argv[]){
 	
 	printf("->Configuring Pintool<-\n");
 	//get theknob args
-	ConfigureTool();
-
-	
+	ConfigureTool();	
 	if(Config::getInstance()->POLYMORPHIC_CODE_PATCH){
 		TRACE_AddInstrumentFunction(Trace,0);
 	}
@@ -224,7 +226,7 @@ int main(int argc, char * argv[]){
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
 	printf("\n\n---->Starting instrumented program<-----\n");
-
+	MYINFO(" knob inizio %d %d %d",Config::getInstance()->getDumpNumber(), Config::getInstance()->getDumpNumber(),Config::getInstance()->WRITEINTERVAL_MAX_NUMBER_JMP);
 	PIN_StartProgram();	
 	return 0;
 	

@@ -94,10 +94,18 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 	WriteInterval* item = wxorxHandler->getWxorXinterval(curEip);
 	//W xor X broken
 	if(item != NULL ){
+		Config *config = Config::getInstance();
+		MYINFO("Evaluating if skip  Dump Number: %d Dumps to skip: %d", (int)Config::getInstance()->getDumpNumber(), config->SKIP_DUMP);
+		if(config->getDumpNumber() < config->SKIP_DUMP ){
+			MYINFO("Skipping  Dump Number: %d Dumps to skip: %d", (int)Config::getInstance()->getDumpNumber(), config->SKIP_DUMP);
+			UINT32 currJMPLength = std::abs( (int)curEip - (int)prev_ip);
+			skipCurrentDump(item,currJMPLength);
+			return OEPFINDER_SKIPPED_DUMP;
+		}
+		MYINFO("Not Skipping  Dump Number: %d Dumps to skip: %d", (int)Config::getInstance()->getDumpNumber(), config->SKIP_DUMP);
 		//not the first broken in this write set		
 		if(item->getBrokenFlag()){
-			//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis
-			Config *config = Config::getInstance();
+			//if INTER_WRITESET_ANALYSIS_ENABLE flag is enable check if inter section JMP and trigger analysis	
 			if(config->INTER_WRITESET_ANALYSIS_ENABLE == true){ 				
 				interWriteSetJMPAnalysis(curEip,prev_ip,ins,item );
 			}
@@ -149,6 +157,7 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 		//Check if the current WriteSet has already dumped more than WRITEINTERVAL_MAX_NUMBER_JMP times
 		//and check if the previous instruction was in the library (Long jump because return from Library)
 		if(item->getCurrNumberJMP() < config->WRITEINTERVAL_MAX_NUMBER_JMP  && !pInfo->isLibraryInstruction(prev_ip)){
+			
 			//Try to dump and Fix the IAT if successful trigger the analysis
 			MYPRINT("\n\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYPRINT("- - - - - - - - - - - - - - JUMP NUMBER %d OF LENGHT %d  IN STUB FROM %08x TO %08x- - - - - - - - - - - - - -\n",item->getCurrNumberJMP(),currJMPLength, item->getAddrBegin(),item->getAddrEnd());
@@ -163,6 +172,18 @@ void OepFinder::interWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 			config->incrementDumpNumber(); //Incrementing the dump number even if Scylla is not successful
 		}				
 	}
+}
+
+VOID OepFinder::skipCurrentDump(WriteInterval* item, UINT32 currJMPLength ){
+	if(!item->getBrokenFlag()){
+		item->setBrokenFlag(true);
+	}
+	else{
+		if(currJMPLength > item->getThreshold()){
+			item->incrementCurrNumberJMP();
+		}
+	}
+	Config::getInstance()->incrementDumpNumber();
 }
 
 UINT32 OepFinder::checkHeapWxorX(WriteInterval* item, ADDRINT curEip, int dumpAndFixResult){

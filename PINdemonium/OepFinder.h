@@ -18,6 +18,7 @@ namespace W {
 #include "TimeTracker.h"
 
 //return value for IsCurrentInOEP function
+#define OEPFINDER_SKIPPED_DUMP -4;
 #define OEPFINDER_INS_FILTERED -3;
 #define OEPFINDER_HEURISTIC_FAIL -2;
 #define OEPFINDER_NOT_WXORX_INST -1;
@@ -35,6 +36,7 @@ private:
 	//check if the current instruction is a pushad or a popad
 	//if so then set the proper flags in ProcInfo
 	void handlePopadAndPushad(INS ins);
+	VOID skipCurrentDump(WriteInterval* item, UINT32 currJMPLength);
 	BOOL analysis(WriteInterval* item, INS ins, ADDRINT prev_ip, ADDRINT curEip , int dumpAndFixResult);
 	UINT32 checkHeapWxorX(WriteInterval* item, ADDRINT curEip , int dumpAndFixResult);
 	VOID saveHeapZones(std::map<std::string , HeapZone> hzs , std::map<std::string,std::string> hzs_dumped);

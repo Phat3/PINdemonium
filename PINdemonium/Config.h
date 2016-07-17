@@ -55,6 +55,7 @@ public:
 	//Tunable from command line
 	bool INTER_WRITESET_ANALYSIS_ENABLE; //Trigger the analysis inside a WriteSet in which WxorX is already broken if a Long JMP is encontered (MPress packer)
 	UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
+	UINT32 SKIP_DUMP;
 	//mode of operation
 	bool ADVANCED_IAT_FIX;
 	bool POLYMORPHIC_CODE_PATCH;
@@ -94,6 +95,7 @@ private:
 	//command line tuning flags
 	string filtered_writes;        //Which write instructions are filtered(possible values: 'stack teb')
 	UINT32 timeout;
+
 
 
 };
