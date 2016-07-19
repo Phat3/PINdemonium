@@ -7,6 +7,10 @@
 #include <time.h>
 #include <unordered_set>
 #include "Helper.h"
+#include <map>
+#include "md5.h"
+
+
 namespace W{
 	#include "windows.h"
 	#include <tlhelp32.h>
@@ -67,6 +71,7 @@ struct HeapZone {
 	ADDRINT begin;
 	ADDRINT end;
 	UINT32 size;
+	UINT32 version;
 };
 
 class ProcInfo
@@ -89,7 +94,9 @@ public:
 	std::unordered_set<ADDRINT> getJmpBlacklist();
 	ADDRINT getPINVMStart();
 	ADDRINT getPINVMEnd();
-	std::vector<HeapZone> getHeapMap();
+	std::map<string ,HeapZone> getHeapMap();
+	std::map<string,string> getDumpedHZ();
+
 	/* setter */
 	void addProcAddresses();
 	void setFirstINSaddress(ADDRINT address);
@@ -108,10 +115,10 @@ public:
 	/* helper */
 	void insertSection(Section section);
 	string getSectionNameByIp(ADDRINT ip);
-	void insertHeapZone(HeapZone heap_zone);
-	void deleteHeapZone(UINT32 index);
-	void removeLastHeapZone();
-	UINT32 searchHeapMap(ADDRINT ip);
+	void insertHeapZone(std::string hz_md5, HeapZone heap_zone);
+	void insertDumpedHeapZone(std::string hz_data_md5, std::string hz_bin_path);
+	void deleteHeapZone(std::string md5_to_remove);
+	bool searchHeapMap(ADDRINT ip);
 	HeapZone *getHeapZoneByIndex(UINT32 index);
 	float GetEntropy();
 	void insertInJmpBlacklist(ADDRINT ip);
@@ -145,7 +152,8 @@ private:
 	std::vector<MemoryRange> genericMemoryRanges;
 	PEB *peb;
 	std::vector<Section> Sections;
-	std::vector<HeapZone> HeapMap;
+	std::map<std::string, HeapZone> HeapMap;
+	std::map<std::string, std::string> HeapMapDumped;
 	std::unordered_set<ADDRINT> addr_jmp_blacklist;
 	std::vector<LibraryItem> knownLibraries;		   //vector of know library loaded
 	std::vector<LibraryItem> unknownLibraries;		   //vector of unknow library loaded	

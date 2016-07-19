@@ -22,8 +22,8 @@ UINT32 Heuristics::pushadPopadHeuristic(){
 	return heu.run();
 }
 
-UINT32 Heuristics::yaraHeuristic(){
+UINT32 Heuristics::yaraHeuristic(vector<string> dumps_to_analyse){
  	YaraHeuristic heu = YaraHeuristic();
- 	return heu.run();
+ 	return heu.run(dumps_to_analyse);
  
 } 

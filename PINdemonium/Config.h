@@ -24,9 +24,10 @@ public:
 	FILE* Config::getLogFile();
 	//getter
 	string getBasePath();
-	string getCurrentDumpFilePath();
+	string getCurrentDumpPath();
+	string getWorkingDumpPath();
 	string getCurrentReconstructedImportsPath();
-	string getNotWorkingPath();
+	string getNotWorkingDumpPath();
 	string getYaraResultPath();
 	string getReportPath();
 	string getScyllaDumperPath();
@@ -42,8 +43,11 @@ public:
 	void Config::writeOnTimeLog(string s);
 	void setWorking (int working);
 	void setNewWorkingDirectory();
-	string Config::getWorkingDir();
-	
+	string getWorkingDir();
+	string getHeapDir();
+	string getInjectionDir();
+	string getYaraExePath();
+	string getYaraRulesPath();
 
 	//--------------------------Command line Tuning Flags----------------------------
 	static const bool  ATTACH_DEBUGGER;
@@ -51,6 +55,7 @@ public:
 	//Tunable from command line
 	bool INTER_WRITESET_ANALYSIS_ENABLE; //Trigger the analysis inside a WriteSet in which WxorX is already broken if a Long JMP is encontered (MPress packer)
 	UINT32 WRITEINTERVAL_MAX_NUMBER_JMP;
+	UINT32 SKIP_DUMP;
 	//mode of operation
 	bool ADVANCED_IAT_FIX;
 	bool POLYMORPHIC_CODE_PATCH;
@@ -66,8 +71,10 @@ private:
 	string working_dir;
 	string base_path;
 	string not_working_path;
-	string cur_dump_path;        //Path of the final (IAT fixed) Dump
+	string working_path;        //Path of the final (IAT fixed) Dump
 	string cur_list_path;		 //Path of the list of the detected function
+	string heap_dir;
+	string injection_dir;
 	long double dump_number;
 	string getCurDateAndTime();
 	int numberOfBadImports;
@@ -80,12 +87,15 @@ private:
 	string plugins_path; 
 	string log_filename;
 	string report_filename;
+	string yara_exe_path;
+	string yara_rules_path;
 	string dep_scylla_dumper_path;
 	string dep_scylla_wrapper_path;
 	string not_working_directory;
 	//command line tuning flags
 	string filtered_writes;        //Which write instructions are filtered(possible values: 'stack teb')
 	UINT32 timeout;
+
 
 
 };

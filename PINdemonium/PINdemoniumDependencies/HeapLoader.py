@@ -22,7 +22,7 @@ if heapmap == None:
 for line in heapmap:
 	line = line.split(' ')[:-1]
 	
-	heap_bin = open(path + "/heaps/"+line[0]+".bin",'rb')
+	heap_bin = open(path + "/heaps/"+line[0],'rb')
 
 	heap_bin_size = os.fstat(heap_bin.fileno()).st_size
 	start_addr = int(line[1],16)

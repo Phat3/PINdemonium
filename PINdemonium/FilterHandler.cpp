@@ -44,8 +44,9 @@ VOID FilterHandler::setFilters(const string filters){
 	vector<string> filterVect;
 	stringstream ss(filters);
 	string temp;
-	while (ss >> temp)
-	filterVect.push_back(temp);
+	while (ss >> temp){
+		filterVect.push_back(temp);
+	}
 	for(std::vector<string>::iterator filt = filterVect.begin(); filt != filterVect.end(); ++filt) {	
 		MYINFO("Activating filter %s",(*filt).c_str() );
 		filterExecutionFlag += pow(2.0,filterMap[*filt]); //bitmap representing active flags

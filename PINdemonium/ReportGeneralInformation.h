@@ -9,11 +9,11 @@ class ReportGeneralInformation : public ReportObject
 private:
 	string name;
 	float entropy;
-
+	ReportObject *main_module;
 
 public:
 	ReportGeneralInformation();
-	ReportGeneralInformation(string name,float initial_entropy);
+	ReportGeneralInformation(string name, ADDRINT startAddr, ADDRINT endAddr, float initial_entropy);
 	Json::Value ReportGeneralInformation::toJson();
 
 };

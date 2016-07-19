@@ -20,7 +20,7 @@ Config* Config::getInstance()
 }
 
 //at the first time open the log file
-Config::Config(string config_path){
+Config::Config(std::string config_path){
 
 	loadJson(config_path);
 	//set the initial dump number
@@ -28,12 +28,28 @@ Config::Config(string config_path){
 	this->dump_number = 0;
 	//build the path for this execution
 	this->base_path = results_path + this->getCurDateAndTime() + "\\";
+
+	printf("BASE PATH: %s\n" , this->base_path.c_str());
+
 	//mk the directory
 	_mkdir(this->base_path.c_str());
-	this->not_working_path = this->base_path + not_working_directory;
-	_mkdir(this->not_working_path.c_str());
+
+	
+
+	this->heap_dir = this->base_path + "\\HEAP";
+	_mkdir(this->heap_dir.c_str());
+
+	printf("HEAP DIR: %s\n" , this->heap_dir.c_str());
+
+	this->injection_dir = this->base_path + "\\INJECTIONS";
+	_mkdir(this->injection_dir.c_str());
+	printf("INJECTION DIR: %s\n" , this->injection_dir.c_str());
+
+
 	//create the log and report files
 	string log_file_path = this->base_path + log_filename;
+
+	printf("LOG FILE PATH: %s\n" , log_file_path.c_str());
 
 	this->log_file = fopen(log_file_path.c_str(),"w");	
 	this->working = -1;
@@ -51,23 +67,53 @@ string Config::getBasePath(){
 	return this->base_path;
 }
 
+string Config::getHeapDir(){
+	return this->heap_dir;
+}
+
+string Config::getInjectionDir(){
+	return this->injection_dir;
+}
+
 long double Config::getDumpNumber(){
 	return this->dump_number;
 }
 
-string Config::getNotWorkingPath(){
+string Config::getNotWorkingDumpPath(){
 	return this->not_working_path + ProcInfo::getInstance()->getProcName() + "_" + std::to_string(this->dump_number) + ".exe";
 }
 
-string Config::getCurrentDumpFilePath(){	
+string Config::getWorkingDumpPath(){	
 	//Creating the output filename string of the current dump (ie finalDump_0.exe or finalDump_1.exe)
 	std::string proc_name = ProcInfo::getInstance()->getProcName();
 
-	_mkdir(this->base_path.c_str());
+	//_mkdir(this->base_path.c_str());
 
-	this->cur_dump_path = this->working_dir + "\\" + proc_name + "_" + std::to_string(this->dump_number) + ".exe" ;
+	this->working_path = this->working_dir + "\\" + proc_name + "_" + std::to_string(this->dump_number) + ".exe" ;
+	return this->working_path;
 	
-	return this->cur_dump_path;	
+	 
+}
+
+string Config::getCurrentDumpPath(){
+
+	string fixed_dump = Config::getInstance()->getWorkingDumpPath();          // path to file generated when scylla is able to fix the IAT and reconstruct the PE
+	string not_fixed_dump = Config::getInstance()->getNotWorkingDumpPath();   // path to file generated when scylla is NOT able to and reconstruct the PE
+	string dump_to_analyse = "";
+	
+	if(Helper::existFile(fixed_dump)){ // check if a Scylla fixed dump exist
+		dump_to_analyse = fixed_dump;  //we return the fixed dump
+	}
+	else{
+		if(Helper::existFile(not_fixed_dump)){ // check if a not fixed dump exist
+			dump_to_analyse = not_fixed_dump; // we return the not fixed dump 
+		}
+		else{
+			MYERRORE("Dump file hasn't been created");  //no file created nothig to return
+		}
+	}
+	return dump_to_analyse;
+
 }
 
 string Config::getCurrentReconstructedImportsPath(){
@@ -95,6 +141,15 @@ string Config::getFilteredWrites(){
 	return this->filtered_writes;
 }
 
+string Config::getYaraExePath(){
+	return this->yara_exe_path;
+}
+
+string Config::getYaraRulesPath(){
+	return this->yara_rules_path;
+}
+
+
 
 
 /* ----------------------------- UTILS -----------------------------*/
@@ -116,6 +171,8 @@ void Config::loadJson(string config_path){
 	report_filename = root["report_filename"].asString();
 	filtered_writes =root["filtered_writes"].asString();
 	timeout =root["timeout"].asInt();
+	yara_exe_path = root["yara_exe_path"].asString();
+	yara_rules_path  = root["yara_rules_path"].asString();
 
 	dep_scylla_dumper_path = dependecies_path + "Scylla\\ScyllaDumper.exe";
 	dep_scylla_wrapper_path = dependecies_path + "Scylla\\ScyllaWrapper.dll";

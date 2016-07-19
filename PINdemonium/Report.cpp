@@ -16,7 +16,7 @@ Report::Report(void)
 	
 }
 
-void Report::initializeReport(string process_name,float initial_entropy){
+void Report::initializeReport(string process_name, ADDRINT startAddr , ADDRINT endAddr, float initial_entropy){
 	//already initialized report (avoid problems when called multiple times)
 	if(already_initialized == true){
 		return;
@@ -24,20 +24,19 @@ void Report::initializeReport(string process_name,float initial_entropy){
 	report_path = Config::getInstance()->getReportPath();
 
 	//create the general information object and populate it
-	info = new ReportGeneralInformation(process_name,initial_entropy);
+	info = new ReportGeneralInformation(process_name, startAddr, endAddr, initial_entropy);
 	//create the external structure of the json
 	Json::Value info_json = info->toJson();
 	report["information"] = info_json;
 	report["dumps"] = Json::Value(Json::arrayValue);
-
 	writeJsonToReport(report);
 	already_initialized = true;
 
  }
 
 // Create the DumpReport with initial information about the dump
-void Report::createReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset){
-	ReportDump cur_dump =  ReportDump(eip,start_addr,end_addr,dump_number,intra_writeset);
+void Report::createReportDump(ADDRINT eip,ADDRINT start_addr, ADDRINT end_addr, int dump_number, bool intra_writeset,int pid){
+	ReportDump cur_dump =  ReportDump(eip,start_addr,end_addr,dump_number,intra_writeset,pid);
 	dumps.push_back(cur_dump);
 
 }

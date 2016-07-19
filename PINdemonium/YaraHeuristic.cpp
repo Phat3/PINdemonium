@@ -1,12 +1,5 @@
 #include "YaraHeuristic.h"
 
-#define YARA_LAUNCHER "YaraLauncher.bat"
-
-
-#define YARA_PATH "C:\\pin\\PINdemoniumDependencies\\Yara\\yara32.exe"
-#define YARA_RULES "C:\\pin\\PINdemoniumDependencies\\Yara\\yara_rules.yar"
-
-
 
 /**
 	Get the size of the file passed as fp
@@ -57,33 +50,13 @@ vector<string> YaraHeuristic::parseYaraOutput(string output){
 	return matched_rules;
 }
 
-
-UINT32 YaraHeuristic::run(){
-	
-
-
+vector<string> YaraHeuristic::analyseYara(string dump_to_analyse){
+	string yara_rules_path = Config::getInstance()->getYaraRulesPath();
+	string yara_exe_path = Config::getInstance()->getYaraExePath();	
 	string yara_res_file = Config::getInstance()->getYaraResultPath();
-	string fixed_dump = Config::getInstance()->getCurrentDumpFilePath();  // path to file generated when scylla is able to fix the IAT and reconstruct the PE
-	string not_fixed_dump = Config::getInstance()->getNotWorkingPath();   // path to file generated when scylla is NOT able to and reconstruct the PE
-	string dump_to_analyse = "";
 	
-	bool result= false;
 	string raw_output = "";
 	vector<string> matched_rules;
-	if(Helper::existFile(fixed_dump)){ // check if a Scylla fixed dump exist
-		dump_to_analyse = fixed_dump; //we analyse the fixed dump
-	}
-	else{
-		if(Helper::existFile(not_fixed_dump)){ // check if a not fixed dump exist
-			dump_to_analyse = not_fixed_dump; // we analyse the not fixed dump 
-		}
-		else{
-			MYERRORE("Dump file hasn't been created");  //no file created nothig to analyse
-			return -1;
-		}
-	}
-
-	
 	W::SECURITY_ATTRIBUTES sa; 
     // Set the bInheritHandle flag so pipe handles are inherited. 
     sa.nLength = sizeof(W::SECURITY_ATTRIBUTES); 
@@ -93,16 +66,16 @@ UINT32 YaraHeuristic::run(){
     // Create a pipe for the child process's STDOUT. 
     if ( ! W::CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &sa, 0) ) {
 		MYERRORE("Error creating Pipe for Yara");
-        return -1; 
+        return vector<string>(); 
     }
     // Ensure the read handle to the pipe for STDOUT is not inherited
     if ( ! W::SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0) ){
 		MYERRORE("Error creating Pipe for Yara");
-        return -1; 
+        return vector<string>(); 
     }
 	W::PROCESS_INFORMATION  piResults;
-	if(launchYara(YARA_PATH,YARA_RULES, dump_to_analyse, yara_res_file,&piResults )){
-		result =true;
+	if(launchYara(yara_exe_path,yara_rules_path, dump_to_analyse, yara_res_file,&piResults )){
+
 		raw_output = ReadFromPipe(piResults);
 		matched_rules = parseYaraOutput(raw_output);
 		//MYINFO("Yara raw output result %s",raw_output.c_str());
@@ -110,11 +83,28 @@ UINT32 YaraHeuristic::run(){
 	else{
 		MYERRORE("error launching Yara");
 	}
+	return matched_rules;
+
+}
+
+
+UINT32 YaraHeuristic::run(vector<string> paths_to_analyse){
 	
+	vector<string> global_matched_rules;
+	bool result = false;
+	for(vector<string>::iterator dump_to_analyse = paths_to_analyse.begin(); dump_to_analyse != paths_to_analyse.end(); dump_to_analyse++){
+		vector<string> cur_matched_rules = analyseYara(*dump_to_analyse);
+		global_matched_rules.insert(global_matched_rules.end(),cur_matched_rules.begin(),cur_matched_rules.end());
+	}
+	
+	if(!global_matched_rules.empty()){
+		result = true;
+	}
+
 	//Saving the information to the report
 	try{
 		ReportDump& report_dump = Report::getInstance()->getCurrentDump();
-		ReportObject* yara_heur = new ReportYaraRules(result, matched_rules);
+		ReportObject* yara_heur = new ReportYaraRules(result, global_matched_rules);
 		report_dump.addHeuristic(yara_heur);
 	}
 	catch (const std::out_of_range& ){
@@ -156,7 +146,7 @@ BOOL YaraHeuristic::launchYara(string yara_path, string yara_rules_path, string 
 
 	MYINFO("Launching  Yara executable %s command line %s ",yara_path.c_str(),yara_arguments.c_str());
 	
-	if(!W::CreateProcess(yara_path.c_str(),(char *)yara_arguments.c_str(),NULL,NULL,TRUE,CREATE_NEW_CONSOLE,NULL,NULL,&si,&pi)){
+	if(!W::CreateProcess(yara_path.c_str(),(char *)yara_arguments.c_str(),NULL,NULL,FALSE,CREATE_NO_WINDOW,NULL,NULL,&si,&pi)){
 		MYERRORE("Can't launch Yara Error %d",W::GetLastError());
 		return false;
 	}

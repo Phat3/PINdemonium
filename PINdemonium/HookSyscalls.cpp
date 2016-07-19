@@ -73,10 +73,7 @@ void HookSyscalls::NtQuerySystemInformationHookExit(syscall_t *sc, CONTEXT *ctx,
 
 
 
-void HookSyscalls::NtWriteVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx, SYSCALL_STANDARD std){
-	W::PVOID address_to_write = (W::PVOID)sc->arg1; // get the address where the syscall is writing 
-	W::ULONG number_of_bytes_to_write = (W::ULONG)sc->arg3; // get how many bytes it is trying to write 
-}
+
 
 void HookSyscalls::NtAllocateVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
 	W::PVOID base_address_pointer = (W::PVOID) sc->arg1;
@@ -88,9 +85,15 @@ void HookSyscalls::NtAllocateVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx , SY
 	hz.begin = heap_address;
 	hz.size = region_size;
     hz.end = region_size+heap_address;
-	MYINFO("NtAllocateVirtualMemoryHook insert in Heap Zone %08x -> %08x",hz.begin,hz.end);
+	hz.version = 0; // version 0 of this heap
+
+	std::string heap_key =  std::to_string((_ULonglong)hz.begin) + std::to_string((_ULonglong)hz.end);
+
+	std::string hz_md5 = md5(heap_key);
+
+	//MYINFO("NtAllocateVirtualMemoryHook insert in Heap Zone %08x -> %08x MD5(begin_addr+end_addr): %s",hz.begin,hz.end,hz_md5.c_str());
 	//saving this heap zone in the map inside ProcInfo
-	proc_info->insertHeapZone(hz); 
+	proc_info->insertHeapZone(hz_md5,hz); 
 }
 
 
@@ -102,7 +105,53 @@ void HookSyscalls::NtQueryInformationProcessHook(syscall_t *sc , CONTEXT *ctx , 
 	}
 }
 
+void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
+	W::HANDLE process = (W::HANDLE)sc->arg1;
+	W::PVOID *BaseAddress = (W::PVOID *) sc->arg2;
+	W::PSIZE_T ViewSize = (W::PSIZE_T) sc->arg6;
+	W::DWORD pid = W::GetProcessId(process);
+	if(pid != W::GetCurrentProcessId()){
+		MYINFO("Write Injection through NtMapViewOfSectionHook pid %d  baseAddr %08x Size %08x",pid,*BaseAddress,*ViewSize);
+		ProcessInjectionModule::getInstance()->AddInjectedWrite((ADDRINT)*BaseAddress, *ViewSize,  pid );
+	}
+	
+}
 
+
+void HookSyscalls::NtWriteVirtualMemoryHook(syscall_t *sc , CONTEXT *ctx, SYSCALL_STANDARD std){
+	W::HANDLE process = (W::HANDLE)sc->arg0;
+	W::PVOID address_to_write = (W::PVOID)sc->arg1; // get the address where the syscall is writing 
+	W::ULONG number_of_bytes_to_write = (W::ULONG)sc->arg3; // get how many bytes it is trying to write 
+	W::DWORD injected_pid = W::GetProcessId(process);
+	if(injected_pid != W::GetCurrentProcessId()){
+		MYINFO("Write Injection through NtWriteVirtualMemoryHook pid %d  baseAddr %08x Size %08x",injected_pid,address_to_write,number_of_bytes_to_write);
+		ProcessInjectionModule::getInstance()->AddInjectedWrite((ADDRINT)address_to_write, number_of_bytes_to_write,  injected_pid );
+	}
+}
+
+void HookSyscalls::NtCreateThreadExHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
+	W::HANDLE process = (W::HANDLE)sc->arg3;
+	W::DWORD injected_pid = W::GetProcessId(process);
+	if(injected_pid != W::GetCurrentProcessId()){
+		ProcessInjectionModule::getInstance()->CheckInjectedExecution(injected_pid );
+	}
+}
+
+void HookSyscalls::NtResumeThreadHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
+	W::HANDLE thread = (W::HANDLE)sc->arg0;
+	W::DWORD injected_pid = W::GetProcessIdOfThread(thread);
+	if(injected_pid != W::GetCurrentProcessId()){
+		ProcessInjectionModule::getInstance()->CheckInjectedExecution(injected_pid );
+	}
+}
+
+void HookSyscalls::NtQueueApcThreadHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std){
+	W::HANDLE thread = (W::HANDLE)sc->arg0;
+	W::DWORD injected_pid = W::GetProcessIdOfThread(thread);
+	if(injected_pid != W::GetCurrentProcessId()){
+		ProcessInjectionModule::getInstance()->CheckInjectedExecution(injected_pid );
+	}
+}
 
 
 
@@ -149,8 +198,19 @@ void HookSyscalls::initHooks(){
 
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtAllocateVirtualMemory_exit",&HookSyscalls::NtAllocateVirtualMemoryHook));
 	//hxxp://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FMemory%20Management%2FVirtual%20Memory%2FNtWriteVirtualMemory.html
-	syscallsHooks.insert(std::pair<string,syscall_hook>("NtWriteVirtualMemory_entry",&HookSyscalls::NtWriteVirtualMemoryHook));
+	
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueryInformationProcess_exit",&HookSyscalls::NtQueryInformationProcessHook));
+	
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtWriteVirtualMemory_entry",&HookSyscalls::NtWriteVirtualMemoryHook));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtMapViewOfSection_exit",&HookSyscalls::NtMapViewOfSectionHook));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtCreateThreadEx_entry",&HookSyscalls::NtCreateThreadExHook));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueueApcThread_entry",&HookSyscalls::NtQueueApcThreadHook));
+	syscallsHooks.insert(std::pair<string,syscall_hook>("NtResumeThread_entry",&HookSyscalls::NtResumeThreadHook));
+	
+	
+
+
+	
 	// allocate syscall information struct
 	static syscall_t sc[256] = {0};
 	PIN_AddSyscallEntryFunction(&HookSyscalls::syscallEntry,&sc);

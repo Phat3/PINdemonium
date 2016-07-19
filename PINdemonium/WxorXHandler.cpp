@@ -10,16 +10,16 @@ WxorXHandler* WxorXHandler::getInstance()
 	return instance;
 }
 
+WxorXHandler::WxorXHandler(){
+	this->pid = W::GetCurrentProcessId();
+	this->WriteSetContainer.insert(std::pair<W::DWORD,std::vector<WriteInterval>>(this->pid, std::vector<WriteInterval>()));
+	
+}
+
 WxorXHandler::~WxorXHandler(void)
 {
 }
 
-
-//----------------------- GETTER / SETTER -----------------------
-
-std::vector<WriteInterval> WxorXHandler::getWritesSet(){
-	return this->WritesSet;
-}
 
 
 //----------------------- PUBLIC METHODS -----------------------
@@ -29,63 +29,98 @@ BOOL WxorXHandler::isWriteINS(INS ins){
 	return INS_IsMemoryWrite(ins);
 }
 
+
 // - Calculate the target of the write (end_addr)
 // - Update an existing WriteInterval / create a new one
-VOID WxorXHandler::writeSetManager(ADDRINT ip, ADDRINT start_addr, UINT32 size){
+VOID WxorXHandler::writeSetManager(ADDRINT start_addr, UINT32 size){
+	std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer.at(this->pid);
+	this->_writeSetManager(start_addr,size,currentWriteSet);
 	
-	//check if the write is on the heap
-	UINT32 heapzone_index = ProcInfo::getInstance()->searchHeapMap(start_addr);
-	BOOL heap_flag = FALSE;
-	if(heapzone_index != -1){
-		heap_flag = TRUE;
+}
+
+//return the WriteItem index inside our vector that broke the W xor X index
+WriteInterval* WxorXHandler::getWxorXinterval(ADDRINT ip){
+	std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer.at(this->pid);
+	return this->_getWxorXinterval(ip,currentWriteSet);	
+	
+}
+
+// - Calculate the target of the write (end_addr)
+// - Update an existing WriteInterval / create a new one
+VOID WxorXHandler::writeSetManager( ADDRINT start_addr, UINT32 size,W::DWORD cur_pid){
+	
+		std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer[cur_pid];
+		this->_writeSetManager(start_addr,size,currentWriteSet);
+
+	
+	
+}
+
+//return the WriteItem index inside our vector that broke the W xor X index
+std::vector<WriteInterval>& WxorXHandler::getWxorXintervalInjected(W::DWORD pid){
+	std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer[pid];
+	return currentWriteSet;
+
+}
+
+
+
+
+VOID WxorXHandler::incrementCurrJMPNumber(int writeItemIndex){
+	std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer.at(this->pid);
+	currentWriteSet[writeItemIndex].incrementCurrNumberJMP();
+}
+
+
+//Clear the currentWriteSet for injection in pid different from current programs 
+VOID WxorXHandler::clearWriteSet(W::DWORD pid){
+	if(pid != this->pid){
+		WriteSetContainer[pid] = std::vector<WriteInterval>();
 	}
+
+}
+
+VOID WxorXHandler::displayWriteSet(W::DWORD pid){	
+	std::vector<WriteInterval> &currentWriteSet = this->WriteSetContainer.at(pid);
+	for(unsigned index=0; index <  currentWriteSet.size(); index++) {
+		MYINFO("WriteInterval number %u  start %08x end %08x",index,currentWriteSet.at(index).getAddrBegin(),currentWriteSet.at(index).getAddrEnd());
+	}
+}
+
+
+//----------------------- PRIVATES METHODS -----------------------
+
+VOID WxorXHandler::_writeSetManager( ADDRINT start_addr, UINT32 size,std::vector<WriteInterval> &currentWriteSet){
+	//check if the write is on the heap
+	bool isheap = ProcInfo::getInstance()->searchHeapMap(start_addr);
+
 	//calculate the end address of the write
 	UINT32 end_addr = start_addr + size;
 	//iterate through our structure in order to find if we have to update one of our WriteInterval
 	//We can't use an iterator because, after a certain amount of writeinterval, it will broke
-	for(int i = 0; i < this->WritesSet.size(); i++){
+	for(int i = 0; i < currentWriteSet.size(); i++){
 		//if we foud that an item has to be updated then update it and return
-		if(this->WritesSet[i].checkUpdate(start_addr, end_addr)){
-			this->WritesSet[i].update(start_addr, end_addr, heap_flag);	
+		if(currentWriteSet[i].checkUpdate(start_addr, end_addr)){
+			currentWriteSet[i].update(start_addr, end_addr, isheap);	
 			return; 
 		}
 	}
 	//create and add it to our structure
-	WriteInterval new_interval = WriteInterval(start_addr, end_addr, heap_flag);
-	this->WritesSet.push_back(new_interval);
+	WriteInterval new_interval = WriteInterval(start_addr, end_addr, isheap);
+	currentWriteSet.push_back(new_interval);
 }
 
-//return the WriteItem index inside our vector that broke the W xor X index
-UINT32 WxorXHandler::getWxorXindex(ADDRINT ip){
+
+WriteInterval* WxorXHandler::_getWxorXinterval(ADDRINT ip,std::vector<WriteInterval> &currentWriteSet){
 	//iterate through our structure in order to find if we have a violation of the W xor X law
-	for(std::vector<WriteInterval>::iterator item = this->WritesSet.begin(); item != this->WritesSet.end(); ++item) {
+	for(std::vector<WriteInterval>::iterator item = currentWriteSet.begin(); item != currentWriteSet.end(); ++item) {
 		//if we found that the current ip is in a memory area that was previously written
 		//we have to return the address of the WriteInterval that has to be analyzed by our heuristics
 		if(item->checkInside(ip)){
-			int index = item - WritesSet.begin();
-			return index;
+			return &(*item);
 		}
 	}
 	//otherwise return -1 (the law is not broke)
-	return -1;
-}
+	return NULL;
 
-//delete the analyzed WriteInterval
-VOID WxorXHandler::deleteWriteItem(UINT32 writeItemIndex){
-	this->WritesSet.erase(this->WritesSet.begin() + writeItemIndex);
-}
-
-VOID WxorXHandler::setBrokenFlag(int writeItemIndex){
-	this->WritesSet[writeItemIndex].setBrokenFlag(true);
-}
-
-VOID WxorXHandler::incrementCurrJMPNumber(int writeItemIndex){
-	this->WritesSet[writeItemIndex].incrementCurrNumberJMP();
-}
-
-//Why this crash the porgram with UPX?
-VOID WxorXHandler::displayWriteSet(){	
-	for(unsigned index=0; index <  this->WritesSet.size(); index++) {
-		MYINFO("WriteInterval number %u  start %08x end %08x",index,this->WritesSet.at(index).getAddrBegin(),this->WritesSet.at(index).getAddrEnd());
-	}
 }

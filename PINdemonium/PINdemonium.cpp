@@ -11,6 +11,7 @@
 #include "HookFunctions.h"
 #include "HookSyscalls.h"
 #include "PolymorphicCodeHandlerModule.h"
+#include "md5.h"
 namespace W {
 	#include <windows.h>
 }
@@ -26,6 +27,9 @@ PolymorphicCodeHandlerModule pcpatcher;
 
 KNOB <UINT32> KnobInterWriteSetAnalysis(KNOB_MODE_WRITEONCE, "pintool",
     "iwae", "0" , "specify if you want or not to track the inter_write_set analysis dumps and how many jump");
+
+KNOB <UINT32> KnobSkipDump(KNOB_MODE_WRITEONCE, "pintool",
+    "skip", "0" , "specify how many times you want to skip the dump process whe wxorx rule is broken");
 
 KNOB <BOOL> KnobAdvancedIATFixing(KNOB_MODE_WRITEONCE, "pintool",
     "adv-iatfix", "false" , "specify if you want or not to activate the advanced IAT fix technique");
@@ -85,7 +89,7 @@ void imageLoadCallback(IMG img,void *){
 		proc_info->setInitialEntropy(initial_entropy);
 		MYINFO("----------------------------------------------");	
 		//create Report File
-		Report::getInstance()->initializeReport(proc_info->getProcName(),initial_entropy);
+		Report::getInstance()->initializeReport(proc_info->getProcName(), startAddr, endAddr , initial_entropy);
 		//retrieve the section of the PE
 		for( SEC sec= IMG_SecHead(img); SEC_Valid(sec); sec = SEC_Next(sec) ){
 			item.name = SEC_Name(sec);
@@ -144,12 +148,15 @@ void initDebug(){
 
 // - set the option for the current run
 void ConfigureTool(){	
+	
 	Config *config = Config::getInstance();
+
 	config->INTER_WRITESET_ANALYSIS_ENABLE = KnobInterWriteSetAnalysis.Value();	
 	config->ADVANCED_IAT_FIX = KnobAdvancedIATFixing.Value();
 	config->POLYMORPHIC_CODE_PATCH = KnobPolymorphicCodePatch.Value();
 	config->NULLIFY_UNK_IAT_ENTRY = KnobNullyfyUnknownIATEntry.Value();
-	if(KnobInterWriteSetAnalysis.Value() > 1 && KnobInterWriteSetAnalysis.Value() <= Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS ){
+	config->SKIP_DUMP = KnobSkipDump.Value();
+	if(KnobInterWriteSetAnalysis.Value() >= 1 && KnobInterWriteSetAnalysis.Value() <= Config::MAX_JUMP_INTER_WRITE_SET_ANALYSIS ){
 		config->WRITEINTERVAL_MAX_NUMBER_JMP = KnobInterWriteSetAnalysis.Value();
 	}
 	else{
@@ -177,9 +184,9 @@ void ConfigureTool(){
 
 // - if an exception is found returns all the information about it (DEBUG purposes)
 EXCEPT_HANDLING_RESULT ExceptionHandler(THREADID tid, EXCEPTION_INFO *pExceptInfo, PHYSICAL_CONTEXT *pPhysCtxt, VOID *v){	
-	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	MYINFO("******Caught Exception:******\n");
 	MYINFO("%s",PIN_ExceptionToString(pExceptInfo).c_str());
-	MYINFO("ECC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	MYINFO("*****Continue to search a valid exception handler******\n");
 	return EHR_CONTINUE_SEARCH;
 }
 
@@ -193,7 +200,7 @@ int main(int argc, char * argv[]){
 	if(Config::ATTACH_DEBUGGER){
 		initDebug();
 	}
-	MYINFO("->Configuring Pintool<-\n");
+	
 	//get the start time of the execution (benchmark)
 	tStart = clock();	
 	// Initialize pin
@@ -206,19 +213,19 @@ int main(int argc, char * argv[]){
 	PIN_AddFiniFunction(Fini, 0);
 	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
 	
+	printf("->Configuring Pintool<-\n");
 	//get theknob args
-	ConfigureTool();
-	
+	ConfigureTool();	
 	if(Config::getInstance()->POLYMORPHIC_CODE_PATCH){
 		TRACE_AddInstrumentFunction(Trace,0);
 	}
 	proc_info->addProcAddresses();
 
-
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
-	MYINFO("\n\n---->Starting instrumented program<-----\n");
+	printf("\n\n---->Starting instrumented program<-----\n");
+	MYINFO(" knob inizio %d %d %d",Config::getInstance()->getDumpNumber(), Config::getInstance()->getDumpNumber(),Config::getInstance()->WRITEINTERVAL_MAX_NUMBER_JMP);
 	PIN_StartProgram();	
 	return 0;
 	
