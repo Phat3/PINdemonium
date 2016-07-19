@@ -29,7 +29,7 @@ class SliderItem extends React.Component {
     }
 
     var listyleActive = {
-        background : '#f33901',
+        background : 'rgb(255, 113, 70)',
         borderRadius : '50%',
         display : 'inline-block',
         width : '20px',
