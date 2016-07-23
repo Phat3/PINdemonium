@@ -118,7 +118,7 @@ UINT32 OepFinder::IsCurrentInOEP(INS ins){
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - STAGE 1: DUMPING - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 			MYINFO("Current EIP %08x",curEip);
-			Config::getInstance()->setNewWorkingDirectory(); // create the folder dump_0 inside the folder associated to this timestamp 
+			Config::getInstance()->setNewWorkingDirectory(false); // create the folder dump_0 inside the folder associated to this timestamp 
 			report->createReportDump(curEip,item->getAddrBegin(),item->getAddrEnd(),Config::getInstance()->getDumpNumber(),false,W::GetCurrentProcessId());
 			int result = this->DumpAndFixIAT(curEip);
 			Config::getInstance()->setWorking(result);
@@ -167,7 +167,7 @@ void OepFinder::intraWriteSetJMPAnalysis(ADDRINT curEip,ADDRINT prev_ip,INS ins,
 			MYPRINT("- - - - - - - - - JUMP NUMBER %d OF LENGTH %d  IN STUB FROM %08x TO %08x- - - - - - - - - - - - - -\n",item->getCurrNumberJMP(),currJMPLength, item->getAddrBegin(),item->getAddrEnd());
 			MYINFO("Current EIP %08x",curEip);
 			report->createReportDump(curEip,item->getAddrBegin(),item->getAddrEnd(),Config::getInstance()->getDumpNumber(),true,W::GetCurrentProcessId());
-			Config::getInstance()->setNewWorkingDirectory(); // create a new folder to store the dump 
+			Config::getInstance()->setNewWorkingDirectory(false); // create a new folder to store the dump 
 			int result = this->DumpAndFixIAT(curEip);
 			config->setWorking(result);
 			this->analysis(item, ins, prev_ip, curEip , result);
