@@ -147,7 +147,7 @@ BOOL YaraHeuristic::launchYara(std::string yara_path, std::string yara_rules_pat
 
 	MYINFO("Launching  Yara executable %s command line %s ",yara_path.c_str(),yara_arguments.c_str());
 
-	if(!W::CreateProcess(yara_path.c_str(),(char *)yara_arguments.c_str(),NULL,NULL,FALSE,CREATE_NO_WINDOW,NULL,NULL,&si,&pi)){
+	if(!W::CreateProcess(yara_path.c_str(),(char *)yara_arguments.c_str(),NULL,NULL,TRUE,CREATE_NEW_CONSOLE,NULL,NULL,&si,&pi)){
 		MYERRORE("Can't launch Yara Error %d",W::GetLastError());
 		return false;
 	}
