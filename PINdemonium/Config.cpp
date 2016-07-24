@@ -34,14 +34,10 @@ Config::Config(std::string config_path){
 	//mk the directory
 	_mkdir(this->base_path.c_str());
 
-	
-
 	this->heap_dir = this->base_path + "\\HEAP";
 	_mkdir(this->heap_dir.c_str());
 
 	//printf("HEAP DIR: %s\n" , this->heap_dir.c_str());
-
-
 
 
 	//create the log and report files
@@ -51,7 +47,9 @@ Config::Config(std::string config_path){
 
 	this->log_file = fopen(log_file_path.c_str(),"w");	
 	this->working = -1;
-	
+
+	this->yara_exe_path = this->dependecies_path + "\Yara\\yara32.exe";
+	this->yara_rules_path = this->dependecies_path + "\Yara\\yara_rules.yar";
 
 }
 
