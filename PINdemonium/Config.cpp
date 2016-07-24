@@ -29,7 +29,7 @@ Config::Config(std::string config_path){
 	//build the path for this execution
 	this->base_path = results_path + this->getCurDateAndTime() + "\\";
 
-	printf("BASE PATH: %s\n" , this->base_path.c_str());
+	//printf("BASE PATH: %s\n" , this->base_path.c_str());
 
 	//mk the directory
 	_mkdir(this->base_path.c_str());
@@ -39,7 +39,7 @@ Config::Config(std::string config_path){
 	this->heap_dir = this->base_path + "\\HEAP";
 	_mkdir(this->heap_dir.c_str());
 
-	printf("HEAP DIR: %s\n" , this->heap_dir.c_str());
+	//printf("HEAP DIR: %s\n" , this->heap_dir.c_str());
 
 
 
@@ -47,7 +47,7 @@ Config::Config(std::string config_path){
 	//create the log and report files
 	string log_file_path = this->base_path + log_filename;
 
-	printf("LOG FILE PATH: %s\n" , log_file_path.c_str());
+	//printf("LOG FILE PATH: %s\n" , log_file_path.c_str());
 
 	this->log_file = fopen(log_file_path.c_str(),"w");	
 	this->working = -1;
