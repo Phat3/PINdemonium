@@ -77,7 +77,7 @@ An unpacker for windows executables exploiting the capabilities of PIN.
 1. Run this command from the directory **C:\pin\\**
 
 	```
-	pin -t PINdemonium.dll [-flags] -- <path_to_the_exe_to_be_instrumented>s
+	pin -t PINdemonium.dll [-flags] -- <path_to_the_exe_to_be_instrumented>
 	```
 
 	**Flags :**
