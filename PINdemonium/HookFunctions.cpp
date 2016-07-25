@@ -7,6 +7,7 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualFree",VIRTUALFREE_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("CreateProcessInternalW",CREATEPROCESS_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("CreateProcessInternalA",CREATEPROCESS_INDEX) );
+	this->functionsMap.insert( std::pair<string,int>("CreateProcessInternal",CREATEPROCESS_INDEX) );
 	/*
 	this->functionsMap.insert( std::pair<string,int>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );

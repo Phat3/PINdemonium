@@ -111,7 +111,7 @@ void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL
 	W::PSIZE_T ViewSize = (W::PSIZE_T) sc->arg6;
 	W::DWORD pid = W::GetProcessId(process);
 
-	MYINFO("-------------------- Write Injection through NtMapViewOfSectionHook pid %d  baseAddr %08x Size %08x",pid,*BaseAddress,*ViewSize);
+	// MYINFO("-------------------- Write Injection through NtMapViewOfSectionHook pid %d  baseAddr %08x Size %08x",pid,*BaseAddress,*ViewSize);
 	if(pid != W::GetCurrentProcessId()){
 		MYINFO("Write Injection through NtMapViewOfSectionHook pid %d  baseAddr %08x Size %08x",pid,*BaseAddress,*ViewSize);
 		ProcessInjectionModule::getInstance()->AddInjectedWrite((ADDRINT)*BaseAddress, *ViewSize,  pid );
