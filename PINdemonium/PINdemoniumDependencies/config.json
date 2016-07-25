@@ -14,6 +14,6 @@
 	"timeout" : 120,				 //Timeout after last dump determining the end of unpacking
 
 	"yara_exe_path": "C:\\pin\\PINdemoniumDependencies\\Yara\\yara32.exe",
-	"yara_rules_path": "C:\\pin\\PINdemoniumDependencies\\Yara\\yara_rules.yar",
+	"yara_rules_path": "C:\\pin\\PINdemoniumDependencies\\Yara\\yara_rules.yar"
 
 }
