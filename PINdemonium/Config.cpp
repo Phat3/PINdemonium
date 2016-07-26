@@ -47,10 +47,6 @@ Config::Config(std::string config_path){
 
 	this->log_file = fopen(log_file_path.c_str(),"w");	
 	this->working = -1;
-
-	this->yara_exe_path = this->dependecies_path + "\Yara\\yara32.exe";
-	this->yara_rules_path = this->dependecies_path + "\Yara\\yara_rules.yar";
-
 }
 
 /* ----------------------------- GETTER -----------------------------*/
