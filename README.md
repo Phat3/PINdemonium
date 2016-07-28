@@ -178,6 +178,9 @@ Results are located at **C:\pin\PINdemoniumResults\\< current_date_and_time >\\*
 ## Thanks
 
 This work has been possible thanks to:
+
 1. [NtQuery/Scylla](https://github.com/NtQuery/Scylla) 
+
 2. [Yara-Rules/rules](https://github.com/Yara-Rules/rules)
+
 3. [VirusTotal/yara](https://github.com/virustotal/yara)
