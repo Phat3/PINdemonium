@@ -5,6 +5,9 @@ HookFunctions::HookFunctions(void)
 {
 	
 	this->functionsMap.insert( std::pair<string,int>("VirtualFree",VIRTUALFREE_INDEX) );
+	this->functionsMap.insert( std::pair<string,int>("CreateProcessInternalW",CREATEPROCESS_INDEX) );
+	this->functionsMap.insert( std::pair<string,int>("CreateProcessInternalA",CREATEPROCESS_INDEX) );
+	this->functionsMap.insert( std::pair<string,int>("CreateProcessInternal",CREATEPROCESS_INDEX) );
 	/*
 	this->functionsMap.insert( std::pair<string,int>("RtlAllocateHeap",RTLALLOCATEHEAP_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("IsDebuggerPresent",ISDEBUGGERPRESENT_INDEX) );
@@ -12,6 +15,7 @@ HookFunctions::HookFunctions(void)
 	this->functionsMap.insert( std::pair<string,int>("VirtualQuery",VIRTUALQUERY_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualProtect",VIRTUALPROTECT_INDEX) );
 	this->functionsMap.insert( std::pair<string,int>("VirtualQueryEx",VIRTUALQUERYEX_INDEX) );
+	CsrFreeCaptureBufferHook
 	*/
 }
 
@@ -106,11 +110,6 @@ VOID RtlReAllocateHeapHook(ADDRINT heap_address, UINT32 size ){
 }
 
 
-VOID MapViewOfFileHookAfter(W::DWORD dwDesiredAccess,W::DWORD dwFileOffsetHigh, W::DWORD dwFileOffsetLow, UINT32 size,ADDRINT file_view_addr ){
-	MYINFO("Found After mapViewOfFile Access %08x OffsetHigh %08x OffsetLow %08x  at %08x of size %08x ",dwDesiredAccess,dwFileOffsetHigh,dwFileOffsetLow,file_view_addr,size);
-	ProcInfo *proc_info = ProcInfo::getInstance();
-}
-
 
 VOID VirtualFreeHook(UINT32 address_to_free){
 	MYINFO("Calling VirtualFree of the address %08x\n" , address_to_free);
@@ -139,9 +138,10 @@ bool * IsDebuggerPresentHook(){
 }
 
 
-VOID VirtualProtectHook (W::LPVOID baseAddress, W::DWORD size, W::PDWORD oldProtection, BOOL* success) {
-	MYINFO("calling Virutalprotect at address %08x ->  %08x",(ADDRINT)baseAddress,size + (ADDRINT)baseAddress);
-	MYINFO("calling Virutalprotect at address %08x ->  %08x",(ADDRINT)baseAddress,size + (ADDRINT)baseAddress);
+
+VOID CreateProcessHookEntry(W::LPWSTR  lpApplicationName){
+	MYINFO("Started CreateProcessInternal application name %S",lpApplicationName);
+	ProcessInjectionModule::getInstance()->setInsideCreateProcess();
 }
 
 
@@ -164,6 +164,13 @@ void HookFunctions::hookDispatcher(IMG img){
 			//decide what to do based on the function hooked
 			//Different arguments are passed to the hooking routine based on the function
 			switch(index){
+				case(VIRTUALFREE_INDEX):
+					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)VirtualFreeHook , IARG_FUNCARG_ENTRYPOINT_VALUE,0, IARG_END);
+					break;
+				case(CREATEPROCESS_INDEX):
+					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)CreateProcessHookEntry , IARG_FUNCARG_ENTRYPOINT_VALUE,1, IARG_END);
+					break;
+				/*
 				case(VIRTUALALLOC_INDEX):
 					RTN_InsertCall(rtn, IPOINT_AFTER, (AFUNPTR)VirtualAllocHook , IARG_FUNCARG_ENTRYPOINT_VALUE,1 , IARG_FUNCRET_EXITPOINT_VALUE, IARG_END);
 					break;
@@ -178,13 +185,7 @@ void HookFunctions::hookDispatcher(IMG img){
 					//IPOINT_BEFORE because the address to be realloc is passed as an input paramenter
 					RTN_InsertCall(rtn,IPOINT_BEFORE,(AFUNPTR)RtlReAllocateHeapHook, IARG_FUNCARG_ENTRYPOINT_VALUE,2 , IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_END);
 					break;
-				case(MAPVIEWOFFILE_INDEX):
-					//need to be IPOINT_AFTER because the allocated address is returned as return value
-					RTN_InsertCall(rtn,IPOINT_AFTER,(AFUNPTR)MapViewOfFileHookAfter,IARG_FUNCARG_ENTRYPOINT_VALUE,1,IARG_FUNCARG_ENTRYPOINT_VALUE,2,IARG_FUNCARG_ENTRYPOINT_VALUE,3, IARG_FUNCARG_ENTRYPOINT_VALUE,4,IARG_FUNCRET_EXITPOINT_VALUE,  IARG_END);
-					break;
-				case(VIRTUALFREE_INDEX):
-					RTN_InsertCall(rtn, IPOINT_BEFORE, (AFUNPTR)VirtualFreeHook , IARG_FUNCARG_ENTRYPOINT_VALUE,0, IARG_END);
-					break;
+					*/
 				}			
 			RTN_Close(rtn);
 		}

@@ -292,13 +292,17 @@ Check the current name against a set of whitelisted library names
 (IDEA don't track kernel32.dll ... but track custom dll which may contain malicious payloads)
 **/
 BOOL ProcInfo::isKnownLibrary(const string name,ADDRINT startAddr,ADDRINT endAddr){	
-	BOOL isExaitDll = name.find("detect") != std::string::npos;
-	if(isExaitDll){
-		//MYINFO("FOUND EXAIT DLL %s from %08x  to   %08x\n",name.c_str(),startAddr,endAddr);
+	
+	BOOL isSystemDll = name.find("C:\\Windows\\system32") == 0;
+	isSystemDll = isSystemDll || name.find("C:\\Windows\\SYSTEM32") == 0;
+	//MYINFO("Dll Name %s is system %d",name.c_str(),isSystemDll);
+	if(isSystemDll){
+		return TRUE;
+	}
+	else{
+		MYINFO("Found Unknown library %s from %08x  to   %08x: start tracking its instruction\n",name.c_str(),startAddr,endAddr);
 		return FALSE;
 	}
-	else
-		return TRUE;
 }
 
 /*check if the address belong to a Library */

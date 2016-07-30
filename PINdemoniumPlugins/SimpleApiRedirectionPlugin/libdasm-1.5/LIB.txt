@@ -1,0 +1,33 @@
+
+
+How to compile DLL in MSVC environment
+======================================
+
+1. Compile with 'nmake -f Makefile.msvc'
+
+2. Copy libdasm.dll to system directory
+
+3. Copy libdasm.lib to your LIB path
+
+4. Copy libdasm.h to your INCLUDE path
+
+Prebuilt copy of libdasm (MSVC6) is included in bin directory.
+
+
+How to compile library in Unix environment
+==========================================
+
+1. Edit Makefile. You may want to check out variables CC
+and the installation path PREFIX. If you plan to use dynamic
+library (libdasm.so), you may need to add /usr/local/lib
+(or whatever you defined as PREFIX) in the linker cache path.
+This is usually in /etc/ld.so.conf on Linux systems.
+
+2. Compile with 'make'
+
+3. Install with 'make install'
+
+4. Rebuild your linker cache (or reboot)
+
+
+

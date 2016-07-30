@@ -147,6 +147,9 @@
     <ClCompile Include="ProcessInjectionModule.cpp">
       <Filter>Source Files\PINdemonium</Filter>
     </ClCompile>
+    <ClCompile Include="HeapModule.cpp">
+      <Filter>Source Files\PINdemonium</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README">
@@ -252,6 +255,9 @@
     </ClInclude>
     <ClInclude Include="ReportMainModule.h">
       <Filter>Header Files\Report</Filter>
+    </ClInclude>
+    <ClInclude Include="HeapModule.h">
+      <Filter>Header Files\PINdemonium</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

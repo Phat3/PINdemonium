@@ -1,0 +1,15 @@
+
+#
+# Simple makefile for MSVC
+#
+
+CC     = cl
+CFLAGS = /Ob1 /LD /DEF libdasm.def
+
+libdasm: 
+	$(CC) $(CFLAGS) libdasm.c
+
+clean:
+	rm -f libdasm.obj libdasm.dll libdasm.lib libdasm.exp
+
+

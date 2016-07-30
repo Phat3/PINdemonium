@@ -29,32 +29,24 @@ Config::Config(std::string config_path){
 	//build the path for this execution
 	this->base_path = results_path + this->getCurDateAndTime() + "\\";
 
-	printf("BASE PATH: %s\n" , this->base_path.c_str());
+	//printf("BASE PATH: %s\n" , this->base_path.c_str());
 
 	//mk the directory
 	_mkdir(this->base_path.c_str());
 
-	
-
 	this->heap_dir = this->base_path + "\\HEAP";
 	_mkdir(this->heap_dir.c_str());
 
-	printf("HEAP DIR: %s\n" , this->heap_dir.c_str());
-
-	this->injection_dir = this->base_path + "\\INJECTIONS";
-	_mkdir(this->injection_dir.c_str());
-	printf("INJECTION DIR: %s\n" , this->injection_dir.c_str());
+	//printf("HEAP DIR: %s\n" , this->heap_dir.c_str());
 
 
 	//create the log and report files
 	string log_file_path = this->base_path + log_filename;
 
-	printf("LOG FILE PATH: %s\n" , log_file_path.c_str());
+	//printf("LOG FILE PATH: %s\n" , log_file_path.c_str());
 
 	this->log_file = fopen(log_file_path.c_str(),"w");	
 	this->working = -1;
-	
-
 }
 
 /* ----------------------------- GETTER -----------------------------*/
@@ -71,9 +63,7 @@ string Config::getHeapDir(){
 	return this->heap_dir;
 }
 
-string Config::getInjectionDir(){
-	return this->injection_dir;
-}
+
 
 long double Config::getDumpNumber(){
 	return this->dump_number;
@@ -214,9 +204,15 @@ void Config::incrementDumpNumber(){
 }
 
 
-void Config::setNewWorkingDirectory(){
+void Config::setNewWorkingDirectory(bool isInjection){
+	std::string prefix = "";
+	if(isInjection){
+		prefix = "injection_";
+	}
+	else{
+		prefix = "dump_";
+	}
 	
-	std::string prefix = "dump_";
 	this->working_dir = this->base_path + prefix + std::to_string(this->getDumpNumber());
 
 	_mkdir(this->working_dir.c_str());

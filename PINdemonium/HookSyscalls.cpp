@@ -110,6 +110,8 @@ void HookSyscalls::NtMapViewOfSectionHook(syscall_t *sc , CONTEXT *ctx , SYSCALL
 	W::PVOID *BaseAddress = (W::PVOID *) sc->arg2;
 	W::PSIZE_T ViewSize = (W::PSIZE_T) sc->arg6;
 	W::DWORD pid = W::GetProcessId(process);
+
+	// MYINFO("-------------------- Write Injection through NtMapViewOfSectionHook pid %d  baseAddr %08x Size %08x",pid,*BaseAddress,*ViewSize);
 	if(pid != W::GetCurrentProcessId()){
 		MYINFO("Write Injection through NtMapViewOfSectionHook pid %d  baseAddr %08x Size %08x",pid,*BaseAddress,*ViewSize);
 		ProcessInjectionModule::getInstance()->AddInjectedWrite((ADDRINT)*BaseAddress, *ViewSize,  pid );
@@ -152,6 +154,8 @@ void HookSyscalls::NtQueueApcThreadHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_S
 		ProcessInjectionModule::getInstance()->CheckInjectedExecution(injected_pid );
 	}
 }
+
+
 
 
 
@@ -206,7 +210,8 @@ void HookSyscalls::initHooks(){
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtCreateThreadEx_entry",&HookSyscalls::NtCreateThreadExHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtQueueApcThread_entry",&HookSyscalls::NtQueueApcThreadHook));
 	syscallsHooks.insert(std::pair<string,syscall_hook>("NtResumeThread_entry",&HookSyscalls::NtResumeThreadHook));
-	
+
+
 	
 
 

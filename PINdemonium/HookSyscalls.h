@@ -103,6 +103,7 @@ private:
 	static void NtCreateThreadExHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std);
 	static void NtResumeThreadHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std);
 	static void NtQueueApcThreadHook(syscall_t *sc , CONTEXT *ctx , SYSCALL_STANDARD std);
+
 	
 
 	//Helpers

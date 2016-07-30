@@ -15,13 +15,34 @@ ProcessInjectionModule::ProcessInjectionModule(void)
 	wxorxHandler = WxorXHandler::getInstance();
 	config = Config::getInstance();
 	report = Report::getInstance();
+	insideCreateProcess = false;
 
 
 }
 
+BOOL ProcessInjectionModule::isInsideCreateProcess(){
+	if(insideCreateProcess && remoteWriteInsideCreateProcess<3){
+		MYINFO("1. InsideCreateProcess %d   remoteWrite %d",insideCreateProcess,remoteWriteInsideCreateProcess);
+		remoteWriteInsideCreateProcess++;
+		return true;
+	}
+	else if(remoteWriteInsideCreateProcess & remoteWriteInsideCreateProcess ==3 ){
+		MYINFO("2. InsideCreateProcess %d   remoteWrite %d",insideCreateProcess,remoteWriteInsideCreateProcess);
+		remoteWriteInsideCreateProcess = 0;
+		insideCreateProcess =false;
+		return false;
+	}
+	else{
+		MYINFO("3. InsideCreateProcess %d   remoteWrite %d",insideCreateProcess,remoteWriteInsideCreateProcess);
+		return false;
+	}
+}
 
 VOID ProcessInjectionModule::AddInjectedWrite(ADDRINT start, UINT32 size, W::DWORD pid ){
-	wxorxHandler->writeSetManager(start,size,pid);
+	//Check if injection tracking is active (disable during the createProcess since it make different remote write in the target process)
+	if(!isInsideCreateProcess()){
+		wxorxHandler->writeSetManager(start,size,pid);
+	}
 }
 
 VOID ProcessInjectionModule::CheckInjectedExecution(W::DWORD pid ){
@@ -43,6 +64,7 @@ VOID ProcessInjectionModule::HandleInjectedMemory(std::vector<WriteInterval>& cu
 		MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 		MYPRINT("- - - - - - - - - - - - - - - - - - - - - STAGE 1: DUMPING - - - - - - - - - - - - - - - - - - - - - - - - -");
 		MYPRINT("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
+		config->setNewWorkingDirectory(true);
 		string cur_dump_path = DumpRemoteWriteInterval(&(*item), pid);	
 		report->createReportDump(item->getAddrBegin(),item->getAddrBegin(),item->getAddrEnd(),Config::getInstance()->getDumpNumber(),false,pid);
 		
@@ -69,7 +91,7 @@ string ProcessInjectionModule::DumpRemoteWriteInterval(WriteInterval* item,W::DW
 	unsigned char * buffer = (unsigned char *)malloc(size);
 	W::HANDLE process = W::OpenProcess(PROCESS_VM_READ,false,pid);
 	if(W::ReadProcessMemory(process,(W::LPVOID)item->getAddrBegin(),buffer,  size,&dwBytesRead)){
-		string path = config->getInjectionDir()+"/injection_" + std::to_string((long double)pid)+"_"+std::to_string((long double)config->getDumpNumber())+".bin";
+		string path = config->getWorkingDir()+ "/" + std::to_string((long double)pid) + "_" + getNameFromPid(pid) + ".bin";
 		Helper::writeBufferToFile(buffer,size,path);
 		MYINFO("Dumped remote injected memory inside pid %d to %s",pid,path.c_str());
 		return path;
@@ -81,6 +103,10 @@ string ProcessInjectionModule::DumpRemoteWriteInterval(WriteInterval* item,W::DW
 
 }
 
+
+VOID ProcessInjectionModule::setInsideCreateProcess(){
+	this->insideCreateProcess = true;
+}
 
 
 /*
@@ -94,4 +120,21 @@ VOID ProcessInjectionModule::ExecuteHeuristics(string path_to_analyse){
 		dumps_to_analyse.push_back(path_to_analyse);
 		Heuristics::yaraHeuristic(dumps_to_analyse);
 	
+}
+
+string ProcessInjectionModule::getNameFromPid(W::DWORD pid) {
+    HANDLE hSnapshot = W::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if(hSnapshot) {
+        W::PROCESSENTRY32 pe32;
+        pe32.dwSize = sizeof(W::PROCESSENTRY32);
+        if(Process32First(hSnapshot, &pe32)) {
+            do {
+				if(pe32.th32ProcessID == pid){
+					return string(pe32.szExeFile);
+				}
+            } while(Process32Next(hSnapshot, &pe32));
+         }
+         CloseHandle(hSnapshot);
+    }
+	return "";
 }

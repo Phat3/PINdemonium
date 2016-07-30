@@ -77,7 +77,7 @@ An unpacker for windows executables exploiting the capabilities of PIN.
 1. Run this command from the directory **C:\pin\\**
 
 	```
-	pin -t PINdemonium.dll [-flags] -- <path_to_the_exe_to_be_instrumented>s
+	pin -t PINdemonium.dll [-flags] -- <path_to_the_exe_to_be_instrumented>
 	```
 
 	**Flags :**
@@ -175,4 +175,12 @@ Results are located at **C:\pin\PINdemoniumResults\\< current_date_and_time >\\*
    ]
 }
 ```
+## Thanks
 
+This work has been possible thanks to:
+
+1. [NtQuery/Scylla](https://github.com/NtQuery/Scylla) 
+
+2. [Yara-Rules/rules](https://github.com/Yara-Rules/rules)
+
+3. [VirusTotal/yara](https://github.com/virustotal/yara)

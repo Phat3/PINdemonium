@@ -58,6 +58,17 @@ VOID Fini(INT32 code, VOID *v){
 	Report::getInstance()->closeReport();
 }
 
+BOOL followChild(CHILD_PROCESS childProcess, VOID *val)
+{
+
+	printf("[INFO] A new process has been spawned!\n");
+	MYINFO("---------------------------------------------------");
+	MYINFO("-----------A NEW PROCESS HAS BEEN SPAWNED----------");
+	MYINFO("-------------[PinDemonium injected]---------------");
+	MYINFO("---------------------------------------------------");
+	return 1;
+}
+
 // - usage 
 INT32 Usage(){
 	PIN_ERROR("This Pintool unpacks common packers\n" + KNOB_BASE::StringKnobSummary() + "\n");
@@ -170,7 +181,7 @@ void ConfigureTool(){
 		W::DWORD fileAttrib = W::GetFileAttributes(config->PLUGIN_FULL_PATH.c_str());
 		//file doesn't exist
 		if(fileAttrib == 0xFFFFFFFF){
-			printf("THE SELECTED PLUGIN DOES NOT EXIST!\n\n\n");
+			printf("[ERROR] THE SELECTED PLUGIN DOES NOT EXIST!\n\n");
 			exit(-1);
 		}
 	}
@@ -212,8 +223,9 @@ int main(int argc, char * argv[]){
 	IMG_AddInstrumentFunction(imageLoadCallback, 0);
 	PIN_AddFiniFunction(Fini, 0);
 	PIN_AddInternalExceptionHandler(ExceptionHandler,NULL);
+	PIN_AddFollowChildProcessFunction(followChild, NULL);
 	
-	printf("->Configuring Pintool<-\n");
+	printf("[INFO] Configuring Pintool\n");
 	//get theknob args
 	ConfigureTool();	
 	if(Config::getInstance()->POLYMORPHIC_CODE_PATCH){
@@ -224,8 +236,8 @@ int main(int argc, char * argv[]){
 	//init the hooking system
 	HookSyscalls::enumSyscalls();
 	HookSyscalls::initHooks();
-	printf("\n\n---->Starting instrumented program<-----\n");
-	MYINFO(" knob inizio %d %d %d",Config::getInstance()->getDumpNumber(), Config::getInstance()->getDumpNumber(),Config::getInstance()->WRITEINTERVAL_MAX_NUMBER_JMP);
+	printf("[INFO] Starting instrumented program\n\n");
+	//MYINFO(" knob inizio %d %d %d",Config::getInstance()->getDumpNumber(), Config::getInstance()->getDumpNumber(),Config::getInstance()->WRITEINTERVAL_MAX_NUMBER_JMP);
 	PIN_StartProgram();	
 	return 0;
 	

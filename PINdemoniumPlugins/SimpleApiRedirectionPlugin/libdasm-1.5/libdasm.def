@@ -1,0 +1,19 @@
+
+LIBRARY libdasm
+EXPORTS
+	get_instruction
+	get_instruction_string
+	get_mnemonic_string
+	get_operand_string
+	get_operands_string
+	get_register_type
+	get_operand_type
+	get_operand_register
+	get_operand_basereg
+	get_operand_indexreg
+	get_operand_scale
+	get_operand_immediate
+	get_operand_displacement
+	get_source_operand
+	get_destination_operand
+

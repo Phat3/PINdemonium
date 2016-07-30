@@ -51,6 +51,7 @@ vector<string> YaraHeuristic::parseYaraOutput(string output){
 }
 
 vector<string> YaraHeuristic::analyseYara(string dump_to_analyse){
+
 	string yara_rules_path = Config::getInstance()->getYaraRulesPath();
 	string yara_exe_path = Config::getInstance()->getYaraExePath();	
 	string yara_res_file = Config::getInstance()->getYaraResultPath();
@@ -118,7 +119,7 @@ UINT32 YaraHeuristic::run(vector<string> paths_to_analyse){
 
 
 
-BOOL YaraHeuristic::launchYara(string yara_path, string yara_rules_path, string yara_input_path,string yara_output,W::PROCESS_INFORMATION * piResults){
+BOOL YaraHeuristic::launchYara(std::string yara_path, std::string yara_rules_path, std::string yara_input_path,std::string yara_output,W::PROCESS_INFORMATION * piResults){
 	//string YaraLauncherBat = Config::getInstance()->getBasePath() + YARA_LAUNCHER;
 
 	//Running external idaPython script
@@ -132,7 +133,7 @@ BOOL YaraHeuristic::launchYara(string yara_path, string yara_rules_path, string 
 
 	//NB There can be problem if using spaces inside the path
 
-	string yara_arguments =  yara_path  + " " +                        //path to yara executable
+	std::string yara_arguments =  yara_path  + " " +                        //path to yara executable
                              yara_rules_path + " " +     //path to yara rules
 							 yara_input_path;       //path to yara input file
 
@@ -145,8 +146,8 @@ BOOL YaraHeuristic::launchYara(string yara_path, string yara_rules_path, string 
 	fclose(YaraLauncherFile);*/
 
 	MYINFO("Launching  Yara executable %s command line %s ",yara_path.c_str(),yara_arguments.c_str());
-	
-	if(!W::CreateProcess(yara_path.c_str(),(char *)yara_arguments.c_str(),NULL,NULL,FALSE,CREATE_NO_WINDOW,NULL,NULL,&si,&pi)){
+
+	if(!W::CreateProcess(yara_path.c_str(),(char *)yara_arguments.c_str(),NULL,NULL,TRUE,CREATE_NEW_CONSOLE,NULL,NULL,&si,&pi)){
 		MYERRORE("Can't launch Yara Error %d",W::GetLastError());
 		return false;
 	}

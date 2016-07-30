@@ -16,6 +16,7 @@ namespace W {
 #include "GdbDebugger.h"
 #include "ScyllaWrapperInterface.h"
 #include "TimeTracker.h"
+#include "HeapModule.h"
 
 //return value for IsCurrentInOEP function
 #define OEPFINDER_SKIPPED_DUMP -4;
@@ -45,5 +46,6 @@ private:
 	WxorXHandler *wxorxHandler;
 	Report *report;
 	UINT32 DumpAndFixIAT(ADDRINT curEip);
+	VOID DumpAndCollectHeap(WriteInterval* item, ADDRINT curEip, int dumpAndFixResult);
 };
 

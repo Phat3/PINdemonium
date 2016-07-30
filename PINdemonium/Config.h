@@ -42,7 +42,7 @@ public:
 	void Config::closeLogFile();
 	void Config::writeOnTimeLog(string s);
 	void setWorking (int working);
-	void setNewWorkingDirectory();
+	void setNewWorkingDirectory(bool isInjection);
 	string getWorkingDir();
 	string getHeapDir();
 	string getInjectionDir();
@@ -74,7 +74,6 @@ private:
 	string working_path;        //Path of the final (IAT fixed) Dump
 	string cur_list_path;		 //Path of the list of the detected function
 	string heap_dir;
-	string injection_dir;
 	long double dump_number;
 	string getCurDateAndTime();
 	int numberOfBadImports;
