@@ -25,7 +25,7 @@ class InfoModal extends React.Component {
        //create an item for each dump
       for (var i = 0; i < this.props.dump.imports.length; i++) {
         // create the component with the proper prop
-        items.push(<li>{ "function :" }</li>)   
+        items.push(<li>{ this.props.dump.imports[i].func + " : " + this.props.dump.imports[i].mod }</li>)   
       }
 
       var heu = []

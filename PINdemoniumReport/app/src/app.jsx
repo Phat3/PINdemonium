@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {render} from 'react-dom';
 
@@ -34,7 +35,7 @@ class App extends React.Component {
   }
 
   componentDidMount(){
-    this._readFile("../../report.txt")
+    this._readFile("../../report_PINdemonium.txt")
   }
 
   render () {
